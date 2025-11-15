@@ -8,7 +8,7 @@ import Link from "next/link"
 type Negocio = {
   id: string
   nombre: string
-  descripcion?: string
+  description?: string
   logo_url?: string | null
   gallery_urls?: string[] | null
   created_at?: string
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                 <div className="p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-2">{negocio.nombre}</h2>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {negocio.descripcion || "Sin descripción"}
+                    {negocio.description || "Sin descripción"}
                   </p>
 
                   {/* Actions */}

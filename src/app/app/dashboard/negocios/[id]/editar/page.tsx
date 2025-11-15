@@ -12,7 +12,7 @@ function generateId() {
 type Negocio = {
   id: string
   nombre: string
-  descripcion?: string
+  description?: string
   logo_url?: string
   gallery_urls?: string[]
 }
@@ -24,7 +24,7 @@ export default function EditarNegocioPage() {
 
   const [negocio, setNegocio] = useState<Negocio | null>(null)
   const [nombre, setNombre] = useState("")
-  const [descripcion, setDescripcion] = useState("")
+  const [, setDescripcion] = useState("")
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(false)
@@ -45,7 +45,7 @@ export default function EditarNegocioPage() {
       }
       setNegocio(data)
       setNombre(data.nombre)
-      setDescripcion(data.descripcion ?? "")
+      setDescripcion(data.description ?? "")
     }
     fetchNegocio()
   }, [id])
@@ -92,7 +92,7 @@ export default function EditarNegocioPage() {
         .from('businesses')
         .update({
           nombre,
-          descripcion,
+          description,
           logo_url: logoUrl,
           gallery_urls: gallery
         })
@@ -170,12 +170,12 @@ export default function EditarNegocioPage() {
 
             {/* Descripción */}
             <div>
-              <label htmlFor="descripcion" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
                 Descripción
               </label>
               <textarea
-                id="descripcion"
-                value={descripcion}
+                id="description"
+                value={description}
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
