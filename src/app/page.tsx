@@ -28,18 +28,18 @@ export default function Home() {
 
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center space-x-6">
-                <a href="#" className="text-gray-700 hover:text-[#0288D1] transition">
+                <Link href="#" className="text-gray-700 hover:text-[#0288D1] transition">
                   Soluciones
-                </a>
-                <a href="#" className="text-gray-700 hover:text-[#0288D1] transition">
+                </Link>
+                <Link href="#" className="text-gray-700 hover:text-[#0288D1] transition">
                   Precios
-                </a>
-                <a href="#" className="text-gray-700 hover:text-[#0288D1] transition">
+                </Link>
+                <Link href="#" className="text-gray-700 hover:text-[#0288D1] transition">
                   Recursos
-                </a>
-                <a href="#" className="text-[#0288D1] font-semibold hover:underline">
+                </Link>
+                <Link href="#" className="text-[#0288D1] font-semibold hover:underline">
                   Novedades
-                </a>
+                </Link>
               </div>
 
               {/* Desktop Auth Buttons */}
@@ -75,18 +75,18 @@ export default function Home() {
             {/* Mobile Menu */}
             {mobileMenuOpen && (
               <div className="sm:hidden pb-4 border-t border-gray-200 mt-2 pt-4 space-y-3">
-                <a href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
+                <Link href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
                   Soluciones
-                </a>
-                <a href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
+                </Link>
+                <Link href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
                   Precios
-                </a>
-                <a href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
+                </Link>
+                <Link href="#" className="block text-gray-700 hover:text-[#0288D1] transition py-2">
                   Recursos
-                </a>
-                <a href="#" className="block text-[#0288D1] font-semibold py-2">
+                </Link>
+                <Link href="#" className="block text-[#0288D1] font-semibold py-2">
                   Novedades
-                </a>
+              </Link>
                 <div className="pt-3 border-t border-gray-200 space-y-2">
                   <Link href="/app/auth/login">
                     <button className="w-full text-center bg-[#3D484D] hover:bg-[#3E91B1] text-white font-medium transition py-2 rounded-full">
@@ -247,9 +247,9 @@ export default function Home() {
             <div>
               <h4 className="text-white font-semibold mb-4">Soporte</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="/ayuda" className="hover:text-white transition">Centro de ayuda</a></li>
-                <li><a href="/contacto" className="hover:text-white transition">Contacto</a></li>
-                <li><a href="/faq" className="hover:text-white transition">Preguntas frecuentes</a></li>
+                <li><Link href="/ayuda" className="hover:text-white transition">Centro de ayuda</Link></li>
+                <li><Link href="/contacto" className="hover:text-white transition">Contacto</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition">Preguntas frecuentes</Link></li>
               </ul>
             </div>
 
@@ -267,9 +267,9 @@ export default function Home() {
 
               {/* Redes sociales */}
               <div className="flex gap-4 mt-4">
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Twitter">🐦</a>
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Facebook">📘</a>
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Instagram">📸</a>
+                <Link href="#" className="hover:text-white text-xl transition" aria-label="Twitter">🐦</Link>
+                <Link href="#" className="hover:text-white text-xl transition" aria-label="Facebook">📘</Link>
+                <Link href="#" className="hover:text-white text-xl transition" aria-label="Instagram">📸</Link>
               </div>
             </div>
           </div>
