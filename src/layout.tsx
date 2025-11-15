@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import "../globals.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Encuentra - Conecta negocios y personas",
-  description: "La plataforma que conecta negocios, servicios y personas en un solo lugar",
+  title: "Encuentra Prototype",
+  description: "Encuentra prototype application",
 };
 
 export default function RootLayout({
@@ -12,13 +12,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="en">
       <body className="antialiased">
         {children}
       </body>
     </html>
   );
 }
+
+
 
 
 

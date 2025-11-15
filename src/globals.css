@@ -51,26 +51,44 @@ body {
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
   }
+  /* Ocultar scrollbar en todos los navegadores */
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
 
-  /* Movimiento ondulado */
-  @keyframes floatY {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-16px); }
-    100% { transform: translateY(0px); }
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+/* Ocultar scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+}
+
+/* Movimiento ondulado */
+@keyframes floatY {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-16px); }
+  100% { transform: translateY(0px); }
+}
+@keyframes floatWave {
+  0% {
+    transform: translateY(0px);
   }
-  
-  @keyframes floatWave {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-14px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
+  50% {
+    transform: translateY(-14px);
+  }
+  100% {
+    transform: translateY(0px);
   }
 }
+
+}
+
+
 
 
 

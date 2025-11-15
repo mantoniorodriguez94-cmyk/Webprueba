@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import Link from "next/link";
-import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
+import MasonryHorizontalCarousel from "./components/MasonryHorizontalCarousel";
+import WaveMasonryCarousel from "./components/WaveMasonryCarousel";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 sm:py-4">
               {/* Logo */}
-              <Link href="/" className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <Image 
                   src="/assets/logotipo.png" 
                   alt="Logo Encuentra" 
@@ -24,7 +24,7 @@ export default function Home() {
                   className="w-12 h-12 sm:w-16 sm:h-16"
                 />
                 <h1 className="text-xl sm:text-2xl font-bold text-[#0288D1]">Encuentra</h1>
-              </Link>
+              </div>
 
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center space-x-6">
@@ -44,16 +44,12 @@ export default function Home() {
 
               {/* Desktop Auth Buttons */}
               <div className="hidden sm:flex items-center space-x-2 sm:space-x-3">
-                <Link href="/app/auth/login">
-                  <button className="bg-[#3D484D] hover:bg-[#3E91B1] text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all text-sm sm:text-base">
-                    Iniciar sesión
-                  </button>
-                </Link>
-                <Link href="/app/auth/register">
-                  <button className="bg-[#0288D1] hover:bg-[#3E91B1] text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all text-sm sm:text-base">
-                    Registrarse
-                  </button>
-                </Link>
+                <button className="bg-[#3D484D] hover:bg-[#3E91B1] text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all text-sm sm:text-base">
+                  Iniciar sesión
+                </button>
+                <button className="bg-[#0288D1] hover:bg-[#3E91B1] text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all text-sm sm:text-base">
+                  Registrarse
+                </button>
               </div>
 
               {/* Mobile Menu Button */}
@@ -88,16 +84,12 @@ export default function Home() {
                   Novedades
                 </a>
                 <div className="pt-3 border-t border-gray-200 space-y-2">
-                  <Link href="/app/auth/login">
-                    <button className="w-full text-center bg-[#3D484D] hover:bg-[#3E91B1] text-white font-medium transition py-2 rounded-full">
-                      Iniciar sesión
-                    </button>
-                  </Link>
-                  <Link href="/app/auth/register">
-                    <button className="w-full bg-[#0288D1] hover:bg-[#3E91B1] text-white px-4 py-2 rounded-full shadow-md transition-all">
-                      Registrarse
-                    </button>
-                  </Link>
+                  <button className="w-full text-center bg-[#3D484D] hover:bg-[#3E91B1] text-white font-medium transition py-2 rounded-full">
+                    Iniciar sesión
+                  </button>
+                  <button className="w-full bg-[#0288D1] hover:bg-[#3E91B1] text-white px-4 py-2 rounded-full shadow-md transition-all">
+                    Registrarse
+                  </button>
                 </div>
               </div>
             )}
@@ -212,74 +204,75 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-          
+          </div> 
           <WaveMasonryCarousel />
         </section>
 
-        {/* Footer */}
-        <footer className="bg-gray-900 text-gray-300 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-            {/* Logo y descripción */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Image src="/assets/logotipo.png" alt="Encuentrapp logo" width={40} height={40} className="w-10 h-10" />
-                <h3 className="text-xl font-semibold text-white">Encuentra</h3>
-              </div>
-              <p className="text-sm leading-relaxed">
-                Hagamos a todos encontrables. Tu portal para conectar negocios, servicios,
-                vendedores y clientes en un solo lugar.
-              </p>
+            {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+          {/* Logo y descripción */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Image src="/assets/logotipo.png" alt="Encuentrapp logo" width={40} height={40} className="w-10 h-10" />
+              <h3 className="text-xl font-semibold text-white">Encuentra</h3>
             </div>
-
-            {/* Enlaces rápidos */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Enlaces</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/" className="hover:text-white transition">Inicio</Link></li>
-                <li><Link href="/app/auth/register" className="hover:text-white transition">Registrarse</Link></li>
-                <li><Link href="/app/auth/login" className="hover:text-white transition">Iniciar sesión</Link></li>
-                <li><Link href="/app/dashboard" className="hover:text-white transition">Dashboard</Link></li>
-              </ul>
-            </div>
-
-            {/* Sección de soporte */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Soporte</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/ayuda" className="hover:text-white transition">Centro de ayuda</a></li>
-                <li><a href="/contacto" className="hover:text-white transition">Contacto</a></li>
-                <li><a href="/faq" className="hover:text-white transition">Preguntas frecuentes</a></li>
-              </ul>
-            </div>
-
-            {/* Contacto */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Contacto</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2">
-                  <span>📧</span> soporte@encuentrapp.com
-                </li>
-                <li className="flex items-center gap-2">
-                  <span>📍</span> Latinoamérica
-                </li>
-              </ul>
-
-              {/* Redes sociales */}
-              <div className="flex gap-4 mt-4">
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Twitter">🐦</a>
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Facebook">📘</a>
-                <a href="#" className="hover:text-white text-xl transition" aria-label="Instagram">📸</a>
-              </div>
-            </div>
+            <p className="text-sm leading-relaxed">
+              Hagamos a todos encontrables. Tu portal para conectar negocios, servicios,
+              vendedores y clientes en un solo lugar.
+            </p>
           </div>
 
-          {/* Línea inferior */}
-          <div className="bg-gray-800 py-4 text-center text-sm text-gray-400">
-            © {new Date().getFullYear()} Encuentra / Encuentrapp. Todos los derechos reservados.
+          {/* Enlaces rápidos */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Enlaces</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="/" className="hover:text-white transition">Inicio</a></li>
+              <li><a href="/registro" className="hover:text-white transition">Registrarse</a></li>
+              <li><a href="/login" className="hover:text-white transition">Iniciar sesión</a></li>
+              <li><a href="/negocios" className="hover:text-white transition">Explorar negocios</a></li>
+            </ul>
           </div>
-        </footer>
+
+          {/* Sección de soporte */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Soporte</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="/ayuda" className="hover:text-white transition">Centro de ayuda</a></li>
+              <li><a href="/contacto" className="hover:text-white transition">Contacto</a></li>
+              <li><a href="/faq" className="hover:text-white transition">Preguntas frecuentes</a></li>
+            </ul>
+          </div>
+
+          {/* Contacto */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Contacto</h4>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <span>📧</span> soporte@encuentrapp.com
+              </li>
+              <li className="flex items-center gap-2">
+                <span>📍</span> Latinoamérica
+              </li>
+            </ul>
+
+            {/* Redes sociales */}
+            <div className="flex gap-4 mt-4">
+              <a href="#" className="hover:text-white text-xl transition" aria-label="Twitter">🐦</a>
+              <a href="#" className="hover:text-white text-xl transition" aria-label="Facebook">📘</a>
+              <a href="#" className="hover:text-white text-xl transition" aria-label="Instagram">📸</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Línea inferior */}
+        <div className="bg-gray-800 py-4 text-center text-sm text-gray-400">
+          © {new Date().getFullYear()} Encuentra / Encuentrapp. Todos los derechos reservados.
+        </div>
+      </footer>
       </main>
+
+      
     </>
   );
 }
