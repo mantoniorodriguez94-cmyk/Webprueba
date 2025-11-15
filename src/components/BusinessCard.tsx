@@ -28,7 +28,7 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{negocio.nombre}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{negocio.descripcion}</p>
+          <p className="text-sm text-gray-600 line-clamp-2">{negocio.description}</p>
           <p className="text-xs text-gray-400 mt-1">{negocio.created_at ? new Date(negocio.created_at).toLocaleString() : ""}</p>
         </div>
       </div>
