@@ -2,7 +2,7 @@
 "use client"
 import React from "react"
 import Link from "next/link"
-
+import Image from "next/image"
 type Props = {
   negocio: {
     id: string
@@ -20,10 +20,12 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
     <div className="bg-white rounded-lg shadow p-4 flex flex-col">
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 rounded overflow-hidden bg-gray-100 flex-none flex items-center justify-center">
-          <img
-            src={negocio.logo_url ?? "/placeholder.png"}
+          <Image
+            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
             alt={negocio.nombre}
             className="w-full h-full object-cover"
+            width={100}
+            height={100}
           />
         </div>
         <div className="flex-1">

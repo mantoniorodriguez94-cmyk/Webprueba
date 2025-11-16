@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
-
+import Image from "next/image"
 // Simple ID generator
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -21,10 +21,10 @@ export default function EditarNegocioPage() {
   const params = useParams()
   const id = (params as any)?.id as string
   const router = useRouter()
-
+  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const [negocio, setNegocio] = useState<Negocio | null>(null)
   const [nombre, setNombre] = useState("")
-  const [, setDescripcion] = useState("")
+  const [descripcion, setDescripcion] = useState("")
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(false)
@@ -92,7 +92,7 @@ export default function EditarNegocioPage() {
         .from('businesses')
         .update({
           nombre,
-          description,
+          descripcion,
           logo_url: logoUrl,
           gallery_urls: gallery
         })
@@ -175,7 +175,7 @@ export default function EditarNegocioPage() {
               </label>
               <textarea
                 id="description"
-                value={description}
+                value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
@@ -189,10 +189,12 @@ export default function EditarNegocioPage() {
                 Logo actual
               </label>
               {negocio.logo_url ? (
-                <img 
-                  src={negocio.logo_url} 
+                <Image 
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
                   alt="Logo actual" 
                   className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-gray-200"
+                  width={100}
+                  height={100}
                 />
               ) : (
                 <div className="w-32 h-32 bg-gray-100 rounded-2xl mb-3 flex items-center justify-center">
@@ -220,7 +222,7 @@ export default function EditarNegocioPage() {
               {negocio.gallery_urls && negocio.gallery_urls.length > 0 ? (
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {negocio.gallery_urls.map((url, idx) => (
-                    <img 
+                    <Image 
                       key={idx}
                       src={url} 
                       alt={`Imagen ${idx + 1}`} 

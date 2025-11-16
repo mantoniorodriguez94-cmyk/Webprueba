@@ -25,9 +25,11 @@ export default function WaveMasonryCarousel() {
     let rafId: number;
     function animate() {
       if (!isHovering.current) {
-        track.scrollLeft += 0.4;
+        if (track) {
+          (track as HTMLElement).scrollLeft += 0.4;
+        }
         // loop infinito
-        if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) {
+        if (track && (track as HTMLElement).scrollLeft >= (track as HTMLElement).scrollWidth - (track as HTMLElement).clientWidth - 2) {
           track.scrollLeft = 0;
         }
       }

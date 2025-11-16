@@ -11,11 +11,13 @@ export default function MasonryHorizontalCarousel() {
 
     let start = performance.now();
 
-    function animate(time) {
-      track.scrollLeft += 0.6;
+    function animate(time: number) {
+      if (track) {
+        (track as HTMLElement).scrollLeft += 0.6;
 
-      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) {
-        track.scrollLeft = 0;
+        if ((track as HTMLElement).scrollLeft >= (track as HTMLElement).scrollWidth - (track as HTMLElement).clientWidth - 2) {
+          (track as HTMLElement).scrollLeft = 0;
+        }
       }
 
       requestAnimationFrame(animate);

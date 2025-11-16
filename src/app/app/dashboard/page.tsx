@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
-
+import Image from "next/image"
 type Negocio = {
   id: string
   nombre: string
@@ -19,7 +19,7 @@ export default function DashboardPage() {
   const [negocios, setNegocios] = useState<Negocio[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-
+  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const fetchNegocios = useCallback(async () => {
     if (!user && !userLoading) {
       return
@@ -146,10 +146,12 @@ export default function DashboardPage() {
                 {/* Image */}
                 <div className="relative h-48 bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB]">
                   {negocio.logo_url ? (
-                    <img 
-                      src={negocio.logo_url} 
+                    <Image 
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
                       alt={negocio.nombre}
                       className="w-full h-full object-cover"
+                      width={100}
+                      height={100}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
