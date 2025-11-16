@@ -14,6 +14,7 @@ export default function BusinessFeedCard({ business }: BusinessFeedCardProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
+  const gallery = business.gallery_urls ?? [];
 
   return (
     <div className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden group">
@@ -96,13 +97,13 @@ export default function BusinessFeedCard({ business }: BusinessFeedCardProps) {
                   fill
                   className="object-cover group-hover/img:scale-110 transition-transform duration-300"
                 />
-                {idx === 2 && business.gallery_urls.length > 3 && (
-                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold">
-                      +{business.gallery_urls.length - 3}
-                    </span>
-                  </div>
-                )}
+                {idx === 2 && gallery.length > 3 && (
+  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+    <span className="text-white text-2xl font-bold">
+      +{gallery.length - 3}
+    </span>
+  </div>
+)}
               </div>
             ))}
           </div>
