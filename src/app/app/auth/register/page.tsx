@@ -63,6 +63,8 @@ export default function RegisterPage() {
   
     try {
       // 1. Crear usuario en Supabase Auth con metadata
+      // Las personas (person) no pueden crear negocios (allowed_businesses = 0)
+      // Las empresas (company) pueden crear hasta 5 negocios por defecto
       const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -70,6 +72,7 @@ export default function RegisterPage() {
           data: {
             full_name: fullName,
             role: role,
+            allowed_businesses: role === "person" ? 0 : 5,
           },
         },
       });
@@ -303,20 +306,81 @@ export default function RegisterPage() {
             </div>
 
             {/* Selector de tipo de usuario */}
-            <div className="space-y-2">
-              <label htmlFor="role" className="block text-sm font-semibold text-gray-700">
-                Tipo de usuario
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                ¿Cómo te quieres registrar?
               </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 text-sm sm:text-base"
-                disabled={loading}
-              >
-                <option value="person">Soy una persona</option>
-                <option value="company">Soy una compañía</option>
-              </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Opción Persona */}
+                <button
+                  type="button"
+                  onClick={() => setRole("person")}
+                  className={`p-4 border-2 rounded-2xl transition-all duration-300 text-left ${
+                    role === "person"
+                      ? "border-[#0288D1] bg-[#E3F2FD] shadow-md scale-[1.02]"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                  disabled={loading}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 ${role === "person" ? "text-[#0288D1]" : "text-gray-400"}`}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={`font-semibold text-sm ${role === "person" ? "text-[#0288D1]" : "text-gray-900"}`}>
+                        Persona
+                      </h3>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Explora y descubre negocios
+                      </p>
+                    </div>
+                    {role === "person" && (
+                      <div className="text-[#0288D1]">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                {/* Opción Empresa */}
+                <button
+                  type="button"
+                  onClick={() => setRole("company")}
+                  className={`p-4 border-2 rounded-2xl transition-all duration-300 text-left ${
+                    role === "company"
+                      ? "border-[#0288D1] bg-[#E3F2FD] shadow-md scale-[1.02]"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                  disabled={loading}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 ${role === "company" ? "text-[#0288D1]" : "text-gray-400"}`}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={`font-semibold text-sm ${role === "company" ? "text-[#0288D1]" : "text-gray-900"}`}>
+                        Empresa
+                      </h3>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Crea y gestiona negocios
+                      </p>
+                    </div>
+                    {role === "company" && (
+                      <div className="text-[#0288D1]">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}

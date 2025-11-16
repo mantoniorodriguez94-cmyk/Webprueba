@@ -9,4 +9,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Mantener la sesión en localStorage (persiste incluso al cerrar el navegador)
+    persistSession: true,
+    storageKey: 'encuentra-auth-token',
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    
+    // Detectar cambios de sesión automáticamente
+    detectSessionInUrl: true,
+    
+    // Auto-refresh del token antes de que expire
+    autoRefreshToken: true,
+    
+    // Flow de autenticación
+    flowType: 'pkce'
+  }
+});

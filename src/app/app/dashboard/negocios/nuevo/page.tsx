@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -21,6 +21,47 @@ export default function NuevoNegocioPage() {
   const [gallery, setGallery] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [checking, setChecking] = useState(true)
+  
+  // Verificar límite de negocios al cargar la página
+  useEffect(() => {
+    const checkBusinessLimit = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          router.push("/app/auth/login")
+          return
+        }
+        
+        // Obtener el límite permitido
+        const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
+        
+        // Contar cuántos negocios tiene actualmente
+        const { data: businesses, error: fetchError } = await supabase
+          .from("businesses")
+          .select("id")
+          .eq("owner_id", user.id)
+        
+        if (fetchError) throw fetchError
+        
+        const currentCount = businesses?.length ?? 0
+        
+        // Si ya alcanzó el límite, redirigir
+        if (currentCount >= allowedBusinesses) {
+          router.push("/app/dashboard")
+          return
+        }
+        
+        setChecking(false)
+      } catch (err) {
+        console.error("Error verificando límite:", err)
+        setChecking(false)
+      }
+    }
+    
+    checkBusinessLimit()
+  }, [router])
 
   const uploadFile = async (file: File, folder: string) => {
     const id = generateId()
@@ -95,6 +136,18 @@ export default function NuevoNegocioPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Mostrar loading mientras se verifica el límite
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando permisos...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
