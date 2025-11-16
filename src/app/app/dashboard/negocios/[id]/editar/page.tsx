@@ -4,27 +4,25 @@ import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import Image from "next/image"
+import type { Business } from "@/types/business"
+
 // Simple ID generator
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
-}
-
-type Negocio = {
-  id: string
-  nombre: string
-  description?: string
-  logo_url?: string
-  gallery_urls?: string[]
 }
 
 export default function EditarNegocioPage() {
   const params = useParams()
   const id = (params as any)?.id as string
   const router = useRouter()
-  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const [negocio, setNegocio] = useState<Negocio | null>(null)
-  const [nombre, setNombre] = useState("")
-  const [descripcion, setDescripcion] = useState("")
+  
+  const [negocio, setNegocio] = useState<Business | null>(null)
+  const [name, setName] = useState("")
+  const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("")
+  const [address, setAddress] = useState("")
+  const [phone, setPhone] = useState("")
+  const [whatsapp, setWhatsapp] = useState("")
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(false)
@@ -44,8 +42,12 @@ export default function EditarNegocioPage() {
         return
       }
       setNegocio(data)
-      setNombre(data.nombre)
-      setDescripcion(data.description ?? "")
+      setName(data.name)
+      setDescription(data.description ?? "")
+      setCategory(data.category ?? "")
+      setAddress(data.address ?? "")
+      setPhone(data.phone ? String(data.phone) : "")
+      setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
     }
     fetchNegocio()
   }, [id])
@@ -91,10 +93,14 @@ export default function EditarNegocioPage() {
       const { error: updateError } = await supabase
         .from('businesses')
         .update({
-          nombre,
-          descripcion,
+          name,
+          description: description || null,
+          category: category || null,
+          address: address || null,
+          phone: phone ? Number(phone) : null,
+          whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
-          gallery_urls: gallery
+          gallery_urls: gallery.length > 0 ? gallery : null
         })
         .eq('id', negocio.id)
 
@@ -136,7 +142,7 @@ export default function EditarNegocioPage() {
             Volver al dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Editar negocio</h1>
-          <p className="text-gray-600 mt-1">{negocio.nombre}</p>
+          <p className="text-gray-600 mt-1">{negocio.name}</p>
         </div>
 
         {/* Form Card */}
@@ -155,14 +161,14 @@ export default function EditarNegocioPage() {
           <form onSubmit={handleSave} className="space-y-6">
             {/* Nombre */}
             <div>
-              <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
                 Nombre del negocio *
               </label>
               <input
-                id="nombre"
+                id="name"
                 type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
                 disabled={loading}
               />
@@ -175,10 +181,74 @@ export default function EditarNegocioPage() {
               </label>
               <textarea
                 id="description"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Categoría */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
+                Categoría
+              </label>
+              <input
+                id="category"
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Ej: Panadería, Restaurante, Tienda..."
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                Dirección
+              </label>
+              <input
+                id="address"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Ej: Calle Principal #123"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                Teléfono
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Ej: 3001234567"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* WhatsApp */}
+            <div>
+              <label htmlFor="whatsapp" className="block text-sm font-semibold text-gray-700 mb-2">
+                WhatsApp
+              </label>
+              <input
+                id="whatsapp"
+                type="tel"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="Ej: 3001234567"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
                 disabled={loading}
               />
             </div>
@@ -190,11 +260,11 @@ export default function EditarNegocioPage() {
               </label>
               {negocio.logo_url ? (
                 <Image 
-                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
+                  src={negocio.logo_url}
                   alt="Logo actual" 
                   className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-gray-200"
-                  width={100}
-                  height={100}
+                  width={128}
+                  height={128}
                 />
               ) : (
                 <div className="w-32 h-32 bg-gray-100 rounded-2xl mb-3 flex items-center justify-center">

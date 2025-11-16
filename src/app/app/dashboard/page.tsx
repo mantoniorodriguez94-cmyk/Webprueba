@@ -5,21 +5,13 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
-type Negocio = {
-  id: string
-  nombre: string
-  description?: string
-  logo_url?: string | null
-  gallery_urls?: string[] | null
-  created_at?: string
-}
+import type { Business } from "@/types/business"
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
-  const [negocios, setNegocios] = useState<Negocio[]>([])
+  const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const fetchNegocios = useCallback(async () => {
     if (!user && !userLoading) {
       return
@@ -55,7 +47,7 @@ export default function DashboardPage() {
       setDeletingId(id)
       
       const { error } = await supabase
-        .from("negocios")
+        .from("businesses")
         .delete()
         .eq("id", id)
         
@@ -147,11 +139,11 @@ export default function DashboardPage() {
                 <div className="relative h-48 bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB]">
                   {negocio.logo_url ? (
                     <Image 
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
-                      alt={negocio.nombre}
+                      src={negocio.logo_url}
+                      alt={negocio.name}
                       className="w-full h-full object-cover"
-                      width={100}
-                      height={100}
+                      width={400}
+                      height={300}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -164,7 +156,7 @@ export default function DashboardPage() {
 
                 {/* Content */}
                 <div className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">{negocio.nombre}</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">{negocio.name}</h2>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                     {negocio.description || "Sin descripción"}
                   </p>

@@ -3,14 +3,10 @@
 import React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import type { Business } from "@/types/business"
+
 type Props = {
-  negocio: {
-    id: string
-    nombre: string
-    description?: string
-    logo_url?: string | null
-    created_at?: string
-  }
+  negocio: Business
   onDelete?: (id: string) => Promise<void>
   deleting?: boolean
 }
@@ -20,23 +16,29 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
     <div className="bg-white rounded-lg shadow p-4 flex flex-col">
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 rounded overflow-hidden bg-gray-100 flex-none flex items-center justify-center">
-          <Image
-            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${negocio.logo_url}`}
-            alt={negocio.nombre}
-            className="w-full h-full object-cover"
-            width={100}
-            height={100}
-          />
+          {negocio.logo_url ? (
+            <Image
+              src={negocio.logo_url}
+              alt={negocio.name}
+              className="w-full h-full object-cover"
+              width={80}
+              height={80}
+            />
+          ) : (
+            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          )}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{negocio.nombre}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{negocio.description}</p>
+          <h3 className="text-lg font-semibold">{negocio.name}</h3>
+          <p className="text-sm text-gray-600 line-clamp-2">{negocio.description || "Sin descripción"}</p>
           <p className="text-xs text-gray-400 mt-1">{negocio.created_at ? new Date(negocio.created_at).toLocaleString() : ""}</p>
         </div>
       </div>
 
       <div className="mt-4 flex gap-2">
-        <Link href={`/dashboard/negocios/${negocio.id}/editar`} className="px-3 py-1 border rounded text-sm">
+        <Link href={`/app/dashboard/negocios/${negocio.id}/editar`} className="px-3 py-1 border rounded text-sm">
           Editar
         </Link>
         <button

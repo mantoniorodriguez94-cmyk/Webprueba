@@ -11,8 +11,12 @@ function generateId() {
 
 export default function NuevoNegocioPage() {
   const router = useRouter()
-  const [nombre, setNombre] = useState("")
+  const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("")
+  const [address, setAddress] = useState("")
+  const [phone, setPhone] = useState("")
+  const [whatsapp, setWhatsapp] = useState("")
   const [logo, setLogo] = useState<File | null>(null)
   const [gallery, setGallery] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(false)
@@ -37,13 +41,22 @@ export default function NuevoNegocioPage() {
     e.preventDefault()
     setError("")
     
-    if (!nombre.trim()) {
+    if (!name.trim()) {
       setError("El nombre es obligatorio")
       return
     }
     
     setLoading(true)
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setError("Debes iniciar sesión para crear un negocio")
+        setLoading(false)
+        return
+      }
+
       let logoUrl: string | null = null
       const galleryUrls: string[] = []
 
@@ -62,10 +75,15 @@ export default function NuevoNegocioPage() {
       const { error: insertError } = await supabase
         .from('businesses')
         .insert({
-          nombre,
-          description,
+          owner_id: user.id,
+          name,
+          description: description || null,
+          category: category || null,
+          address: address || null,
+          phone: phone ? Number(phone) : null,
+          whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
-          gallery_urls: galleryUrls
+          gallery_urls: galleryUrls.length > 0 ? galleryUrls : null
         })
 
       if (insertError) throw insertError
@@ -113,14 +131,14 @@ export default function NuevoNegocioPage() {
           <form onSubmit={handleCreate} className="space-y-6">
             {/* Nombre */}
             <div>
-              <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
                 Nombre del negocio *
               </label>
               <input
-                id="nombre"
+                id="name"
                 type="text"
-                value={nombre}
-                onChange={e => setNombre(e.target.value)}
+                value={name}
+                onChange={e => setName(e.target.value)}
                 placeholder="Ej: Panadería El Sol"
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
                 disabled={loading}
@@ -139,6 +157,70 @@ export default function NuevoNegocioPage() {
                 placeholder="Describe tu negocio..."
                 rows={4}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Categoría */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
+                Categoría
+              </label>
+              <input
+                id="category"
+                type="text"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                placeholder="Ej: Panadería, Restaurante, Tienda..."
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                Dirección
+              </label>
+              <input
+                id="address"
+                type="text"
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+                placeholder="Ej: Calle Principal #123"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                Teléfono
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="Ej: 3001234567"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                disabled={loading}
+              />
+            </div>
+
+            {/* WhatsApp */}
+            <div>
+              <label htmlFor="whatsapp" className="block text-sm font-semibold text-gray-700 mb-2">
+                WhatsApp
+              </label>
+              <input
+                id="whatsapp"
+                type="tel"
+                value={whatsapp}
+                onChange={e => setWhatsapp(e.target.value)}
+                placeholder="Ej: 3001234567"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
                 disabled={loading}
               />
             </div>

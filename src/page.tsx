@@ -5,6 +5,7 @@ import MasonryHorizontalCarousel from "./components/MasonryHorizontalCarousel";
 import WaveMasonryCarousel from "./components/WaveMasonryCarousel";
 import Link from "next/link";
 
+
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
