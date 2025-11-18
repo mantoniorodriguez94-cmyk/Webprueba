@@ -448,3 +448,5 @@ return diffDays <= 7  // ← Cambiar el 7
 
 **¿Dudas o sugerencias? El sistema está listo para escalar y mejorar según las necesidades del usuario.** 🚀
 
+
+

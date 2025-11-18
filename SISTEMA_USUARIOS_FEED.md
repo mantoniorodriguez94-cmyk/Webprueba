@@ -335,3 +335,5 @@ El sistema ahora ofrece:
 
 **Desarrollado con ❤️ usando Next.js 15, React 18, TypeScript y Tailwind CSS**
 
+
+

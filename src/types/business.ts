@@ -20,3 +20,5 @@ export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;
 export type BusinessUpdate = Partial<Omit<Business, 'id' | 'owner_id' | 'created_at' | 'updated_at'>>;
 
 
+
+

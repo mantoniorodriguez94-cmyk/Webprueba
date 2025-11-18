@@ -143,3 +143,5 @@ Si tienes problemas, verifica:
 4. ✅ Las variables de entorno están configuradas en `.env.local`
 
 
+
+

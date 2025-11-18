@@ -181,3 +181,5 @@ Una vez que hayas ejecutado el script SQL y veas los negocios en el dashboard, e
 ¿Tienes preguntas? Revisa el archivo `scripts/README.md` para más detalles técnicos.
 
 
+
+

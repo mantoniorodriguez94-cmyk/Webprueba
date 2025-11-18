@@ -2,10 +2,12 @@
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <>
@@ -125,7 +127,10 @@ export default function Home() {
                   placeholder="Tu correo electrónico"
                   className="w-full sm:flex-1 sm:max-w-xs px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#0288D1] transition"
                 />
-                <button className="w-full sm:w-auto bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold px-6 py-3 rounded-full shadow-md transition-transform hover:scale-105 active:scale-95">
+                <button 
+                  onClick={() => router.push('/app/auth/register')}
+                  className="w-full sm:w-auto bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold px-6 py-3 rounded-full shadow-md transition-transform hover:scale-105 active:scale-95"
+                >
                   Probar gratis
                 </button>
               </div>

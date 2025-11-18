@@ -9,6 +9,7 @@ export interface UserMetadata {
   allowed_businesses?: number;
   avatar_url?: string;
   location?: string;
+  is_admin?: boolean;
 }
 
 export interface AppUser {
@@ -23,4 +24,6 @@ export interface FilterOptions {
   location?: string;
   searchTerm?: string;
 }
+
+
 

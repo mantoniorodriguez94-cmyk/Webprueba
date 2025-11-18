@@ -53,3 +53,5 @@ npm run dev
 📖 **Más detalles:** Lee `INSTRUCCIONES_NEGOCIOS_MODELO.md`
 
 
+
+

@@ -8,6 +8,7 @@ import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import FilterSidebar, { type FilterState } from "@/components/feed/FilterSidebar"
 import HighlightsSidebar from "@/components/feed/HighlightsSidebar"
+import { containsText, normalizeText } from "@/lib/searchHelpers"
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   const userRole = user?.user_metadata?.role ?? "person"
   const canCreateMore = negocios.length < allowedBusinesses
   const isCompany = userRole === "company"
+  const isAdmin = user?.user_metadata?.is_admin ?? false
   // Obtener negocios del usuario actual (para empresas)
   const fetchNegocios = useCallback(async () => {
     if (!user) return
@@ -75,29 +77,38 @@ export default function DashboardPage() {
     }
   }, [user, isCompany, fetchNegocios, fetchAllBusinesses])
 
-  // Aplicar filtros
+  // Aplicar filtros con búsqueda mejorada
   useEffect(() => {
     let filtered = [...allBusinesses]
 
-    // Filtrar por búsqueda
+    // Filtrar por búsqueda (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.searchTerm) {
-      filtered = filtered.filter(b =>
-        b.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        b.description?.toLowerCase().includes(filters.searchTerm.toLowerCase())
-      )
+      filtered = filtered.filter(b => {
+        // Buscar en nombre, descripción y dirección
+        const searchableTexts = [
+          b.name || "",
+          b.description || "",
+          b.address || "",
+          b.category || ""
+        ]
+        
+        return searchableTexts.some(text => 
+          containsText(text, filters.searchTerm)
+        )
+      })
     }
 
-    // Filtrar por categoría
+    // Filtrar por categoría (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.category && filters.category !== "Todos") {
       filtered = filtered.filter(b =>
-        b.category?.toLowerCase() === filters.category.toLowerCase()
+        normalizeText(b.category || "") === normalizeText(filters.category)
       )
     }
 
-    // Filtrar por ubicación
+    // Filtrar por ubicación (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.location) {
       filtered = filtered.filter(b =>
-        b.address?.toLowerCase().includes(filters.location.toLowerCase())
+        containsText(b.address || "", filters.location)
       )
     }
 
@@ -404,7 +415,13 @@ export default function DashboardPage() {
             ) : (
               <>
                 {displayedBusinesses.map((business) => (
-                  <BusinessFeedCard key={business.id} business={business} />
+                  <BusinessFeedCard 
+                    key={business.id} 
+                    business={business}
+                    currentUser={user}
+                    isAdmin={isAdmin}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </>
             )}

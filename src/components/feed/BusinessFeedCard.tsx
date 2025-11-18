@@ -2,19 +2,34 @@
 "use client"
 import React, { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import type { Business } from "@/types/business"
+import type { User } from "@supabase/supabase-js"
 
 interface BusinessFeedCardProps {
   business: Business
+  currentUser?: User | null
+  isAdmin?: boolean
+  onDelete?: (id: string) => void
 }
 
-export default function BusinessFeedCard({ business }: BusinessFeedCardProps) {
+export default function BusinessFeedCard({ 
+  business, 
+  currentUser, 
+  isAdmin = false,
+  onDelete 
+}: BusinessFeedCardProps) {
   const [imageError, setImageError] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const gallery = business.gallery_urls ?? [];
+  
+  // Verificar si el usuario actual es el dueño o es admin
+  const isOwner = currentUser?.id === business.owner_id
+  const canEdit = isOwner || isAdmin
+  const canDelete = isOwner || isAdmin
 
   return (
     <div className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden group">
@@ -61,6 +76,41 @@ export default function BusinessFeedCard({ business }: BusinessFeedCardProps) {
               Nuevo
             </span>
           )}
+
+          {/* Botones de Admin/Dueño */}
+          {canEdit && (
+            <div className="flex items-center gap-2">
+              {isAdmin && !isOwner && (
+                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
+                  Admin
+                </span>
+              )}
+              <Link
+                href={`/app/dashboard/negocios/${business.id}/editar`}
+                className="p-2 text-gray-600 hover:text-[#0288D1] hover:bg-[#E3F2FD] rounded-full transition-all"
+                title="Editar negocio"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </Link>
+              {canDelete && onDelete && (
+                <button
+                  onClick={() => {
+                    if (confirm(`¿Estás seguro de eliminar "${business.name}"?`)) {
+                      onDelete(business.id)
+                    }
+                  }}
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-all"
+                  title="Eliminar negocio"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -85,7 +135,8 @@ export default function BusinessFeedCard({ business }: BusinessFeedCardProps) {
       {business.gallery_urls && business.gallery_urls.length > 0 && (
         <div className="relative">
           <div className="grid grid-cols-3 gap-1 p-1">
-            {business.gallery_urls.slice(0, 3).map((url, idx) => (
+          {Array.isArray(business.gallery_urls) &&
+            business.gallery_urls.slice(0, 3).map((url: string, idx: number) => (
               <div
                 key={idx}
                 className="relative aspect-square overflow-hidden rounded-xl cursor-pointer group/img"

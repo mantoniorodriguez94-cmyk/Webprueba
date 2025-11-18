@@ -426,3 +426,5 @@ http://localhost:3000/app/auth/login
 *Última actualización: Noviembre 2025*
 *Correcciones aplicadas y verificadas*
 
+
+

@@ -279,8 +279,3 @@ export default function Home() {
   );
 }
 
-
-
-
-
-

@@ -20,10 +20,3 @@ export default function RootLayout({
   );
 }
 
-
-
-
-
-
-
-

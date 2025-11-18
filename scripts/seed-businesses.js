@@ -245,3 +245,5 @@ async function seedBusinesses() {
 // Ejecutar el script
 seedBusinesses();
 
+
+
