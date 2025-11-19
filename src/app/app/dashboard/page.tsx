@@ -438,11 +438,11 @@ export default function DashboardPage() {
                 </div>
               )}
               
-              {/* Botón Mis Mensajes - Solo para usuarios no empresa */}
+              {/* Botón Mis Mensajes - Solo para usuarios no empresa (OCULTO - Disponible en menú de usuario) */}
               {!isCompany && (
                 <Link
                   href="/app/dashboard/mis-mensajes"
-                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-green-400 to-green-600 text-white px-5 py-2.5 rounded-full hover:shadow-xl transition-all hover:scale-105 font-semibold text-sm"
+                  className="hidden items-center gap-2 bg-gradient-to-r from-green-400 to-green-600 text-white px-5 py-2.5 rounded-full hover:shadow-xl transition-all hover:scale-105 font-semibold text-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -511,6 +511,28 @@ export default function DashboardPage() {
 
                       {/* Información del usuario */}
                       <div className="p-6 space-y-4">
+                        {/* Mis Mensajes - Solo para usuarios no-empresa */}
+                        {!isCompany && (
+                          <Link
+                            href="/app/dashboard/mis-mensajes"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#E3F2FD] transition-all group"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-gray-900 group-hover:text-[#0288D1] transition-colors">Mis Mensajes</p>
+                              <p className="text-xs text-gray-500">Ver conversaciones con negocios</p>
+                            </div>
+                            <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0288D1] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        )}
+
                         {/* Email */}
                         <div className="flex items-start gap-3 pb-3 border-b border-gray-100">
                           <svg className="w-5 h-5 text-[#0288D1] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

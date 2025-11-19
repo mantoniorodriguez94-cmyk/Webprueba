@@ -22,3 +22,4 @@ export type BusinessUpdate = Partial<Omit<Business, 'id' | 'owner_id' | 'created
 
 
 
+
