@@ -66,6 +66,28 @@ export default function MisMensajesPage() {
     }
 
     fetchConversations()
+
+    // Suscripción en tiempo real a cambios en conversaciones
+    const conversationsChannel = supabase
+      .channel('user_conversations')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversations',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          // Recargar conversaciones cuando hay cambios
+          fetchConversations()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(conversationsChannel)
+    }
   }, [user])
 
   // Cargar mensajes de una conversación
@@ -102,11 +124,65 @@ export default function MisMensajesPage() {
     }
   }
 
+  // Suscripción en tiempo real a mensajes de la conversación seleccionada
+  useEffect(() => {
+    if (!selectedConversation || !user) return
+
+    // Suscribirse a nuevos mensajes en esta conversación
+    const messagesChannel = supabase
+      .channel(`messages_${selectedConversation.conversation_id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation.conversation_id}`
+        },
+        (payload) => {
+          const newMessage = payload.new as Message
+          
+          // Agregar el nuevo mensaje al chat
+          setMessages(prev => [...prev, newMessage])
+
+          // Si el mensaje NO es del usuario actual, marcarlo como leído automáticamente
+          if (newMessage.sender_id !== user.id) {
+            supabase.rpc("mark_conversation_as_read", {
+              p_conversation_id: selectedConversation.conversation_id,
+              p_user_id: user.id
+            })
+          }
+
+          // Actualizar la última mensaje en la lista de conversaciones
+          setConversations(prev =>
+            prev.map(c =>
+              c.conversation_id === selectedConversation.conversation_id
+                ? {
+                    ...c,
+                    last_message: newMessage.content,
+                    last_message_at: newMessage.created_at,
+                    last_message_sender_id: newMessage.sender_id,
+                    unread_count_user: newMessage.sender_id === user.id ? 0 : c.unread_count_user
+                  }
+                : c
+            )
+          )
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(messagesChannel)
+    }
+  }, [selectedConversation, user])
+
   // Enviar mensaje
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user) return
 
     setSending(true)
+    const messageContent = newMessage.trim()
+    setNewMessage("") // Limpiar input inmediatamente para mejor UX
 
     try {
       const { error } = await supabase
@@ -114,39 +190,18 @@ export default function MisMensajesPage() {
         .insert({
           conversation_id: selectedConversation.conversation_id,
           sender_id: user.id,
-          content: newMessage.trim()
+          content: messageContent
         })
 
       if (error) throw error
 
-      // Agregar mensaje localmente
-      const newMsg: Message = {
-        id: crypto.randomUUID(),
-        sender_id: user.id,
-        content: newMessage.trim(),
-        is_read: false,
-        created_at: new Date().toISOString()
-      }
-
-      setMessages(prev => [...prev, newMsg])
-      setNewMessage("")
-
-      // Actualizar última mensaje en la lista
-      setConversations(prev =>
-        prev.map(c =>
-          c.conversation_id === selectedConversation.conversation_id
-            ? {
-                ...c,
-                last_message: newMessage.trim(),
-                last_message_at: new Date().toISOString(),
-                last_message_sender_id: user.id
-              }
-            : c
-        )
-      )
+      // El mensaje aparecerá automáticamente gracias a la suscripción en tiempo real
+      // No es necesario agregarlo manualmente
     } catch (error: any) {
       console.error("Error enviando mensaje:", error)
       alert("Error al enviar el mensaje")
+      // Restaurar el mensaje en caso de error
+      setNewMessage(messageContent)
     } finally {
       setSending(false)
     }

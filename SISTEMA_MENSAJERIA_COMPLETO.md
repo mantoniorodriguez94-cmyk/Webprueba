@@ -357,14 +357,31 @@ El frontend ya está implementado. Solo asegúrate de que npm run dev esté corr
 
 ---
 
+## ⚡ Actualizaciones en Tiempo Real
+
+### ✅ IMPLEMENTADO - Supabase Realtime
+
+El sistema ahora incluye **mensajería en tiempo real**:
+- ✅ Mensajes aparecen instantáneamente sin recargar
+- ✅ Lista de conversaciones se actualiza automáticamente
+- ✅ Contadores de no leídos en tiempo real
+- ✅ Auto-scroll cuando llegan mensajes
+- ✅ Como WhatsApp/Telegram
+
+**Documentación completa:** Ver `REALTIME_MENSAJES.md`
+
+**Para habilitar:** Ejecutar `scripts/enable-realtime-messages.sql` en Supabase
+
+---
+
 ## 🔮 Próximas Mejoras
 
-### Fase 2: Notificaciones en Tiempo Real
+### Fase 2: Indicadores Avanzados
 
-- 🔔 Notificaciones push cuando llega un mensaje nuevo
 - 🟢 Indicador "Escribiendo..." cuando el otro está escribiendo
-- 📱 Notificaciones móviles
-- 🔄 Actualización automática sin recargar página
+- 📱 Notificaciones push cuando llega un mensaje nuevo
+- 🟢 Estado "En línea" / "Última vez activo"
+- ✓✓ Checkmarks de entrega y lectura
 
 ### Fase 3: Características Avanzadas
 
@@ -409,8 +426,18 @@ El frontend ya está implementado. Solo asegúrate de que npm run dev esté corr
 5. **SISTEMA_MENSAJERIA_COMPLETO.md** (este documento)
    - Documentación completa del sistema
 
-6. **MENSAJES_USUARIOS_PERSONAS.md** ⭐ NUEVO
+6. **MENSAJES_USUARIOS_PERSONAS.md**
    - Documentación específica para usuarios persona
+
+7. **scripts/enable-realtime-messages.sql** ⚡ NUEVO
+   - Script para habilitar Supabase Realtime
+   - Configuración de publicaciones
+   - Verificaciones incluidas
+
+8. **REALTIME_MENSAJES.md** ⚡ NUEVO
+   - Documentación completa de Realtime
+   - Guías de prueba
+   - Troubleshooting
 
 ### Archivos Modificados
 
@@ -423,10 +450,22 @@ El frontend ya está implementado. Solo asegúrate de que npm run dev esté corr
    - Botón "Ver Mensajes" ahora funcional
    - Link a la página de mensajes
 
-3. **src/app/app/dashboard/page.tsx** ⭐ ACTUALIZADO
+3. **src/app/app/dashboard/page.tsx**
    - Agregado botón verde "Mis Mensajes"
    - Visible solo para usuarios tipo "person"
    - Link a `/app/dashboard/mis-mensajes`
+
+4. **src/app/app/dashboard/mis-mensajes/page.tsx** ⚡ ACTUALIZADO
+   - Suscripción Realtime a conversaciones
+   - Suscripción Realtime a mensajes
+   - Actualización automática sin recargar
+   - Cleanup de recursos
+
+5. **src/app/app/dashboard/negocios/[id]/mensajes/page.tsx** ⚡ ACTUALIZADO
+   - Suscripción Realtime a conversaciones
+   - Suscripción Realtime a mensajes
+   - Actualización automática sin recargar
+   - Cleanup de recursos
 
 ---
 
