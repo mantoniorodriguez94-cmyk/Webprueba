@@ -11,9 +11,9 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-br from-[#E3F2FD] via-[#BBDEFB] to-white text-gray-800 flex flex-col">
+      <main className="min-h-screen text-gray-800 flex flex-col">
         {/* Header */}
-        <header className="bg-white bg-opacity-70 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <header className="bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-lg border-b-2 border-[#0288D1]/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 sm:py-4">
               {/* Logo */}
@@ -150,7 +150,7 @@ export default function Home() {
               <div className="columns-1 sm:columns-2 gap-4 sm:gap-5 space-y-4 sm:space-y-5">
                 {/* Tarjeta 1 */}
                 <div className="break-inside-avoid mb-4 sm:mb-5">
-                  <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:bg-white/95">
                     <Image
                       src="/assets/ejemplo1.jpg"
                       alt="Panadería Adulan"
@@ -167,7 +167,7 @@ export default function Home() {
 
                 {/* Tarjeta 2 */}
                 <div className="break-inside-avoid mb-4 sm:mb-5">
-                  <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:bg-white/95">
                     <Image
                       src="/assets/yuly.jpeg"
                       alt="La tienda de Yuly"
@@ -184,7 +184,7 @@ export default function Home() {
 
                 {/* Tarjeta 3 */}
                 <div className="break-inside-avoid mb-4 sm:mb-5">
-                  <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:bg-white/95">
                     <Image
                       src="/assets/ejemplo2.jpg"
                       alt="CyberCafe La Chamarreta"
@@ -201,7 +201,7 @@ export default function Home() {
 
                 {/* Tarjeta 4 */}
                 <div className="break-inside-avoid mb-4 sm:mb-5">
-                  <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:bg-white/95">
                     <Image
                       src="/assets/freddy.jpeg"
                       alt="Taller Mecánico Freddy Montoya"

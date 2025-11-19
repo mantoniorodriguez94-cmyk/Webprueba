@@ -141,7 +141,7 @@ export default function Home() {
                 <div className="break-inside-avoid mb-4 sm:mb-5">
                   <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
                     <Image
-                      src="/assets/ejemplo1.jpg"
+                      src="/assets/ejemplo1."
                       alt="Panadería Adulan"
                       width={500}
                       height={400}
@@ -175,7 +175,7 @@ export default function Home() {
                 <div className="break-inside-avoid mb-4 sm:mb-5">
                   <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02] transition-transform">
                     <Image
-                      src="/assets/ejemplo2.jpg"
+                      src="/assets/ejemplo2."
                       alt="CyberCafe La Chamarreta"
                       width={500}
                       height={400}

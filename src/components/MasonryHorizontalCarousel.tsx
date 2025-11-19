@@ -27,13 +27,13 @@ export default function MasonryHorizontalCarousel() {
   }, []);
 
   const cards = [
-    "/assets/ejemplo1.jpg",
+    "/assets/ejemplo1.",
     "/assets/yuly.jpeg",
-    "/assets/ejemplo2.jpg",
+    "/assets/ejemplo2.",
     "/assets/freddy.jpeg",
-    "/assets/ejemplo1.jpg",
+    "/assets/ejemplo1.",
     "/assets/yuly.jpeg",
-    "/assets/ejemplo2.jpg",
+    "/assets/ejemplo2.",
   ];
 
   return (

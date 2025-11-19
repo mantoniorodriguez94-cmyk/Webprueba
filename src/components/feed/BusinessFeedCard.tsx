@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import type { User } from "@supabase/supabase-js"
+import SendMessageModal from "@/components/messages/SendMessageModal"
 
 interface BusinessFeedCardProps {
   business: Business
@@ -24,15 +25,29 @@ export default function BusinessFeedCard({
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showMessageModal, setShowMessageModal] = useState(false)
   const gallery = business.gallery_urls ?? [];
   
   // Verificar si el usuario actual es el dueño o es admin
   const isOwner = currentUser?.id === business.owner_id
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
+  
+  // Debug: Log de permisos (temporal para debugging)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('BusinessFeedCard Debug:', {
+      businessName: business.name,
+      businessOwnerId: business.owner_id,
+      currentUserId: currentUser?.id,
+      isOwner,
+      isAdmin,
+      canEdit,
+      canDelete
+    })
+  }
 
   return (
-    <div className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+    <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/40 hover:shadow-2xl hover:bg-white/95 transition-all duration-500 overflow-hidden group">
       {/* Header del negocio */}
       <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex items-center gap-4">
@@ -234,12 +249,26 @@ export default function BusinessFeedCard({
               <span className="text-sm font-semibold">Guardar</span>
             </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-50 text-gray-600 transition-all duration-300">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
-            <span className="text-sm font-semibold">Compartir</span>
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Botón Enviar Mensaje - Solo si el usuario está logueado y NO es el dueño */}
+            {currentUser && !isOwner && (
+              <button
+                onClick={() => setShowMessageModal(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-[#E3F2FD] text-[#0288D1] transition-all duration-300 font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span className="text-sm hidden sm:inline">Mensaje</span>
+              </button>
+            )}
+            <button className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-50 text-gray-600 transition-all duration-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              <span className="text-sm font-semibold">Compartir</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -276,6 +305,19 @@ export default function BusinessFeedCard({
           Ver más
         </button>
       </div>
+
+      {/* Modal de enviar mensaje */}
+      {showMessageModal && currentUser && (
+        <SendMessageModal
+          business={business}
+          currentUserId={currentUser.id}
+          onClose={() => setShowMessageModal(false)}
+          onSuccess={() => {
+            // Aquí puedes agregar lógica adicional después de enviar el mensaje
+            console.log("Mensaje enviado exitosamente")
+          }}
+        />
+      )}
     </div>
   )
 }

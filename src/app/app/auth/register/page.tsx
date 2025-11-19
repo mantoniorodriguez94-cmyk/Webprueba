@@ -109,7 +109,7 @@ export default function RegisterPage() {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E3F2FD] via-[#BBDEFB] to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Contenedor principal con animación */}
       <div className="w-full max-w-md animate-fadeIn">
         {/* Logo y Marca */}
@@ -133,7 +133,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Tarjeta de formulario */}
-        <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 backdrop-blur-lg bg-opacity-95 border border-gray-100">
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
           <div className="mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Crear cuenta

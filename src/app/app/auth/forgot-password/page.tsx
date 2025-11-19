@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E3F2FD] via-[#BBDEFB] to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-md animate-fadeIn">
         {/* Logo y Marca */}
         <div className="text-center mb-8">
@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Tarjeta de formulario */}
-        <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 backdrop-blur-lg bg-opacity-95 border border-gray-100">
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
           {!success ? (
             <>
               <div className="mb-6">
