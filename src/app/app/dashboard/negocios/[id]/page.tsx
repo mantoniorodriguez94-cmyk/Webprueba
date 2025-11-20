@@ -58,7 +58,7 @@ export default function BusinessDetailPage() {
 
   const galleryUrls = getGalleryUrls()
 
-  // Registrar vista del negocio
+  // Registrar vista del negocio (si la tabla existe)
   const registerView = async () => {
     if (!businessId || !user) return
 
@@ -70,15 +70,17 @@ export default function BusinessDetailPage() {
           viewer_id: user.id
         })
     } catch (error) {
-      // Ignorar errores de vista (puede fallar si ya se vio hoy)
-      console.log("Vista ya registrada hoy")
+      // Ignorar errores silenciosamente (la tabla puede no existir aún o ya se registró hoy)
+      // Esto no debe impedir que la página funcione
     }
   }
 
   // Cargar datos del negocio
   useEffect(() => {
     const fetchBusiness = async () => {
-      if (!businessId) return
+      if (!businessId || userLoading) return
+
+      setLoading(true)
 
       try {
         const { data, error } = await supabase
@@ -90,9 +92,13 @@ export default function BusinessDetailPage() {
         if (error) throw error
         setBusiness(data)
 
-        // Registrar vista (solo si hay usuario y no es el dueño)
+        // Registrar vista de manera asíncrona (no bloqueante)
+        // Solo si hay usuario y no es el dueño
         if (user && user.id !== data.owner_id) {
-          registerView()
+          // No esperamos la respuesta para no bloquear la carga
+          registerView().catch(() => {
+            // Ignorar errores de analytics
+          })
         }
 
         // Cargar promociones del negocio
@@ -118,7 +124,7 @@ export default function BusinessDetailPage() {
     }
 
     fetchBusiness()
-  }, [businessId, router])
+  }, [businessId, user, userLoading, router])
 
   if (userLoading || loading) {
     return (
