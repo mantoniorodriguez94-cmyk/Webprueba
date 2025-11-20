@@ -7,13 +7,52 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 
+type Promotion = {
+  id: string
+  is_active: boolean
+  start_date: string
+  end_date: string
+}
+
 export default function GestionarNegocioPage() {
   const params = useParams()
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
   const [business, setBusiness] = useState<Business | null>(null)
+  const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const businessId = params?.id as string
+
+  // Parsear gallery_urls de manera segura
+  const getGalleryUrls = (): string[] => {
+    if (!business?.gallery_urls) return []
+    
+    if (Array.isArray(business.gallery_urls)) {
+      return business.gallery_urls
+    }
+    
+    if (typeof business.gallery_urls === 'string') {
+      try {
+        const parsed = JSON.parse(business.gallery_urls)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    
+    return []
+  }
+
+  const galleryUrls = getGalleryUrls()
+
+  // Contar promociones activas
+  const activePromotionsCount = promotions.filter(p => {
+    if (!p.is_active) return false
+    const today = new Date()
+    const start = new Date(p.start_date)
+    const end = new Date(p.end_date)
+    return start <= today && end >= today
+  }).length
 
   // Cargar datos del negocio
   useEffect(() => {
@@ -37,6 +76,16 @@ export default function GestionarNegocioPage() {
         }
 
         setBusiness(data)
+
+        // Cargar promociones
+        const { data: promotionsData, error: promotionsError } = await supabase
+          .from("promotions")
+          .select("id, is_active, start_date, end_date")
+          .eq("business_id", businessId)
+
+        if (!promotionsError && promotionsData) {
+          setPromotions(promotionsData)
+        }
       } catch (error) {
         console.error("Error cargando negocio:", error)
         alert("Error cargando el negocio")
@@ -174,19 +223,19 @@ export default function GestionarNegocioPage() {
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Galería de Fotos</h3>
                 <p className="text-sm text-gray-600">
-                  {business.gallery_urls?.length || 0} fotos
+                  {galleryUrls.length} foto{galleryUrls.length !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
             <p className="text-gray-600 text-sm mb-4">
               Gestiona las imágenes de tu negocio. Puedes agregar, eliminar o reordenar fotos.
             </p>
-            <button
-              onClick={() => alert("Funcionalidad de galería próximamente disponible")}
-              className="w-full bg-purple-50 text-purple-700 px-4 py-2 rounded-xl hover:bg-purple-100 transition-colors font-semibold text-sm"
+            <Link
+              href={`/app/dashboard/negocios/${business.id}/galeria`}
+              className="block w-full text-center bg-purple-50 text-purple-700 px-4 py-2 rounded-xl hover:bg-purple-100 transition-colors font-semibold text-sm"
             >
               Gestionar Galería
-            </button>
+            </Link>
           </div>
 
           {/* Mensajes/Chats */}
@@ -214,7 +263,10 @@ export default function GestionarNegocioPage() {
           </Link>
 
           {/* Estadísticas */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <Link
+            href={`/app/dashboard/negocios/${business.id}/estadisticas`}
+            className="block bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all"
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,13 +281,10 @@ export default function GestionarNegocioPage() {
             <p className="text-gray-600 text-sm mb-4">
               Visualiza el rendimiento de tu negocio, visitas y más métricas importantes.
             </p>
-            <button
-              onClick={() => alert("Funcionalidad de estadísticas próximamente disponible")}
-              className="w-full bg-blue-50 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors font-semibold text-sm"
-            >
+            <div className="w-full text-center bg-blue-50 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors font-semibold text-sm">
               Ver Estadísticas
-            </button>
-          </div>
+            </div>
+          </Link>
 
           {/* Horarios */}
           <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
@@ -253,12 +302,12 @@ export default function GestionarNegocioPage() {
             <p className="text-gray-600 text-sm mb-4">
               Configura los días y horarios de atención de tu negocio.
             </p>
-            <button
-              onClick={() => alert("Funcionalidad de horarios próximamente disponible")}
-              className="w-full bg-orange-50 text-orange-700 px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors font-semibold text-sm"
+            <Link
+              href={`/app/dashboard/negocios/${business.id}/horarios`}
+              className="block w-full text-center bg-orange-50 text-orange-700 px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors font-semibold text-sm"
             >
               Configurar Horarios
-            </button>
+            </Link>
           </div>
 
           {/* Promociones */}
@@ -271,18 +320,18 @@ export default function GestionarNegocioPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Promociones</h3>
-                <p className="text-sm text-gray-600">0 activas</p>
+                <p className="text-sm text-gray-600">{activePromotionsCount} activa{activePromotionsCount !== 1 ? 's' : ''}</p>
               </div>
             </div>
             <p className="text-gray-600 text-sm mb-4">
               Crea ofertas especiales y promociones para atraer más clientes.
             </p>
-            <button
-              onClick={() => alert("Funcionalidad de promociones próximamente disponible")}
-              className="w-full bg-pink-50 text-pink-700 px-4 py-2 rounded-xl hover:bg-pink-100 transition-colors font-semibold text-sm"
+            <Link
+              href={`/app/dashboard/negocios/${business.id}/promociones`}
+              className="block w-full text-center bg-pink-50 text-pink-700 px-4 py-2 rounded-xl hover:bg-pink-100 transition-colors font-semibold text-sm"
             >
-              Crear Promoción
-            </button>
+              Gestionar Promociones
+            </Link>
           </div>
 
           {/* Configuración */}

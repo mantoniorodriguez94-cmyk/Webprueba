@@ -51,8 +51,8 @@ export default function BusinessFeedCard({
       {/* Header del negocio */}
       <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex items-center gap-4">
-          {/* Logo del negocio */}
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-2 ring-white shadow-md">
+          {/* Logo del negocio - Clickeable */}
+          <Link href={`/app/dashboard/negocios/${business.id}`} className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-2 ring-white shadow-md hover:ring-4 hover:ring-[#0288D1]/30 transition-all cursor-pointer">
             {business.logo_url && !imageError ? (
               <Image
                 src={business.logo_url}
@@ -68,13 +68,15 @@ export default function BusinessFeedCard({
                 </svg>
               </div>
             )}
-          </div>
+          </Link>
           
-          {/* Info del negocio */}
+          {/* Info del negocio - Clickeable */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate group-hover:text-[#0288D1] transition-colors">
-              {business.name}
-            </h3>
+            <Link href={`/app/dashboard/negocios/${business.id}`}>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate hover:text-[#0288D1] transition-colors cursor-pointer">
+                {business.name}
+              </h3>
+            </Link>
             {business.category && (
               <p className="text-sm text-gray-500 flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,12 +300,15 @@ export default function BusinessFeedCard({
             Llamar
           </a>
         )}
-        <button className="flex-1 border-2 border-[#0288D1] text-[#0288D1] hover:bg-[#0288D1] hover:text-white font-semibold py-3 px-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+        <Link 
+          href={`/app/dashboard/negocios/${business.id}`}
+          className="flex-1 border-2 border-[#0288D1] text-[#0288D1] hover:bg-[#0288D1] hover:text-white font-semibold py-3 px-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+        >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Ver más
-        </button>
+        </Link>
       </div>
 
       {/* Modal de enviar mensaje */}

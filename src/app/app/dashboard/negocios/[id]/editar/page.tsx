@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
+import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
@@ -15,6 +16,7 @@ export default function EditarNegocioPage() {
   const params = useParams()
   const id = (params as any)?.id as string
   const router = useRouter()
+  const { user, loading: userLoading } = useUser()
   
   const [negocio, setNegocio] = useState<Business | null>(null)
   const [name, setName] = useState("")
@@ -25,32 +27,76 @@ export default function EditarNegocioPage() {
   const [whatsapp, setWhatsapp] = useState("")
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  // Verificar permisos
+  const isOwner = user?.id === negocio?.owner_id
+  const isAdmin = user?.user_metadata?.is_admin ?? false
+  const canEdit = isOwner || isAdmin
+
+  // Parsear gallery_urls de manera segura
+  const getGalleryUrls = (): string[] => {
+    if (!negocio?.gallery_urls) return []
+    
+    if (Array.isArray(negocio.gallery_urls)) {
+      return negocio.gallery_urls
+    }
+    
+    if (typeof negocio.gallery_urls === 'string') {
+      try {
+        const parsed = JSON.parse(negocio.gallery_urls)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    
+    return []
+  }
+
+  const galleryUrls = getGalleryUrls()
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !user) return
+    
     const fetchNegocio = async () => {
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('id', id)
-        .single()
-        
-      if (error) {
-        alert(error.message)
-        return
+      try {
+        const { data, error } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('id', id)
+          .single()
+          
+        if (error) throw error
+
+        // Verificar permisos
+        const hasPermission = data.owner_id === user.id || user.user_metadata?.is_admin
+        if (!hasPermission) {
+          alert("No tienes permiso para editar este negocio")
+          router.push("/app/dashboard")
+          return
+        }
+
+        setNegocio(data)
+        setName(data.name)
+        setDescription(data.description ?? "")
+        setCategory(data.category ?? "")
+        setAddress(data.address ?? "")
+        setPhone(data.phone ? String(data.phone) : "")
+        setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
+      } catch (err: any) {
+        console.error("Error cargando negocio:", err)
+        alert("Error cargando el negocio")
+        router.push("/app/dashboard")
+      } finally {
+        setLoading(false)
       }
-      setNegocio(data)
-      setName(data.name)
-      setDescription(data.description ?? "")
-      setCategory(data.category ?? "")
-      setAddress(data.address ?? "")
-      setPhone(data.phone ? String(data.phone) : "")
-      setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
     }
+    
     fetchNegocio()
-  }, [id])
+  }, [id, user, router])
 
   const uploadFile = async (file: File, folder: string) => {
     const idd = generateId()
@@ -72,11 +118,11 @@ export default function EditarNegocioPage() {
     if (!negocio) return
     
     setError("")
-    setLoading(true)
+    setSaving(true)
     
     try {
       let logoUrl = negocio.logo_url ?? null
-      const gallery = negocio.gallery_urls ? [...negocio.gallery_urls] : []
+      const gallery = [...galleryUrls]
 
       if (logoFile) {
         logoUrl = await uploadFile(logoFile, "logos")
@@ -85,7 +131,7 @@ export default function EditarNegocioPage() {
       if (galleryFiles && galleryFiles.length > 0) {
         for (let i = 0; i < galleryFiles.length; i++) {
           const f = galleryFiles[i]
-          const url = await uploadFile(f, "negocios-gallery")
+          const url = await uploadFile(f, "business-gallery")
           gallery.push(url)
         }
       }
@@ -106,47 +152,79 @@ export default function EditarNegocioPage() {
 
       if (updateError) throw updateError
       
-      alert("Negocio actualizado correctamente")
-      router.push("/app/dashboard")
+      alert("✅ Negocio actualizado correctamente")
+      router.push(`/app/dashboard/negocios/${negocio.id}`)
     } catch (err: any) {
       setError(err.message || "Error al guardar")
       console.error("Error:", err)
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  if (!negocio) {
+  if (userLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando negocio...</p>
+          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!negocio || !canEdit) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso denegado</h2>
+          <p className="text-gray-600 mb-6">No tienes permiso para editar este negocio</p>
+          <Link 
+            href="/app/dashboard"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+          >
+            Volver al Dashboard
+          </Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link 
-            href="/app/dashboard"
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors inline-flex items-center gap-2 group mb-4"
-          >
-            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Volver al dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Editar negocio</h1>
-          <p className="text-gray-600 mt-1">{negocio.name}</p>
+    <div className="min-h-screen pb-12">
+      {/* Header */}
+      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-4">
+            <Link 
+              href={`/app/dashboard/negocios/${negocio.id}`}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              title="Volver"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Editar Negocio
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                {negocio.name} • Configuración General
+              </p>
+            </div>
+          </div>
         </div>
+      </header>
 
+      {/* Contenido */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Form Card */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 lg:p-10">
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-center gap-3">
@@ -289,59 +367,64 @@ export default function EditarNegocioPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Galería actual
               </label>
-              {negocio.gallery_urls && negocio.gallery_urls.length > 0 ? (
+              {galleryUrls.length > 0 ? (
                 <div className="grid grid-cols-3 gap-3 mb-3">
-                  {negocio.gallery_urls.map((url, idx) => (
-                    <Image 
-                      key={idx}
-                      src={url} 
-                      alt={`Imagen ${idx + 1}`} 
-                      className="w-full h-24 object-cover rounded-xl border-2 border-gray-200"
-                    />
+                  {galleryUrls.map((url, idx) => (
+                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border-2 border-gray-200">
+                      <Image 
+                        src={url} 
+                        alt={`Imagen ${idx + 1}`} 
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-sm text-gray-500 mb-3">No hay imágenes en la galería</p>
               )}
-              <label htmlFor="gallery" className="block text-sm font-semibold text-gray-700 mb-2">
-                Agregar más imágenes (opcional)
-              </label>
-              <input
-                id="gallery"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setGalleryFiles(e.target.files)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#E3F2FD] file:text-[#0288D1] hover:file:bg-[#BBDEFB]"
-                disabled={loading}
-              />
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-3">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm text-blue-800">
+                    <strong>Tip:</strong> Para gestionar tu galería completa (agregar/eliminar fotos), usa la sección{" "}
+                    <Link href={`/app/dashboard/negocios/${negocio.id}/galeria`} className="underline font-semibold hover:text-blue-900">
+                      Gestionar Galería
+                    </Link>
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-4 pt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardando...
-                  </span>
-                ) : (
-                  "Guardar cambios"
-                )}
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
-                href="/app/dashboard"
+                href={`/app/dashboard/negocios/${negocio.id}`}
                 className="flex-1 text-center border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </Link>
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Guardar Cambios
+                  </>
+                )}
+              </button>
             </div>
           </form>
         </div>

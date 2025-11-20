@@ -12,12 +12,14 @@ export type Business = {
   whatsapp: number | null;
   logo_url: string | null;
   gallery_urls: string[] | null;
+  hours: string | null;
   created_at?: string;
   updated_at?: string;
 };
 
 export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;
 export type BusinessUpdate = Partial<Omit<Business, 'id' | 'owner_id' | 'created_at' | 'updated_at'>>;
+
 
 
 
