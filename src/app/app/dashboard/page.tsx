@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes">("feed")
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
+  const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
+  const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
   
   // Calcular el límite de negocios permitidos y rol del usuario
   const userRole = user?.user_metadata?.role ?? "person"
@@ -63,8 +65,87 @@ export default function DashboardPage() {
 
       if (error) throw error
       setNegocios(data ?? [])
+      
+      // Cargar mensajes no leídos para cada negocio
+      if (data && data.length > 0) {
+        await fetchUnreadMessages(data.map(b => b.id))
+      }
     } catch (err: any) {
       console.error("Error fetching user businesses:", err)
+    }
+  }, [user])
+  
+  // Obtener mensajes no leídos por negocio (para empresas)
+  const fetchUnreadMessages = useCallback(async (businessIds: string[]) => {
+    if (!user || businessIds.length === 0) return
+    
+    try {
+      // Obtener todas las conversaciones de los negocios del usuario
+      const { data: conversations, error: convError } = await supabase
+        .from("conversations")
+        .select("id, business_id")
+        .in("business_id", businessIds)
+      
+      if (convError) throw convError
+      if (!conversations || conversations.length === 0) return
+      
+      // Contar mensajes no leídos por conversación (excluyendo mensajes propios)
+      const conversationIds = conversations.map(c => c.id)
+      const { data: unreadMessages, error: msgError } = await supabase
+        .from("messages")
+        .select("id, conversation_id")
+        .in("conversation_id", conversationIds)
+        .eq("is_read", false)
+        .neq("sender_id", user.id) // No contar mensajes propios
+      
+      if (msgError) throw msgError
+      
+      // Agrupar por business_id
+      const unreadCounts: Record<string, number> = {}
+      conversations.forEach(conv => {
+        const count = unreadMessages?.filter(msg => msg.conversation_id === conv.id).length || 0
+        if (count > 0) {
+          unreadCounts[conv.business_id] = (unreadCounts[conv.business_id] || 0) + count
+        }
+      })
+      
+      setUnreadMessagesByBusiness(unreadCounts)
+    } catch (err: any) {
+      console.error("Error fetching unread messages:", err)
+    }
+  }, [user])
+  
+  // Obtener mensajes no leídos para usuarios persona
+  const fetchUnreadMessagesForPerson = useCallback(async () => {
+    if (!user) return
+    
+    try {
+      // Obtener todas las conversaciones del usuario persona
+      const { data: conversations, error: convError } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("user_id", user.id)
+      
+      if (convError) throw convError
+      if (!conversations || conversations.length === 0) {
+        setUnreadMessagesPersonCount(0)
+        return
+      }
+      
+      // Contar mensajes no leídos (solo los que vienen del negocio, no los propios)
+      const conversationIds = conversations.map(c => c.id)
+      const { data: unreadMessages, error: msgError } = await supabase
+        .from("messages")
+        .select("id")
+        .in("conversation_id", conversationIds)
+        .eq("is_read", false)
+        .neq("sender_id", user.id) // No contar mensajes propios
+      
+      if (msgError) throw msgError
+      
+      setUnreadMessagesPersonCount(unreadMessages?.length || 0)
+    } catch (err: any) {
+      console.error("Error fetching unread messages for person:", err)
     }
   }, [user])
 
@@ -91,10 +172,34 @@ export default function DashboardPage() {
     if (user) {
       if (isCompany) {
         fetchNegocios() // Obtener negocios del usuario si es empresa
+      } else {
+        fetchUnreadMessagesForPerson() // Obtener mensajes no leídos si es persona
       }
       fetchAllBusinesses() // Siempre obtener todos los negocios para el feed
     }
-  }, [user, isCompany, fetchNegocios, fetchAllBusinesses])
+  }, [user, isCompany, fetchNegocios, fetchAllBusinesses, fetchUnreadMessagesForPerson])
+  
+  // Actualizar mensajes no leídos cada 30 segundos (empresas)
+  useEffect(() => {
+    if (!user || !isCompany || negocios.length === 0) return
+    
+    const interval = setInterval(() => {
+      fetchUnreadMessages(negocios.map(b => b.id))
+    }, 30000) // Cada 30 segundos
+    
+    return () => clearInterval(interval)
+  }, [user, isCompany, negocios, fetchUnreadMessages])
+  
+  // Actualizar mensajes no leídos cada 30 segundos (personas)
+  useEffect(() => {
+    if (!user || isCompany) return
+    
+    const interval = setInterval(() => {
+      fetchUnreadMessagesForPerson()
+    }, 30000) // Cada 30 segundos
+    
+    return () => clearInterval(interval)
+  }, [user, isCompany, fetchUnreadMessagesForPerson])
 
   // Aplicar filtros con búsqueda mejorada
   useEffect(() => {
@@ -300,11 +405,15 @@ export default function DashboardPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                       Mis Negocios
-                      {negocios.length > 0 && (
-                        <span className="bg-white text-[#0288D1] px-2 py-0.5 rounded-full text-xs font-bold">
-                          {negocios.length}
-                        </span>
-                      )}
+                      {negocios.length > 0 && (() => {
+                        const totalUnread = Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)
+                        const hasUnread = totalUnread > 0
+                        return (
+                          <span className={`${hasUnread ? 'bg-red-500 animate-pulse' : 'bg-white text-[#0288D1]'} ${hasUnread ? 'text-white' : ''} px-2 py-0.5 rounded-full text-xs font-bold`}>
+                            {hasUnread ? totalUnread : negocios.length}
+                          </span>
+                        )
+                      })()}
                       {negocios.length > 0 && (
                         <svg 
                           className={`w-4 h-4 transition-transform ${showBusinessMenu ? 'rotate-180' : ''}`} 
@@ -343,13 +452,20 @@ export default function DashboardPage() {
 
                           {/* Lista de Negocios */}
                           <div className="p-4 max-h-[400px] overflow-y-auto space-y-3">
-                            {negocios.map((negocio) => (
+                            {negocios.map((negocio) => {
+                              const unreadCount = unreadMessagesByBusiness[negocio.id] || 0
+                              return (
                               <Link
                                 key={negocio.id}
                                 href={`/app/dashboard/negocios/${negocio.id}/gestionar`}
                                 onClick={() => setShowBusinessMenu(false)}
-                                className="block p-4 bg-white rounded-2xl border-2 border-gray-100 hover:border-[#0288D1] hover:shadow-lg transition-all group"
+                                className="block p-4 bg-white rounded-2xl border-2 border-gray-100 hover:border-[#0288D1] hover:shadow-lg transition-all group relative"
                               >
+                                {unreadCount > 0 && (
+                                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse">
+                                    {unreadCount}
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-4">
                                   {/* Logo del negocio */}
                                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-2 ring-white shadow-md">
@@ -387,7 +503,8 @@ export default function DashboardPage() {
                                   </svg>
                                 </div>
                               </Link>
-                            ))}
+                            )
+                            })}
                           </div>
 
                           {/* Footer con botón crear nuevo */}
@@ -517,7 +634,7 @@ export default function DashboardPage() {
                           <Link
                             href="/app/dashboard/mis-mensajes"
                             onClick={() => setShowUserMenu(false)}
-                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#E3F2FD] transition-all group"
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#E3F2FD] transition-all group relative"
                           >
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
                               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,8 +643,18 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex-1">
                               <p className="font-semibold text-gray-900 group-hover:text-[#0288D1] transition-colors">Mis Mensajes</p>
-                              <p className="text-xs text-gray-500">Ver conversaciones con negocios</p>
+                              <p className="text-xs text-gray-500">
+                                {unreadMessagesPersonCount > 0 
+                                  ? `${unreadMessagesPersonCount} sin leer` 
+                                  : "Ver conversaciones con negocios"
+                                }
+                              </p>
                             </div>
+                            {unreadMessagesPersonCount > 0 && (
+                              <div className="bg-red-500 text-white text-xs font-bold min-w-[24px] h-6 px-2 rounded-full flex items-center justify-center animate-pulse">
+                                {unreadMessagesPersonCount}
+                              </div>
+                            )}
                             <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0288D1] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>

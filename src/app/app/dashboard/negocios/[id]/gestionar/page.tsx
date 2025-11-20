@@ -20,6 +20,7 @@ export default function GestionarNegocioPage() {
   const { user, loading: userLoading } = useUser()
   const [business, setBusiness] = useState<Business | null>(null)
   const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const businessId = params?.id as string
 
@@ -85,6 +86,26 @@ export default function GestionarNegocioPage() {
 
         if (!promotionsError && promotionsData) {
           setPromotions(promotionsData)
+        }
+
+        // Cargar mensajes no leídos
+        const { data: conversations, error: convError } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("business_id", businessId)
+
+        if (!convError && conversations && conversations.length > 0) {
+          const conversationIds = conversations.map(c => c.id)
+          const { data: unreadMessages, error: msgError } = await supabase
+            .from("messages")
+            .select("id")
+            .in("conversation_id", conversationIds)
+            .eq("is_read", false)
+            .neq("sender_id", user.id) // No contar mensajes propios
+
+          if (!msgError && unreadMessages) {
+            setUnreadMessagesCount(unreadMessages.length)
+          }
         }
       } catch (error) {
         console.error("Error cargando negocio:", error)
@@ -241,8 +262,13 @@ export default function GestionarNegocioPage() {
           {/* Mensajes/Chats */}
           <Link
             href={`/app/dashboard/negocios/${business.id}/mensajes`}
-            className="block bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all"
+            className="block bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all relative"
           >
+            {unreadMessagesCount > 0 && (
+              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold min-w-[24px] h-6 px-2 rounded-full flex items-center justify-center animate-pulse">
+                {unreadMessagesCount}
+              </div>
+            )}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +277,12 @@ export default function GestionarNegocioPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Mensajes</h3>
-                <p className="text-sm text-gray-600">Sistema activo</p>
+                <p className="text-sm text-gray-600">
+                  {unreadMessagesCount > 0 
+                    ? `${unreadMessagesCount} sin leer` 
+                    : "Sistema activo"
+                  }
+                </p>
               </div>
             </div>
             <p className="text-gray-600 text-sm mb-4">

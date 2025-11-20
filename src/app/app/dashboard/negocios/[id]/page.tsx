@@ -436,14 +436,14 @@ export default function BusinessDetailPage() {
               >
                 Gestionar Promociones
               </Link>
-            ) : promotions.length > 0 ? (
-              <button
-                onClick={() => alert("Ver promociones completas - Próximamente")}
-                className="w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-pink-50 text-pink-700 hover:bg-pink-100"
+            ) : (
+              <Link
+                href={`/app/dashboard/negocios/${business.id}/promociones/ver`}
+                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-pink-50 text-pink-700 hover:bg-pink-100"
               >
                 Ver Todas las Promociones
-              </button>
-            ) : null}
+              </Link>
+            )}
           </div>
 
         </div>
