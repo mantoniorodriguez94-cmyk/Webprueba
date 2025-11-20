@@ -27,6 +27,7 @@ export default function BusinessDetailPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const [showGallery, setShowGallery] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const businessId = params?.id as string
 
   // Verificar permisos
@@ -57,6 +58,21 @@ export default function BusinessDetailPage() {
   }
 
   const galleryUrls = getGalleryUrls()
+
+  // Parsear y formatear horarios
+  const getFormattedSchedule = () => {
+    if (!business?.hours) return null
+
+    try {
+      const schedules = JSON.parse(business.hours)
+      if (!Array.isArray(schedules)) return null
+      return schedules
+    } catch {
+      return null
+    }
+  }
+
+  const formattedSchedule = getFormattedSchedule()
 
   // Registrar vista del negocio (si la tabla existe)
   const registerView = async () => {
@@ -295,13 +311,25 @@ export default function BusinessDetailPage() {
             {galleryUrls.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {galleryUrls.slice(0, 3).map((url: string, idx: number) => (
-                  <div key={idx} className="relative aspect-square overflow-hidden rounded-xl cursor-pointer group" onClick={() => setShowGallery(true)}>
+                  <div 
+                    key={idx} 
+                    className="relative aspect-square overflow-hidden rounded-xl cursor-pointer group" 
+                    onClick={() => {
+                      setCurrentImageIndex(idx)
+                      setShowGallery(true)
+                    }}
+                  >
                     <Image
                       src={url}
                       alt={`${business.name} - imagen ${idx + 1}`}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
+                    {galleryUrls.length > 3 && idx === 2 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl">
+                        +{galleryUrls.length - 3}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -316,10 +344,14 @@ export default function BusinessDetailPage() {
               </Link>
             ) : (
               <button
-                onClick={() => setShowGallery(true)}
+                onClick={() => {
+                  setCurrentImageIndex(0)
+                  setShowGallery(true)
+                }}
                 className="w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-gray-50 text-gray-700 hover:bg-gray-100"
+                disabled={galleryUrls.length === 0}
               >
-                Ver Galería
+                {galleryUrls.length > 0 ? 'Ver Galería Completa' : 'Sin imágenes'}
               </button>
             )}
           </div>
@@ -345,28 +377,38 @@ export default function BusinessDetailPage() {
             </p>
 
             {/* Mostrar horarios si existen */}
-            {business.hours ? (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm">
-                <pre className="whitespace-pre-wrap text-gray-700">{business.hours}</pre>
+            {formattedSchedule && formattedSchedule.length > 0 ? (
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl p-4 mb-4 space-y-2">
+                {formattedSchedule.map((schedule: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between py-2 border-b border-orange-200/40 last:border-0">
+                    <span className={`font-semibold text-sm ${schedule.isOpen ? 'text-gray-900' : 'text-gray-400'}`}>
+                      {schedule.day}
+                    </span>
+                    {schedule.isOpen ? (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-orange-700">{schedule.openTime}</span>
+                        <span className="text-gray-400">—</span>
+                        <span className="font-medium text-orange-700">{schedule.closeTime}</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-500 text-sm italic">Cerrado</span>
+                    )}
+                  </div>
+                ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm italic mb-4">No se han configurado horarios aún</p>
+              <p className="text-gray-500 text-sm italic mb-4 bg-gray-50 rounded-xl p-3 text-center">
+                No se han configurado horarios aún
+              </p>
             )}
 
-            {canManage ? (
+            {canManage && (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/horarios`}
                 className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-orange-50 text-orange-700 hover:bg-orange-100"
               >
-                Configurar Horarios
+                {formattedSchedule ? 'Actualizar Horarios' : 'Configurar Horarios'}
               </Link>
-            ) : (
-              <button
-                onClick={() => alert("Funcionalidad de visualización de horarios próximamente disponible")}
-                className="w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-gray-50 text-gray-700 hover:bg-gray-100"
-              >
-                Ver Horarios
-              </button>
             )}
           </div>
 
@@ -449,36 +491,118 @@ export default function BusinessDetailPage() {
         </div>
       </div>
 
-      {/* Modal de Galería */}
+      {/* Modal de Galería - Lightbox Mejorado */}
       {showGallery && galleryUrls.length > 0 && (
         <div 
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowGallery(false)}
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowGallery(false)
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowGallery(false)
+            if (e.key === 'ArrowLeft') setCurrentImageIndex(prev => prev > 0 ? prev - 1 : galleryUrls.length - 1)
+            if (e.key === 'ArrowRight') setCurrentImageIndex(prev => prev < galleryUrls.length - 1 ? prev + 1 : 0)
+          }}
+          tabIndex={0}
         >
-          <div className="max-w-4xl w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white text-2xl font-bold">Galería de {business.name}</h3>
-              <button
-                onClick={() => setShowGallery(false)}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+          {/* Botón Cerrar - Esquina superior derecha */}
+          <button
+            onClick={() => setShowGallery(false)}
+            className="absolute top-4 right-4 z-50 p-3 bg-black/50 hover:bg-black/70 rounded-full transition-all backdrop-blur-sm group"
+            aria-label="Cerrar galería"
+          >
+            <svg className="w-8 h-8 text-white group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Contador de imágenes - Esquina superior izquierda */}
+          <div className="absolute top-4 left-4 z-50 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-full text-white font-semibold text-sm">
+            {currentImageIndex + 1} / {galleryUrls.length}
+          </div>
+
+          {/* Botón Anterior */}
+          {galleryUrls.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setCurrentImageIndex(prev => prev > 0 ? prev - 1 : galleryUrls.length - 1)
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-4 bg-black/50 hover:bg-black/70 rounded-full transition-all backdrop-blur-sm group"
+              aria-label="Imagen anterior"
+            >
+              <svg className="w-8 h-8 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Botón Siguiente */}
+          {galleryUrls.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setCurrentImageIndex(prev => prev < galleryUrls.length - 1 ? prev + 1 : 0)
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-4 bg-black/50 hover:bg-black/70 rounded-full transition-all backdrop-blur-sm group"
+              aria-label="Imagen siguiente"
+            >
+              <svg className="w-8 h-8 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Imagen Principal */}
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+              <Image
+                src={galleryUrls[currentImageIndex]}
+                alt={`${business.name} - imagen ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                quality={100}
+                priority
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryUrls.map((url: string, idx: number) => (
-                <div key={idx} className="relative aspect-square overflow-hidden rounded-xl">
-                  <Image
-                    src={url}
-                    alt={`${business.name} - imagen ${idx + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
+          </div>
+
+          {/* Miniaturas - Parte inferior */}
+          {galleryUrls.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-full overflow-x-auto">
+              <div className="flex gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-full">
+                {galleryUrls.map((url: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCurrentImageIndex(idx)
+                    }}
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                      idx === currentImageIndex 
+                        ? 'ring-4 ring-white scale-110' 
+                        : 'opacity-50 hover:opacity-100 hover:scale-105'
+                    }`}
+                  >
+                    <Image
+                      src={url}
+                      alt={`Miniatura ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
+
+          {/* Nombre del negocio - Parte superior */}
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 px-6 py-3 bg-black/50 backdrop-blur-sm rounded-full">
+            <h3 className="text-white text-lg font-bold text-center">
+              {business.name}
+            </h3>
           </div>
         </div>
       )}
