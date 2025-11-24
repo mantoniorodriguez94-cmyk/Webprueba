@@ -4,6 +4,7 @@ import React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import StarRating from "@/components/reviews/StarRating"
 
 type Props = {
   negocio: Business
@@ -12,6 +13,8 @@ type Props = {
 }
 
 export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
+  const hasReviews = negocio.total_reviews && negocio.total_reviews > 0
+  
   return (
     <div className="bg-white rounded-lg shadow p-4 flex flex-col">
       <div className="flex items-center gap-4">
@@ -23,6 +26,7 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
               className="w-full h-full object-cover"
               width={80}
               height={80}
+              unoptimized
             />
           ) : (
             <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +37,24 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{negocio.name}</h3>
           <p className="text-sm text-gray-600 line-clamp-2">{negocio.description || "Sin descripción"}</p>
-          <p className="text-xs text-gray-400 mt-1">{negocio.created_at ? new Date(negocio.created_at).toLocaleString() : ""}</p>
+          
+          {/* Rating Section */}
+          {hasReviews ? (
+            <div className="flex items-center gap-2 mt-2">
+              <StarRating 
+                rating={negocio.average_rating || 0} 
+                size="sm" 
+                showNumber={true}
+              />
+              <span className="text-xs text-gray-500">
+                ({negocio.total_reviews} {negocio.total_reviews === 1 ? 'reseña' : 'reseñas'})
+              </span>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 mt-1">
+              {negocio.created_at ? new Date(negocio.created_at).toLocaleString() : ""}
+            </p>
+          )}
         </div>
       </div>
 

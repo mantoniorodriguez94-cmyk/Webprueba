@@ -186,3 +186,7 @@ Una vez que hayas ejecutado el script SQL y veas los negocios en el dashboard, e
 
 
 
+
+
+
+

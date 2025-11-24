@@ -15,6 +15,9 @@ export type Business = {
   hours: string | null;
   created_at?: string;
   updated_at?: string;
+  // Extended fields (from joins or calculations)
+  total_reviews?: number;
+  average_rating?: number;
 };
 
 export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;

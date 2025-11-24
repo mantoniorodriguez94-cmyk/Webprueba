@@ -79,3 +79,7 @@ ORDER BY column_name;
 RAISE NOTICE '✅ Script completado exitosamente';
 RAISE NOTICE '📝 Ahora puedes guardar los horarios sin problemas';
 
+
+
+
+

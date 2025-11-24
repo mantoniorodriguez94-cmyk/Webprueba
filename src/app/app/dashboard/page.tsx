@@ -1,4 +1,4 @@
-// src/app/dashboard/page.tsx
+// src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
 import React, { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabaseClient"
@@ -9,6 +9,7 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import FilterSidebar, { type FilterState } from "@/components/feed/FilterSidebar"
 import HighlightsSidebar from "@/components/feed/HighlightsSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
+import BottomNav from "@/components/ui/BottomNav"
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
@@ -26,6 +27,8 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes">("feed")
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
   const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
   const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
   
@@ -33,13 +36,12 @@ export default function DashboardPage() {
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
   const isAdmin = user?.user_metadata?.is_admin ?? false
-  // Si es empresa, permitir al menos 1 negocio por defecto
   const allowedBusinesses = isCompany 
     ? (user?.user_metadata?.allowed_businesses ?? 5) 
     : 0
   const canCreateMore = isCompany && negocios.length < allowedBusinesses
   
-  // Debug: Log de usuario y permisos (temporal para debugging)
+  // [MANTENER TODA LA LÓGICA ORIGINAL - NO CAMBIAR]
   useEffect(() => {
     if (user && process.env.NODE_ENV === 'development') {
       console.log('Dashboard User Debug:', {
@@ -52,7 +54,7 @@ export default function DashboardPage() {
       })
     }
   }, [user, isAdmin, isCompany, userRole])
-  // Obtener negocios del usuario actual (para empresas)
+  
   const fetchNegocios = useCallback(async () => {
     if (!user) return
     
@@ -66,7 +68,6 @@ export default function DashboardPage() {
       if (error) throw error
       setNegocios(data ?? [])
       
-      // Cargar mensajes no leídos para cada negocio
       if (data && data.length > 0) {
         await fetchUnreadMessages(data.map(b => b.id))
       }
@@ -75,12 +76,10 @@ export default function DashboardPage() {
     }
   }, [user])
   
-  // Obtener mensajes no leídos por negocio (para empresas)
   const fetchUnreadMessages = useCallback(async (businessIds: string[]) => {
     if (!user || businessIds.length === 0) return
     
     try {
-      // Obtener todas las conversaciones de los negocios del usuario
       const { data: conversations, error: convError } = await supabase
         .from("conversations")
         .select("id, business_id")
@@ -89,18 +88,16 @@ export default function DashboardPage() {
       if (convError) throw convError
       if (!conversations || conversations.length === 0) return
       
-      // Contar mensajes no leídos por conversación (excluyendo mensajes propios)
       const conversationIds = conversations.map(c => c.id)
       const { data: unreadMessages, error: msgError } = await supabase
         .from("messages")
         .select("id, conversation_id")
         .in("conversation_id", conversationIds)
         .eq("is_read", false)
-        .neq("sender_id", user.id) // No contar mensajes propios
+        .neq("sender_id", user.id)
       
       if (msgError) throw msgError
       
-      // Agrupar por business_id
       const unreadCounts: Record<string, number> = {}
       conversations.forEach(conv => {
         const count = unreadMessages?.filter(msg => msg.conversation_id === conv.id).length || 0
@@ -115,12 +112,10 @@ export default function DashboardPage() {
     }
   }, [user])
   
-  // Obtener mensajes no leídos para usuarios persona
   const fetchUnreadMessagesForPerson = useCallback(async () => {
     if (!user) return
     
     try {
-      // Obtener todas las conversaciones del usuario persona
       const { data: conversations, error: convError } = await supabase
         .from("conversations")
         .select("id")
@@ -132,14 +127,13 @@ export default function DashboardPage() {
         return
       }
       
-      // Contar mensajes no leídos (solo los que vienen del negocio, no los propios)
       const conversationIds = conversations.map(c => c.id)
       const { data: unreadMessages, error: msgError } = await supabase
         .from("messages")
         .select("id")
         .in("conversation_id", conversationIds)
         .eq("is_read", false)
-        .neq("sender_id", user.id) // No contar mensajes propios
+        .neq("sender_id", user.id)
       
       if (msgError) throw msgError
       
@@ -149,18 +143,50 @@ export default function DashboardPage() {
     }
   }, [user])
 
-  // Obtener todos los negocios públicos (para el feed)
   const fetchAllBusinesses = useCallback(async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      
+      const { data: businesses, error: businessError } = await supabase
         .from("businesses")
         .select("*")
         .order("created_at", { ascending: false })
 
-      if (error) throw error
-      setAllBusinesses(data ?? [])
-      setFilteredBusinesses(data ?? [])
+      if (businessError) throw businessError
+      
+      try {
+        const { data: stats, error: statsError } = await supabase
+          .from("business_review_stats")
+          .select("*")
+        
+        if (!statsError && stats) {
+          const statsMap = new Map(stats.map(s => [s.business_id, s]))
+          const businessesWithStats = (businesses ?? []).map(business => ({
+            ...business,
+            total_reviews: statsMap.get(business.id)?.total_reviews || 0,
+            average_rating: statsMap.get(business.id)?.average_rating || 0
+          }))
+          
+          setAllBusinesses(businessesWithStats)
+          setFilteredBusinesses(businessesWithStats)
+        } else {
+          const businessesWithDefaults = (businesses ?? []).map(business => ({
+            ...business,
+            total_reviews: 0,
+            average_rating: 0
+          }))
+          setAllBusinesses(businessesWithDefaults)
+          setFilteredBusinesses(businessesWithDefaults)
+        }
+      } catch {
+        const businessesWithDefaults = (businesses ?? []).map(business => ({
+          ...business,
+          total_reviews: 0,
+          average_rating: 0
+        }))
+        setAllBusinesses(businessesWithDefaults)
+        setFilteredBusinesses(businessesWithDefaults)
+      }
     } catch (err: any) {
       console.error("Error fetching all businesses:", err)
     } finally {
@@ -171,44 +197,39 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user) {
       if (isCompany) {
-        fetchNegocios() // Obtener negocios del usuario si es empresa
+        fetchNegocios()
       } else {
-        fetchUnreadMessagesForPerson() // Obtener mensajes no leídos si es persona
+        fetchUnreadMessagesForPerson()
       }
-      fetchAllBusinesses() // Siempre obtener todos los negocios para el feed
+      fetchAllBusinesses()
     }
   }, [user, isCompany, fetchNegocios, fetchAllBusinesses, fetchUnreadMessagesForPerson])
   
-  // Actualizar mensajes no leídos cada 30 segundos (empresas)
   useEffect(() => {
     if (!user || !isCompany || negocios.length === 0) return
     
     const interval = setInterval(() => {
       fetchUnreadMessages(negocios.map(b => b.id))
-    }, 30000) // Cada 30 segundos
+    }, 30000)
     
     return () => clearInterval(interval)
   }, [user, isCompany, negocios, fetchUnreadMessages])
   
-  // Actualizar mensajes no leídos cada 30 segundos (personas)
   useEffect(() => {
     if (!user || isCompany) return
     
     const interval = setInterval(() => {
       fetchUnreadMessagesForPerson()
-    }, 30000) // Cada 30 segundos
+    }, 30000)
     
     return () => clearInterval(interval)
   }, [user, isCompany, fetchUnreadMessagesForPerson])
 
-  // Aplicar filtros con búsqueda mejorada
   useEffect(() => {
     let filtered = [...allBusinesses]
 
-    // Filtrar por búsqueda (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.searchTerm) {
       filtered = filtered.filter(b => {
-        // Buscar en nombre, descripción y dirección
         const searchableTexts = [
           b.name || "",
           b.description || "",
@@ -222,27 +243,23 @@ export default function DashboardPage() {
       })
     }
 
-    // Filtrar por categoría (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.category && filters.category !== "Todos") {
       filtered = filtered.filter(b =>
         normalizeText(b.category || "") === normalizeText(filters.category)
       )
     }
 
-    // Filtrar por ubicación (MEJORADO: insensible a mayúsculas y acentos)
     if (filters.location) {
       filtered = filtered.filter(b =>
         containsText(b.address || "", filters.location)
       )
     }
 
-    // Ordenar
     switch (filters.sortBy) {
       case "name":
         filtered.sort((a, b) => a.name.localeCompare(b.name))
         break
       case "popular":
-        // Por ahora ordenar por fecha de creación también
         filtered.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime()
           const dateB = new Date(b.created_at || 0).getTime()
@@ -278,10 +295,7 @@ export default function DashboardPage() {
         
       if (error) throw error
 
-      // Actualizar la lista de negocios del usuario
       setNegocios(prev => prev.filter(x => x.id !== id))
-      
-      // Actualizar también la lista de todos los negocios (para el feed)
       setAllBusinesses(prev => prev.filter(x => x.id !== id))
       setFilteredBusinesses(prev => prev.filter(x => x.id !== id))
       
@@ -305,10 +319,10 @@ export default function DashboardPage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -316,33 +330,28 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 max-w-md mx-4 animate-fadeIn">
-          <div className="w-20 h-20 bg-gradient-to-br from-[#0288D1] to-[#0277BD] rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-8 max-w-md">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Acceso no autorizado</h2>
-          <p className="text-gray-600 mb-8 text-lg">Debes iniciar sesión para acceder al dashboard</p>
+          <h2 className="text-2xl font-bold text-white mb-3">Acceso restringido</h2>
+          <p className="text-gray-400 mb-6">Debes iniciar sesión para continuar</p>
           <Link 
             href="/app/auth/login"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-8 py-4 rounded-full hover:shadow-xl transition-all font-semibold text-lg hover:scale-105"
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-            Ir a Login
+            Iniciar Sesión
           </Link>
         </div>
       </div>
     )
   }
 
-  // Obtener negocios destacados (los primeros 6)
   const featuredBusinesses = allBusinesses.slice(0, 6)
   
-  // Obtener negocios recientes (últimos 7 días)
   const recentBusinesses = allBusinesses.filter((business) => {
     if (!business.created_at) return false
     const created = new Date(business.created_at)
@@ -352,7 +361,6 @@ export default function DashboardPage() {
     return diffDays <= 7
   })
 
-  // Agrupar negocios por categoría
   const businessesByCategory = allBusinesses.reduce((acc, business) => {
     const category = business.category || "Otros"
     if (!acc[category]) acc[category] = []
@@ -360,458 +368,117 @@ export default function DashboardPage() {
     return acc
   }, {} as Record<string, Business[]>)
 
-  // Obtener categorías con más negocios
   const topCategories = Object.entries(businessesByCategory)
     .sort((a, b) => b[1].length - a[1].length)
     .slice(0, 4)
 
-  // Determinar qué negocios mostrar según la pestaña activa
   const displayedBusinesses = 
     activeTab === "destacados" ? featuredBusinesses :
     activeTab === "recientes" ? recentBusinesses :
     filteredBusinesses
 
-  // VISTA UNIFICADA - Feed principal para todos los usuarios
+  // ========== NUEVO UI MOBILE-FIRST ==========
   return (
-    <div className="min-h-screen">
-      {/* Header Mejorado */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-900 pb-20 lg:pb-0">
+      {/* Header Móvil Moderno */}
+      <header className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50">
+        <div className="px-4 py-3">
+          {/* Top Row - Logo y Acciones */}
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#0288D1] to-[#0277BD] bg-clip-text text-transparent flex items-center gap-2">
-                📍 Descubre Negocios
+              <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                📍 Encuentra
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {allBusinesses.length} negocios esperándote • Encuentra lo que buscas cerca de ti
+              <p className="text-xs text-gray-400 mt-0.5">
+                {allBusinesses.length} negocios disponibles
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {isCompany && (
-                <>
-                  {/* Botón Mis Negocios con Dropdown */}
-                  <div className="relative hidden sm:block">
-                    <button
-                      onClick={() => {
-                        if (negocios.length === 0) {
-                          alert("Por el momento no tienes ningún negocio creado.")
-                        } else {
-                          setShowBusinessMenu(!showBusinessMenu)
-                        }
-                      }}
-                      className="flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-5 py-2.5 rounded-full hover:shadow-xl transition-all hover:scale-105 font-semibold text-sm"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      Mis Negocios
-                      {negocios.length > 0 && (() => {
-                        const totalUnread = Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)
-                        const hasUnread = totalUnread > 0
-                        return (
-                          <span className={`${hasUnread ? 'bg-red-500 animate-pulse' : 'bg-white text-[#0288D1]'} ${hasUnread ? 'text-white' : ''} px-2 py-0.5 rounded-full text-xs font-bold`}>
-                            {hasUnread ? totalUnread : negocios.length}
-                          </span>
-                        )
-                      })()}
-                      {negocios.length > 0 && (
-                        <svg 
-                          className={`w-4 h-4 transition-transform ${showBusinessMenu ? 'rotate-180' : ''}`} 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      )}
-                    </button>
-
-                    {/* Dropdown de Mis Negocios */}
-                    {showBusinessMenu && negocios.length > 0 && (
-                      <>
-                        {/* Overlay para cerrar el menú */}
-                        <div 
-                          className="fixed inset-0 z-40" 
-                          onClick={() => setShowBusinessMenu(false)}
-                        />
-                        
-                        {/* Contenido del dropdown */}
-                        <div className="absolute left-0 mt-2 w-96 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 z-50 overflow-hidden animate-fadeIn">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-[#0288D1] to-[#0277BD] p-6 text-white">
-                            <h3 className="font-bold text-lg flex items-center gap-2">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                              </svg>
-                              Mis Negocios
-                            </h3>
-                            <p className="text-sm text-white/80 mt-1">
-                              {negocios.length} de {allowedBusinesses} negocios creados
-                            </p>
-                          </div>
-
-                          {/* Lista de Negocios */}
-                          <div className="p-4 max-h-[400px] overflow-y-auto space-y-3">
-                            {negocios.map((negocio) => {
-                              const unreadCount = unreadMessagesByBusiness[negocio.id] || 0
-                              return (
-                              <Link
-                                key={negocio.id}
-                                href={`/app/dashboard/negocios/${negocio.id}/gestionar`}
-                                onClick={() => setShowBusinessMenu(false)}
-                                className="block p-4 bg-white rounded-2xl border-2 border-gray-100 hover:border-[#0288D1] hover:shadow-lg transition-all group relative"
-                              >
-                                {unreadCount > 0 && (
-                                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse">
-                                    {unreadCount}
-                                  </div>
-                                )}
-                                <div className="flex items-center gap-4">
-                                  {/* Logo del negocio */}
-                                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-2 ring-white shadow-md">
-                                    {negocio.logo_url ? (
-                                      <img
-                                        src={negocio.logo_url}
-                                        alt={negocio.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-lg">
-                                        {negocio.name[0]}
-                                      </div>
-                                    )}
-                                  </div>
-                                  
-                                  {/* Info del negocio */}
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-gray-900 truncate group-hover:text-[#0288D1] transition-colors">
-                                      {negocio.name}
-                                    </h4>
-                                    {negocio.category && (
-                                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                        </svg>
-                                        {negocio.category}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {/* Flecha */}
-                                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0288D1] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                  </svg>
-                                </div>
-                              </Link>
-                            )
-                            })}
-                          </div>
-
-                          {/* Footer con botón crear nuevo */}
-                          {canCreateMore && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100">
-                              <Link
-                                href="/app/dashboard/negocios/nuevo"
-                                onClick={() => setShowBusinessMenu(false)}
-                                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-4 py-3 rounded-2xl hover:shadow-xl transition-all font-semibold"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                Crear Nuevo Negocio
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {canCreateMore ? (
-                    <Link 
-                      href="/app/dashboard/negocios/nuevo"
-                      className="hidden md:flex items-center gap-2 border-2 border-[#0288D1] text-[#0288D1] px-5 py-2.5 rounded-full hover:bg-[#0288D1] hover:text-white transition-all font-semibold text-sm"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      Crear
-                    </Link>
-                  ) : negocios.length >= allowedBusinesses && (
-                    <div className="hidden md:flex items-center gap-2 bg-amber-50 text-amber-700 px-5 py-2.5 rounded-full text-xs font-medium border border-amber-200">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Límite alcanzado ({negocios.length}/{allowedBusinesses})
-                    </div>
-                  )}
-                </>
-              )}
-              {!isCompany && !isAdmin && (
-                <div className="hidden md:flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-medium border border-blue-200">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Cuenta de Persona - Para crear negocios, regístrate como Empresa
-                </div>
-              )}
-              
-              {/* Botón Mis Mensajes - Solo para usuarios no empresa (OCULTO - Disponible en menú de usuario) */}
-              {!isCompany && (
-                <Link
-                  href="/app/dashboard/mis-mensajes"
-                  className="hidden items-center gap-2 bg-gradient-to-r from-green-400 to-green-600 text-white px-5 py-2.5 rounded-full hover:shadow-xl transition-all hover:scale-105 font-semibold text-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  Mis Mensajes
-                </Link>
-              )}
-
-              {/* Botón Inicio (OCULTO) */}
-              <Link
-                href="/"
-                className="hidden text-gray-600 hover:text-gray-900 transition-colors items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100"
+            
+            <div className="flex items-center gap-2">
+              {/* Botón de Búsqueda */}
+              <button
+                onClick={() => setShowSearchModal(true)}
+                className="p-2.5 bg-gray-800 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-all"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span className="text-sm font-medium">Inicio</span>
-              </Link>
+              </button>
+
+              {/* Botón Filtros */}
+              <button
+                onClick={() => setShowFilterModal(true)}
+                className="lg:hidden p-2.5 bg-gray-800 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-all relative"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></div>
+                )}
+              </button>
 
               {/* Menú de Usuario */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-all"
-                  title="Perfil de usuario"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#0288D1] to-[#0277BD] rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                    {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <svg 
-                    className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Dropdown del menú */}
-                {showUserMenu && (
-                  <>
-                    {/* Overlay para cerrar el menú */}
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setShowUserMenu(false)}
-                    />
-                    
-                    {/* Contenido del dropdown */}
-                    <div className="absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 z-50 overflow-hidden animate-fadeIn">
-                      {/* Header del perfil */}
-                      <div className="bg-gradient-to-r from-[#0288D1] to-[#0277BD] p-6 text-white">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold border-2 border-white/40">
-                            {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">
-                              {user?.user_metadata?.full_name || "Usuario"}
-                            </h3>
-                            <p className="text-sm text-white/80">
-                              {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Información del usuario */}
-                      <div className="p-6 space-y-4">
-                        {/* Mis Mensajes - Solo para usuarios no-empresa */}
-                        {!isCompany && (
-                          <Link
-                            href="/app/dashboard/mis-mensajes"
-                            onClick={() => setShowUserMenu(false)}
-                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#E3F2FD] transition-all group relative"
-                          >
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                              </svg>
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-semibold text-gray-900 group-hover:text-[#0288D1] transition-colors">Mis Mensajes</p>
-                              <p className="text-xs text-gray-500">
-                                {unreadMessagesPersonCount > 0 
-                                  ? `${unreadMessagesPersonCount} sin leer` 
-                                  : "Ver conversaciones con negocios"
-                                }
-                              </p>
-                            </div>
-                            {unreadMessagesPersonCount > 0 && (
-                              <div className="bg-red-500 text-white text-xs font-bold min-w-[24px] h-6 px-2 rounded-full flex items-center justify-center animate-pulse">
-                                {unreadMessagesPersonCount}
-                              </div>
-                            )}
-                            <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0288D1] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </Link>
-                        )}
-
-                        {/* Email */}
-                        <div className="flex items-start gap-3 pb-3 border-b border-gray-100">
-                          <svg className="w-5 h-5 text-[#0288D1] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          <div>
-                            <p className="text-xs text-gray-500 font-semibold">Correo electrónico</p>
-                            <p className="text-sm text-gray-900 break-words">{user?.email}</p>
-                          </div>
-                        </div>
-
-                        {/* Rol */}
-                        <div className="flex items-start gap-3 pb-3 border-b border-gray-100">
-                          <svg className="w-5 h-5 text-[#0288D1] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <div>
-                            <p className="text-xs text-gray-500 font-semibold">Tipo de cuenta</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-sm font-medium ${isCompany ? 'text-[#0288D1]' : 'text-gray-700'}`}>
-                                {isCompany ? "Empresa" : "Persona"}
-                              </span>
-                              {isAdmin && (
-                                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-semibold">
-                                  Administrador
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Negocios permitidos (solo para empresas) */}
-                        {isCompany && (
-                          <div className="flex items-start gap-3 pb-3 border-b border-gray-100">
-                            <svg className="w-5 h-5 text-[#0288D1] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <div>
-                              <p className="text-xs text-gray-500 font-semibold">Negocios</p>
-                              <p className="text-sm text-gray-900">
-                                {negocios.length} de {allowedBusinesses} creados
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Fecha de registro */}
-                        <div className="flex items-start gap-3">
-                          <svg className="w-5 h-5 text-[#0288D1] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <div>
-                            <p className="text-xs text-gray-500 font-semibold">Miembro desde</p>
-                            <p className="text-sm text-gray-900">
-                              {user?.created_at ? new Date(user.created_at).toLocaleDateString('es-ES', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              }) : 'No disponible'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Botón de cerrar sesión */}
-                      <div className="p-4 bg-gray-50 border-t border-gray-100">
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-2xl hover:from-red-600 hover:to-red-700 transition-all font-semibold shadow-lg hover:shadow-xl"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                          </svg>
-                          Cerrar Sesión
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              >
+                {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+              </button>
             </div>
           </div>
 
-          {/* Tabs de Secciones */}
-          <div className="mt-4 border-t border-gray-200 pt-4">
-            <nav className="flex gap-4 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab("feed")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
-                  activeTab === "feed"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-                Todos
-                <span className="bg-white bg-opacity-30 px-2 py-0.5 rounded-full text-xs">
-                  {filteredBusinesses.length}
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab("recientes")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
-                  activeTab === "recientes"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Recientes
-                {recentBusinesses.length > 0 && (
-                  <span className="bg-white bg-opacity-30 px-2 py-0.5 rounded-full text-xs">
-                    {recentBusinesses.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("destacados")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
-                  activeTab === "destacados"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                Destacados
-              </button>
-            </nav>
+          {/* Tabs de Categorías */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+            <button
+              onClick={() => setActiveTab("feed")}
+              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+                activeTab === "feed"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-800 text-gray-400"
+              }`}
+            >
+              Todos {filteredBusinesses.length > 0 && `(${filteredBusinesses.length})`}
+            </button>
+            <button
+              onClick={() => setActiveTab("recientes")}
+              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+                activeTab === "recientes"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-800 text-gray-400"
+              }`}
+            >
+              Recientes {recentBusinesses.length > 0 && `(${recentBusinesses.length})`}
+            </button>
+            <button
+              onClick={() => setActiveTab("destacados")}
+              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+                activeTab === "destacados"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-800 text-gray-400"
+              }`}
+            >
+              ⭐ Destacados
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content - Feed Layout */}
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_360px] gap-6">
-          {/* Sidebar Izquierdo - Filtros */}
-          <FilterSidebar onFilterChange={handleFilterChange} />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
+          {/* Sidebar Izquierdo (Desktop Only) */}
+          <div className="hidden lg:block">
+            <FilterSidebar onFilterChange={handleFilterChange} />
+          </div>
 
           {/* Feed Central */}
-          <div className="space-y-6">
-            {/* Categorías Destacadas */}
+          <div className="space-y-4">
+            {/* Categorías Destacadas (Solo en Tab Feed) */}
             {activeTab === "feed" && topCategories.length > 0 && (
-              <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/40 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg className="w-6 h-6 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5">
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                   Categorías Populares
@@ -821,10 +488,10 @@ export default function DashboardPage() {
                     <button
                       key={category}
                       onClick={() => handleFilterChange({ ...filters, category })}
-                      className="p-4 border-2 border-gray-100 rounded-2xl hover:border-[#0288D1] hover:bg-[#E3F2FD] transition-all duration-300 group"
+                      className="p-4 bg-gray-700/50 rounded-2xl hover:bg-blue-500/20 hover:border-blue-500/50 border border-gray-600 transition-all duration-300"
                     >
                       <div className="text-center">
-                        <div className="text-3xl mb-2">
+                        <div className="text-2xl mb-2">
                           {category === "Restaurantes" && "🍽️"}
                           {category === "Tiendas" && "🛍️"}
                           {category === "Servicios" && "🔧"}
@@ -836,11 +503,11 @@ export default function DashboardPage() {
                           {category === "Belleza" && "💄"}
                           {!["Restaurantes", "Tiendas", "Servicios", "Salud", "Educación", "Tecnología", "Entretenimiento", "Deportes", "Belleza"].includes(category) && "📦"}
                         </div>
-                        <p className="font-semibold text-sm text-gray-900 group-hover:text-[#0288D1] transition-colors">
+                        <p className="font-semibold text-sm text-white truncate">
                           {category}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {businesses.length} negocios
+                        <p className="text-xs text-gray-400 mt-1">
+                          {businesses.length}
                         </p>
                       </div>
                     </button>
@@ -852,18 +519,18 @@ export default function DashboardPage() {
             {/* Lista de Negocios */}
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
-                <p className="mt-4 text-gray-600">Cargando negocios...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="mt-4 text-gray-400">Cargando negocios...</p>
               </div>
             ) : displayedBusinesses.length === 0 ? (
-              <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/40 p-12 text-center">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-12 text-center">
+                <svg className="mx-auto h-16 w-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <h3 className="mt-4 text-xl font-semibold text-gray-900">
+                <h3 className="mt-4 text-xl font-semibold text-white">
                   {activeTab === "recientes" ? "No hay negocios recientes" : "No se encontraron negocios"}
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-gray-400">
                   {activeTab === "recientes" 
                     ? "No se han agregado negocios nuevos en los últimos 7 días" 
                     : "Intenta ajustar los filtros de búsqueda"}
@@ -884,12 +551,149 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Sidebar Derecho - Destacados y Eventos */}
-          <HighlightsSidebar 
-            featuredBusinesses={featuredBusinesses}
-          />
+          {/* Sidebar Derecho (Desktop Only) */}
+          <div className="hidden lg:block">
+            <HighlightsSidebar 
+              featuredBusinesses={featuredBusinesses}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Modal de Filtros (Móvil) */}
+      {showFilterModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/80 z-50 lg:hidden"
+            onClick={() => setShowFilterModal(false)}
+          />
+          <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden bg-gray-800 rounded-t-3xl max-h-[85vh] overflow-y-auto animate-slide-up">
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between sticky top-0 bg-gray-800">
+              <h3 className="text-lg font-bold text-white">Filtros</h3>
+              <button
+                onClick={() => setShowFilterModal(false)}
+                className="p-2 rounded-full hover:bg-gray-700 text-gray-400"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <FilterSidebar onFilterChange={(newFilters) => {
+                handleFilterChange(newFilters)
+                setShowFilterModal(false)
+              }} />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal de Búsqueda */}
+      {showSearchModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/80 z-50"
+            onClick={() => setShowSearchModal(false)}
+          />
+          <div className="fixed inset-x-4 top-20 z-50 bg-gray-800 rounded-3xl p-4 animate-fade-in max-w-2xl mx-auto">
+            <input
+              type="text"
+              placeholder="Buscar negocios, categorías, ubicación..."
+              value={filters.searchTerm}
+              onChange={(e) => handleFilterChange({ ...filters, searchTerm: e.target.value })}
+              className="w-full bg-gray-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+              autoFocus
+            />
+          </div>
+        </>
+      )}
+
+      {/* Menú de Usuario (Dropdown) */}
+      {showUserMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowUserMenu(false)}
+          />
+          <div className="fixed top-16 right-4 w-80 bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 z-50 overflow-hidden animate-fade-in">
+            {/* Header del perfil */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
+                  {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">
+                    {user?.user_metadata?.full_name || "Usuario"}
+                  </h3>
+                  <p className="text-sm text-white/80">
+                    {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Opciones */}
+            <div className="p-4 space-y-2">
+              {!isCompany && (
+                <Link
+                  href="/app/dashboard/mis-mensajes"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-700 transition-all"
+                >
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">Mis Mensajes</p>
+                    <p className="text-xs text-gray-400">
+                      {unreadMessagesPersonCount > 0 
+                        ? `${unreadMessagesPersonCount} sin leer` 
+                        : "Ver conversaciones"
+                      }
+                    </p>
+                  </div>
+                  {unreadMessagesPersonCount > 0 && (
+                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center">
+                      {unreadMessagesPersonCount}
+                    </div>
+                  )}
+                </Link>
+              )}
+
+              <div className="flex items-center gap-3 p-3 border-t border-gray-700 mt-2 pt-4">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <p className="text-xs text-gray-400">Email</p>
+                  <p className="text-sm text-white break-all">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Logout */}
+            <div className="p-4 border-t border-gray-700">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-2xl transition-all font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Bottom Navigation (Móvil) */}
+      <BottomNav 
+        isCompany={isCompany} 
+        unreadCount={unreadMessagesPersonCount}
+      />
     </div>
   )
 }

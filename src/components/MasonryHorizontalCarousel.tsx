@@ -27,13 +27,13 @@ export default function MasonryHorizontalCarousel() {
   }, []);
 
   const cards = [
-    "/assets/ejemplo1.",
+    "/assets/restaurante.jpg",
     "/assets/yuly.jpeg",
-    "/assets/ejemplo2.",
+    "/assets/tienda.jpg",
     "/assets/freddy.jpeg",
-    "/assets/ejemplo1.",
+    "/assets/restaurante.jpg",
     "/assets/yuly.jpeg",
-    "/assets/ejemplo2.",
+    "/assets/ejemplo2.jpg",
   ];
 
   return (
@@ -65,6 +65,7 @@ export default function MasonryHorizontalCarousel() {
               alt="Imagen negocio"
               fill
               className="object-cover"
+              unoptimized
             />
           </div>
         ))}

@@ -8,13 +8,13 @@ export default function WaveMasonryCarousel() {
   const pauseTimeout = useRef<any>(null);
 
   const cards = [
-    { img: "/assets/ejemplo1.", h: 260 },
+    { img: "/assets/ejemplo1.jpg", h: 260 },
     { img: "/assets/yuly.jpeg", h: 320 },
-    { img: "/assets/ejemplo2.", h: 280 },
+    { img: "/assets/ejemplo2.jpg", h: 280 },
     { img: "/assets/freddy.jpeg", h: 340 },
-    { img: "/assets/ejemplo1.", h: 300 },
+    { img: "/assets/ejemplo1.jpg", h: 300 },
     { img: "/assets/yuly.jpeg", h: 260 },
-    { img: "/assets/ejemplo2.", h: 330 }
+    { img: "/assets/ejemplo2.jpg", h: 330 }
   ];
 
   // Auto-scroll animación (lee isHovering para pausar)
@@ -154,6 +154,7 @@ export default function WaveMasonryCarousel() {
               width={500}
               height={500}
               className="w-full h-full object-cover"
+              unoptimized
             />
           </div>
         ))}

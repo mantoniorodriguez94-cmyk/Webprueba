@@ -6,7 +6,12 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
+import type { Review, ReviewStats, ReviewFormData } from "@/types/review"
 import Image from "next/image"
+import StarRating from "@/components/reviews/StarRating"
+import ReviewStats from "@/components/reviews/ReviewStats"
+import ReviewList from "@/components/reviews/ReviewList"
+import ReviewForm from "@/components/reviews/ReviewForm"
 
 type Promotion = {
   id: string
@@ -29,6 +34,13 @@ export default function BusinessDetailPage() {
   const [showGallery, setShowGallery] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const businessId = params?.id as string
+
+  // Reviews state
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
+  const [userReview, setUserReview] = useState<Review | null>(null)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewsLoading, setReviewsLoading] = useState(true)
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
@@ -91,6 +103,161 @@ export default function BusinessDetailPage() {
     }
   }
 
+  // Cargar reviews del negocio
+  const loadReviews = async () => {
+    if (!businessId) return
+
+    setReviewsLoading(true)
+    try {
+      // Cargar todas las reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .rpc('get_business_reviews', { p_business_id: businessId })
+
+      if (reviewsError) {
+        console.warn("RPC function not available, using fallback query:", reviewsError)
+        // Si la función no existe, usar query normal
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('business_id', businessId)
+          .order('created_at', { ascending: false })
+
+        if (fallbackError) {
+          console.warn("Reviews table might not exist:", fallbackError)
+          setReviews([])
+        } else if (fallbackData && fallbackData.length > 0) {
+          // Enriquecer con información del usuario actual si es su review
+          const reviewsWithUserInfo = fallbackData.map(review => {
+            // Si es la review del usuario actual, usar su info
+            if (user && review.user_id === user.id) {
+              return {
+                ...review,
+                user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario',
+                user_email: user.email
+              }
+            }
+            // Para otros usuarios, mostrar "Usuario" por defecto
+            // (idealmente la función RPC debería funcionar)
+            return {
+              ...review,
+              user_name: 'Usuario',
+              user_email: null
+            }
+          })
+          
+          setReviews(reviewsWithUserInfo)
+        } else {
+          setReviews([])
+        }
+      } else if (reviewsData) {
+        setReviews(reviewsData)
+      }
+
+      // Cargar estadísticas de reviews
+      try {
+        const { data: statsData, error: statsError } = await supabase
+          .from('business_review_stats')
+          .select('*')
+          .eq('business_id', businessId)
+          .single()
+
+        if (!statsError && statsData) {
+          setReviewStats(statsData)
+        }
+      } catch (statsErr) {
+        console.warn("Review stats not available:", statsErr)
+        // Ignorar si las stats no están disponibles
+      }
+
+      // Cargar review del usuario actual si existe
+      if (user) {
+        try {
+          const { data: userReviewData, error: userReviewError } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('business_id', businessId)
+            .eq('user_id', user.id)
+            .single()
+
+          if (!userReviewError && userReviewData) {
+            setUserReview(userReviewData)
+          }
+        } catch (userErr) {
+          console.warn("User review check failed:", userErr)
+          // Ignorar si no se puede verificar la review del usuario
+        }
+      }
+    } catch (error) {
+      console.error("Error loading reviews:", error)
+      // No detener la carga de la página por errores en reviews
+    } finally {
+      setReviewsLoading(false)
+    }
+  }
+
+  // Enviar o actualizar review
+  const handleSubmitReview = async (data: ReviewFormData) => {
+    if (!user || !businessId) {
+      alert('Debes iniciar sesión para dejar una reseña')
+      return
+    }
+
+    try {
+      if (userReview) {
+        // Actualizar review existente
+        const { error } = await supabase
+          .from('reviews')
+          .update({
+            rating: data.rating,
+            comment: data.comment,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userReview.id)
+
+        if (error) {
+          console.error('Error updating review:', error)
+          throw new Error(`Error al actualizar la reseña: ${error.message}`)
+        }
+      } else {
+        // Crear nueva review
+        const { data: insertedData, error } = await supabase
+          .from('reviews')
+          .insert({
+            business_id: businessId,
+            user_id: user.id,
+            rating: data.rating,
+            comment: data.comment
+          })
+          .select()
+
+        if (error) {
+          console.error('Error creating review:', error)
+          // Mensaje de error específico si la tabla no existe
+          if (error.code === '42P01') {
+            throw new Error('⚠️ El sistema de reviews no está configurado. Por favor, ejecuta el script SQL en Supabase Dashboard.')
+          }
+          throw new Error(`Error al crear la reseña: ${error.message}`)
+        }
+        
+        console.log('Review created successfully:', insertedData)
+      }
+
+      // Recargar reviews
+      await loadReviews()
+      setShowReviewForm(false)
+      
+      // Mensaje de éxito con más detalles
+      const successMessage = userReview 
+        ? '✅ Tu reseña ha sido actualizada exitosamente' 
+        : '🌟 ¡Reseña publicada! Gracias por compartir tu experiencia.'
+      
+      alert(successMessage)
+    } catch (error: any) {
+      console.error('Error submitting review:', error)
+      throw error
+    }
+  }
+
   // Cargar datos del negocio
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -141,6 +308,13 @@ export default function BusinessDetailPage() {
 
     fetchBusiness()
   }, [businessId, user, userLoading, router])
+
+  // Cargar reviews cuando el componente se monta
+  useEffect(() => {
+    if (businessId && !userLoading) {
+      loadReviews()
+    }
+  }, [businessId, user, userLoading])
 
   if (userLoading || loading) {
     return (
@@ -488,6 +662,119 @@ export default function BusinessDetailPage() {
             )}
           </div>
 
+        </div>
+
+        {/* Sección de Reviews y Reseñas */}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Reseñas y Calificaciones
+              </h2>
+              <p className="text-gray-600">
+                Descubre qué opinan los clientes sobre este negocio
+              </p>
+            </div>
+            
+            {/* Botón para dejar reseña: Solo si NO tiene review previa */}
+            {user && !isOwner && !userReview && (
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                Dejar una reseña
+              </button>
+            )}
+            
+            {/* Botón para editar reseña: SOLO para administradores */}
+            {user && !isOwner && userReview && isAdmin && (
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+                title="Solo administradores pueden editar reseñas"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar reseña (Admin)
+              </button>
+            )}
+            
+            {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
+            {user && !isOwner && userReview && !isAdmin && (
+              <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-medium">Ya dejaste tu reseña</span>
+              </div>
+            )}
+          </div>
+
+          {/* Formulario de Review (si está visible) */}
+          {/* Usuarios regulares: solo pueden crear nueva review */}
+          {/* Administradores: pueden editar cualquier review */}
+          {showReviewForm && user && !isOwner && (
+            (!userReview || (userReview && isAdmin)) ? (
+              <div className="mb-8">
+                <ReviewForm
+                  businessId={businessId}
+                  businessName={business.name}
+                  existingReview={userReview ? {
+                    rating: userReview.rating,
+                    comment: userReview.comment
+                  } : undefined}
+                  onSubmit={handleSubmitReview}
+                  onCancel={() => setShowReviewForm(false)}
+                />
+              </div>
+            ) : null
+          )}
+
+          {/* Estadísticas de Reviews */}
+          {reviewStats && reviewStats.total_reviews > 0 && (
+            <div className="mb-8">
+              <ReviewStats stats={reviewStats} />
+            </div>
+          )}
+
+          {/* Lista de Reviews */}
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Lo que dicen nuestros clientes
+            </h3>
+            <ReviewList reviews={reviews} loading={reviewsLoading} />
+          </div>
+
+          {/* Mensaje si el usuario no está logueado */}
+          {!user && (
+            <div className="mt-8 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-6 border-2 border-teal-100">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-gray-900 mb-1">
+                    ¿Compraste en este negocio?
+                  </h4>
+                  <p className="text-gray-600 mb-3">
+                    Inicia sesión para dejar tu reseña y ayudar a otros clientes
+                  </p>
+                  <Link
+                    href="/app/auth/login"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-2 rounded-full hover:shadow-lg transition-all font-semibold text-sm"
+                  >
+                    Iniciar sesión
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

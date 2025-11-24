@@ -1,4 +1,4 @@
-// src/components/feed/FilterSidebar.tsx
+// src/components/feed/FilterSidebar.tsx - REDISEÑO MOBILE DARK THEME
 "use client"
 import React, { useState } from "react"
 
@@ -35,228 +35,153 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     sortBy: "recent"
   })
 
-  const [isExpanded, setIsExpanded] = useState(false)
-
   const updateFilter = (key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
     onFilterChange(newFilters)
   }
 
+  const clearFilters = () => {
+    const resetFilters: FilterState = {
+      searchTerm: "",
+      category: "Todos",
+      location: "",
+      sortBy: "recent"
+    }
+    setFilters(resetFilters)
+    onFilterChange(resetFilters)
+  }
+
+  const hasActiveFilters = filters.category !== "Todos" || filters.location !== "" || filters.searchTerm !== ""
+
   return (
-    <>
-      {/* Mobile Filter Button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="lg:hidden fixed bottom-6 right-6 z-40 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
-      </button>
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5 space-y-5 sticky top-20">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-gray-700">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filtros
+        </h2>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-semibold px-3 py-1.5 bg-gray-700 rounded-full hover:bg-gray-600"
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
 
-      {/* Overlay para mobile */}
-      {isExpanded && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 backdrop-blur-sm"
-          onClick={() => setIsExpanded(false)}
+      {/* Search Input */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Buscar
+        </label>
+        <input
+          type="text"
+          placeholder="Buscar negocios..."
+          value={filters.searchTerm}
+          onChange={(e) => updateFilter("searchTerm", e.target.value)}
+          className="w-full bg-gray-700 border-2 border-gray-600 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-gray-700/80 transition-all"
         />
-      )}
+      </div>
 
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed lg:sticky 
-          top-0 lg:top-24 
-          left-0 
-          h-screen lg:h-[calc(100vh-6rem)] 
-          z-50
-          bg-white/90 
-          backdrop-blur-xl
-          lg:rounded-3xl 
-          shadow-2xl
-          border-2 border-white/40 
-          transition-all duration-300 ease-in-out
-          ${isExpanded ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          w-full sm:w-96 lg:w-80
-          flex flex-col
-        `}
-      >
-        {/* Header - Fijo en la parte superior */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-6 border-b-2 border-[#0288D1]/10 bg-white/60 backdrop-blur-lg">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-            Filtros
-          </h2>
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="lg:hidden text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+      {/* Location */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Ubicación
+        </label>
+        <input
+          type="text"
+          placeholder="Ciudad, dirección..."
+          value={filters.location}
+          onChange={(e) => updateFilter("location", e.target.value)}
+          className="w-full bg-gray-700 border-2 border-gray-600 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700/80 transition-all"
+        />
+      </div>
 
-        {/* Contenido con scroll */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
-
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Buscar
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={filters.searchTerm}
-                onChange={(e) => updateFilter("searchTerm", e.target.value)}
-                placeholder="Nombre del negocio..."
-                className="w-full px-4 py-2.5 sm:py-3 pr-10 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 text-sm sm:text-base"
-              />
-              <svg
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Location Filter - PRIMERO */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Ubicación
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={filters.location}
-                onChange={(e) => updateFilter("location", e.target.value)}
-                placeholder="Ciudad o dirección..."
-                className="w-full px-4 py-2.5 sm:py-3 pr-10 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 text-sm sm:text-base"
-              />
-              <svg
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Category Filter - SEGUNDO */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-              Categoría
-            </label>
-            <div className="space-y-1.5 sm:space-y-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => updateFilter("category", cat)}
-                  className={`
-                    w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 text-sm sm:text-base
-                    ${filters.category === cat
-                      ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                    }
-                  `}
-                >
-                  <span className="font-medium">{cat}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Sort By */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-              Ordenar por
-            </label>
-            <div className="space-y-1.5 sm:space-y-2">
-              <button
-                onClick={() => updateFilter("sortBy", "recent")}
-                className={`
-                  w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 sm:gap-3 text-sm sm:text-base
-                  ${filters.sortBy === "recent"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Más recientes
-              </button>
-              <button
-                onClick={() => updateFilter("sortBy", "name")}
-                className={`
-                  w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 sm:gap-3 text-sm sm:text-base
-                  ${filters.sortBy === "name"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                Alfabético
-              </button>
-              <button
-                onClick={() => updateFilter("sortBy", "popular")}
-                className={`
-                  w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 sm:gap-3 text-sm sm:text-base
-                  ${filters.sortBy === "popular"
-                    ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white shadow-md"
-                    : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                  }
-                `}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                Populares
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer con botón Limpiar - Fijo en la parte inferior */}
-        <div className="flex-shrink-0 p-4 sm:p-6 border-t-2 border-[#0288D1]/10 bg-white/60 backdrop-blur-lg">
-          <button
-            onClick={() => {
-              const defaultFilters: FilterState = {
-                searchTerm: "",
-                category: "Todos",
-                location: "",
-                sortBy: "recent"
-              }
-              setFilters(defaultFilters)
-              onFilterChange(defaultFilters)
-              setIsExpanded(false) // Cerrar el panel en móvil después de limpiar
-            }}
-            className="w-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2.5 sm:py-3 px-4 rounded-2xl transition-all duration-300 hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base"
-          >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Limpiar filtros
-          </button>
+      {/* Categories */}
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          Categoría
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => updateFilter("category", cat)}
+              className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                filters.category === cat
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
-    </>
+
+      {/* Sort by */}
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+          </svg>
+          Ordenar por
+        </label>
+        <div className="space-y-2">
+          {[
+            { value: "recent" as const, label: "Más recientes", icon: "🕐" },
+            { value: "name" as const, label: "Nombre (A-Z)", icon: "🔤" },
+            { value: "popular" as const, label: "Más populares", icon: "⭐" }
+          ].map((option) => (
+            <button
+              key={option.value}
+              onClick={() => updateFilter("sortBy", option.value)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                filters.sortBy === option.value
+                  ? "bg-gray-700 border-2 border-blue-500 text-white"
+                  : "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border-2 border-gray-600"
+              }`}
+            >
+              <span className="text-lg">{option.icon}</span>
+              <span className="flex-1 text-left font-medium">{option.label}</span>
+              {filters.sortBy === option.value && (
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Info card */}
+      <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-2xl p-4">
+        <div className="flex items-start gap-3">
+          <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-xs text-gray-300 leading-relaxed">
+              Usa los filtros para encontrar exactamente lo que buscas. Los resultados se actualizan automáticamente.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
-
-
-
