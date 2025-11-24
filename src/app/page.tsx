@@ -144,7 +144,7 @@ export default function Home() {
                 {/* Botones de Acción */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-slide-up animation-delay-600">
                   <button 
-                    onClick={() => router.push('/app/dashboard')}
+                    onClick={() => router.push('/app/auth/login')}
                     className="group relative px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/80"
                   >
                     <span className="flex items-center justify-center gap-2">

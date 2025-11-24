@@ -1,0 +1,82 @@
+{
+  "name": "Encuentra - Negocios Cerca de Ti",
+  "short_name": "Encuentra",
+  "description": "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/assets/logotipo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logotipo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/assets/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["business", "productivity", "social"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Inicio",
+      "description": "Ir al dashboard principal",
+      "url": "/app/dashboard",
+      "icons": [
+        {
+          "src": "/assets/logotipo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mis Negocios",
+      "short_name": "Negocios",
+      "description": "Ver mis negocios",
+      "url": "/app/dashboard/mis-negocios",
+      "icons": [
+        {
+          "src": "/assets/logotipo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mensajes",
+      "short_name": "Mensajes",
+      "description": "Ver mensajes",
+      "url": "/app/dashboard/mis-mensajes",
+      "icons": [
+        {
+          "src": "/assets/logotipo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "dir": "ltr",
+  "lang": "es-ES"
+}
+
