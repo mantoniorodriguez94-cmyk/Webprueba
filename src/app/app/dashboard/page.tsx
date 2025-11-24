@@ -74,6 +74,7 @@ export default function DashboardPage() {
     } catch (err: any) {
       console.error("Error fetching user businesses:", err)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
   
   const fetchUnreadMessages = useCallback(async (businessIds: string[]) => {

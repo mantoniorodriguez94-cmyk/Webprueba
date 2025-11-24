@@ -545,7 +545,7 @@ function CreatePromotionModal({
             <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:border-pink-500 transition-colors">
               {imagePreview ? (
                 <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-xl" />
+                  <Image src={imagePreview} alt="Preview" width={300} height={192} className="max-h-48 mx-auto rounded-xl" unoptimized />
                   <button
                     type="button"
                     onClick={() => {

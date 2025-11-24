@@ -1,12 +1,12 @@
 // src/app/dashboard/negocios/[id]/page.tsx
 "use client"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
-import type { Review, ReviewStats, ReviewFormData } from "@/types/review"
+import type { Review, ReviewStats as ReviewStatsType, ReviewFormData } from "@/types/review"
 import Image from "next/image"
 import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
@@ -37,7 +37,7 @@ export default function BusinessDetailPage() {
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([])
-  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
+  const [reviewStats, setReviewStats] = useState<ReviewStatsType | null>(null)
   const [userReview, setUserReview] = useState<Review | null>(null)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [reviewsLoading, setReviewsLoading] = useState(true)
@@ -87,7 +87,7 @@ export default function BusinessDetailPage() {
   const formattedSchedule = getFormattedSchedule()
 
   // Registrar vista del negocio (si la tabla existe)
-  const registerView = async () => {
+  const registerView = useCallback(async () => {
     if (!businessId || !user) return
 
     try {
@@ -101,10 +101,10 @@ export default function BusinessDetailPage() {
       // Ignorar errores silenciosamente (la tabla puede no existir aún o ya se registró hoy)
       // Esto no debe impedir que la página funcione
     }
-  }
+  }, [businessId, user])
 
   // Cargar reviews del negocio
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     if (!businessId) return
 
     setReviewsLoading(true)
@@ -193,7 +193,7 @@ export default function BusinessDetailPage() {
     } finally {
       setReviewsLoading(false)
     }
-  }
+  }, [businessId, user])
 
   // Enviar o actualizar review
   const handleSubmitReview = async (data: ReviewFormData) => {
@@ -307,14 +307,14 @@ export default function BusinessDetailPage() {
     }
 
     fetchBusiness()
-  }, [businessId, user, userLoading, router])
+  }, [businessId, user, userLoading, router, registerView])
 
   // Cargar reviews cuando el componente se monta
   useEffect(() => {
     if (businessId && !userLoading) {
       loadReviews()
     }
-  }, [businessId, user, userLoading])
+  }, [businessId, user, userLoading, loadReviews])
 
   if (userLoading || loading) {
     return (
@@ -394,10 +394,13 @@ export default function BusinessDetailPage() {
             {/* Logo */}
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-4 ring-white shadow-lg">
               {business.logo_url ? (
-                <img
+                <Image
                   src={business.logo_url}
                   alt={business.name}
+                  width={96}
+                  height={96}
                   className="w-full h-full object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-3xl">

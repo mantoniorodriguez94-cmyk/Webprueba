@@ -118,7 +118,7 @@ export default function MisNegociosPage() {
             Volver al inicio
           </Link>
         </div>
-        <BottomNav isCompany={false} />
+        <BottomNav isCompany={false} unreadCount={0} />
       </div>
     )
   }
@@ -314,7 +314,7 @@ export default function MisNegociosPage() {
         </Link>
       )}
 
-      <BottomNav isCompany={true} />
+      <BottomNav isCompany={true} unreadCount={0} />
     </div>
   )
 }

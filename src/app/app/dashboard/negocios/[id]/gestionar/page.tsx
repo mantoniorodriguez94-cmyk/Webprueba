@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
+import Image from "next/image"
 import type { Business } from "@/types/business"
 
 type Promotion = {
@@ -183,10 +184,13 @@ export default function GestionarNegocioPage() {
             {/* Logo */}
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-4 ring-white shadow-lg">
               {business.logo_url ? (
-                <img
+                <Image
                   src={business.logo_url}
                   alt={business.name}
+                  width={96}
+                  height={96}
                   className="w-full h-full object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-3xl">

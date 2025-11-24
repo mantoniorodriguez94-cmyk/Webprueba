@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
+import Image from "next/image"
 import BottomNav from "@/components/ui/BottomNav"
 
 interface Conversation {
@@ -289,9 +290,9 @@ export default function MisMensajesPage() {
                     selectedConversation?.conversation_id === conv.conversation_id ? 'bg-gray-700/70' : ''
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {conv.business_logo ? (
-                      <img src={conv.business_logo} alt={conv.business_name} className="w-full h-full rounded-full object-cover" />
+                      <Image src={conv.business_logo} alt={conv.business_name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
                     ) : (
                       <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -390,7 +391,7 @@ export default function MisMensajesPage() {
         </div>
       </div>
 
-      <BottomNav isCompany={false} />
+      <BottomNav isCompany={false} unreadCount={0} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 // src/components/messages/SendMessageModal.tsx
 "use client"
 import React, { useState } from "react"
+import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
 import type { Business } from "@/types/business"
 
@@ -99,10 +100,13 @@ export default function SendMessageModal({
                 {/* Logo del negocio */}
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-white/20 backdrop-blur-sm flex-shrink-0 ring-2 ring-white/40">
                   {business.logo_url ? (
-                    <img
+                    <Image
                       src={business.logo_url}
                       alt={business.name}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-bold text-base sm:text-lg">

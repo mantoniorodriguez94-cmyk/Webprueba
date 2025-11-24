@@ -163,7 +163,7 @@ export default function VerPromocionesPage() {
           <div className="flex items-center gap-4">
             {business.logo_url && (
               <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 ring-2 ring-pink-300">
-                <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
+                <Image src={business.logo_url} alt={business.name} width={64} height={64} className="w-full h-full object-cover" unoptimized />
               </div>
             )}
             <div>
