@@ -123,7 +123,7 @@ export default function GestionarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -134,8 +134,8 @@ export default function GestionarNegocioPage() {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Negocio no encontrado</h2>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -150,7 +150,7 @@ export default function GestionarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -159,15 +159,15 @@ export default function GestionarNegocioPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 title="Volver al dashboard"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">
                   Gestionar Negocio
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   {business.name}
                 </p>
               </div>
@@ -179,10 +179,10 @@ export default function GestionarNegocioPage() {
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 sm:p-8 mb-8">
+        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-4 ring-white shadow-lg">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-600 flex-shrink-0 ring-4 ring-gray-700 shadow-lg">
               {business.logo_url ? (
                 <Image
                   src={business.logo_url}
@@ -193,7 +193,7 @@ export default function GestionarNegocioPage() {
                   unoptimized
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-3xl">
+                <div className="w-full h-full flex items-center justify-center text-blue-400 font-bold text-3xl">
                   {business.name[0]}
                 </div>
               )}
@@ -201,9 +201,9 @@ export default function GestionarNegocioPage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{business.name}</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{business.name}</h2>
               {business.category && (
-                <p className="text-gray-600 flex items-center gap-2 mb-2">
+                <p className="text-gray-300 flex items-center gap-2 mb-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
@@ -211,7 +211,7 @@ export default function GestionarNegocioPage() {
                 </p>
               )}
               {business.address && (
-                <p className="text-gray-600 flex items-center gap-2">
+                <p className="text-gray-300 flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -238,7 +238,7 @@ export default function GestionarNegocioPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Galería de Fotos */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,13 +246,13 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Galería de Fotos</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-bold text-white">Galería de Fotos</h3>
+                <p className="text-sm text-gray-300">
                   {galleryUrls.length} foto{galleryUrls.length !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-4">
               Gestiona las imágenes de tu negocio. Puedes agregar, eliminar o reordenar fotos.
             </p>
             <Link
@@ -266,7 +266,7 @@ export default function GestionarNegocioPage() {
           {/* Mensajes/Chats */}
           <Link
             href={`/app/dashboard/negocios/${business.id}/mensajes`}
-            className="block bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all relative"
+            className="block bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all relative"
           >
             {unreadMessagesCount > 0 && (
               <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold min-w-[24px] h-6 px-2 rounded-full flex items-center justify-center animate-pulse">
@@ -280,8 +280,8 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Mensajes</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-bold text-white">Mensajes</h3>
+                <p className="text-sm text-gray-300">
                   {unreadMessagesCount > 0 
                     ? `${unreadMessagesCount} sin leer` 
                     : "Sistema activo"
@@ -289,7 +289,7 @@ export default function GestionarNegocioPage() {
                 </p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-4">
               Responde a las consultas de tus clientes y mantén la comunicación activa.
             </p>
             <div className="w-full bg-green-50 text-green-700 px-4 py-2 rounded-xl hover:bg-green-100 transition-colors font-semibold text-sm text-center">
@@ -300,7 +300,7 @@ export default function GestionarNegocioPage() {
           {/* Estadísticas */}
           <Link
             href={`/app/dashboard/negocios/${business.id}/estadisticas`}
-            className="block bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all"
+            className="block bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
@@ -309,11 +309,11 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Estadísticas</h3>
-                <p className="text-sm text-gray-600">Análisis</p>
+                <h3 className="text-lg font-bold text-white">Estadísticas</h3>
+                <p className="text-sm text-gray-300">Análisis</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               Visualiza el rendimiento de tu negocio, visitas y más métricas importantes.
             </p>
             <div className="w-full text-center bg-blue-50 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors font-semibold text-sm">
@@ -322,7 +322,7 @@ export default function GestionarNegocioPage() {
           </Link>
 
           {/* Horarios */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,11 +330,11 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Horarios</h3>
-                <p className="text-sm text-gray-600">Disponibilidad</p>
+                <h3 className="text-lg font-bold text-white">Horarios</h3>
+                <p className="text-sm text-gray-300">Disponibilidad</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               Configura los días y horarios de atención de tu negocio.
             </p>
             <Link
@@ -346,7 +346,7 @@ export default function GestionarNegocioPage() {
           </div>
 
           {/* Promociones */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,11 +354,11 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Promociones</h3>
-                <p className="text-sm text-gray-600">{activePromotionsCount} activa{activePromotionsCount !== 1 ? 's' : ''}</p>
+                <h3 className="text-lg font-bold text-white">Promociones</h3>
+                <p className="text-sm text-gray-300">{activePromotionsCount} activa{activePromotionsCount !== 1 ? 's' : ''}</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               Crea ofertas especiales y promociones para atraer más clientes.
             </p>
             <Link
@@ -370,7 +370,7 @@ export default function GestionarNegocioPage() {
           </div>
 
           {/* Configuración */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,11 +379,11 @@ export default function GestionarNegocioPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Configuración</h3>
-                <p className="text-sm text-gray-600">General</p>
+                <h3 className="text-lg font-bold text-white">Configuración</h3>
+                <p className="text-sm text-gray-300">General</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               Ajusta las configuraciones generales y preferencias de tu negocio.
             </p>
             <Link

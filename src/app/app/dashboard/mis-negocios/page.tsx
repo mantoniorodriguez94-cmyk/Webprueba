@@ -14,11 +14,15 @@ export default function MisNegociosPage() {
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   
-  const allowedBusinesses = user?.user_metadata?.allowed_businesses ?? 0
   const userRole = user?.user_metadata?.role ?? "person"
   const isPremium = user?.user_metadata?.is_premium ?? false
-  const canCreateMore = negocios.length < allowedBusinesses
+  const isAdmin = user?.user_metadata?.is_admin ?? false
   const isCompany = userRole === "company"
+  
+  // Administradores tienen negocios ilimitados
+  const allowedBusinesses = isAdmin ? 999 : (user?.user_metadata?.allowed_businesses ?? 0)
+  const canCreateMore = isAdmin ? true : (negocios.length < allowedBusinesses)
+  
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   
   // Obtener mensajes no leídos para usuarios negocio
@@ -194,7 +198,10 @@ export default function MisNegociosPage() {
                 Mis Negocios
               </h1>
               <p className="text-sm text-gray-400 mt-1">
-                {negocios.length} de {allowedBusinesses} negocios creados
+                {isAdmin 
+                  ? `${negocios.length} negocio${negocios.length !== 1 ? 's' : ''} • Ilimitado (Admin)` 
+                  : `${negocios.length} de ${allowedBusinesses} negocios creados`
+                }
               </p>
             </div>
 
@@ -211,31 +218,33 @@ export default function MisNegociosPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Progress Bar */}
-        <div className="bg-gray-800/50 rounded-3xl border border-gray-700 p-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-gray-300">Límite de negocios</span>
-            <span className="text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>
+        {/* Progress Bar - Solo si NO es admin */}
+        {!isAdmin && (
+          <div className="bg-gray-800/50 rounded-3xl border border-gray-700 p-5 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-300">Límite de negocios</span>
+              <span className="text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  negocios.length >= allowedBusinesses 
+                    ? 'bg-gradient-to-r from-amber-500 to-red-500'
+                    : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                }`}
+                style={{ width: `${(negocios.length / allowedBusinesses) * 100}%` }}
+              />
+            </div>
+            {!canCreateMore && (
+              <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Has alcanzado el límite de negocios
+              </p>
+            )}
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-            <div 
-              className={`h-full rounded-full transition-all duration-500 ${
-                negocios.length >= allowedBusinesses 
-                  ? 'bg-gradient-to-r from-amber-500 to-red-500'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-500'
-              }`}
-              style={{ width: `${(negocios.length / allowedBusinesses) * 100}%` }}
-            />
-          </div>
-          {!canCreateMore && (
-            <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Has alcanzado el límite de negocios
-            </p>
-          )}
-        </div>
+        )}
 
         {/* Lista de Negocios */}
         {loading ? (

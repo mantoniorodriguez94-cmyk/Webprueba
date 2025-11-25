@@ -13,6 +13,7 @@ import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
 import ReviewForm from "@/components/reviews/ReviewForm"
 import BusinessLocation from "@/components/BusinessLocation"
+import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 
 type Promotion = {
   id: string
@@ -87,21 +88,12 @@ export default function BusinessDetailPage() {
 
   const formattedSchedule = getFormattedSchedule()
 
-  // Registrar vista del negocio (si la tabla existe)
+  // Registrar vista del negocio
   const registerView = useCallback(async () => {
-    if (!businessId || !user) return
-
-    try {
-      await supabase
-        .from("business_views")
-        .insert({
-          business_id: businessId,
-          viewer_id: user.id
-        })
-    } catch (error) {
-      // Ignorar errores silenciosamente (la tabla puede no existir aún o ya se registró hoy)
-      // Esto no debe impedir que la página funcione
-    }
+    if (!businessId) return
+    
+    // Registrar la vista con nuestra función de analytics
+    await trackBusinessView(businessId, user?.id)
   }, [businessId, user])
 
   // Cargar reviews del negocio
@@ -320,7 +312,7 @@ export default function BusinessDetailPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -331,8 +323,8 @@ export default function BusinessDetailPage() {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Negocio no encontrado</h2>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -356,15 +348,15 @@ export default function BusinessDetailPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 title="Volver al dashboard"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">
                   {business.name}
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   {business.category || "Negocio"}
                 </p>
               </div>
@@ -390,7 +382,7 @@ export default function BusinessDetailPage() {
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 sm:p-8 mb-8">
+        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-4 ring-white shadow-lg">
@@ -412,12 +404,12 @@ export default function BusinessDetailPage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{business.name}</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{business.name}</h2>
               {business.description && (
-                <p className="text-gray-600 mb-3">{business.description}</p>
+                <p className="text-gray-300 mb-3">{business.description}</p>
               )}
               {business.category && (
-                <p className="text-gray-600 flex items-center gap-2 mb-2">
+                <p className="text-gray-300 flex items-center gap-2 mb-2">
                   <svg className="w-5 h-5 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
@@ -434,13 +426,13 @@ export default function BusinessDetailPage() {
                     longitude={business.longitude}
                     showIcon={true}
                     variant="detailed"
-                    className="text-gray-600"
+                    className="text-gray-300"
                   />
                 </div>
               )}
               
               {(business.phone || business.whatsapp) && (
-                <p className="text-gray-600 flex items-center gap-2">
+                <p className="text-gray-300 flex items-center gap-2">
                   <svg className="w-5 h-5 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
@@ -470,7 +462,7 @@ export default function BusinessDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Galería de Fotos */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,13 +470,13 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Galería de Fotos</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-bold text-white">Galería de Fotos</h3>
+                <p className="text-sm text-gray-300">
                   {galleryUrls.length} fotos
                 </p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               {canManage 
                 ? "Gestiona las imágenes de tu negocio. Puedes agregar, eliminar o reordenar fotos."
                 : "Explora las imágenes del negocio y conoce más sobre sus productos y servicios."
@@ -541,7 +533,7 @@ export default function BusinessDetailPage() {
           </div>
 
           {/* Horarios */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -549,11 +541,11 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Horarios</h3>
-                <p className="text-sm text-gray-600">Disponibilidad</p>
+                <h3 className="text-lg font-bold text-white">Horarios</h3>
+                <p className="text-sm text-gray-300">Disponibilidad</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               {canManage 
                 ? "Configura los días y horarios de atención de tu negocio."
                 : "Consulta los horarios de atención del negocio."
@@ -565,7 +557,7 @@ export default function BusinessDetailPage() {
               <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl p-4 mb-4 space-y-2">
                 {formattedSchedule.map((schedule: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between py-2 border-b border-orange-200/40 last:border-0">
-                    <span className={`font-semibold text-sm ${schedule.isOpen ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <span className={`font-semibold text-sm ${schedule.isOpen ? 'text-white' : 'text-gray-400'}`}>
                       {schedule.day}
                     </span>
                     {schedule.isOpen ? (
@@ -597,7 +589,7 @@ export default function BusinessDetailPage() {
           </div>
 
           {/* Promociones */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -605,8 +597,8 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Promociones</h3>
-                <p className="text-sm text-gray-600">{promotions.length} activa{promotions.length !== 1 ? 's' : ''}</p>
+                <h3 className="text-lg font-bold text-white">Promociones</h3>
+                <p className="text-sm text-gray-300">{promotions.length} activa{promotions.length !== 1 ? 's' : ''}</p>
               </div>
             </div>
             
@@ -627,11 +619,11 @@ export default function BusinessDetailPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">{promo.name}</h4>
+                        <h4 className="font-bold text-white text-sm mb-1 truncate">{promo.name}</h4>
                         {promo.price && (
                           <p className="text-lg font-bold text-pink-600">${promo.price.toFixed(2)}</p>
                         )}
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-gray-300 mt-1">
                           Válida hasta {new Date(promo.end_date).toLocaleDateString('es-ES')}
                         </p>
                       </div>
@@ -646,7 +638,7 @@ export default function BusinessDetailPage() {
               </div>
             )}
 
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-4">
               {canManage 
                 ? "Crea ofertas especiales y promociones para atraer más clientes."
                 : promotions.length === 0 
@@ -678,10 +670,10 @@ export default function BusinessDetailPage() {
         <div className="mt-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 Reseñas y Calificaciones
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Descubre qué opinan los clientes sobre este negocio
               </p>
             </div>
@@ -715,7 +707,7 @@ export default function BusinessDetailPage() {
             
             {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
             {user && !isOwner && userReview && !isAdmin && (
-              <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
+              <div className="flex items-center gap-2 text-gray-300 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -753,7 +745,7 @@ export default function BusinessDetailPage() {
 
           {/* Lista de Reviews */}
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            <h3 className="text-2xl font-bold text-white mb-6">
               Lo que dicen nuestros clientes
             </h3>
             <ReviewList reviews={reviews} loading={reviewsLoading} />
@@ -769,10 +761,10 @@ export default function BusinessDetailPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-bold text-gray-900 mb-1">
+                  <h4 className="text-lg font-bold text-white mb-1">
                     ¿Compraste en este negocio?
                   </h4>
-                  <p className="text-gray-600 mb-3">
+                  <p className="text-gray-300 mb-3">
                     Inicia sesión para dejar tu reseña y ayudar a otros clientes
                   </p>
                   <Link

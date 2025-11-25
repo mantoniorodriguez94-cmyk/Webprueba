@@ -45,29 +45,35 @@ export default function NuevoNegocioPage() {
           return
         }
         
-        // Obtener el límite permitido
-        const isPremium = user.user_metadata?.is_premium ?? false
-        const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
+        // Verificar si es administrador (sin límites)
+        const isAdmin = user.user_metadata?.is_admin ?? false
         
-        // Contar cuántos negocios tiene actualmente
-        const { data: businesses, error: fetchError } = await supabase
-          .from("businesses")
-          .select("id")
-          .eq("owner_id", user.id)
-        
-        if (fetchError) throw fetchError
-        
-        const currentCount = businesses?.length ?? 0
-        
-        // Si ya alcanzó el límite, mostrar alerta premium
-        if (currentCount >= allowedBusinesses) {
-          if (!isPremium) {
-            alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados\n• Borde dorado especial\n\nPrecio: $5 USD/mes")
-          } else {
-            alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
+        // Si NO es admin, aplicar límites
+        if (!isAdmin) {
+          // Obtener el límite permitido
+          const isPremium = user.user_metadata?.is_premium ?? false
+          const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
+          
+          // Contar cuántos negocios tiene actualmente
+          const { data: businesses, error: fetchError } = await supabase
+            .from("businesses")
+            .select("id")
+            .eq("owner_id", user.id)
+          
+          if (fetchError) throw fetchError
+          
+          const currentCount = businesses?.length ?? 0
+          
+          // Si ya alcanzó el límite, mostrar alerta premium
+          if (currentCount >= allowedBusinesses) {
+            if (!isPremium) {
+              alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados\n• Borde dorado especial\n\nPrecio: $5 USD/mes")
+            } else {
+              alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
+            }
+            router.push("/app/dashboard/mis-negocios")
+            return
           }
-          router.push("/app/dashboard/mis-negocios")
-          return
         }
         
         setChecking(false)
@@ -172,7 +178,7 @@ export default function NuevoNegocioPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verificando permisos...</p>
+          <p className="mt-4 text-gray-300">Verificando permisos...</p>
         </div>
       </div>
     )
@@ -185,15 +191,15 @@ export default function NuevoNegocioPage() {
         <div className="mb-8">
           <Link 
             href="/app/dashboard"
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors inline-flex items-center gap-2 group mb-4"
+            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group mb-4"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Volver al dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Crear nuevo negocio</h1>
-          <p className="text-gray-600 mt-1">Completa la información de tu negocio</p>
+          <h1 className="text-3xl font-bold text-white">Crear nuevo negocio</h1>
+          <p className="text-gray-300 mt-1">Completa la información de tu negocio</p>
         </div>
 
         {/* Form Card */}
@@ -221,7 +227,7 @@ export default function NuevoNegocioPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Ej: Panadería El Sol"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -237,7 +243,7 @@ export default function NuevoNegocioPage() {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
                 rows={4}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white resize-none"
                 disabled={loading}
               />
             </div>
@@ -253,7 +259,7 @@ export default function NuevoNegocioPage() {
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -267,7 +273,7 @@ export default function NuevoNegocioPage() {
                 </svg>
                 <h3 className="font-bold text-gray-800">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-600 mb-3">
+              <p className="text-xs text-gray-300 mb-3">
                 ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
               </p>
               
@@ -282,7 +288,7 @@ export default function NuevoNegocioPage() {
                   value={address}
                   onChange={e => setAddress(e.target.value)}
                   placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                   disabled={loading}
                 />
                 {address && (
@@ -309,7 +315,7 @@ export default function NuevoNegocioPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-600 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
                       Latitud
                     </label>
                     <input
@@ -319,12 +325,12 @@ export default function NuevoNegocioPage() {
                       value={latitude}
                       onChange={e => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-600 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
                       Longitud
                     </label>
                     <input
@@ -334,7 +340,7 @@ export default function NuevoNegocioPage() {
                       value={longitude}
                       onChange={e => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
@@ -377,7 +383,7 @@ export default function NuevoNegocioPage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -393,7 +399,7 @@ export default function NuevoNegocioPage() {
                 value={whatsapp}
                 onChange={e => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -483,17 +489,17 @@ export default function NuevoNegocioPage() {
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">📍 Seleccionar Ubicación GPS</h3>
+                <h3 className="text-xl font-bold text-white">📍 Seleccionar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 Obtén tu ubicación actual o ingresa las coordenadas manualmente
               </p>
             </div>
@@ -552,7 +558,7 @@ export default function NuevoNegocioPage() {
                   value={latitude}
                   onChange={e => setLatitude(e.target.value)}
                   placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
               <div>
@@ -565,7 +571,7 @@ export default function NuevoNegocioPage() {
                   value={longitude}
                   onChange={e => setLongitude(e.target.value)}
                   placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
 
@@ -583,7 +589,7 @@ export default function NuevoNegocioPage() {
                       className="w-full"
                     ></iframe>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">
+                  <p className="text-xs text-gray-300 mt-2">
                     📍 Lat: {latitude}, Lng: {longitude}
                   </p>
                 </div>
@@ -612,7 +618,7 @@ export default function NuevoNegocioPage() {
 
             {/* Ayuda */}
             <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-300">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>

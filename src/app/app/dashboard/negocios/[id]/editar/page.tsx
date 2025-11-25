@@ -182,7 +182,7 @@ export default function EditarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -193,9 +193,9 @@ export default function EditarNegocioPage() {
   if (!negocio || !canEdit) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso denegado</h2>
-          <p className="text-gray-600 mb-6">No tienes permiso para editar este negocio</p>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
+          <p className="text-gray-300 mb-6">No tienes permiso para editar este negocio</p>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -210,7 +210,7 @@ export default function EditarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <Link 
@@ -218,19 +218,19 @@ export default function EditarNegocioPage() {
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               title="Volver"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Editar Negocio
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 {negocio.name} • Configuración General
               </p>
             </div>
@@ -241,7 +241,7 @@ export default function EditarNegocioPage() {
       {/* Contenido */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Form Card */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 sm:p-8 lg:p-10">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-center gap-3">
@@ -264,7 +264,7 @@ export default function EditarNegocioPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -279,7 +279,7 @@ export default function EditarNegocioPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 resize-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white resize-none"
                 disabled={loading}
               />
             </div>
@@ -295,7 +295,7 @@ export default function EditarNegocioPage() {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -309,7 +309,7 @@ export default function EditarNegocioPage() {
                 </svg>
                 <h3 className="font-bold text-gray-800">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-600 mb-3">
+              <p className="text-xs text-gray-300 mb-3">
                 ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
               </p>
               
@@ -324,7 +324,7 @@ export default function EditarNegocioPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                   disabled={loading}
                 />
                 {address && (
@@ -351,7 +351,7 @@ export default function EditarNegocioPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-600 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
                       Latitud
                     </label>
                     <input
@@ -361,12 +361,12 @@ export default function EditarNegocioPage() {
                       value={latitude}
                       onChange={(e) => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-600 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
                       Longitud
                     </label>
                     <input
@@ -376,7 +376,7 @@ export default function EditarNegocioPage() {
                       value={longitude}
                       onChange={(e) => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
@@ -416,7 +416,7 @@ export default function EditarNegocioPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -432,7 +432,7 @@ export default function EditarNegocioPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
                 disabled={loading}
               />
             </div>
@@ -546,17 +546,17 @@ export default function EditarNegocioPage() {
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">📍 Actualizar Ubicación GPS</h3>
+                <h3 className="text-xl font-bold text-white">📍 Actualizar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 Obtén tu ubicación actual o ingresa las coordenadas manualmente
               </p>
             </div>
@@ -615,7 +615,7 @@ export default function EditarNegocioPage() {
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                   placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
               <div>
@@ -628,7 +628,7 @@ export default function EditarNegocioPage() {
                   value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
                   placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
 
@@ -646,7 +646,7 @@ export default function EditarNegocioPage() {
                       className="w-full"
                     ></iframe>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">
+                  <p className="text-xs text-gray-300 mt-2">
                     📍 Lat: {latitude}, Lng: {longitude}
                   </p>
                 </div>
@@ -675,7 +675,7 @@ export default function EditarNegocioPage() {
 
             {/* Ayuda */}
             <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-300">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>

@@ -181,7 +181,7 @@ export default function GaleriaPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -192,8 +192,8 @@ export default function GaleriaPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso denegado</h2>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -208,7 +208,7 @@ export default function GaleriaPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -217,18 +217,18 @@ export default function GaleriaPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
                   <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   Gestionar Galería
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   {business.name} • {galleryUrls.length} foto{galleryUrls.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -241,11 +241,11 @@ export default function GaleriaPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Botón para agregar imagen */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 mb-8">
+        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Agregar Nueva Imagen</h2>
-              <p className="text-sm text-gray-600">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
+              <h2 className="text-xl font-bold text-white mb-1">Agregar Nueva Imagen</h2>
+              <p className="text-sm text-gray-300">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
             </div>
             <label className="relative cursor-pointer">
               <input
@@ -276,17 +276,17 @@ export default function GaleriaPage() {
 
         {/* Galería de Imágenes */}
         {galleryUrls.length === 0 ? (
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-12 text-center">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-12 text-center">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No hay imágenes en la galería</h3>
-            <p className="text-gray-600 mb-6">Comienza agregando fotos de tu negocio para atraer más clientes</p>
+            <h3 className="text-2xl font-bold text-white mb-2">No hay imágenes en la galería</h3>
+            <p className="text-gray-300 mb-6">Comienza agregando fotos de tu negocio para atraer más clientes</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {galleryUrls.map((url: string, idx: number) => (
-              <div key={idx} className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all group">
+              <div key={idx} className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 overflow-hidden hover:shadow-2xl transition-all group">
                 <div className="relative aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedImage(url)}>
                   <Image
                     src={url}

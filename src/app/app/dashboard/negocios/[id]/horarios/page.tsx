@@ -141,7 +141,7 @@ export default function HorariosPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -152,8 +152,8 @@ export default function HorariosPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso denegado</h2>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -168,7 +168,7 @@ export default function HorariosPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -177,18 +177,18 @@ export default function HorariosPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
                   <svg className="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Configurar Horarios
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   {business.name} • Horarios de Atención
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default function HorariosPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1">Configura tus horarios de atención</h3>
+              <h3 className="text-lg font-bold text-white mb-1">Configura tus horarios de atención</h3>
               <p className="text-sm text-gray-700">
                 Define los días y horarios en que tu negocio estará abierto. Esta información será visible para todos los usuarios.
               </p>
@@ -220,7 +220,7 @@ export default function HorariosPage() {
         {/* Horarios por día */}
         <div className="space-y-4 mb-8">
           {schedules.map((schedule, index) => (
-            <div key={schedule.day} className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 hover:shadow-2xl transition-all">
+            <div key={schedule.day} className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 {/* Día y Toggle */}
                 <div className="flex items-center gap-4 min-w-[160px]">
@@ -233,7 +233,7 @@ export default function HorariosPage() {
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
                   </label>
-                  <span className={`font-bold text-lg ${schedule.isOpen ? 'text-gray-900' : 'text-gray-400'}`}>
+                  <span className={`font-bold text-lg ${schedule.isOpen ? 'text-white' : 'text-gray-400'}`}>
                     {schedule.day}
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export default function HorariosPage() {
                   <>
                     <div className="flex items-center gap-3 flex-1">
                       <div className="flex-1">
-                        <label className="block text-xs text-gray-600 mb-1 font-semibold">Apertura</label>
+                        <label className="block text-xs text-gray-300 mb-1 font-semibold">Apertura</label>
                         <input
                           type="time"
                           value={schedule.openTime}
@@ -253,7 +253,7 @@ export default function HorariosPage() {
                       </div>
                       <span className="text-gray-400 font-bold mt-5">—</span>
                       <div className="flex-1">
-                        <label className="block text-xs text-gray-600 mb-1 font-semibold">Cierre</label>
+                        <label className="block text-xs text-gray-300 mb-1 font-semibold">Cierre</label>
                         <input
                           type="time"
                           value={schedule.closeTime}
@@ -286,7 +286,7 @@ export default function HorariosPage() {
         </div>
 
         {/* Botones de Acción */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-6 flex gap-4">
+        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 flex gap-4">
           <Link
             href={`/app/dashboard/negocios/${businessId}`}
             className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-semibold text-center"

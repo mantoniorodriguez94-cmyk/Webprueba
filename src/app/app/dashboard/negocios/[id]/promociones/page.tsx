@@ -123,7 +123,7 @@ export default function PromocionesPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -134,8 +134,8 @@ export default function PromocionesPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso denegado</h2>
+        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
@@ -152,7 +152,7 @@ export default function PromocionesPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -161,18 +161,18 @@ export default function PromocionesPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
                   <svg className="w-7 h-7 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                   </svg>
                   Promociones
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   {business.name} • {activePromotions.length} activa{activePromotions.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -195,12 +195,12 @@ export default function PromocionesPage() {
         
         {/* Lista de Promociones */}
         {promotions.length === 0 ? (
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 p-12 text-center">
+          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-12 text-center">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No hay promociones creadas</h3>
-            <p className="text-gray-600 mb-6">Comienza creando promociones para atraer más clientes</p>
+            <h3 className="text-2xl font-bold text-white mb-2">No hay promociones creadas</h3>
+            <p className="text-gray-300 mb-6">Comienza creando promociones para atraer más clientes</p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
@@ -254,7 +254,7 @@ function PromotionCard({
   const isUpcoming = new Date(promotion.start_date) > new Date()
 
   return (
-    <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-white/40 overflow-hidden hover:shadow-2xl transition-all group">
+    <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 overflow-hidden hover:shadow-2xl transition-all group">
       {/* Imagen */}
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-pink-100 to-pink-200">
         {promotion.image_url ? (
@@ -296,7 +296,7 @@ function PromotionCard({
 
       {/* Contenido */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{promotion.name}</h3>
+        <h3 className="text-xl font-bold text-white mb-2 truncate">{promotion.name}</h3>
         
         {promotion.price && (
           <p className="text-2xl font-bold text-pink-600 mb-3">
@@ -304,7 +304,7 @@ function PromotionCard({
           </p>
         )}
 
-        <div className="space-y-2 text-sm text-gray-600 mb-4">
+        <div className="space-y-2 text-sm text-gray-300 mb-4">
           <p className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -455,7 +455,7 @@ function CreatePromotionModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white/95 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-white/40 w-full sm:max-w-2xl sm:m-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-fadeIn"
+        className="bg-white/95 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-gray-700/40 w-full sm:max-w-2xl sm:m-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-fadeIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -564,7 +564,7 @@ function CreatePromotionModal({
                   <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-gray-600 font-medium mb-1">Haz clic para subir una imagen</p>
+                  <p className="text-gray-300 font-medium mb-1">Haz clic para subir una imagen</p>
                   <p className="text-sm text-gray-500">Máximo 5MB • JPG, PNG, GIF, WebP</p>
                   <input
                     type="file"

@@ -1,6 +1,6 @@
 // src/components/feed/BusinessFeedCard.tsx - REDISEÑO MOBILE PREMIUM
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import type { Business } from "@/types/business"
@@ -8,6 +8,11 @@ import type { User } from "@supabase/supabase-js"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import StarRating from "@/components/reviews/StarRating"
 import BusinessLocation from "@/components/BusinessLocation"
+import { 
+  trackBusinessInteraction, 
+  toggleBusinessSave, 
+  checkBusinessSaved 
+} from "@/lib/analytics"
 
 interface BusinessFeedCardProps {
   business: Business
@@ -29,6 +34,17 @@ export default function BusinessFeedCard({
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   
+  // Verificar si el negocio ya está guardado
+  useEffect(() => {
+    const checkSaved = async () => {
+      if (currentUser && business.id) {
+        const isSaved = await checkBusinessSaved(business.id, currentUser.id)
+        setSaved(isSaved)
+      }
+    }
+    checkSaved()
+  }, [currentUser, business.id])
+  
   // Parsear gallery_urls correctamente
   const getGalleryUrls = (): string[] => {
     if (!business.gallery_urls) return []
@@ -48,6 +64,83 @@ export default function BusinessFeedCard({
   const isOwner = currentUser?.id === business.owner_id
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
+  
+  // Handlers con tracking de analytics
+  const handleLike = async () => {
+    const newLikedState = !liked
+    setLiked(newLikedState)
+    
+    if (newLikedState && business.id) {
+      await trackBusinessInteraction(business.id, 'like', currentUser?.id)
+    }
+  }
+  
+  const handleSave = async () => {
+    if (!currentUser) {
+      alert("Debes iniciar sesión para guardar negocios")
+      return
+    }
+    
+    if (!business.id) return
+    
+    const newSavedState = await toggleBusinessSave(business.id, currentUser.id)
+    setSaved(newSavedState)
+  }
+  
+  const handleShare = async () => {
+    if (business.id) {
+      await trackBusinessInteraction(business.id, 'share', currentUser?.id)
+    }
+    
+    // Copiar URL al portapapeles o compartir nativo
+    const url = `${window.location.origin}/app/dashboard/negocios/${business.id}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: business.name,
+          text: business.description || `Mira ${business.name} en Encuentra`,
+          url: url
+        })
+      } catch (err) {
+        console.log("Error compartiendo:", err)
+      }
+    } else {
+      // Fallback: copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(url)
+        alert("Enlace copiado al portapapeles")
+      } catch (err) {
+        console.error("Error copiando enlace:", err)
+      }
+    }
+  }
+  
+  const handleWhatsApp = () => {
+    if (business.id) {
+      trackBusinessInteraction(business.id, 'whatsapp', currentUser?.id)
+    }
+  }
+  
+  const handlePhone = () => {
+    if (business.id) {
+      trackBusinessInteraction(business.id, 'phone', currentUser?.id)
+    }
+  }
+  
+  const handleMessage = () => {
+    if (business.id) {
+      trackBusinessInteraction(business.id, 'message', currentUser?.id)
+    }
+    setShowMessageModal(true)
+  }
+  
+  const handleGalleryView = () => {
+    if (business.id) {
+      trackBusinessInteraction(business.id, 'gallery_view', currentUser?.id)
+    }
+    setShowGallery(true)
+  }
 
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-all duration-300 animate-fade-in">
@@ -158,7 +251,7 @@ export default function BusinessFeedCard({
               <div
                 key={idx}
                 className="relative flex-shrink-0 w-32 h-32 overflow-hidden rounded-xl cursor-pointer group snap-start"
-                onClick={() => setShowGallery(true)}
+                onClick={handleGalleryView}
               >
                 <Image
                   src={url}
@@ -173,7 +266,7 @@ export default function BusinessFeedCard({
             {gallery.length > 3 && (
               <div className="flex-shrink-0 w-32 h-32 bg-gray-700/50 rounded-xl flex items-center justify-center">
                 <button
-                  onClick={() => setShowGallery(true)}
+                  onClick={handleGalleryView}
                   className="text-white text-center"
                 >
                   <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +325,7 @@ export default function BusinessFeedCard({
         <div className="flex items-center gap-2">
           {/* Me gusta */}
           <button
-            onClick={() => setLiked(!liked)}
+            onClick={handleLike}
             className={`p-2 rounded-full transition-all ${
               liked ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:bg-gray-700"
             }`}
@@ -255,7 +348,7 @@ export default function BusinessFeedCard({
           {/* Mensaje */}
           {currentUser && !isOwner && (
             <button
-              onClick={() => setShowMessageModal(true)}
+              onClick={handleMessage}
               className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-blue-400 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +358,7 @@ export default function BusinessFeedCard({
           )}
 
           {/* Compartir */}
-          <button className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-green-400 transition-all">
+          <button onClick={handleShare} className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-green-400 transition-all">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
@@ -274,7 +367,7 @@ export default function BusinessFeedCard({
 
         {/* Guardar */}
         <button
-          onClick={() => setSaved(!saved)}
+          onClick={handleSave}
           className={`p-2 rounded-full transition-all ${
             saved ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:bg-gray-700"
           }`}
@@ -302,6 +395,7 @@ export default function BusinessFeedCard({
             href={`https://wa.me/${business.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsApp}
             className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -313,6 +407,7 @@ export default function BusinessFeedCard({
         {business.phone && !business.whatsapp && (
           <a
             href={`tel:${business.phone}`}
+            onClick={handlePhone}
             className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
