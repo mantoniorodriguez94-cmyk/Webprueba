@@ -171,7 +171,11 @@ export default function MisNegociosPage() {
             Volver al inicio
           </Link>
         </div>
-        <BottomNav isCompany={isCompany} unreadCount={unreadMessagesCount} />
+        <BottomNav 
+          isCompany={isCompany} 
+          unreadCount={unreadMessagesCount}
+          messagesHref="/app/dashboard/mis-mensajes"
+        />
       </div>
     )
   }
@@ -365,7 +369,15 @@ export default function MisNegociosPage() {
         </div>
       </button>
 
-      <BottomNav isCompany={isCompany} unreadCount={unreadMessagesCount} />
+      <BottomNav 
+        isCompany={isCompany} 
+        unreadCount={unreadMessagesCount}
+        messagesHref={
+          negocios.length === 1 
+            ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
+            : "/app/dashboard/mis-negocios"
+        }
+      />
     </div>
   )
 }

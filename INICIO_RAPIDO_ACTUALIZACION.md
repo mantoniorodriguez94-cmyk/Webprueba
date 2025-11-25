@@ -218,3 +218,4 @@ Las nuevas funcionalidades están activas y listas para usar.
 
 **¡Disfruta las nuevas funciones! 🚀✨**
 
+

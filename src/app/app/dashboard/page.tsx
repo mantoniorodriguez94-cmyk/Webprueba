@@ -784,6 +784,13 @@ export default function DashboardPage() {
           ? Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)
           : unreadMessagesPersonCount
         }
+        messagesHref={
+          isCompany 
+            ? negocios.length === 1 
+              ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
+              : "/app/dashboard/mis-negocios"
+            : "/app/dashboard/mis-mensajes"
+        }
       />
     </div>
   )

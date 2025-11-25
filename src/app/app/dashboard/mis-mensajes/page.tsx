@@ -230,7 +230,7 @@ export default function MisMensajesPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden pb-20 lg:pb-0">
       {/* Header */}
       <header className="bg-gray-800/95 backdrop-blur-xl border-b border-gray-700 flex-shrink-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -354,7 +354,7 @@ export default function MisMensajesPage() {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700 bg-gray-800/50">
+              <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700 bg-gray-800/50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <input
                     type="text"

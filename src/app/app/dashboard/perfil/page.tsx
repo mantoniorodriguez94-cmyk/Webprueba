@@ -11,6 +11,7 @@ export default function PerfilPage() {
   const router = useRouter()
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [converting, setConverting] = useState(false)
+  const [negocios, setNegocios] = useState<{id: string}[]>([])
 
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
@@ -33,10 +34,12 @@ export default function PerfilPage() {
             .eq("owner_id", user.id)
           
           if (!businesses || businesses.length === 0) {
+            setNegocios([])
             setUnreadMessagesCount(0)
             return
           }
           
+          setNegocios(businesses)
           const businessIds = businesses.map(b => b.id)
           const { data: conversations } = await supabase
             .from("conversations")
@@ -434,7 +437,17 @@ export default function PerfilPage() {
         </>
       )}
 
-      <BottomNav isCompany={isCompany} unreadCount={unreadMessagesCount} />
+      <BottomNav 
+        isCompany={isCompany} 
+        unreadCount={unreadMessagesCount}
+        messagesHref={
+          isCompany 
+            ? negocios.length === 1 
+              ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
+              : "/app/dashboard/mis-negocios"
+            : "/app/dashboard/mis-mensajes"
+        }
+      />
     </div>
   )
 }

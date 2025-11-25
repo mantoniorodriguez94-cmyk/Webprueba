@@ -6,9 +6,10 @@ import { useEffect, useState } from "react"
 interface BottomNavProps {
   isCompany?: boolean
   unreadCount?: number
+  messagesHref?: string // URL dinámica para mensajes
 }
 
-export default function BottomNav({ isCompany = false, unreadCount = 0 }: BottomNavProps) {
+export default function BottomNav({ isCompany = false, unreadCount = 0, messagesHref }: BottomNavProps) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
@@ -17,6 +18,10 @@ export default function BottomNav({ isCompany = false, unreadCount = 0 }: Bottom
   }, [])
 
   if (!mounted) return null
+
+  // Usar messagesHref si se proporciona, sino usar la ruta por defecto
+  const defaultMessagesHref = isCompany ? "/app/dashboard/mis-negocios" : "/app/dashboard/mis-mensajes"
+  const finalMessagesHref = messagesHref || defaultMessagesHref
 
   const navItems = isCompany
     ? [
@@ -41,14 +46,14 @@ export default function BottomNav({ isCompany = false, unreadCount = 0 }: Bottom
           active: pathname?.startsWith("/app/dashboard/mis-negocios") || pathname?.includes("/negocios/"),
         },
         {
-          href: "/app/dashboard/mis-mensajes",
+          href: finalMessagesHref,
           icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           ),
           label: "Mensajes",
-          active: pathname === "/app/dashboard/mis-mensajes",
+          active: pathname?.includes("/mensajes"),
           badge: unreadCount,
         },
         {
@@ -84,14 +89,14 @@ export default function BottomNav({ isCompany = false, unreadCount = 0 }: Bottom
           active: false,
         },
         {
-          href: "/app/dashboard/mis-mensajes",
+          href: finalMessagesHref,
           icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           ),
           label: "Mensajes",
-          active: pathname === "/app/dashboard/mis-mensajes",
+          active: pathname?.includes("/mensajes"),
           badge: unreadCount,
         },
         {
