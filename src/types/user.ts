@@ -10,6 +10,7 @@ export interface UserMetadata {
   avatar_url?: string;
   location?: string;
   is_admin?: boolean;
+  is_premium?: boolean; // Campo para plan premium
 }
 
 export interface AppUser {

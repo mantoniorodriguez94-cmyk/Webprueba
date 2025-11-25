@@ -408,7 +408,7 @@ export default function MensajesNegocioPage() {
                         onKeyPress={(e) => e.key === "Enter" && !sending && handleSendMessage()}
                         placeholder="Escribe tu respuesta..."
                         disabled={sending}
-                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all disabled:bg-gray-100"
+                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all disabled:bg-gray-100 text-gray-900 bg-white placeholder:text-gray-400"
                       />
                       <button
                         onClick={handleSendMessage}

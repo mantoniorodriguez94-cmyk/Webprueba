@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import StarRating from "@/components/reviews/StarRating"
+import BusinessLocation from "@/components/BusinessLocation"
 
 type Props = {
   negocio: Business
@@ -37,6 +38,20 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{negocio.name}</h3>
           <p className="text-sm text-gray-600 line-clamp-2">{negocio.description || "Sin descripción"}</p>
+          
+          {/* Ubicación */}
+          {(negocio.address || (negocio.latitude && negocio.longitude)) && (
+            <div className="mt-2">
+              <BusinessLocation
+                address={negocio.address}
+                latitude={negocio.latitude}
+                longitude={negocio.longitude}
+                showIcon={false}
+                variant="compact"
+                className="text-xs"
+              />
+            </div>
+          )}
           
           {/* Rating Section */}
           {hasReviews ? (

@@ -396,10 +396,10 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Botón de Búsqueda */}
+              {/* Botón de Búsqueda - Solo visible en Desktop */}
               <button
                 onClick={() => setShowSearchModal(true)}
-                className="p-2.5 bg-gray-800 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-all"
+                className="hidden lg:flex p-2.5 bg-gray-800 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-all"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -637,7 +637,57 @@ export default function DashboardPage() {
 
             {/* Opciones */}
             <div className="p-4 space-y-2">
-              {!isCompany && (
+              {/* Mensajes - Para todos los usuarios */}
+              {isCompany && negocios.length === 1 ? (
+                // Usuario negocio con 1 solo negocio: ir directo a mensajes del negocio
+                <Link
+                  href={`/app/dashboard/negocios/${negocios[0].id}/mensajes`}
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-700 transition-all"
+                >
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">Mis Mensajes</p>
+                    <p className="text-xs text-gray-400">
+                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0
+                        ? `${Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)} sin leer`
+                        : "Mensajes del negocio"}
+                    </p>
+                  </div>
+                  {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0 && (
+                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
+                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)}
+                    </div>
+                  )}
+                </Link>
+              ) : isCompany && negocios.length > 1 ? (
+                // Usuario negocio con múltiples negocios: ir a mis-negocios para elegir
+                <Link
+                  href="/app/dashboard/mis-negocios"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-700 transition-all"
+                >
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">Mis Mensajes</p>
+                    <p className="text-xs text-gray-400">
+                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0
+                        ? `${Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)} sin leer`
+                        : "Selecciona un negocio"}
+                    </p>
+                  </div>
+                  {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0 && (
+                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
+                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)}
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                // Usuario persona: ir a mis-mensajes normal
                 <Link
                   href="/app/dashboard/mis-mensajes"
                   onClick={() => setShowUserMenu(false)}
@@ -651,17 +701,54 @@ export default function DashboardPage() {
                     <p className="text-xs text-gray-400">
                       {unreadMessagesPersonCount > 0 
                         ? `${unreadMessagesPersonCount} sin leer` 
-                        : "Ver conversaciones"
-                      }
+                        : "Ver conversaciones"}
                     </p>
                   </div>
                   {unreadMessagesPersonCount > 0 && (
-                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center">
+                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
                       {unreadMessagesPersonCount}
                     </div>
                   )}
                 </Link>
               )}
+
+              {/* Mis Negocios - Solo para usuarios empresa */}
+              {isCompany && (
+                <Link
+                  href="/app/dashboard/mis-negocios"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-700 transition-all"
+                >
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">Mis Negocios</p>
+                    <p className="text-xs text-gray-400">Gestionar negocios</p>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              )}
+
+              {/* Perfil - Para todos */}
+              <Link
+                href="/app/dashboard/perfil"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-700 transition-all"
+              >
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="font-semibold text-white">Mi Perfil</p>
+                  <p className="text-xs text-gray-400">Configuración y más</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
 
               <div className="flex items-center gap-3 p-3 border-t border-gray-700 mt-2 pt-4">
                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -693,7 +780,10 @@ export default function DashboardPage() {
       {/* Bottom Navigation (Móvil) */}
       <BottomNav 
         isCompany={isCompany} 
-        unreadCount={unreadMessagesPersonCount}
+        unreadCount={isCompany 
+          ? Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)
+          : unreadMessagesPersonCount
+        }
       />
     </div>
   )

@@ -25,6 +25,9 @@ export default function EditarNegocioPage() {
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
+  const [latitude, setLatitude] = useState("")
+  const [longitude, setLongitude] = useState("")
+  const [showMapModal, setShowMapModal] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(true)
@@ -86,6 +89,8 @@ export default function EditarNegocioPage() {
         setAddress(data.address ?? "")
         setPhone(data.phone ? String(data.phone) : "")
         setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
+        setLatitude(data.latitude ? String(data.latitude) : "")
+        setLongitude(data.longitude ? String(data.longitude) : "")
       } catch (err: any) {
         console.error("Error cargando negocio:", err)
         alert("Error cargando el negocio")
@@ -118,6 +123,16 @@ export default function EditarNegocioPage() {
     if (!negocio) return
     
     setError("")
+    
+    // Validar que al menos dirección o coordenadas estén presentes
+    const hasAddress = address.trim().length > 0
+    const hasCoordinates = latitude.trim().length > 0 && longitude.trim().length > 0
+    
+    if (!hasAddress && !hasCoordinates) {
+      setError("⚠️ Debes completar al menos uno: Dirección manual O Ubicación GPS")
+      return
+    }
+    
     setSaving(true)
     
     try {
@@ -146,7 +161,9 @@ export default function EditarNegocioPage() {
           phone: phone ? Number(phone) : null,
           whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
-          gallery_urls: gallery.length > 0 ? gallery : null
+          gallery_urls: gallery.length > 0 ? gallery : null,
+          latitude: latitude ? Number(latitude) : null,
+          longitude: longitude ? Number(longitude) : null
         })
         .eq('id', negocio.id)
 
@@ -283,20 +300,109 @@ export default function EditarNegocioPage() {
               />
             </div>
 
-            {/* Dirección */}
-            <div>
-              <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
-                Dirección
-              </label>
-              <input
-                id="address"
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Ej: Calle Principal #123"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
-                disabled={loading}
-              />
+            {/* Dirección y Ubicación GPS */}
+            <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <h3 className="font-bold text-gray-800">Ubicación del Negocio *</h3>
+              </div>
+              <p className="text-xs text-gray-600 mb-3">
+                ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
+              </p>
+              
+              {/* Opción A: Dirección Manual */}
+              <div>
+                <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                  📍 Opción A: Dirección Manual
+                </label>
+                <input
+                  id="address"
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Ej: Calle Principal #123, Ciudad"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900"
+                  disabled={loading}
+                />
+                {address && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Dirección completada
+                  </p>
+                )}
+              </div>
+
+              {/* Divisor */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <span className="text-xs font-semibold text-gray-500">O</span>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
+              {/* Opción B: Ubicación GPS */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  🗺️ Opción B: Ubicación GPS (Coordenadas)
+                </label>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label htmlFor="latitude" className="block text-xs text-gray-600 mb-1">
+                      Latitud
+                    </label>
+                    <input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={latitude}
+                      onChange={(e) => setLatitude(e.target.value)}
+                      placeholder="Ej: 4.6097"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="longitude" className="block text-xs text-gray-600 mb-1">
+                      Longitud
+                    </label>
+                    <input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={longitude}
+                      onChange={(e) => setLongitude(e.target.value)}
+                      placeholder="Ej: -74.0817"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+                
+                {latitude && longitude && (
+                  <p className="text-xs text-green-600 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Coordenadas GPS completadas
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowMapModal(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
+                  disabled={loading}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  Actualizar ubicación en mapa
+                </button>
+              </div>
             </div>
 
             {/* Teléfono */}
@@ -429,6 +535,154 @@ export default function EditarNegocioPage() {
           </form>
         </div>
       </div>
+
+      {/* Modal de Mapa */}
+      {showMapModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/80 z-50"
+            onClick={() => setShowMapModal(false)}
+          />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">📍 Actualizar Ubicación GPS</h3>
+                <button
+                  onClick={() => setShowMapModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-sm text-gray-600">
+                Obtén tu ubicación actual o ingresa las coordenadas manualmente
+              </p>
+            </div>
+
+            {/* Opción 1: Obtener ubicación actual */}
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                      (position) => {
+                        setLatitude(position.coords.latitude.toFixed(6))
+                        setLongitude(position.coords.longitude.toFixed(6))
+                        alert("✅ Ubicación obtenida exitosamente!")
+                        setShowMapModal(false)
+                      },
+                      (error) => {
+                        console.error("Error obteniendo ubicación:", error)
+                        alert("⚠️ No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
+                      }
+                    )
+                  } else {
+                    alert("⚠️ Tu navegador no soporta geolocalización")
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Usar mi ubicación actual
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Detectará automáticamente tu posición GPS
+              </p>
+            </div>
+
+            {/* Divisor */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="text-xs font-semibold text-gray-500">O ingresa manualmente</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+
+            {/* Opción 2: Ingresar coordenadas manualmente */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Latitud
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  placeholder="Ej: 4.6097"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Longitud
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  placeholder="Ej: -74.0817"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-gray-900"
+                />
+              </div>
+
+              {/* Vista previa de Mapa */}
+              {latitude && longitude && (
+                <div className="bg-gray-100 rounded-2xl p-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Vista previa:</p>
+                  <div className="bg-gray-200 rounded-xl overflow-hidden">
+                    <iframe
+                      title="Mapa de ubicación"
+                      width="100%"
+                      height="200"
+                      frameBorder="0"
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${longitude},${latitude},${longitude},${latitude}&layer=mapnik&marker=${latitude},${longitude}`}
+                      className="w-full"
+                    ></iframe>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    📍 Lat: {latitude}, Lng: {longitude}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowMapModal(false)}
+                  className="flex-1 bg-[#0288D1] hover:bg-[#0277BD] text-white font-bold py-3 px-6 rounded-2xl transition-all"
+                >
+                  Confirmar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude("")
+                    setLongitude("")
+                  }}
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-2xl transition-all"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+            {/* Ayuda */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
+              <p className="text-xs text-gray-600">
+                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
+                haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

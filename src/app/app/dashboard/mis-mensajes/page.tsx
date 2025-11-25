@@ -37,6 +37,11 @@ export default function MisMensajesPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Calcular total de mensajes no leídos
+  const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unread_count_user, 0)
+  const userRole = user?.user_metadata?.role ?? "person"
+  const isCompany = userRole === "company"
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -391,7 +396,7 @@ export default function MisMensajesPage() {
         </div>
       </div>
 
-      <BottomNav isCompany={false} unreadCount={0} />
+      <BottomNav isCompany={isCompany} unreadCount={totalUnreadCount} />
     </div>
   )
 }

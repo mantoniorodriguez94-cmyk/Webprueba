@@ -13,6 +13,8 @@ export type Business = {
   logo_url: string | null;
   gallery_urls: string[] | null;
   hours: string | null;
+  latitude: number | null; // Campo para coordenada GPS
+  longitude: number | null; // Campo para coordenada GPS
   created_at?: string;
   updated_at?: string;
   // Extended fields (from joins or calculations)

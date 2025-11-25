@@ -7,6 +7,7 @@ import type { Business } from "@/types/business"
 import type { User } from "@supabase/supabase-js"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import StarRating from "@/components/reviews/StarRating"
+import BusinessLocation from "@/components/BusinessLocation"
 
 interface BusinessFeedCardProps {
   business: Business
@@ -27,8 +28,23 @@ export default function BusinessFeedCard({
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
-  const gallery = business.gallery_urls ?? []
   
+  // Parsear gallery_urls correctamente
+  const getGalleryUrls = (): string[] => {
+    if (!business.gallery_urls) return []
+    if (Array.isArray(business.gallery_urls)) return business.gallery_urls
+    if (typeof business.gallery_urls === 'string') {
+      try {
+        const parsed = JSON.parse(business.gallery_urls)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  }
+  
+  const gallery = getGalleryUrls()
   const isOwner = currentUser?.id === business.owner_id
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
@@ -134,34 +150,39 @@ export default function BusinessFeedCard({
         </div>
       </div>
 
-      {/* Galería de imágenes */}
-      {business.gallery_urls && business.gallery_urls.length > 0 && (
-        <div className="relative aspect-[16/10] bg-gray-900">
-          <div className="grid grid-cols-3 gap-0.5 h-full">
-            {Array.isArray(business.gallery_urls) &&
-              business.gallery_urls.slice(0, 3).map((url: string, idx: number) => (
-                <div
-                  key={idx}
-                  className={`relative overflow-hidden cursor-pointer group ${idx === 0 ? 'col-span-2 row-span-2' : ''}`}
+      {/* Galería de imágenes - Scroll horizontal */}
+      {gallery.length > 0 && (
+        <div className="px-4 py-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+            {gallery.map((url: string, idx: number) => (
+              <div
+                key={idx}
+                className="relative flex-shrink-0 w-32 h-32 overflow-hidden rounded-xl cursor-pointer group snap-start"
+                onClick={() => setShowGallery(true)}
+              >
+                <Image
+                  src={url}
+                  alt={`${business.name} - imagen ${idx + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+            ))}
+            {gallery.length > 3 && (
+              <div className="flex-shrink-0 w-32 h-32 bg-gray-700/50 rounded-xl flex items-center justify-center">
+                <button
                   onClick={() => setShowGallery(true)}
+                  className="text-white text-center"
                 >
-                  <Image
-                    src={url}
-                    alt={`${business.name} - imagen ${idx + 1}`}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    unoptimized
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {idx === 2 && gallery.length > 3 && (
-                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                      <span className="text-white text-xl font-bold">
-                        +{gallery.length - 3}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-xs font-semibold">Ver todas</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -185,14 +206,15 @@ export default function BusinessFeedCard({
 
       {/* Información de contacto */}
       <div className="px-4 py-3 space-y-2 border-t border-gray-700">
-        {business.address && (
-          <div className="flex items-start gap-2 text-sm">
-            <svg className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="flex-1 text-gray-400">{business.address}</span>
-          </div>
+        {/* Ubicación con lógica inteligente */}
+        {(business.address || (business.latitude && business.longitude)) && (
+          <BusinessLocation
+            address={business.address}
+            latitude={business.latitude}
+            longitude={business.longitude}
+            showIcon={true}
+            variant="default"
+          />
         )}
 
         {(business.phone || business.whatsapp) && (
@@ -320,6 +342,46 @@ export default function BusinessFeedCard({
             console.log("Mensaje enviado exitosamente")
           }}
         />
+      )}
+
+      {/* Modal de galería completa */}
+      {showGallery && gallery.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowGallery(false)}
+        >
+          <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white">
+                Galería de {business.name}
+              </h3>
+              <button
+                onClick={() => setShowGallery(false)}
+                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Grid de imágenes */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[80vh] overflow-y-auto">
+              {gallery.map((url: string, idx: number) => (
+                <div key={idx} className="relative aspect-square overflow-hidden rounded-lg bg-gray-800">
+                  <Image
+                    src={url}
+                    alt={`${business.name} - imagen ${idx + 1}`}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    unoptimized
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

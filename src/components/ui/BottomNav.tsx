@@ -41,24 +41,25 @@ export default function BottomNav({ isCompany = false, unreadCount = 0 }: Bottom
           active: pathname?.startsWith("/app/dashboard/mis-negocios") || pathname?.includes("/negocios/"),
         },
         {
-          href: "/app/dashboard",
+          href: "/app/dashboard/mis-mensajes",
           icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           ),
-          label: "Explorar",
-          active: false,
+          label: "Mensajes",
+          active: pathname === "/app/dashboard/mis-mensajes",
+          badge: unreadCount,
         },
         {
-          href: "#",
+          href: "/app/dashboard/perfil",
           icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           ),
           label: "Perfil",
-          active: false,
+          active: pathname === "/app/dashboard/perfil",
         },
       ]
     : [
@@ -94,14 +95,14 @@ export default function BottomNav({ isCompany = false, unreadCount = 0 }: Bottom
           badge: unreadCount,
         },
         {
-          href: "#",
+          href: "/app/dashboard/perfil",
           icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           ),
           label: "Perfil",
-          active: false,
+          active: pathname === "/app/dashboard/perfil",
         },
       ]
 

@@ -311,3 +311,9 @@ SELECT business_id, AVG(rating) FROM reviews GROUP BY business_id;
 
 
 
+
+
+
+
+
+

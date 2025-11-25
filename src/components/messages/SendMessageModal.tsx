@@ -141,7 +141,7 @@ export default function SendMessageModal({
               placeholder={`Escribe tu mensaje para ${business.name}...`}
               rows={6}
               disabled={sending}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-base"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-400"
               maxLength={500}
             />
             <p className="text-xs text-gray-500 mt-2">
