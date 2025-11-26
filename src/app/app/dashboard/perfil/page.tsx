@@ -132,7 +132,7 @@ export default function PerfilPage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300">Cargando perfil...</p>
@@ -143,8 +143,8 @@ export default function PerfilPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-gray-700 p-8 max-w-md">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center bg-transparent/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -164,9 +164,9 @@ export default function PerfilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-24 lg:pb-8">
+    <div className="min-h-screen pb-24 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50">
+      <header className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -176,7 +176,7 @@ export default function PerfilPage() {
               Mi Perfil
             </h1>
             <Link href="/app/dashboard">
-              <button className="p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-all">
+              <button className="p-2 bg-transparent rounded-full text-gray-400 hover:text-white hover:bg-transparent transition-all">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -222,7 +222,7 @@ export default function PerfilPage() {
             
             {/* Mis Mensajes */}
             <Link href="/app/dashboard/mis-mensajes">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5 hover:border-gray-600 transition-all cursor-pointer">
+              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ export default function PerfilPage() {
             
             {/* Mis Negocios */}
             <Link href="/app/dashboard/mis-negocios">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5 hover:border-gray-600 transition-all cursor-pointer">
+              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,8 +289,12 @@ export default function PerfilPage() {
             </Link>
 
             {/* Mensajes del Negocio */}
-            <Link href="/app/dashboard/mis-mensajes">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5 hover:border-gray-600 transition-all cursor-pointer">
+            <Link href={
+              negocios.length === 1 
+                ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
+                : "/app/dashboard/mis-negocios"
+            }>
+              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,9 +364,9 @@ export default function PerfilPage() {
           <h3 className="text-lg font-bold text-white px-2">Configuración</h3>
           
           {/* Preferencias */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-700 rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-transparent rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -397,7 +401,7 @@ export default function PerfilPage() {
             className="fixed inset-0 bg-black/80 z-50"
             onClick={() => setShowConvertModal(false)}
           />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-800 rounded-3xl p-6 max-w-md mx-auto animate-fade-in">
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-transparent rounded-3xl p-6 max-w-md mx-auto animate-fade-in">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -428,7 +432,7 @@ export default function PerfilPage() {
               <button
                 onClick={() => setShowConvertModal(false)}
                 disabled={converting}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all"
+                className="w-full bg-transparent hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all"
               >
                 Cancelar
               </button>
@@ -444,7 +448,9 @@ export default function PerfilPage() {
           isCompany 
             ? negocios.length === 1 
               ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
-              : "/app/dashboard/mis-negocios"
+              : negocios.length === 0
+                ? "/app/dashboard/mis-negocios"
+                : "/app/dashboard/mis-negocios"
             : "/app/dashboard/mis-mensajes"
         }
       />

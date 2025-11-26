@@ -52,17 +52,17 @@ export default function ForgotPasswordPage() {
               Encuentra
             </h1>
           </Link>
-          <p className="text-gray-600 mt-3 text-sm sm:text-base">
+          <p className="text-gray-300 mt-3 text-sm sm:text-base">
             Recupera tu cuenta
           </p>
         </div>
 
         {/* Tarjeta de formulario */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
           {!success ? (
             <>
               <div className="mb-6">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white">
                   ¿Olvidaste tu contraseña?
                 </h2>
                 <p className="text-gray-500 mt-2 text-sm sm:text-base">
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@email.com"
-                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                       disabled={loading}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -135,10 +135,10 @@ export default function ForgotPasswordPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2">
                 ¡Correo enviado!
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-300 mb-6">
                 Revisa tu bandeja de entrada. Te hemos enviado un enlace para restablecer tu contraseña.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
@@ -171,7 +171,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mt-6">
           <Link 
             href="/" 
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors inline-flex items-center gap-2 group"
+            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

@@ -31,3 +31,5 @@
 - `shadow-lg` → `shadow-2xl` (para mejor visibilidad en dark)
 - Mantener los gradientes de colores (blue, purple, green, etc.)
 
+
+

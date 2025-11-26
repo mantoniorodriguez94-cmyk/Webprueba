@@ -130,3 +130,5 @@ Input visible y accesible (no cubierto por footer) ✅
 ✅ Sin errores de linter  
 ✅ Todos los tipos correctamente definidos
 
+
+

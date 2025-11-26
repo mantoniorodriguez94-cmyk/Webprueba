@@ -123,7 +123,7 @@ export default function PromocionesPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -134,7 +134,7 @@ export default function PromocionesPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
@@ -152,7 +152,7 @@ export default function PromocionesPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function PromocionesPage() {
         
         {/* Lista de Promociones */}
         {promotions.length === 0 ? (
-          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-12 text-center">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-12 text-center">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
@@ -254,7 +254,7 @@ function PromotionCard({
   const isUpcoming = new Date(promotion.start_date) > new Date()
 
   return (
-    <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 overflow-hidden hover:shadow-2xl transition-all group">
+    <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 overflow-hidden hover:shadow-2xl transition-all group">
       {/* Imagen */}
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-pink-100 to-pink-200">
         {promotion.image_url ? (
@@ -455,7 +455,7 @@ function CreatePromotionModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white/95 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-gray-700/40 w-full sm:max-w-2xl sm:m-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-fadeIn"
+        className="bg-transparent backdrop-blur-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-white/20/40 w-full sm:max-w-2xl sm:m-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-fadeIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -485,7 +485,7 @@ function CreatePromotionModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej: 2x1 en pizzas"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+              className="w-full px-4 py-3 bg-white border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
               required
             />
           </div>
@@ -504,7 +504,7 @@ function CreatePromotionModal({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+                className="w-full pl-8 pr-4 py-3 bg-white border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
               />
             </div>
           </div>
@@ -519,7 +519,7 @@ function CreatePromotionModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
                 required
               />
             </div>
@@ -531,7 +531,7 @@ function CreatePromotionModal({
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all"
                 required
               />
             </div>

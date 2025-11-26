@@ -143,7 +143,7 @@ export default function BusinessFeedCard({
   }
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-all duration-300 animate-fade-in">
+    <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 overflow-hidden hover:border-white/30 transition-all duration-300 animate-fade-in">
       {/* Header del negocio */}
       <div className="p-4">
         <div className="flex items-center gap-3">

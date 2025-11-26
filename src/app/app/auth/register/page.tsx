@@ -127,18 +127,18 @@ export default function RegisterPage() {
               Encuentra
             </h1>
           </Link>
-          <p className="text-gray-600 mt-3 text-sm sm:text-base">
+          <p className="text-gray-300 mt-3 text-sm sm:text-base">
             Únete a nuestra comunidad
           </p>
         </div>
 
         {/* Tarjeta de formulario */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">
               Crear cuenta
             </h2>
-            <p className="text-gray-500 mt-2 text-sm sm:text-base">
+            <p className="text-gray-300 mt-2 text-sm sm:text-base">
               Empieza tu viaje con Encuentra
             </p>
           </div>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} className="space-y-5">
             {/* Full Name Input */}
             <div className="space-y-2">
-              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="fullName" className="block text-sm font-semibold text-white">
                 Nombre completo
               </label>
               <div className="relative">
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Juan Pérez"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -182,7 +182,7 @@ export default function RegisterPage() {
 
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="email" className="block text-sm font-semibold text-white">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -192,7 +192,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -205,7 +205,7 @@ export default function RegisterPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="password" className="block text-sm font-semibold text-white">
                 Contraseña
               </label>
               <div className="relative">
@@ -215,13 +215,13 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +239,7 @@ export default function RegisterPage() {
               {/* Password strength indicators */}
               {password && (
                 <div className="mt-3 space-y-2 p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">Requisitos de contraseña:</p>
+                  <p className="text-xs font-semibold text-white mb-2">Requisitos de contraseña:</p>
                   <PasswordRequirement met={passwordStrength.hasMinLength} text="Mínimo 8 caracteres" />
                   <PasswordRequirement met={passwordStrength.hasUpperCase} text="Una letra mayúscula" />
                   <PasswordRequirement met={passwordStrength.hasLowerCase} text="Una letra minúscula" />
@@ -251,7 +251,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-white">
                 Confirmar contraseña
               </label>
               <div className="relative">
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 sm:py-4 border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base ${
+                  className={`w-full px-4 py-3 sm:py-4 border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base ${
                     confirmPassword && password !== confirmPassword
                       ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                       : confirmPassword && password === confirmPassword
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   {showConfirmPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -307,7 +307,7 @@ export default function RegisterPage() {
 
             {/* Selector de tipo de usuario */}
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-700">
+              <label className="block text-sm font-semibold text-white">
                 ¿Cómo te quieres registrar?
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -329,10 +329,10 @@ export default function RegisterPage() {
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className={`font-semibold text-sm ${role === "person" ? "text-[#0288D1]" : "text-gray-900"}`}>
+                      <h3 className={`font-semibold text-sm ${role === "person" ? "text-[#0288D1]" : "text-white"}`}>
                         Persona
                       </h3>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-300 mt-1">
                         Explora y descubre negocios
                       </p>
                     </div>
@@ -364,10 +364,10 @@ export default function RegisterPage() {
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className={`font-semibold text-sm ${role === "company" ? "text-[#0288D1]" : "text-gray-900"}`}>
+                      <h3 className={`font-semibold text-sm ${role === "company" ? "text-[#0288D1]" : "text-white"}`}>
                         Empresa
                       </h3>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-300 mt-1">
                         Crea y gestiona negocios
                       </p>
                     </div>
@@ -409,7 +409,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">
+              <span className="px-4 bg-transparent text-white font-medium">
                 ¿Ya tienes cuenta?
               </span>
             </div>
@@ -417,7 +417,7 @@ export default function RegisterPage() {
 
           {/* Login Link */}
           <div className="text-center">
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-300 text-sm sm:text-base">
               <Link 
                 href="/app/auth/login" 
                 className="text-[#0288D1] hover:text-[#0277BD] font-semibold transition-colors hover:underline"
@@ -432,7 +432,7 @@ export default function RegisterPage() {
         <div className="text-center mt-6">
           <Link 
             href="/" 
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors inline-flex items-center gap-2 group"
+            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -485,7 +485,7 @@ function PasswordRequirement({ met, text }: { met: boolean; text: string }) {
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
         </svg>
       )}
-      <span className={`text-xs ${met ? "text-green-700 font-medium" : "text-gray-500"}`}>
+      <span className={`text-xs ${met ? "text-green-700 font-medium" : "text-gray-300"}`}>
         {text}
       </span>
     </div>

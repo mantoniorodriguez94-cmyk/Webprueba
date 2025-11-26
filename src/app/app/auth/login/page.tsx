@@ -59,18 +59,18 @@ export default function LoginPage() {
               Encuentra
             </h1>
           </Link>
-          <p className="text-gray-600 mt-3 text-sm sm:text-base">
+          <p className="text-gray-300 mt-3 text-sm sm:text-base">
             Conecta con tu comunidad
           </p>
         </div>
 
         {/* Tarjeta de formulario */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">
               Iniciar sesión
             </h2>
-            <p className="text-gray-500 mt-2 text-sm sm:text-base">
+            <p className="text-gray-300 mt-2 text-sm sm:text-base">
               Bienvenido de nuevo a Encuentra
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="email" className="block text-sm font-semibold text-white">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -101,7 +101,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -114,7 +114,7 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              <label htmlFor="password" className="block text-sm font-semibold text-white">
                 Contraseña
               </label>
               <div className="relative">
@@ -124,13 +124,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-900 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +182,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">
+              <span className="px-4 bg-transparent text-white font-medium">
                 ¿Nuevo en Encuentra?
               </span>
             </div>
@@ -190,7 +190,7 @@ export default function LoginPage() {
 
           {/* Register Link */}
           <div className="text-center">
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-300 text-sm sm:text-base">
               ¿No tienes cuenta?{" "}
               <Link 
                 href="/app/auth/register" 
@@ -206,7 +206,7 @@ export default function LoginPage() {
         <div className="text-center mt-6">
           <Link 
             href="/" 
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors inline-flex items-center gap-2 group"
+            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

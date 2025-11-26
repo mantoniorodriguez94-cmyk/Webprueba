@@ -126,7 +126,7 @@ export default function MisNegociosPage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300">Cargando...</p>
@@ -137,8 +137,8 @@ export default function MisNegociosPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-gray-700 p-8 max-w-md">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -159,8 +159,8 @@ export default function MisNegociosPage() {
 
   if (!isCompany) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 pb-24">
-        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-gray-700 p-8 max-w-md">
+      <div className="min-h-screen flex items-center justify-center p-4 pb-24">
+        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -185,9 +185,9 @@ export default function MisNegociosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-24 lg:pb-8">
+    <div className="min-h-screen pb-24 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50">
+      <header className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -220,7 +220,7 @@ export default function MisNegociosPage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Progress Bar - Solo si NO es admin */}
         {!isAdmin && (
-          <div className="bg-gray-800/50 rounded-3xl border border-gray-700 p-5 mb-6">
+          <div className="bg-transparent rounded-3xl border border-white/20 p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-gray-300">Límite de negocios</span>
               <span className="text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>

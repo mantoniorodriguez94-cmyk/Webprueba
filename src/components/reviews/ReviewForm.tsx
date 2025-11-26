@@ -66,18 +66,18 @@ export default function ReviewForm({
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 shadow-sm">
-      <h3 className="text-xl font-bold text-gray-900 mb-4">
+    <form onSubmit={handleSubmit} className="bg-transparent backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+      <h3 className="text-xl font-bold text-white mb-4">
         {existingReview ? 'Editar tu reseña' : '¿Qué te pareció este negocio?'}
       </h3>
 
-      <p className="text-gray-600 mb-6">
+      <p className="text-gray-300 mb-6">
         Comparte tu experiencia con <span className="font-semibold">{businessName}</span>
       </p>
 
       {/* Rating Selection */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-white mb-2">
           Calificación
         </label>
         <div className="flex items-center gap-4">
@@ -97,7 +97,7 @@ export default function ReviewForm({
 
       {/* Comment Input */}
       <div className="mb-6">
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="comment" className="block text-sm font-medium text-white mb-2">
           Tu experiencia
         </label>
         <textarea
@@ -158,7 +158,7 @@ export default function ReviewForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 border border-gray-300 text-white font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>

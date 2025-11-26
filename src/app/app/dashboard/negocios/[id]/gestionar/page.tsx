@@ -123,7 +123,7 @@ export default function GestionarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -134,7 +134,7 @@ export default function GestionarNegocioPage() {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
@@ -150,7 +150,7 @@ export default function GestionarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -179,7 +179,7 @@ export default function GestionarNegocioPage() {
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
-        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 sm:p-8 mb-8">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-600 flex-shrink-0 ring-4 ring-gray-700 shadow-lg">
@@ -238,7 +238,7 @@ export default function GestionarNegocioPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Galería de Fotos */}
-          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,7 +266,7 @@ export default function GestionarNegocioPage() {
           {/* Mensajes/Chats */}
           <Link
             href={`/app/dashboard/negocios/${business.id}/mensajes`}
-            className="block bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all relative"
+            className="block bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all relative"
           >
             {unreadMessagesCount > 0 && (
               <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold min-w-[24px] h-6 px-2 rounded-full flex items-center justify-center animate-pulse">
@@ -300,7 +300,7 @@ export default function GestionarNegocioPage() {
           {/* Estadísticas */}
           <Link
             href={`/app/dashboard/negocios/${business.id}/estadisticas`}
-            className="block bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-gray-700/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all"
+            className="block bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
@@ -322,7 +322,7 @@ export default function GestionarNegocioPage() {
           </Link>
 
           {/* Horarios */}
-          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +346,7 @@ export default function GestionarNegocioPage() {
           </div>
 
           {/* Promociones */}
-          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ export default function GestionarNegocioPage() {
           </div>
 
           {/* Configuración */}
-          <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 hover:shadow-2xl transition-all">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -112,7 +112,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
       ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-gray-900/95 backdrop-blur-xl border-t border-gray-700/50 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-transparent backdrop-blur-sm border-t border-white/20 safe-bottom">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item, index) => (
           <Link

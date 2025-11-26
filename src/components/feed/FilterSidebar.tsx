@@ -55,9 +55,9 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const hasActiveFilters = filters.category !== "Todos" || filters.location !== "" || filters.searchTerm !== ""
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 p-5 space-y-5 sticky top-20">
+    <div className="bg-transparent/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-700">
+      <div className="flex items-center justify-between pb-4 border-b border-white/20">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
           <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />

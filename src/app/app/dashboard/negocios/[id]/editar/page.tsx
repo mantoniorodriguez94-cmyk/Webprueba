@@ -182,7 +182,7 @@ export default function EditarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
@@ -193,7 +193,7 @@ export default function EditarNegocioPage() {
   if (!negocio || !canEdit) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-gray-700/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <p className="text-gray-300 mb-6">No tienes permiso para editar este negocio</p>
           <Link 
@@ -210,7 +210,7 @@ export default function EditarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-gray-800/95 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <Link 
@@ -223,7 +223,7 @@ export default function EditarNegocioPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-2xl  sm:text-3xl font-bold text-white flex items-center gap-2">
                 <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -241,7 +241,7 @@ export default function EditarNegocioPage() {
       {/* Contenido */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Form Card */}
-        <div className="bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-xl border-2 border-gray-700/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 sm:p-8 lg:p-10">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-center gap-3">
@@ -256,7 +256,7 @@ export default function EditarNegocioPage() {
           <form onSubmit={handleSave} className="space-y-6">
             {/* Nombre */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-white mb-2">
                 Nombre del negocio *
               </label>
               <input
@@ -264,14 +264,14 @@ export default function EditarNegocioPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
                 disabled={loading}
               />
             </div>
 
             {/* Descripción */}
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-semibold text-white mb-2">
                 Descripción
               </label>
               <textarea
@@ -279,14 +279,14 @@ export default function EditarNegocioPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white resize-none"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 resize-none"
                 disabled={loading}
               />
             </div>
 
             {/* Categoría */}
             <div>
-              <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="category" className="block text-sm font-semibold text-white mb-2">
                 Categoría
               </label>
               <input
@@ -295,7 +295,7 @@ export default function EditarNegocioPage() {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
                 disabled={loading}
               />
             </div>
@@ -309,13 +309,13 @@ export default function EditarNegocioPage() {
                 </svg>
                 <h3 className="font-bold text-gray-800">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-300 mb-3">
+              <p className="text-xs text-gray-900 mb-2">
                 ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
               </p>
               
               {/* Opción A: Dirección Manual */}
               <div>
-                <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="address" className="block text-sm font-semibold text-gray-900 mb-2">
                   📍 Opción A: Dirección Manual
                 </label>
                 <input
@@ -324,7 +324,7 @@ export default function EditarNegocioPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
                   disabled={loading}
                 />
                 {address && (
@@ -346,12 +346,12 @@ export default function EditarNegocioPage() {
 
               {/* Opción B: Ubicación GPS */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
                   🗺️ Opción B: Ubicación GPS (Coordenadas)
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-700 mb-1">
                       Latitud
                     </label>
                     <input
@@ -361,12 +361,12 @@ export default function EditarNegocioPage() {
                       value={latitude}
                       onChange={(e) => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-700 mb-1">
                       Longitud
                     </label>
                     <input
@@ -376,7 +376,7 @@ export default function EditarNegocioPage() {
                       value={longitude}
                       onChange={(e) => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
                       disabled={loading}
                     />
                   </div>
@@ -407,7 +407,7 @@ export default function EditarNegocioPage() {
 
             {/* Teléfono */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="phone" className="block text-sm font-semibold text-white mb-2">
                 Teléfono
               </label>
               <input
@@ -416,14 +416,14 @@ export default function EditarNegocioPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
                 disabled={loading}
               />
             </div>
 
             {/* WhatsApp */}
             <div>
-              <label htmlFor="whatsapp" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="whatsapp" className="block text-sm font-semibold text-white mb-2">
                 WhatsApp
               </label>
               <input
@@ -432,14 +432,14 @@ export default function EditarNegocioPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
                 disabled={loading}
               />
             </div>
 
             {/* Logo actual */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Logo actual
               </label>
               {negocio.logo_url ? (
@@ -455,7 +455,7 @@ export default function EditarNegocioPage() {
                   <span className="text-gray-400 text-sm">Sin logo</span>
                 </div>
               )}
-              <label htmlFor="logo" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="logo" className="block text-sm font-semibold text-white mb-2">
                 Subir nuevo logo (opcional)
               </label>
               <input
@@ -470,7 +470,7 @@ export default function EditarNegocioPage() {
 
             {/* Galería */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Galería actual
               </label>
               {galleryUrls.length > 0 ? (
@@ -508,7 +508,7 @@ export default function EditarNegocioPage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href={`/app/dashboard/negocios/${negocio.id}`}
-                className="flex-1 text-center border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
+                className="flex-1 text-center border-2 border-gray-300 text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </Link>
@@ -606,7 +606,7 @@ export default function EditarNegocioPage() {
             {/* Opción 2: Ingresar coordenadas manualmente */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Latitud
                 </label>
                 <input
@@ -619,7 +619,7 @@ export default function EditarNegocioPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Longitud
                 </label>
                 <input
@@ -635,7 +635,7 @@ export default function EditarNegocioPage() {
               {/* Vista previa de Mapa */}
               {latitude && longitude && (
                 <div className="bg-gray-100 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Vista previa:</p>
+                  <p className="text-sm font-semibold text-white mb-2">Vista previa:</p>
                   <div className="bg-gray-200 rounded-xl overflow-hidden">
                     <iframe
                       title="Mapa de ubicación"

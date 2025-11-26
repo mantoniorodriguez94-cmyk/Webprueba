@@ -129,8 +129,8 @@ export default function EstadisticasPage() {
 
   if (userLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-12">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center bg-transparent/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-12">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300 font-medium">Cargando estadísticas...</p>
         </div>
@@ -140,8 +140,8 @@ export default function EstadisticasPage() {
 
   if (!business || !canView || !analytics) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-12">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center bg-transparent/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-12">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
@@ -170,9 +170,9 @@ export default function EstadisticasPage() {
   const totalInteractions = interactions.reduce((sum, i) => sum + i.interaction_count, 0)
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-12">
+    <div className="min-h-screen pb-12">
       {/* Header Premium */}
-      <header className="bg-gray-800/90 backdrop-blur-xl sticky top-0 z-30 border-b border-gray-700">
+      <header className="bg-transparent backdrop-blur-xl sticky top-0 z-30 border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -269,7 +269,7 @@ export default function EstadisticasPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Gráfico de Visitas - LINE CHART STYLE (2/3) */}
-          <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-gray-700 p-8 shadow-2xl">
+          <div className="lg:col-span-2 bg-transparent/50 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-500/20 rounded-2xl flex items-center justify-center">
@@ -326,7 +326,7 @@ export default function EstadisticasPage() {
           <div className="space-y-6">
             
             {/* Interacciones - DONUT CHART STYLE */}
-            <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-gray-700 p-6 shadow-2xl">
+            <div className="bg-transparent/50 backdrop-blur-xl rounded-3xl border border-white/20 p-6 shadow-2xl">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
                 <div className="w-8 h-8 bg-orange-500/20 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -386,7 +386,7 @@ export default function EstadisticasPage() {
                         { label: interaction.interaction_type, icon: "📊", color: "from-gray-400 to-gray-600" }
                       
                       return (
-                        <div key={index} className="flex items-center gap-3 bg-gray-700/30 rounded-2xl p-3 border border-gray-700/50">
+                        <div key={index} className="flex items-center gap-3 bg-gray-700/30 rounded-2xl p-3 border border-white/20/50">
                           <div className={`w-12 h-12 bg-gradient-to-br ${config.color} rounded-xl flex items-center justify-center text-lg shadow-lg`}>
                             {config.icon}
                           </div>
