@@ -24,6 +24,8 @@ interface Message {
   content: string
   is_read: boolean
   created_at: string
+  status?: 'sending' | 'sent' | 'error' // UI optimista
+  tempId?: string // ID temporal para mensajes optimistas
 }
 
 export default function MensajesNegocioPage() {
@@ -211,32 +213,65 @@ export default function MensajesNegocioPage() {
     }
   }, [selectedConversation, user])
 
-  // Enviar mensaje
+  // Enviar mensaje con UI optimista
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user) return
 
-    setSending(true)
     const messageContent = newMessage.trim()
-    setNewMessage("") // Limpiar input inmediatamente para mejor UX
-
+    const tempId = crypto.randomUUID()
+    
+    // 1. UI OPTIMISTA: Mostrar mensaje inmediatamente
+    const optimisticMessage: Message = {
+      id: tempId,
+      sender_id: user.id,
+      content: messageContent,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      status: 'sending',
+      tempId
+    }
+    
+    setMessages(prev => [...prev, optimisticMessage])
+    setNewMessage("")
+    
+    // 2. Enviar al servidor
     try {
-      const { error } = await supabase
+      setSending(true)
+      const { data, error } = await supabase
         .from("messages")
         .insert({
           conversation_id: selectedConversation.conversation_id,
           sender_id: user.id,
           content: messageContent
         })
+        .select()
+        .single()
 
       if (error) throw error
 
-      // El mensaje aparecerá automáticamente gracias a la suscripción en tiempo real
-      // No es necesario agregarlo manualmente
+      // 3. Actualizar mensaje optimista con datos reales
+      if (data) {
+        setMessages(prev =>
+          prev.map(m =>
+            m.tempId === tempId
+              ? { ...data, status: 'sent' as const }
+              : m
+          )
+        )
+      }
     } catch (error: any) {
       console.error("Error enviando mensaje:", error)
-      alert("Error al enviar el mensaje")
-      // Restaurar el mensaje en caso de error
-      setNewMessage(messageContent)
+      
+      // 4. Marcar mensaje como error en caso de fallo
+      setMessages(prev =>
+        prev.map(m =>
+          m.tempId === tempId
+            ? { ...m, status: 'error' as const }
+            : m
+        )
+      )
+      
+      alert("⚠️ No se pudo enviar el mensaje. Por favor, intenta de nuevo.")
     } finally {
       setSending(false)
     }
@@ -376,16 +411,29 @@ export default function MensajesNegocioPage() {
                     {messages.map((msg) => {
                       const isOwn = msg.sender_id === user?.id
                       return (
-                        <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                        <div key={msg.tempId || msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                           <div
-                            className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                            className={`max-w-[70%] rounded-2xl px-4 py-2 transition-opacity ${
+                              msg.status === 'sending' ? 'opacity-70' : 'opacity-100'
+                            } ${
                               isOwn
                                 ? "bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white"
                                 : "bg-gray-100 text-gray-900"
                             }`}
                           >
                             <p className="text-sm">{msg.content}</p>
-                            <p className={`text-xs mt-1 ${isOwn ? "text-white/70" : "text-gray-500"}`}>
+                            <p className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? "text-white/70" : "text-gray-500"}`}>
+                              {msg.status === 'sending' && isOwn && (
+                                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              )}
+                              {msg.status === 'error' && isOwn && (
+                                <svg className="w-3 h-3 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
                               {new Date(msg.created_at).toLocaleTimeString('es-ES', {
                                 hour: '2-digit',
                                 minute: '2-digit'

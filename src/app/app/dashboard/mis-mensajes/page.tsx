@@ -25,6 +25,8 @@ interface Message {
   content: string
   is_read: boolean
   created_at: string
+  status?: 'sending' | 'sent' | 'error' // UI optimista
+  tempId?: string // ID temporal para mensajes optimistas
 }
 
 export default function MisMensajesPage() {
@@ -143,8 +145,28 @@ export default function MisMensajesPage() {
         },
         async (payload) => {
           const newMsg = payload.new as Message
-          setMessages(prev => [...prev, newMsg])
+          
+          // Evitar duplicados: si ya existe por UI optimista, reemplazarlo
+          setMessages(prev => {
+            const existingIndex = prev.findIndex(m => 
+              m.sender_id === newMsg.sender_id && 
+              m.content === newMsg.content &&
+              m.status === 'sending'
+            )
+            
+            if (existingIndex !== -1) {
+              // Reemplazar mensaje optimista con el real
+              const updated = [...prev]
+              updated[existingIndex] = { ...newMsg, status: 'sent' }
+              return updated
+            }
+            
+            // Si no es mensaje propio optimista, agregarlo (mensaje de otra persona)
+            if (prev.some(m => m.id === newMsg.id)) return prev
+            return [...prev, newMsg]
+          })
 
+          // Marcar como leído si no es nuestro mensaje
           if (newMsg.sender_id !== user.id) {
             await supabase
               .from("messages")
@@ -164,23 +186,63 @@ export default function MisMensajesPage() {
     e.preventDefault()
     if (!newMessage.trim() || !selectedConversation || !user) return
 
+    const messageContent = newMessage.trim()
+    const tempId = crypto.randomUUID()
+    
+    // 1. UI OPTIMISTA: Mostrar mensaje inmediatamente
+    const optimisticMessage: Message = {
+      id: tempId,
+      sender_id: user.id,
+      content: messageContent,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      status: 'sending',
+      tempId
+    }
+    
+    setMessages(prev => [...prev, optimisticMessage])
+    setNewMessage("")
+    
+    // 2. Enviar al servidor
     try {
       setSending(true)
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("messages")
         .insert({
           conversation_id: selectedConversation.conversation_id,
           sender_id: user.id,
-          content: newMessage.trim(),
+          content: messageContent,
           is_read: false
         })
+        .select()
+        .single()
 
       if (error) throw error
-
-      setNewMessage("")
+      
+      // 3. Actualizar mensaje optimista con datos reales
+      if (data) {
+        setMessages(prev =>
+          prev.map(m =>
+            m.tempId === tempId
+              ? { ...data, status: 'sent' as const }
+              : m
+          )
+        )
+      }
     } catch (error) {
       console.error("Error enviando mensaje:", error)
-      alert("Error al enviar el mensaje")
+      
+      // 4. Marcar mensaje como error en caso de fallo
+      setMessages(prev =>
+        prev.map(m =>
+          m.tempId === tempId
+            ? { ...m, status: 'error' as const }
+            : m
+        )
+      )
+      
+      // Opcional: dar feedback al usuario
+      alert("⚠️ No se pudo enviar el mensaje. Por favor, intenta de nuevo.")
     } finally {
       setSending(false)
     }
@@ -336,14 +398,27 @@ export default function MisMensajesPage() {
                 {messages.map((msg) => {
                   const isOwn = msg.sender_id === user.id
                   return (
-                    <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] sm:max-w-md rounded-2xl px-4 py-2.5 ${
+                    <div key={msg.tempId || msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[75%] sm:max-w-md rounded-2xl px-4 py-2.5 transition-opacity ${
+                        msg.status === 'sending' ? 'opacity-70' : 'opacity-100'
+                      } ${
                         isOwn 
                           ? 'bg-blue-500 text-white rounded-br-sm' 
                           : 'bg-gray-700 text-gray-100 rounded-bl-sm'
                       }`}>
                         <p className="text-sm sm:text-base break-words">{msg.content}</p>
-                        <span className={`text-xs mt-1 block ${isOwn ? 'text-blue-100' : 'text-gray-400'}`}>
+                        <span className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-blue-100' : 'text-gray-400'}`}>
+                          {msg.status === 'sending' && isOwn && (
+                            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          )}
+                          {msg.status === 'error' && isOwn && (
+                            <svg className="w-3 h-3 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          )}
                           {new Date(msg.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>

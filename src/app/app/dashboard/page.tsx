@@ -4,12 +4,53 @@ import React, { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
-import FilterSidebar, { type FilterState } from "@/components/feed/FilterSidebar"
-import HighlightsSidebar from "@/components/feed/HighlightsSidebar"
+import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
+
+// Lazy-load de componentes pesados para mejorar performance
+const FilterSidebar = dynamic(
+  () => import("@/components/feed/FilterSidebar"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-6 animate-pulse">
+        <div className="h-6 w-24 bg-white/10 rounded mb-4" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-10 bg-white/10 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    ),
+  }
+)
+
+const HighlightsSidebar = dynamic(
+  () => import("@/components/feed/HighlightsSidebar"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-6 animate-pulse">
+        <div className="h-6 w-32 bg-white/10 rounded mb-4" />
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/10 rounded-xl" />
+              <div className="flex-1">
+                <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
+                <div className="h-3 bg-white/10 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  }
+)
 
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
