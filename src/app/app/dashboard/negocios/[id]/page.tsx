@@ -343,15 +343,15 @@ export default function BusinessDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link 
-                href="/app/dashboard"
+              <button
+                onClick={() => router.back()}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Volver al dashboard"
+                title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-              </Link>
+              </button>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white">
                   {business.name}
@@ -385,7 +385,7 @@ export default function BusinessDetailPage() {
         <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-4 ring-white shadow-lg">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-1 ring-gray-700 shadow-lg">
               {business.logo_url ? (
                 <Image
                   src={business.logo_url}
@@ -707,7 +707,7 @@ export default function BusinessDetailPage() {
             
             {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
             {user && !isOwner && userReview && !isAdmin && (
-              <div className="flex items-center gap-2 text-gray-300 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
+              <div className="flex items-center gap-2 text-gray-100 bg-gray-70 px-4 py-2 rounded-full border border-gray-200">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

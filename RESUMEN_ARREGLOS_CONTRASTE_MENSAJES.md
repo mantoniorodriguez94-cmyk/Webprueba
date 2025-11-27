@@ -236,3 +236,5 @@ El sistema ahora tiene:
 - ✅ Contraste perfecto en todos los formularios
 - ✅ Experiencia de usuario impecable
 
+
+

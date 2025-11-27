@@ -258,3 +258,5 @@ El sistema ahora tiene:
 - ✅ Experiencia visual premium
 
 
+
+

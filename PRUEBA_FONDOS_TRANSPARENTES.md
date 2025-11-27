@@ -249,3 +249,5 @@ Ahora verás:
 - ✅ Imagen de fondo optimizada para móvil (9:16)
 - ✅ Efecto glassmorphism extremo
 
+
+

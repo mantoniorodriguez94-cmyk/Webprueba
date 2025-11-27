@@ -55,7 +55,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const hasActiveFilters = filters.category !== "Todos" || filters.location !== "" || filters.searchTerm !== ""
 
   return (
-    <div className="bg-transparent/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
+    <div className="bg-transparent9/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-white/20">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">

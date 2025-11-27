@@ -279,3 +279,5 @@ El detalle del negocio ahora tiene:
 - ✅ Coherencia visual total
 - ✅ Imagen de fondo visible
 
+
+
