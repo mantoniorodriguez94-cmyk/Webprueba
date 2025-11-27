@@ -296,14 +296,34 @@ export default function PerfilPage() {
             }>
               <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-white">Mensajes del Negocio</h4>
+                    <p className="text-sm text-gray-400">Consultas de clientes</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+
+            {/* Mensajes como Cliente */}
+            <Link href="/app/dashboard/mis-mensajes">
+              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-white">Mensajes</h4>
-                    <p className="text-sm text-gray-400">Consultas de clientes</p>
+                    <h4 className="font-semibold text-white">Mensajes como Cliente</h4>
+                    <p className="text-sm text-gray-400">Negocios que contactaste</p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
