@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                 <h2 className="text-2xl sm:text-3xl font-bold text-white">
                   ¿Olvidaste tu contraseña?
                 </h2>
-                <p className="text-gray-500 mt-2 text-sm sm:text-base">
+                <p className="text-gray-300 mt-2 text-sm sm:text-base">
                   No te preocupes, te enviaremos instrucciones para restablecerla
                 </p>
               </div>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleResetPassword} className="space-y-5">
                 {/* Email Input */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                  <label htmlFor="email" className="block text-sm font-semibold text-white">
                     Correo electrónico
                   </label>
                   <div className="relative">
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@email.com"
-                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                       disabled={loading}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -135,10 +135,10 @@ export default function ForgotPasswordPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 ¡Correo enviado!
               </h3>
-              <p className="text-gray-300 mb-6">
+              <p className="text-gray-600 mb-6">
                 Revisa tu bandeja de entrada. Te hemos enviado un enlace para restablecer tu contraseña.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
@@ -152,7 +152,7 @@ export default function ForgotPasswordPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full margin-top-10 p-4 border-t border-white/20"></div>
             </div>
           </div>
 

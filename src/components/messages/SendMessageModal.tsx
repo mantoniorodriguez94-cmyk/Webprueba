@@ -9,7 +9,7 @@ interface SendMessageModalProps {
   business: Business
   currentUserId: string
   onClose: () => void
-  onSuccess?: () => void
+  onSuccess?: (businessId: string) => void
 }
 
 export default function SendMessageModal({
@@ -68,10 +68,8 @@ export default function SendMessageModal({
 
       if (messageError) throw messageError
 
-      // 3. Éxito
-      alert("✅ Mensaje enviado exitosamente")
-      setMessage("")
-      onSuccess?.()
+      // 3. Éxito - Redirigir al chat
+      onSuccess?.(business.id)
       onClose()
     } catch (error: any) {
       console.error("Error enviando mensaje:", error)

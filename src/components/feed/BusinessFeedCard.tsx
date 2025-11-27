@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { Business } from "@/types/business"
 import type { User } from "@supabase/supabase-js"
 import SendMessageModal from "@/components/messages/SendMessageModal"
@@ -27,6 +28,7 @@ export default function BusinessFeedCard({
   isAdmin = false,
   onDelete 
 }: BusinessFeedCardProps) {
+  const router = useRouter()
   const [imageError, setImageError] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
@@ -433,8 +435,9 @@ export default function BusinessFeedCard({
           business={business}
           currentUserId={currentUser.id}
           onClose={() => setShowMessageModal(false)}
-          onSuccess={() => {
-            console.log("Mensaje enviado exitosamente")
+          onSuccess={(businessId) => {
+            // Redirigir al chat con el negocio
+            router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
           }}
         />
       )}

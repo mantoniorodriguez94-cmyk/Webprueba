@@ -1,12 +1,13 @@
 // src/app/dashboard/mis-mensajes/page.tsx - REDISEÑO CHAT APP STYLE
 "use client"
 import React, { useEffect, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import BottomNav from "@/components/ui/BottomNav"
+import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 
 interface Conversation {
   conversation_id: string
@@ -31,6 +32,7 @@ interface Message {
 
 export default function MisMensajesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -38,7 +40,12 @@ export default function MisMensajesPage() {
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const businessIdParam = searchParams.get('business')
+  
+  // 🔊 Hook para notificaciones de sonido
+  const { playSound, enableSound } = useChatNotificationSound()
   
   // Calcular total de mensajes no leídos
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unread_count_user, 0)
@@ -50,6 +57,15 @@ export default function MisMensajesPage() {
   }
 
   useEffect(scrollToBottom, [messages])
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null)
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [openMenuId])
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -65,6 +81,16 @@ export default function MisMensajesPage() {
         if (error) throw error
 
         setConversations(data || [])
+        
+        // Si hay un parámetro business en la URL, abrir automáticamente esa conversación
+        if (businessIdParam && data) {
+          const targetConversation = data.find(conv => conv.business_id === businessIdParam)
+          if (targetConversation) {
+            loadMessages(targetConversation)
+            // Limpiar el parámetro de la URL
+            router.replace('/app/dashboard/mis-mensajes', { scroll: false })
+          }
+        }
       } catch (error) {
         console.error("Error cargando conversaciones:", error)
       } finally {
@@ -90,10 +116,11 @@ export default function MisMensajesPage() {
       )
       .subscribe()
 
-    return () => {
+      return () => {
       supabase.removeChannel(conversationsChannel)
     }
-  }, [user])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, businessIdParam])
 
   const loadMessages = async (conversation: Conversation) => {
     setSelectedConversation(conversation)
@@ -146,6 +173,9 @@ export default function MisMensajesPage() {
         async (payload) => {
           const newMsg = payload.new as Message
           
+          // Variable para rastrear si es un mensaje nuevo (no optimista)
+          let isNewMessageFromOther = false
+          
           // Evitar duplicados: si ya existe por UI optimista, reemplazarlo
           setMessages(prev => {
             const existingIndex = prev.findIndex(m => 
@@ -163,8 +193,19 @@ export default function MisMensajesPage() {
             
             // Si no es mensaje propio optimista, agregarlo (mensaje de otra persona)
             if (prev.some(m => m.id === newMsg.id)) return prev
+            
+            // Es un mensaje nuevo de otra persona
+            if (newMsg.sender_id !== user.id) {
+              isNewMessageFromOther = true
+            }
+            
             return [...prev, newMsg]
           })
+
+          // 🔊 REPRODUCIR SONIDO: Solo si es un mensaje nuevo de otra persona
+          if (isNewMessageFromOther) {
+            playSound()
+          }
 
           // Marcar como leído si no es nuestro mensaje
           if (newMsg.sender_id !== user.id) {
@@ -263,6 +304,42 @@ export default function MisMensajesPage() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
   }
 
+  const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Evitar que se abra la conversación
+    
+    if (!confirm("¿Estás seguro de que quieres eliminar esta conversación? Todos los mensajes se eliminarán permanentemente.")) {
+      return
+    }
+
+    try {
+      // Eliminar la conversación (los mensajes se eliminan automáticamente por CASCADE)
+      const { error: conversationError } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversationId)
+        .eq("user_id", user?.id) // Solo el dueño puede eliminar
+
+      if (conversationError) {
+        console.error("Error eliminando conversación:", conversationError)
+        throw conversationError
+      }
+
+      // Actualizar estado local
+      setConversations(prev => prev.filter(c => c.conversation_id !== conversationId))
+      
+      // Si la conversación eliminada era la seleccionada, deseleccionar
+      if (selectedConversation?.conversation_id === conversationId) {
+        setSelectedConversation(null)
+        setMessages([])
+      }
+
+      setOpenMenuId(null)
+    } catch (error: any) {
+      console.error("Error eliminando conversación:", error)
+      alert(`No se pudo eliminar la conversación: ${error.message || 'Error desconocido'}`)
+    }
+  }
+
   if (userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -300,7 +377,8 @@ export default function MisMensajesPage() {
             {selectedConversation && (
               <button
                 onClick={() => setSelectedConversation(null)}
-                className="lg:hidden p-2 hover:bg-gray-700 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                aria-label="Volver a lista de chats"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -314,13 +392,6 @@ export default function MisMensajesPage() {
               {selectedConversation ? selectedConversation.business_name : "Mensajes"}
             </h1>
           </div>
-          <Link href="/app/dashboard">
-            <button className="p-2 hover:bg-gray-700 rounded-full transition-colors">
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </Link>
         </div>
       </header>
 
@@ -350,13 +421,17 @@ export default function MisMensajesPage() {
           ) : (
             <div className="flex-1 overflow-y-auto">
               {conversations.map((conv) => (
-                <button
+                <div
                   key={conv.conversation_id}
-                  onClick={() => loadMessages(conv)}
-                  className={`w-full p-4 flex items-center gap-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 ${
+                  className={`relative w-full p-4 flex items-center gap-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 ${
                     selectedConversation?.conversation_id === conv.conversation_id ? 'bg-gray-700/70' : ''
                   }`}
                 >
+                  <button
+                    onClick={() => loadMessages(conv)}
+                    className="absolute inset-0 w-full h-full"
+                    aria-label={`Abrir conversación con ${conv.business_name}`}
+                  />
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {conv.business_logo ? (
                       <Image src={conv.business_logo} alt={conv.business_name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
@@ -379,11 +454,38 @@ export default function MisMensajesPage() {
                     </p>
                   </div>
                   {conv.unread_count_user > 0 && (
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
                       <span className="text-xs font-bold text-white">{conv.unread_count_user}</span>
                     </div>
                   )}
-                </button>
+                  <div className="relative z-10">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setOpenMenuId(openMenuId === conv.conversation_id ? null : conv.conversation_id)
+                      }}
+                      className="p-2 hover:bg-gray-600 rounded-full transition-colors"
+                      aria-label="Opciones"
+                    >
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </button>
+                    {openMenuId === conv.conversation_id && (
+                      <div className="absolute right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
+                        <button
+                          onClick={(e) => handleDeleteConversation(conv.conversation_id, e)}
+                          className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Eliminar chat
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -435,6 +537,7 @@ export default function MisMensajesPage() {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onClick={enableSound} // 🔊 Habilitar sonido en Safari al primer clic
                     placeholder="Escribe un mensaje..."
                     className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
                     disabled={sending}

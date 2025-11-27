@@ -169,7 +169,7 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Juan Pérez"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -192,7 +192,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-500text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <button
@@ -239,7 +239,7 @@ export default function RegisterPage() {
               {/* Password strength indicators */}
               {password && (
                 <div className="mt-3 space-y-2 p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs font-semibold text-white mb-2">Requisitos de contraseña:</p>
+                  <p className="text-xs font-semibold text-gray-800 mb-2">Requisitos de contraseña:</p>
                   <PasswordRequirement met={passwordStrength.hasMinLength} text="Mínimo 8 caracteres" />
                   <PasswordRequirement met={passwordStrength.hasUpperCase} text="Una letra mayúscula" />
                   <PasswordRequirement met={passwordStrength.hasLowerCase} text="Una letra minúscula" />
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 sm:py-4 border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base ${
+                  className={`w-full px-4 py-3 sm:py-4 border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base ${
                     confirmPassword && password !== confirmPassword
                       ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                       : confirmPassword && password === confirmPassword
@@ -406,7 +406,7 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full margin-top-10 p-4 border-t border-white/20"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-transparent text-white font-medium">

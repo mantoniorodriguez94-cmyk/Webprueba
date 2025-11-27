@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
+import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 
 interface Conversation {
   conversation_id: string
@@ -39,8 +40,12 @@ export default function MensajesNegocioPage() {
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const businessId = params?.id as string
+  
+  // 🔊 Hook para notificaciones de sonido
+  const { playSound, enableSound } = useChatNotificationSound()
 
   // Auto-scroll al final de los mensajes
   const scrollToBottom = () => {
@@ -48,6 +53,15 @@ export default function MensajesNegocioPage() {
   }
 
   useEffect(scrollToBottom, [messages])
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null)
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [openMenuId])
 
   // Cargar negocio y verificar permisos
   useEffect(() => {
@@ -179,11 +193,17 @@ export default function MensajesNegocioPage() {
         (payload) => {
           const newMessage = payload.new as Message
           
-          // Agregar el nuevo mensaje al chat
-          setMessages(prev => [...prev, newMessage])
+          // Evitar duplicados
+          setMessages(prev => {
+            if (prev.some(m => m.id === newMessage.id)) return prev
+            return [...prev, newMessage]
+          })
 
-          // Si el mensaje NO es del usuario actual (dueño del negocio), marcarlo como leído
+          // 🔊 REPRODUCIR SONIDO: Solo si el mensaje NO es del dueño del negocio
           if (newMessage.sender_id !== user.id) {
+            playSound()
+            
+            // Marcar como leído
             supabase.rpc("mark_conversation_as_read", {
               p_conversation_id: selectedConversation.conversation_id,
               p_user_id: user.id
@@ -212,6 +232,48 @@ export default function MensajesNegocioPage() {
       supabase.removeChannel(messagesChannel)
     }
   }, [selectedConversation, user])
+
+  const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Evitar que se abra la conversación
+    
+    if (!confirm("¿Estás seguro de que quieres eliminar esta conversación? Todos los mensajes se eliminarán permanentemente.")) {
+      return
+    }
+
+    try {
+      // Verificar que el negocio pertenece al usuario actual
+      if (!business || business.owner_id !== user?.id) {
+        alert("No tienes permiso para eliminar esta conversación")
+        return
+      }
+
+      // Eliminar la conversación (los mensajes se eliminan automáticamente por CASCADE)
+      const { error: conversationError } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversationId)
+        .eq("business_id", businessId) // Solo el dueño del negocio puede eliminar
+
+      if (conversationError) {
+        console.error("Error eliminando conversación:", conversationError)
+        throw conversationError
+      }
+
+      // Actualizar estado local
+      setConversations(prev => prev.filter(c => c.conversation_id !== conversationId))
+      
+      // Si la conversación eliminada era la seleccionada, deseleccionar
+      if (selectedConversation?.conversation_id === conversationId) {
+        setSelectedConversation(null)
+        setMessages([])
+      }
+
+      setOpenMenuId(null)
+    } catch (error: any) {
+      console.error("Error eliminando conversación:", error)
+      alert(`No se pudo eliminar la conversación: ${error.message || 'Error desconocido'}`)
+    }
+  }
 
   // Enviar mensaje con UI optimista
   const handleSendMessage = async () => {
@@ -348,13 +410,17 @@ export default function MensajesNegocioPage() {
               ) : (
                 <div className="divide-y divide-gray-100">
                   {conversations.map((conv) => (
-                    <button
+                    <div
                       key={conv.conversation_id}
-                      onClick={() => loadMessages(conv)}
-                      className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
+                      className={`relative w-full p-4 text-left hover:bg-gray-50 transition-colors ${
                         selectedConversation?.conversation_id === conv.conversation_id ? "bg-[#E3F2FD]" : ""
                       }`}
                     >
+                      <button
+                        onClick={() => loadMessages(conv)}
+                        className="absolute inset-0 w-full h-full"
+                        aria-label={`Abrir conversación con ${conv.user_name || conv.user_email}`}
+                      />
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-[#0288D1] to-[#0277BD] rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                           {conv.user_name?.[0] || conv.user_email[0]}
@@ -365,7 +431,7 @@ export default function MensajesNegocioPage() {
                               {conv.user_name || conv.user_email}
                             </h4>
                             {conv.unread_count_business > 0 && (
-                              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full relative z-10">
                                 {conv.unread_count_business}
                               </span>
                             )}
@@ -380,8 +446,35 @@ export default function MensajesNegocioPage() {
                             })}
                           </p>
                         </div>
+                        <div className="relative z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setOpenMenuId(openMenuId === conv.conversation_id ? null : conv.conversation_id)
+                            }}
+                            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                            aria-label="Opciones"
+                          >
+                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
+                          </button>
+                          {openMenuId === conv.conversation_id && (
+                            <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
+                              <button
+                                onClick={(e) => handleDeleteConversation(conv.conversation_id, e)}
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Eliminar chat
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -453,6 +546,7 @@ export default function MensajesNegocioPage() {
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
+                        onClick={enableSound} // 🔊 Habilitar sonido en Safari al primer clic
                         onKeyPress={(e) => e.key === "Enter" && !sending && handleSendMessage()}
                         placeholder="Escribe tu respuesta..."
                         disabled={sending}

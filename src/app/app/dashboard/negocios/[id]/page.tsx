@@ -916,6 +916,10 @@ export default function BusinessDetailPage() {
           business={business}
           currentUserId={user.id}
           onClose={() => setShowMessageModal(false)}
+          onSuccess={(businessId) => {
+            // Redirigir al chat con el negocio
+            router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
+          }}
         />
       )}
     </div>
