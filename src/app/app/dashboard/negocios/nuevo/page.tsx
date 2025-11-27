@@ -189,15 +189,15 @@ export default function NuevoNegocioPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/app/dashboard"
+          <button 
+            onClick={() => router.back()}
             className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group mb-4"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Volver al dashboard
-          </Link>
+            Volver
+          </button>
           <h1 className="text-3xl font-bold text-white">Crear nuevo negocio</h1>
           <p className="text-gray-300 mt-1">Completa la información de tu negocio</p>
         </div>
