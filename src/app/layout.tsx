@@ -17,11 +17,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/assets/logotipo.png", sizes: "192x192", type: "image/png" },
-      { url: "/assets/logotipo.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192-maskable.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/assets/logotipo.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/icon-192-maskable.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],
   },
 };
