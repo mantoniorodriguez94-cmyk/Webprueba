@@ -21,7 +21,6 @@ export const metadata: Metadata = {
       { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icons/icon-192-maskable.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],
   },
@@ -47,7 +46,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Encuentra" />
-        <link rel="apple-touch-icon" href="/assets/logotipo.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-512-maskable.png" />
       </head>
       <body className="antialiased relative min-h-screen bg-gray-900">
         {/* Fondo de mapa fijo */}
