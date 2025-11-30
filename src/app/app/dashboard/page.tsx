@@ -70,6 +70,7 @@ export default function DashboardPage() {
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
   const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
   
@@ -197,34 +198,64 @@ export default function DashboardPage() {
       if (businessError) throw businessError
       
       try {
+        // Obtener estadísticas de reviews
         const { data: stats, error: statsError } = await supabase
           .from("business_review_stats")
           .select("*")
         
-        if (!statsError && stats) {
-          const statsMap = new Map(stats.map(s => [s.business_id, s]))
-          const businessesWithStats = (businesses ?? []).map(business => ({
-            ...business,
-            total_reviews: statsMap.get(business.id)?.total_reviews || 0,
-            average_rating: statsMap.get(business.id)?.average_rating || 0
-          }))
-          
-          setAllBusinesses(businessesWithStats)
-          setFilteredBusinesses(businessesWithStats)
-        } else {
-          const businessesWithDefaults = (businesses ?? []).map(business => ({
-            ...business,
-            total_reviews: 0,
-            average_rating: 0
-          }))
-          setAllBusinesses(businessesWithDefaults)
-          setFilteredBusinesses(businessesWithDefaults)
-        }
+        // Obtener conteo de visitas por negocio
+        const { data: viewsData } = await supabase
+          .from("business_views")
+          .select("business_id")
+        
+        // Obtener conteo de guardados por negocio
+        const { data: savesData } = await supabase
+          .from("business_saves")
+          .select("business_id")
+        
+        // Obtener conteo de compartidos por negocio
+        const { data: sharesData } = await supabase
+          .from("business_interactions")
+          .select("business_id")
+          .eq("interaction_type", "share")
+        
+        // Crear mapas de conteos
+        const viewsMap = new Map<string, number>()
+        viewsData?.forEach(v => {
+          viewsMap.set(v.business_id, (viewsMap.get(v.business_id) || 0) + 1)
+        })
+        
+        const savesMap = new Map<string, number>()
+        savesData?.forEach(s => {
+          savesMap.set(s.business_id, (savesMap.get(s.business_id) || 0) + 1)
+        })
+        
+        const sharesMap = new Map<string, number>()
+        sharesData?.forEach(sh => {
+          sharesMap.set(sh.business_id, (sharesMap.get(sh.business_id) || 0) + 1)
+        })
+        
+        const statsMap = new Map(stats?.map(s => [s.business_id, s]) || [])
+        
+        const businessesWithStats = (businesses ?? []).map(business => ({
+          ...business,
+          total_reviews: statsMap.get(business.id)?.total_reviews || 0,
+          average_rating: statsMap.get(business.id)?.average_rating || 0,
+          views_count: viewsMap.get(business.id) || 0,
+          saved_count: savesMap.get(business.id) || 0,
+          shared_count: sharesMap.get(business.id) || 0
+        }))
+        
+        setAllBusinesses(businessesWithStats)
+        setFilteredBusinesses(businessesWithStats)
       } catch {
         const businessesWithDefaults = (businesses ?? []).map(business => ({
           ...business,
           total_reviews: 0,
-          average_rating: 0
+          average_rating: 0,
+          views_count: 0,
+          saved_count: 0,
+          shared_count: 0
         }))
         setAllBusinesses(businessesWithDefaults)
         setFilteredBusinesses(businessesWithDefaults)
@@ -246,6 +277,18 @@ export default function DashboardPage() {
       fetchAllBusinesses()
     }
   }, [user, isCompany, fetchNegocios, fetchAllBusinesses, fetchUnreadMessagesForPerson])
+  
+  // Recargar negocios cuando la página recibe foco (útil después de crear un negocio)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        fetchAllBusinesses()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [user, fetchAllBusinesses])
   
   useEffect(() => {
     if (!user || !isCompany || negocios.length === 0) return
@@ -392,16 +435,58 @@ export default function DashboardPage() {
     )
   }
 
-  const featuredBusinesses = allBusinesses.slice(0, 6)
+  // DESTACADOS: Negocios con interacciones reales
+  // Cumple AL MENOS UNA de estas condiciones:
+  // - saved_count > 0 (guardados)
+  // - shared_count > 0 (compartidos)
+  // - views_count > 10 (más de 10 visitas)
+  // - total_reviews > 0 (tiene reseñas)
+  const featuredBusinesses = allBusinesses
+    .filter((business) => {
+      const hasSaves = (business.saved_count || 0) > 0
+      const hasShares = (business.shared_count || 0) > 0
+      const hasViews = (business.views_count || 0) > 10
+      const hasReviews = (business.total_reviews || 0) > 0
+      
+      return hasSaves || hasShares || hasViews || hasReviews
+    })
+    .sort((a, b) => {
+      // Ordenar por popularidad (suma de todas las interacciones)
+      const popularityA = (a.views_count || 0) + (a.saved_count || 0) * 5 + (a.shared_count || 0) * 3 + (a.total_reviews || 0) * 2
+      const popularityB = (b.views_count || 0) + (b.saved_count || 0) * 5 + (b.shared_count || 0) * 3 + (b.total_reviews || 0) * 2
+      return popularityB - popularityA
+    })
   
-  const recentBusinesses = allBusinesses.filter((business) => {
-    if (!business.created_at) return false
-    const created = new Date(business.created_at)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - created.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 7
-  })
+  // RECIENTES: Negocios creados en los últimos 7 días
+  const recentBusinesses = allBusinesses
+    .filter((business) => {
+      if (!business.created_at) {
+        console.log('⚠️ Negocio sin created_at:', business.name)
+        return false
+      }
+      
+      const created = new Date(business.created_at)
+      const now = new Date()
+      const diffTime = now.getTime() - created.getTime()
+      const diffDays = diffTime / (1000 * 60 * 60 * 24)
+      
+      const isRecent = diffDays >= 0 && diffDays < 7
+      
+      // Debug: log SIEMPRE (no solo en development) para diagnosticar
+      console.log('🔍 Negocio:', business.name, '| created_at:', business.created_at, '| días:', diffDays.toFixed(2), '| es reciente:', isRecent)
+      
+      // Incluir negocios de hace menos de 7 días (no redondear para ser más preciso)
+      return isRecent
+    })
+    .sort((a, b) => {
+      // Ordenar por fecha de creación: más recientes primero
+      return new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
+    })
+  
+  // Debug adicional - SIEMPRE visible
+  console.log('📊 Total negocios:', allBusinesses.length)
+  console.log('📅 Negocios recientes (últimos 7 días):', recentBusinesses.length)
+  console.log('🎯 Tab activo:', activeTab)
 
   const businessesByCategory = allBusinesses.reduce((acc, business) => {
     const category = business.category || "Otros"
@@ -445,19 +530,6 @@ export default function DashboardPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-
-              {/* Botón Filtros */}
-              <button
-                onClick={() => setShowFilterModal(true)}
-                className="lg:hidden p-2.5 bg-transparent rounded-full text-gray-300 hover:text-white hover:bg-transparent transition-all relative"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></div>
-                )}
               </button>
 
               {/* Menú de Usuario */}
@@ -558,6 +630,43 @@ export default function DashboardPage() {
               </div>
             )}
 
+            {/* Botón de Filtros Colapsable (Solo Mobile) */}
+            <div className="lg:hidden">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full bg-transparent/50 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 flex items-center justify-between hover:bg-transparent/70 transition-all duration-300"
+              >
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  <span className="text-white font-semibold">Filtra por Categoría, Ubicación o Nombre</span>
+                  {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  )}
+                </div>
+                <svg 
+                  className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Panel de Filtros Desplegable */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showFilters ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="bg-transparent/50 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+                  <FilterSidebar onFilterChange={handleFilterChange} />
+                </div>
+              </div>
+            </div>
+
             {/* Lista de Negocios */}
             {loading ? (
               <div className="text-center py-12">
@@ -570,11 +679,17 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <h3 className="mt-4 text-xl font-semibold text-white">
-                  {activeTab === "recientes" ? "No hay negocios recientes" : "No se encontraron negocios"}
+                  {activeTab === "recientes" 
+                    ? "No hay negocios recientes" 
+                    : activeTab === "destacados"
+                    ? "Aún no hay negocios destacados"
+                    : "No se encontraron negocios"}
                 </h3>
                 <p className="mt-2 text-gray-400">
                   {activeTab === "recientes" 
                     ? "No se han agregado negocios nuevos en los últimos 7 días" 
+                    : activeTab === "destacados"
+                    ? "Los negocios destacados son aquellos con visitas, guardados, compartidos o reseñas"
                     : "Intenta ajustar los filtros de búsqueda"}
                 </p>
               </div>

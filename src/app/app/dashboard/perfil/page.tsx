@@ -270,7 +270,7 @@ export default function PerfilPage() {
             
             {/* Mis Negocios */}
             <Link href="/app/dashboard/mis-negocios">
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
+              <div className="mt-3 bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,7 +294,7 @@ export default function PerfilPage() {
                 ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
                 : "/app/dashboard/mis-negocios"
             }>
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
+              <div className="mt-3 bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ export default function PerfilPage() {
 
             {/* Mensajes como Cliente */}
             <Link href="/app/dashboard/mis-mensajes">
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
+              <div className="mt-3 bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

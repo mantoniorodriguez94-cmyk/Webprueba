@@ -163,7 +163,8 @@ export default function NuevoNegocioPage() {
 
       if (insertError) throw insertError
 
-      router.push("/app/dashboard")
+      // Usar window.location para forzar recarga completa y asegurar que los datos se actualicen
+      window.location.href = "/app/dashboard"
     } catch (err: any) {
       setError(err.message || "Error al crear negocio")
       console.error("Error:", err)
@@ -470,7 +471,7 @@ export default function NuevoNegocioPage() {
               </button>
               <Link
                 href="/app/dashboard"
-                className="flex-1 text-center border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
+                className="flex-1 text-center border-2 border-gray-300 text-gray-300 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </Link>

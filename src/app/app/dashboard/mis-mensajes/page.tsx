@@ -7,7 +7,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import BottomNav from "@/components/ui/BottomNav"
-import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
+import { useChatNotifications } from "@/hooks/useChatNotifications"
 
 interface Conversation {
   conversation_id: string
@@ -44,8 +44,8 @@ export default function MisMensajesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const businessIdParam = searchParams.get('business')
   
-  // 🔊 Hook para notificaciones de sonido
-  const { playSound, enableSound } = useChatNotificationSound()
+  // 🔔 Hook para notificaciones completas (sonido + navegador)
+  const { notifyNewMessage, enableNotifications } = useChatNotifications()
   
   // Calcular total de mensajes no leídos
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unread_count_user, 0)
@@ -144,7 +144,16 @@ export default function MisMensajesPage() {
         .eq("is_read", false)
         .neq("sender_id", user?.id)
 
-      // Actualizar contador de no leídos
+      // Actualizar la tabla conversations para persistir el contador en 0
+      await supabase
+        .from("conversations")
+        .update({ 
+          unread_count_user: 0,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", conversation.conversation_id)
+
+      // Actualizar contador de no leídos en estado local
       setConversations(prev =>
         prev.map(conv =>
           conv.conversation_id === conversation.conversation_id
@@ -202,9 +211,11 @@ export default function MisMensajesPage() {
             return [...prev, newMsg]
           })
 
-          // 🔊 REPRODUCIR SONIDO: Solo si es un mensaje nuevo de otra persona
+          // 🔔 NOTIFICAR: Solo si es un mensaje nuevo de otra persona
           if (isNewMessageFromOther) {
-            playSound()
+            const senderName = selectedConversation?.business_name || 'Negocio'
+            const preview = newMsg.content.substring(0, 50) + (newMsg.content.length > 50 ? '...' : '')
+            notifyNewMessage(senderName, preview)
           }
 
           // Marcar como leído si no es nuestro mensaje
@@ -213,6 +224,12 @@ export default function MisMensajesPage() {
               .from("messages")
               .update({ is_read: true })
               .eq("id", newMsg.id)
+            
+            // Actualizar el contador en la tabla conversations
+            await supabase
+              .from("conversations")
+              .update({ unread_count_user: 0 })
+              .eq("id", selectedConversation.conversation_id)
           }
         }
       )
@@ -537,7 +554,7 @@ export default function MisMensajesPage() {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onClick={enableSound} // 🔊 Habilitar sonido en Safari al primer clic
+                    onClick={enableNotifications} // 🔔 Habilitar notificaciones al primer clic
                     placeholder="Escribe un mensaje..."
                     className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
                     disabled={sending}

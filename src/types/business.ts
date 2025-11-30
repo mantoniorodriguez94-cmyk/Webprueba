@@ -20,6 +20,10 @@ export type Business = {
   // Extended fields (from joins or calculations)
   total_reviews?: number;
   average_rating?: number;
+  // Analytics fields
+  views_count?: number;
+  saved_count?: number;
+  shared_count?: number;
 };
 
 export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;

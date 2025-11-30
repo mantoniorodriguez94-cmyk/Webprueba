@@ -33,15 +33,34 @@
  * }
  */
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function useChatNotificationSound() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [isEnabled, setIsEnabled] = useState(false)
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     // Pre-cargar el audio
-    audioRef.current = new Audio("/sounds/notification.mp3")
-    audioRef.current.volume = 0.7
+    try {
+      audioRef.current = new Audio("/sounds/notification.mp3")
+      audioRef.current.volume = 0.8
+      audioRef.current.preload = "auto"
+      
+      // Detectar si el audio se carga correctamente
+      audioRef.current.addEventListener('canplaythrough', () => {
+        console.log('🔊 Audio de notificación cargado correctamente')
+      })
+      
+      audioRef.current.addEventListener('error', (e) => {
+        console.error('❌ Error cargando audio de notificación:', e)
+        setHasError(true)
+      })
+      
+    } catch (error) {
+      console.error('❌ Error inicializando audio:', error)
+      setHasError(true)
+    }
     
     // Cleanup al desmontar
     return () => {
@@ -54,18 +73,37 @@ export function useChatNotificationSound() {
 
   /**
    * Reproduce el sonido de notificación
-   * Maneja errores silenciosamente para evitar romper el flujo
+   * Maneja errores y proporciona debugging
    */
-  const playSound = () => {
-    if (!audioRef.current) return
+  const playSound = async () => {
+    if (!audioRef.current) {
+      console.warn('⚠️ Audio ref no disponible')
+      return
+    }
     
-    // Reiniciar el audio para permitir reproducción consecutiva
-    audioRef.current.currentTime = 0
+    if (hasError) {
+      console.warn('⚠️ Audio tiene error, no se puede reproducir')
+      return
+    }
     
-    // Reproducir y capturar errores
-    audioRef.current.play().catch(() => {
-      // Error silencioso - puede ser autoplay bloqueado en Safari
-    })
+    try {
+      // Reiniciar el audio para permitir reproducción consecutiva
+      audioRef.current.currentTime = 0
+      
+      console.log('🔊 Intentando reproducir sonido de notificación...')
+      
+      // Reproducir el audio
+      await audioRef.current.play()
+      
+      console.log('✅ Sonido reproducido exitosamente')
+    } catch (error: any) {
+      console.warn('⚠️ Error reproduciendo sonido:', error.message)
+      
+      // Si falla por autoplay, sugerir habilitar sonido
+      if (error.name === 'NotAllowedError') {
+        console.warn('💡 Solución: El usuario debe hacer clic en el input para habilitar sonido (Safari/iOS)')
+      }
+    }
   }
 
   /**
@@ -76,25 +114,27 @@ export function useChatNotificationSound() {
    * Esta función "desbloquea" el audio reproduciendo y pausando
    * un sonido silencioso
    */
-  const enableSound = () => {
+  const enableSound = async () => {
     if (!audioRef.current) return
     
-    // Reproducir con volumen muy bajo
-    audioRef.current.volume = 0.001
-    audioRef.current.play()
-      .then(() => {
-        // Pausar inmediatamente y restaurar volumen
-        if (audioRef.current) {
-          audioRef.current.pause()
-          audioRef.current.currentTime = 0
-          audioRef.current.volume = 0.7
-        }
-      })
-      .catch(() => {
-        // Error al habilitar - no hacer nada
-      })
+    try {
+      // Reproducir con volumen muy bajo
+      audioRef.current.volume = 0.001
+      await audioRef.current.play()
+      
+      // Pausar inmediatamente y restaurar volumen
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.volume = 0.8
+        setIsEnabled(true)
+        console.log('✅ Audio desbloqueado para Safari/iOS')
+      }
+    } catch (error: any) {
+      console.warn('⚠️ Error desbloqueando audio:', error.message)
+    }
   }
 
-  return { playSound, enableSound }
+  return { playSound, enableSound, isEnabled }
 }
 

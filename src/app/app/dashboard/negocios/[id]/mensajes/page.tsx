@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import type { Business } from "@/types/business"
-import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
+import { useChatNotifications } from "@/hooks/useChatNotifications"
+import BottomNav from "@/components/ui/BottomNav"
 
 interface Conversation {
   conversation_id: string
@@ -43,8 +44,8 @@ export default function MensajesNegocioPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const businessId = params?.id as string
   
-  // 🔊 Hook para notificaciones de sonido
-  const { playSound, enableSound } = useChatNotificationSound()
+  // 🔔 Hook para notificaciones completas (sonido + navegador)
+  const { notifyNewMessage, enableNotifications } = useChatNotifications()
 
   // Auto-scroll al final de los mensajes
   const scrollToBottom = () => {
@@ -164,7 +165,16 @@ export default function MensajesNegocioPage() {
         .eq("is_read", false)
         .neq("sender_id", user?.id)
 
-      // Actualizar contador de no leídos
+      // Actualizar la tabla conversations para persistir el contador en 0
+      await supabase
+        .from("conversations")
+        .update({ 
+          unread_count_business: 0,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", conversation.conversation_id)
+
+      // Actualizar contador de no leídos en estado local
       setConversations(prev =>
         prev.map(conv =>
           conv.conversation_id === conversation.conversation_id
@@ -223,9 +233,12 @@ export default function MensajesNegocioPage() {
             return [...prev, newMsg]
           })
 
-          // 🔊 REPRODUCIR SONIDO: Solo si es un mensaje nuevo de otra persona
+          // 🔔 NOTIFICAR: Solo si es un mensaje nuevo de otra persona
           if (isNewMessageFromOther) {
-            playSound()
+            // Obtener nombre del remitente (el usuario que envía al negocio)
+            const senderName = newMsg.sender_name || 'Usuario'
+            const preview = newMsg.content.substring(0, 50) + (newMsg.content.length > 50 ? '...' : '')
+            notifyNewMessage(senderName, preview)
           }
 
           // Marcar como leído si no es nuestro mensaje
@@ -234,6 +247,12 @@ export default function MensajesNegocioPage() {
               .from("messages")
               .update({ is_read: true })
               .eq("id", newMsg.id)
+            
+            // Actualizar el contador en la tabla conversations
+            await supabase
+              .from("conversations")
+              .update({ unread_count_business: 0 })
+              .eq("id", selectedConversation.conversation_id)
           }
         }
       )
@@ -367,6 +386,8 @@ export default function MensajesNegocioPage() {
   if (!business) return null
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count_business, 0)
+  const userRole = user?.user_metadata?.role ?? "person"
+  const isCompany = userRole === "company"
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden pb-20 lg:pb-0">
@@ -387,9 +408,9 @@ export default function MensajesNegocioPage() {
             )}
             {!selectedConversation && (
               <button
-                onClick={() => router.push(`/app/dashboard/negocios/${businessId}`)}
+                onClick={() => router.back()}
                 className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Volver al negocio"
+                aria-label="Volver atrás"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -549,7 +570,7 @@ export default function MensajesNegocioPage() {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onClick={enableSound} // 🔊 Habilitar sonido en Safari al primer clic
+                    onClick={enableNotifications} // 🔔 Habilitar notificaciones al primer clic
                     placeholder="Escribe un mensaje..."
                     className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
                     disabled={sending}
@@ -585,6 +606,8 @@ export default function MensajesNegocioPage() {
           )}
         </div>
       </div>
+
+      <BottomNav isCompany={isCompany} unreadCount={totalUnread} />
     </div>
   )
 }
