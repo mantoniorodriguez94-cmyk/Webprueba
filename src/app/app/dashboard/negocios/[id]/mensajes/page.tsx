@@ -408,9 +408,9 @@ export default function MensajesNegocioPage() {
             )}
             {!selectedConversation && (
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push(`/app/dashboard/negocios/${businessId}`)}
                 className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Volver atrás"
+                aria-label="Volver al negocio"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
