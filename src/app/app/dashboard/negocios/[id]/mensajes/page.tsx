@@ -235,8 +235,8 @@ export default function MensajesNegocioPage() {
 
           // 🔔 NOTIFICAR: Solo si es un mensaje nuevo de otra persona
           if (isNewMessageFromOther) {
-            // Obtener nombre del remitente (el usuario que envía al negocio)
-            const senderName = newMsg.sender_name || 'Usuario'
+            // Obtener nombre del remitente de la conversación actual
+            const senderName = selectedConversation.user_name || selectedConversation.user_email || 'Usuario'
             const preview = newMsg.content.substring(0, 50) + (newMsg.content.length > 50 ? '...' : '')
             notifyNewMessage(senderName, preview)
           }
@@ -261,7 +261,7 @@ export default function MensajesNegocioPage() {
     return () => {
       supabase.removeChannel(messagesChannel)
     }
-  }, [selectedConversation, user])
+  }, [selectedConversation, user, notifyNewMessage])
 
   const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
     e.stopPropagation() // Evitar que se abra la conversación
@@ -408,9 +408,9 @@ export default function MensajesNegocioPage() {
             )}
             {!selectedConversation && (
               <button
-                onClick={() => router.push(`/app/dashboard/negocios/${businessId}`)}
+                onClick={() => router.back()}
                 className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Volver al negocio"
+                aria-label="Volver atrás"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

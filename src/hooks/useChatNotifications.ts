@@ -16,7 +16,7 @@
  * notifyNewMessage(senderName, messageContent)
  */
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 
 export function useChatNotifications() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -58,7 +58,7 @@ export function useChatNotifications() {
   /**
    * Reproduce el sonido de notificación
    */
-  const playSound = async () => {
+  const playSound = useCallback(async () => {
     if (!audioRef.current) return
     
     try {
@@ -68,12 +68,12 @@ export function useChatNotifications() {
     } catch (error: any) {
       console.warn('⚠️ No se pudo reproducir sonido:', error.message)
     }
-  }
+  }, [])
 
   /**
    * Muestra notificación del navegador
    */
-  const showBrowserNotification = (title: string, body: string) => {
+  const showBrowserNotification = useCallback((title: string, body: string) => {
     if (typeof window === 'undefined' || !('Notification' in window)) return
     
     if (Notification.permission === 'granted') {
@@ -83,7 +83,6 @@ export function useChatNotifications() {
           icon: '/assets/logotipo.png',
           badge: '/assets/logotipo.png',
           tag: 'chat-message',
-          renotify: true,
           requireInteraction: false,
           silent: false
         })
@@ -96,13 +95,13 @@ export function useChatNotifications() {
         console.warn('⚠️ Error mostrando notificación:', error)
       }
     }
-  }
+  }, [])
 
   /**
    * Habilita sonido y solicita permisos de notificación
    * DEBE llamarse desde un evento de usuario (onClick)
    */
-  const enableNotifications = async () => {
+  const enableNotifications = useCallback(async () => {
     // 1. Habilitar audio (para Safari)
     if (audioRef.current) {
       try {
@@ -143,13 +142,13 @@ export function useChatNotifications() {
         }
       }
     }
-  }
+  }, [])
 
   /**
    * Función principal: notificar nuevo mensaje
    * Reproduce sonido Y muestra notificación del navegador
    */
-  const notifyNewMessage = (senderName: string, messagePreview: string) => {
+  const notifyNewMessage = useCallback((senderName: string, messagePreview: string) => {
     console.log('🔔 Notificando nuevo mensaje de:', senderName)
     
     // 1. Reproducir sonido
@@ -165,7 +164,7 @@ export function useChatNotifications() {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate([200, 100, 200])
     }
-  }
+  }, [playSound, showBrowserNotification])
 
   return { 
     notifyNewMessage,

@@ -238,7 +238,7 @@ export default function MisMensajesPage() {
     return () => {
       supabase.removeChannel(messagesChannel)
     }
-  }, [selectedConversation, user])
+  }, [selectedConversation, user, notifyNewMessage])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
