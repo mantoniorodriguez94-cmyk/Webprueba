@@ -157,3 +157,4 @@ ON reviews(user_id, created_at DESC);
    - Balancear entre read y write performance según uso real
 */
 
+

@@ -292,3 +292,4 @@ Ahora cuando eres dueño de negocio Y también envías mensajes a otros negocios
 
 **🎊 ¡Problema resuelto! Ahora todos tus chats son accesibles. 🎊**
 
+

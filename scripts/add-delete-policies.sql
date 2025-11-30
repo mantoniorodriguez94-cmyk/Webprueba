@@ -63,3 +63,4 @@ BEGIN
   RAISE NOTICE '   - Dueños: pueden eliminar conversaciones de sus negocios';
 END $$;
 
+

@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
-import Link from "next/link"
 import type { Business } from "@/types/business"
 import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 
@@ -139,6 +138,7 @@ export default function MensajesNegocioPage() {
     return () => {
       supabase.removeChannel(conversationsChannel)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId, business])
 
   // Cargar mensajes de una conversación
@@ -156,18 +156,20 @@ export default function MensajesNegocioPage() {
 
       setMessages(data || [])
 
-      // Marcar mensajes como leídos
-      await supabase.rpc("mark_conversation_as_read", {
-        p_conversation_id: conversation.conversation_id,
-        p_user_id: user!.id
-      })
+      // Marcar mensajes como leídos (MISMA LÓGICA que mis-mensajes)
+      await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("conversation_id", conversation.conversation_id)
+        .eq("is_read", false)
+        .neq("sender_id", user?.id)
 
-      // Actualizar contador local
+      // Actualizar contador de no leídos
       setConversations(prev =>
-        prev.map(c =>
-          c.conversation_id === conversation.conversation_id
-            ? { ...c, unread_count_business: 0 }
-            : c
+        prev.map(conv =>
+          conv.conversation_id === conversation.conversation_id
+            ? { ...conv, unread_count_business: 0 }
+            : conv
         )
       )
     } catch (error) {
@@ -175,13 +177,12 @@ export default function MensajesNegocioPage() {
     }
   }
 
-  // Suscripción en tiempo real a mensajes de la conversación seleccionada
+  // Suscripción en tiempo real a mensajes de la conversación seleccionada (MISMA LÓGICA que mis-mensajes)
   useEffect(() => {
     if (!selectedConversation || !user) return
 
-    // Suscribirse a nuevos mensajes en esta conversación
     const messagesChannel = supabase
-      .channel(`business_messages_${selectedConversation.conversation_id}`)
+      .channel(`messages_${selectedConversation.conversation_id}`)
       .on(
         'postgres_changes',
         {
@@ -190,40 +191,50 @@ export default function MensajesNegocioPage() {
           table: 'messages',
           filter: `conversation_id=eq.${selectedConversation.conversation_id}`
         },
-        (payload) => {
-          const newMessage = payload.new as Message
+        async (payload) => {
+          const newMsg = payload.new as Message
           
-          // Evitar duplicados
+          // Variable para rastrear si es un mensaje nuevo (no optimista)
+          let isNewMessageFromOther = false
+          
+          // Evitar duplicados: si ya existe por UI optimista, reemplazarlo
           setMessages(prev => {
-            if (prev.some(m => m.id === newMessage.id)) return prev
-            return [...prev, newMessage]
+            const existingIndex = prev.findIndex(m => 
+              m.sender_id === newMsg.sender_id && 
+              m.content === newMsg.content &&
+              m.status === 'sending'
+            )
+            
+            if (existingIndex !== -1) {
+              // Reemplazar mensaje optimista con el real
+              const updated = [...prev]
+              updated[existingIndex] = { ...newMsg, status: 'sent' }
+              return updated
+            }
+            
+            // Si no es mensaje propio optimista, agregarlo (mensaje de otra persona)
+            if (prev.some(m => m.id === newMsg.id)) return prev
+            
+            // Es un mensaje nuevo de otra persona
+            if (newMsg.sender_id !== user.id) {
+              isNewMessageFromOther = true
+            }
+            
+            return [...prev, newMsg]
           })
 
-          // 🔊 REPRODUCIR SONIDO: Solo si el mensaje NO es del dueño del negocio
-          if (newMessage.sender_id !== user.id) {
+          // 🔊 REPRODUCIR SONIDO: Solo si es un mensaje nuevo de otra persona
+          if (isNewMessageFromOther) {
             playSound()
-            
-            // Marcar como leído
-            supabase.rpc("mark_conversation_as_read", {
-              p_conversation_id: selectedConversation.conversation_id,
-              p_user_id: user.id
-            })
           }
 
-          // Actualizar la última mensaje en la lista de conversaciones
-          setConversations(prev =>
-            prev.map(c =>
-              c.conversation_id === selectedConversation.conversation_id
-                ? {
-                    ...c,
-                    last_message: newMessage.content,
-                    last_message_at: newMessage.created_at,
-                    last_message_sender_id: newMessage.sender_id,
-                    unread_count_business: newMessage.sender_id === user.id ? 0 : c.unread_count_business
-                  }
-                : c
-            )
-          )
+          // Marcar como leído si no es nuestro mensaje
+          if (newMsg.sender_id !== user.id) {
+            await supabase
+              .from("messages")
+              .update({ is_read: true })
+              .eq("id", newMsg.id)
+          }
         }
       )
       .subscribe()
@@ -275,8 +286,9 @@ export default function MensajesNegocioPage() {
     }
   }
 
-  // Enviar mensaje con UI optimista
-  const handleSendMessage = async () => {
+  // Enviar mensaje con UI optimista (MISMA LÓGICA que mis-mensajes)
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!newMessage.trim() || !selectedConversation || !user) return
 
     const messageContent = newMessage.trim()
@@ -304,13 +316,14 @@ export default function MensajesNegocioPage() {
         .insert({
           conversation_id: selectedConversation.conversation_id,
           sender_id: user.id,
-          content: messageContent
+          content: messageContent,
+          is_read: false
         })
         .select()
         .single()
 
       if (error) throw error
-
+      
       // 3. Actualizar mensaje optimista con datos reales
       if (data) {
         setMessages(prev =>
@@ -321,7 +334,7 @@ export default function MensajesNegocioPage() {
           )
         )
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error enviando mensaje:", error)
       
       // 4. Marcar mensaje como error en caso de fallo
@@ -333,6 +346,7 @@ export default function MensajesNegocioPage() {
         )
       )
       
+      // Opcional: dar feedback al usuario
       alert("⚠️ No se pudo enviar el mensaje. Por favor, intenta de nuevo.")
     } finally {
       setSending(false)
@@ -540,20 +554,19 @@ export default function MensajesNegocioPage() {
                   </div>
 
                   {/* Input de mensaje */}
-                  <div className="p-4 border-t border-gray-200 bg-gray-50">
+                  <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-gray-50">
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onClick={enableSound} // 🔊 Habilitar sonido en Safari al primer clic
-                        onKeyPress={(e) => e.key === "Enter" && !sending && handleSendMessage()}
                         placeholder="Escribe tu respuesta..."
                         disabled={sending}
                         className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all disabled:bg-gray-100 text-gray-900 bg-white placeholder:text-gray-400"
                       />
                       <button
-                        onClick={handleSendMessage}
+                        type="submit"
                         disabled={sending || !newMessage.trim()}
                         className="px-6 py-3 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white rounded-2xl hover:shadow-xl transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
@@ -566,7 +579,7 @@ export default function MensajesNegocioPage() {
                         )}
                       </button>
                     </div>
-                  </div>
+                  </form>
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center">

@@ -100,3 +100,4 @@ Si tienes problemas, revisa:
 2. Los logs de Supabase en el Dashboard
 3. Verifica que las políticas RLS se crearon correctamente con el query de verificación incluido en el script
 
+
