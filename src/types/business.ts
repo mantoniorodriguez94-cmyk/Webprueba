@@ -17,6 +17,10 @@ export type Business = {
   longitude: number | null; // Campo para coordenada GPS
   created_at?: string;
   updated_at?: string;
+  // Premium fields
+  is_premium?: boolean;
+  premium_until?: string | null;
+  premium_plan_id?: string | null;
   // Extended fields (from joins or calculations)
   total_reviews?: number;
   average_rating?: number;

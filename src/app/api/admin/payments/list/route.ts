@@ -1,0 +1,66 @@
+/**
+ * API Route: Listar pagos manuales (ADMIN)
+ * GET /api/admin/payments/list?status=pending|approved|rejected
+ * 
+ * Lista los pagos manuales filtrados por estado
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+// Cliente de Supabase para API routes (servidor)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+export async function GET(request: NextRequest) {
+  try {
+    // Obtener el parámetro de status
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status') || 'pending'
+
+    // Validar status
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return NextResponse.json(
+        { success: false, error: 'Status inválido' },
+        { status: 400 }
+      )
+    }
+
+    // TODO: Verificar que el usuario es admin
+    // Implementar según tu lógica de autenticación
+
+    // Consultar pagos manuales
+    const { data, error } = await supabase
+      .from('manual_payment_submissions')
+      .select(`
+        *,
+        business:businesses(name),
+        plan:premium_plans(name, price_usd),
+        user:auth.users(email)
+      `)
+      .eq('status', status)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error consultando pagos:', error)
+      return NextResponse.json(
+        { success: false, error: 'Error al consultar pagos' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      submissions: data || [],
+    })
+
+  } catch (error: any) {
+    console.error('Error en list payments:', error)
+    return NextResponse.json(
+      { success: false, error: error.message || 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+

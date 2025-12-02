@@ -25,6 +25,13 @@ export default function NuevoNegocioPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [checking, setChecking] = useState(true)
+  const [isPremium, setIsPremium] = useState(false)
+  const [galleryError, setGalleryError] = useState("")
+  
+  // Límites de imágenes según plan
+  const MAX_IMAGES_FREE = 3
+  const MAX_IMAGES_PREMIUM = 10
+  const maxImages = isPremium ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
   
   // Verificar límite de negocios al cargar la página
   useEffect(() => {
@@ -44,6 +51,20 @@ export default function NuevoNegocioPage() {
           router.push("/app/dashboard")
           return
         }
+        
+        // Verificar si tiene algún negocio premium activo
+        const { data: businesses } = await supabase
+          .from("businesses")
+          .select("is_premium, premium_until")
+          .eq("owner_id", user.id)
+        
+        const hasPremiumBusiness = businesses?.some(b => 
+          b.is_premium === true && 
+          b.premium_until && 
+          new Date(b.premium_until) > new Date()
+        ) ?? false
+        
+        setIsPremium(hasPremiumBusiness)
         
         // Verificar si es administrador (sin límites)
         const isAdmin = user.user_metadata?.is_admin ?? false
@@ -99,6 +120,28 @@ export default function NuevoNegocioPage() {
     
     const { data } = supabase.storage.from(folder).getPublicUrl(path)
     return data.publicUrl
+  }
+
+  // Manejador de cambio de galería con validación
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    setGalleryError("")
+    
+    if (files && files.length > 0) {
+      if (files.length > maxImages) {
+        setGalleryError(
+          isPremium 
+            ? `⚠️ Límite premium: máximo ${MAX_IMAGES_PREMIUM} imágenes. Seleccionaste ${files.length}.`
+            : `⚠️ Límite gratuito: máximo ${MAX_IMAGES_FREE} imágenes. ⭐ Con Premium puedes subir hasta ${MAX_IMAGES_PREMIUM} imágenes.`
+        )
+        e.target.value = "" // Limpiar selección
+        setGallery(null)
+      } else {
+        setGallery(files)
+      }
+    } else {
+      setGallery(null)
+    }
   }
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -429,8 +472,11 @@ export default function NuevoNegocioPage() {
 
             {/* Galería */}
             <div>
-              <label htmlFor="gallery" className="block text-sm font-semibold text-white mb-2">
-                Galería de imágenes (opcional, múltiples)
+              <label htmlFor="gallery" className="block text-sm font-semibold text-white mb-2 flex items-center justify-between">
+                <span>Galería de imágenes (opcional)</span>
+                <span className={`text-xs font-normal ${isPremium ? 'text-yellow-400' : 'text-gray-400'}`}>
+                  {isPremium ? `⭐ Premium: hasta ${MAX_IMAGES_PREMIUM}` : `Máx: ${MAX_IMAGES_FREE} (⭐ Premium: ${MAX_IMAGES_PREMIUM})`}
+                </span>
               </label>
               <div className="relative">
                 <input
@@ -438,14 +484,28 @@ export default function NuevoNegocioPage() {
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={e => setGallery(e.target.files)}
+                  onChange={handleGalleryChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#E3F2FD] file:text-[#0288D1] hover:file:bg-[#BBDEFB]"
                   disabled={loading}
                 />
               </div>
+              
+              {/* Mensaje de error si excede el límite */}
+              {galleryError && (
+                <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+                  <p className="text-sm text-red-400">{galleryError}</p>
+                </div>
+              )}
+              
+              {/* Contador de archivos seleccionados */}
               {gallery && gallery.length > 0 && (
-                <p className="text-xs text-gray-500 mt-2">
-                  {gallery.length} archivo(s) seleccionado(s)
+                <p className={`text-xs mt-2 ${gallery.length === maxImages ? 'text-yellow-400 font-semibold' : 'text-gray-400'}`}>
+                  ✓ {gallery.length} de {maxImages} imagen{gallery.length !== 1 ? 'es' : ''} seleccionada{gallery.length !== 1 ? 's' : ''}
+                  {!isPremium && (
+                    <Link href="/app/dashboard/perfil" className="ml-2 text-yellow-400 hover:text-yellow-300 underline">
+                      ⭐ Mejora a Premium
+                    </Link>
+                  )}
                 </p>
               )}
             </div>

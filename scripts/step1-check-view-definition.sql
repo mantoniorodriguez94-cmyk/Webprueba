@@ -42,3 +42,4 @@ WHERE table_schema = 'public'
   AND table_name = 'businesses'
   AND column_name = 'created_at';
 
+

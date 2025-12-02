@@ -101,3 +101,4 @@ Si tienes problemas, revisa:
 3. Verifica que las políticas RLS se crearon correctamente con el query de verificación incluido en el script
 
 
+

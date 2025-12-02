@@ -11,11 +11,18 @@ export default function PerfilPage() {
   const router = useRouter()
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [converting, setConverting] = useState(false)
-  const [negocios, setNegocios] = useState<{id: string}[]>([])
+  const [negocios, setNegocios] = useState<{id: string, is_premium?: boolean, premium_until?: string}[]>([])
 
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
-  const isPremium = user?.user_metadata?.is_premium ?? false
+  
+  // Verificar si el usuario tiene al menos un negocio premium activo
+  const isPremium = negocios.some(negocio => 
+    negocio.is_premium === true && 
+    negocio.premium_until && 
+    new Date(negocio.premium_until) > new Date()
+  )
+  
   const fullName = user?.user_metadata?.full_name || "Usuario"
   const email = user?.email || ""
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
@@ -30,7 +37,7 @@ export default function PerfilPage() {
           // Para usuarios negocio: contar mensajes de todos sus negocios
           const { data: businesses } = await supabase
             .from("businesses")
-            .select("id")
+            .select("id, is_premium, premium_until")
             .eq("owner_id", user.id)
           
           if (!businesses || businesses.length === 0) {
@@ -332,8 +339,8 @@ export default function PerfilPage() {
               </div>
             </Link>
 
-            {/* Plan Premium */}
-            {!isPremium && (
+            {/* Plan Premium - Usuario NO premium */}
+            {!isPremium && negocios.length > 0 && (
               <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-3xl border-2 border-yellow-500/50 p-6">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 bg-yellow-500/30 rounded-2xl flex items-center justify-center flex-shrink-0">
@@ -344,34 +351,134 @@ export default function PerfilPage() {
                   <div className="flex-1">
                     <h4 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
                       ⭐ Suscripción Premium
-                      <span className="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">$5 USD/mes</span>
+                      <span className="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">Desde $1/mes</span>
                     </h4>
-                    <p className="text-sm text-gray-300 mb-4">Desbloquea más funciones para tu negocio</p>
+                    <p className="text-sm text-gray-300 mb-4">Destaca tu negocio y obtén más visibilidad</p>
                     
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center gap-2 text-sm text-gray-200">
                         <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        Crear de 2 a 5 negocios
+                        Aparece en sección Destacados
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-200">
                         <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        1 semana en sección Destacados
+                        Badge premium visible
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-200">
                         <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        Borde dorado especial en un negocio
+                        Mayor visibilidad en búsquedas
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Más fotos en galería
                       </div>
                     </div>
 
-                    <button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02]">
-                      Próximamente
-                    </button>
+                    {negocios.length === 0 ? (
+                      <div className="space-y-3">
+                        <p className="text-xs text-yellow-300 bg-yellow-500/20 p-3 rounded-lg border border-yellow-500/30">
+                          ℹ️ Primero crea un negocio para poder suscribirte a Premium
+                        </p>
+                        <Link href="/app/dashboard/negocios/nuevo">
+                          <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02]">
+                            Crear Mi Primer Negocio
+                          </button>
+                        </Link>
+                      </div>
+                    ) : negocios.length === 1 ? (
+                      <Link href={`/app/dashboard/negocios/${negocios[0].id}/premium`}>
+                        <button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                          </svg>
+                          Mejorar a Premium
+                        </button>
+                      </Link>
+                    ) : (
+                      <Link href="/app/dashboard/mis-negocios">
+                        <button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                          </svg>
+                          Elegir Negocio Premium
+                        </button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Plan Premium - Usuario YA ES premium */}
+            {isPremium && (
+              <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-3xl border-2 border-yellow-500/50 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-yellow-500/30 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+                      🎉 ¡Eres Usuario Premium!
+                      <span className="text-xs bg-green-500/30 text-green-300 px-2 py-1 rounded-full">Activo</span>
+                    </h4>
+                    <p className="text-sm text-gray-300 mb-4">Disfrutas de todos los beneficios premium</p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-green-300">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Apareciendo en Destacados
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-300">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Badge premium visible
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-300">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Borde dorado en tu negocio
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-300">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Máxima visibilidad
+                      </div>
+                    </div>
+
+                    {negocios.length === 1 ? (
+                      <Link href={`/app/dashboard/negocios/${negocios[0].id}/premium`}>
+                        <button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Ver Mi Suscripción
+                        </button>
+                      </Link>
+                    ) : (
+                      <Link href="/app/dashboard/mis-negocios">
+                        <button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Gestionar Suscripciones
+                        </button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import type { User } from "@supabase/supabase-js"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import StarRating from "@/components/reviews/StarRating"
 import BusinessLocation from "@/components/BusinessLocation"
+import PremiumBadge, { PremiumBanner } from "@/components/ui/PremiumBadge"
 import { 
   trackBusinessInteraction, 
   toggleBusinessSave, 
@@ -144,14 +145,30 @@ export default function BusinessFeedCard({
     setShowGallery(true)
   }
 
+  // Verificar si el negocio es premium activo
+  const isPremiumActive = business.is_premium === true && 
+                         business.premium_until && 
+                         new Date(business.premium_until) > new Date()
+
   return (
-    <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 overflow-hidden hover:border-white/30 transition-all duration-300 animate-fade-in">
+    <div className={`backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative ${
+      isPremiumActive 
+        ? 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5' 
+        : 'border border-white/20 hover:border-white/30 bg-transparent'
+    }`}>
+      {/* Banner Premium */}
+      {isPremiumActive && <PremiumBanner />}
+      
       {/* Header del negocio */}
       <div className="p-4">
         <div className="flex items-center gap-3">
           {/* Logo del negocio */}
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
-            <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600">
+            <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
+              isPremiumActive 
+                ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/70 shadow-lg shadow-yellow-500/30' 
+                : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600'
+            }`}>
               {business.logo_url && !imageError ? (
                 <Image
                   src={business.logo_url}
@@ -174,9 +191,12 @@ export default function BusinessFeedCard({
           {/* Info del negocio */}
           <div className="flex-1 min-w-0">
             <Link href={`/app/dashboard/negocios/${business.id}`}>
-              <h3 className="text-lg font-bold text-white truncate hover:text-blue-400 transition-colors">
-                {business.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white truncate hover:text-blue-400 transition-colors">
+                  {business.name}
+                </h3>
+                {isPremiumActive && <PremiumBadge variant="small" showText={false} />}
+              </div>
             </Link>
             <div className="flex items-center gap-2 mt-1">
               {business.category && (

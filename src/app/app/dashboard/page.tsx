@@ -435,23 +435,38 @@ export default function DashboardPage() {
     )
   }
 
-  // DESTACADOS: Negocios con interacciones reales
+  // DESTACADOS: Negocios con interacciones reales O premium activo
   // Cumple AL MENOS UNA de estas condiciones:
+  // - is_premium = true Y premium_until > now (PRIORIDAD MÁXIMA)
   // - saved_count > 0 (guardados)
   // - shared_count > 0 (compartidos)
   // - views_count > 10 (más de 10 visitas)
   // - total_reviews > 0 (tiene reseñas)
   const featuredBusinesses = allBusinesses
     .filter((business) => {
+      // Verificar si es premium activo
+      const isPremiumActive = business.is_premium === true && 
+                             business.premium_until && 
+                             new Date(business.premium_until) > new Date()
+      
+      // Verificar interacciones
       const hasSaves = (business.saved_count || 0) > 0
       const hasShares = (business.shared_count || 0) > 0
       const hasViews = (business.views_count || 0) > 10
       const hasReviews = (business.total_reviews || 0) > 0
       
-      return hasSaves || hasShares || hasViews || hasReviews
+      // Premium siempre aparece en destacados, o si cumple otras condiciones
+      return isPremiumActive || hasSaves || hasShares || hasViews || hasReviews
     })
     .sort((a, b) => {
-      // Ordenar por popularidad (suma de todas las interacciones)
+      // PRIORIDAD 1: Negocios premium primero
+      const aIsPremium = a.is_premium === true && a.premium_until && new Date(a.premium_until) > new Date()
+      const bIsPremium = b.is_premium === true && b.premium_until && new Date(b.premium_until) > new Date()
+      
+      if (aIsPremium && !bIsPremium) return -1
+      if (!aIsPremium && bIsPremium) return 1
+      
+      // PRIORIDAD 2: Por puntuación de interacciones (solo si ambos no son premium o ambos son premium)
       const popularityA = (a.views_count || 0) + (a.saved_count || 0) * 5 + (a.shared_count || 0) * 3 + (a.total_reviews || 0) * 2
       const popularityB = (b.views_count || 0) + (b.saved_count || 0) * 5 + (b.shared_count || 0) * 3 + (b.total_reviews || 0) * 2
       return popularityB - popularityA

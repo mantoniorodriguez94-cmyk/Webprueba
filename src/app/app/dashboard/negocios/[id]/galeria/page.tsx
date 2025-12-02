@@ -22,6 +22,16 @@ export default function GaleriaPage() {
   const isOwner = user?.id === business?.owner_id
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canManage = isOwner || isAdmin
+  
+  // Verificar si el negocio es premium activo
+  const isPremiumActive = business?.is_premium === true && 
+                         business?.premium_until && 
+                         new Date(business.premium_until) > new Date()
+  
+  // Límites de imágenes según plan
+  const MAX_IMAGES_FREE = 3
+  const MAX_IMAGES_PREMIUM = 10
+  const maxImages = isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -84,6 +94,18 @@ export default function GaleriaPage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !business) return
+
+    // Validar límite de imágenes según plan
+    const currentImageCount = galleryUrls.length
+    if (currentImageCount >= maxImages) {
+      if (isPremiumActive) {
+        alert(`⚠️ Has alcanzado el límite premium de ${MAX_IMAGES_PREMIUM} imágenes.\n\nElimina algunas fotos antes de agregar nuevas.`)
+      } else {
+        alert(`⚠️ Has alcanzado el límite gratuito de ${MAX_IMAGES_FREE} imágenes.\n\n⭐ Mejora a Premium para subir hasta ${MAX_IMAGES_PREMIUM} imágenes.\n\nO elimina algunas fotos antes de agregar nuevas.`)
+      }
+      e.target.value = "" // Limpiar input
+      return
+    }
 
     // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
@@ -241,25 +263,67 @@ export default function GaleriaPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Botón para agregar imagen */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 mb-8">
+        <div className={`bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 p-6 mb-8 ${
+          isPremiumActive ? 'border-yellow-500/40' : 'border-white/20/40'
+        }`}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Agregar Nueva Imagen</h2>
-              <p className="text-sm text-gray-300">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-xl font-bold text-white">Agregar Nueva Imagen</h2>
+                {isPremiumActive && (
+                  <span className="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">⭐ Premium</span>
+                )}
+              </div>
+              <p className="text-sm text-gray-300 mb-2">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
+              
+              {/* Contador de imágenes */}
+              <div className={`inline-flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full ${
+                galleryUrls.length >= maxImages 
+                  ? 'bg-red-500/20 text-red-300' 
+                  : isPremiumActive 
+                    ? 'bg-yellow-500/20 text-yellow-300'
+                    : 'bg-blue-500/20 text-blue-300'
+              }`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {galleryUrls.length} / {maxImages} imágenes
+                {galleryUrls.length >= maxImages && " (límite alcanzado)"}
+              </div>
+              
+              {/* Mensaje de upgrade para usuarios gratuitos */}
+              {!isPremiumActive && galleryUrls.length > 0 && (
+                <div className="mt-2 text-xs text-gray-400">
+                  ⭐ <Link href="/app/dashboard/perfil" className="text-yellow-400 hover:text-yellow-300 underline">
+                    Mejora a Premium
+                  </Link> para subir hasta {MAX_IMAGES_PREMIUM} imágenes
+                </div>
+              )}
             </div>
-            <label className="relative cursor-pointer">
+            <label className={`relative ${galleryUrls.length >= maxImages ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={uploading}
+                disabled={uploading || galleryUrls.length >= maxImages}
                 className="hidden"
               />
-              <div className={`flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}>
+              <div className={`flex items-center gap-2 text-white px-6 py-3 rounded-full transition-all font-semibold ${
+                uploading || galleryUrls.length >= maxImages
+                  ? 'bg-gray-600 opacity-50 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:shadow-xl hover:scale-105'
+              }`}>
                 {uploading ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     Subiendo...
+                  </>
+                ) : galleryUrls.length >= maxImages ? (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                    Límite Alcanzado
                   </>
                 ) : (
                   <>

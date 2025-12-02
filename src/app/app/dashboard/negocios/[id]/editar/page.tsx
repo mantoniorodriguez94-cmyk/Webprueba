@@ -33,11 +33,22 @@ export default function EditarNegocioPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
+  const [galleryError, setGalleryError] = useState("")
 
   // Verificar permisos
   const isOwner = user?.id === negocio?.owner_id
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canEdit = isOwner || isAdmin
+  
+  // Verificar si el negocio es premium activo
+  const isPremiumActive = negocio?.is_premium === true && 
+                         negocio?.premium_until && 
+                         new Date(negocio.premium_until) > new Date()
+  
+  // Límites de imágenes según plan
+  const MAX_IMAGES_FREE = 3
+  const MAX_IMAGES_PREMIUM = 10
+  const maxImages = isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -116,6 +127,32 @@ export default function EditarNegocioPage() {
     
     const { data } = supabase.storage.from(folder).getPublicUrl(path)
     return data.publicUrl
+  }
+
+  // Manejador de cambio de galería con validación
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    setGalleryError("")
+    
+    if (files && files.length > 0) {
+      // Calcular total: imágenes existentes + nuevas
+      const currentImageCount = galleryUrls.length
+      const totalImages = currentImageCount + files.length
+      
+      if (totalImages > maxImages) {
+        setGalleryError(
+          isPremiumActive 
+            ? `⚠️ Límite premium: máximo ${MAX_IMAGES_PREMIUM} imágenes totales. Ya tienes ${currentImageCount}, puedes agregar ${maxImages - currentImageCount} más.`
+            : `⚠️ Límite gratuito: máximo ${MAX_IMAGES_FREE} imágenes. Ya tienes ${currentImageCount}, puedes agregar ${maxImages - currentImageCount} más. ⭐ Con Premium puedes subir hasta ${MAX_IMAGES_PREMIUM} imágenes.`
+        )
+        e.target.value = "" // Limpiar selección
+        setGalleryFiles(null)
+      } else {
+        setGalleryFiles(files)
+      }
+    } else {
+      setGalleryFiles(null)
+    }
   }
 
   const handleSave = async (e: React.FormEvent) => {

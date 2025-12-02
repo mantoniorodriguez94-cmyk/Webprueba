@@ -184,3 +184,4 @@ ORDER BY created_at DESC;
 - **Frontend:** `src/app/app/dashboard/negocios/nuevo/page.tsx`
 - **Filtro:** `src/app/app/dashboard/page.tsx` (línea ~460)
 
+

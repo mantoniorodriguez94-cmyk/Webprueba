@@ -25,3 +25,4 @@ SELECT
     COUNT(CASE WHEN created_at IS NULL THEN 1 END) as sin_fecha
 FROM public.businesses;
 
+
