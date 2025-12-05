@@ -36,8 +36,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         business:businesses(name),
-        plan:premium_plans(name, price_usd),
-        user:auth.users(email)
+        plan:premium_plans(name, price_usd)
       `)
       .eq('status', status)
       .order('created_at', { ascending: false })
@@ -48,6 +47,24 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Error al consultar pagos' },
         { status: 500 }
       )
+    }
+
+    // Obtener información de usuarios desde profiles
+    if (data && data.length > 0) {
+      const userIds = data.map((s: any) => s.user_id)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds)
+      
+      // Mapear los perfiles a los submissions
+      if (profiles) {
+        const profileMap = new Map(profiles.map(p => [p.id, p]))
+        data.forEach((s: any) => {
+          const profile = profileMap.get(s.user_id)
+          s.user = profile ? { full_name: profile.full_name } : null
+        })
+      }
     }
 
     return NextResponse.json({

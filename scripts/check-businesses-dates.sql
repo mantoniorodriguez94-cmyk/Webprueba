@@ -26,3 +26,4 @@ SELECT
 FROM public.businesses;
 
 
+

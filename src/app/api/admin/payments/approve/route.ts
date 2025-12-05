@@ -20,12 +20,21 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 function calculateEndDate(billingPeriod: string): Date {
   const now = new Date()
   
-  if (billingPeriod === 'monthly') {
-    now.setMonth(now.getMonth() + 1)
-  } else if (billingPeriod === 'yearly') {
-    now.setFullYear(now.getFullYear() + 1)
-  } else {
-    now.setDate(now.getDate() + 30)
+  switch (billingPeriod) {
+    case 'monthly':
+      now.setDate(now.getDate() + 30)
+      break
+    case 'quarterly':
+      now.setDate(now.getDate() + 90)
+      break
+    case 'semiannual':
+      now.setDate(now.getDate() + 180)
+      break
+    case 'yearly':
+      now.setDate(now.getDate() + 365)
+      break
+    default:
+      now.setDate(now.getDate() + 30)
   }
   
   return now

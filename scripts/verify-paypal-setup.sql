@@ -215,3 +215,4 @@ SELECT
   'Si todo está ✅, configura las variables de entorno y prueba el sistema' as instruccion;
 
 
+

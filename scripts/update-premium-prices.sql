@@ -27,3 +27,4 @@ ORDER BY price_usd;
 -- Premium Anual    | $10.00 | yearly
 
 
+

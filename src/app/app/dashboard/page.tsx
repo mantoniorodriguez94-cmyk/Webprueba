@@ -246,8 +246,22 @@ export default function DashboardPage() {
           shared_count: sharesMap.get(business.id) || 0
         }))
         
-        setAllBusinesses(businessesWithStats)
-        setFilteredBusinesses(businessesWithStats)
+        // Ordenar: Premium activos primero, luego por fecha de creación
+        const sortedBusinesses = businessesWithStats.sort((a, b) => {
+          const now = new Date()
+          const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
+          const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
+          
+          // Premium primero
+          if (aIsPremium && !bIsPremium) return -1
+          if (!aIsPremium && bIsPremium) return 1
+          
+          // Si ambos son premium o ambos no son premium, ordenar por fecha (más reciente primero)
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        })
+        
+        setAllBusinesses(sortedBusinesses)
+        setFilteredBusinesses(sortedBusinesses)
       } catch {
         const businessesWithDefaults = (businesses ?? []).map(business => ({
           ...business,
@@ -257,8 +271,21 @@ export default function DashboardPage() {
           saved_count: 0,
           shared_count: 0
         }))
-        setAllBusinesses(businessesWithDefaults)
-        setFilteredBusinesses(businessesWithDefaults)
+        
+        // Ordenar: Premium activos primero, luego por fecha de creación
+        const sortedBusinesses = businessesWithDefaults.sort((a, b) => {
+          const now = new Date()
+          const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
+          const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
+          
+          if (aIsPremium && !bIsPremium) return -1
+          if (!aIsPremium && bIsPremium) return 1
+          
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        })
+        
+        setAllBusinesses(sortedBusinesses)
+        setFilteredBusinesses(sortedBusinesses)
       }
     } catch (err: any) {
       console.error("Error fetching all businesses:", err)
@@ -340,26 +367,33 @@ export default function DashboardPage() {
       )
     }
 
-    switch (filters.sortBy) {
-      case "name":
-        filtered.sort((a, b) => a.name.localeCompare(b.name))
-        break
-      case "popular":
-        filtered.sort((a, b) => {
-          const dateA = new Date(a.created_at || 0).getTime()
-          const dateB = new Date(b.created_at || 0).getTime()
-          return dateB - dateA
-        })
-        break
-      case "recent":
-      default:
-        filtered.sort((a, b) => {
-          const dateA = new Date(a.created_at || 0).getTime()
-          const dateB = new Date(b.created_at || 0).getTime()
-          return dateB - dateA
-        })
-        break
+    // Helper para verificar si un negocio tiene premium activo
+    const isPremiumActive = (business: Business) => {
+      const now = new Date()
+      return business.is_premium && (!business.premium_until || new Date(business.premium_until) > now)
     }
+
+    // Ordenar según el criterio seleccionado, pero siempre con premium primero
+    filtered.sort((a, b) => {
+      // Premium siempre primero
+      const aIsPremium = isPremiumActive(a)
+      const bIsPremium = isPremiumActive(b)
+      
+      if (aIsPremium && !bIsPremium) return -1
+      if (!aIsPremium && bIsPremium) return 1
+      
+      // Dentro del mismo grupo (premium o no), aplicar el orden seleccionado
+      switch (filters.sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "popular":
+        case "recent":
+        default:
+          const dateA = new Date(a.created_at || 0).getTime()
+          const dateB = new Date(b.created_at || 0).getTime()
+          return dateB - dateA
+      }
+    })
 
     setFilteredBusinesses(filtered)
   }, [filters, allBusinesses])

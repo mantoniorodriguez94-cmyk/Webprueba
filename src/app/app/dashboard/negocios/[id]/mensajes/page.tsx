@@ -390,18 +390,18 @@ export default function MensajesNegocioPage() {
   const isCompany = userRole === "company"
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden pb-20 lg:pb-0">
+    <div className="min-h-screen w-full flex flex-col pb-0">
       {/* Header */}
-      <header className="bg-transparent backdrop-blur-sm border-b border-gray-700 flex-shrink-0 z-10">
-        <div className="px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-xl border-b border-white/10 flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {selectedConversation && (
               <button
                 onClick={() => setSelectedConversation(null)}
-                className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 aria-label="Volver a lista de chats"
               >
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -430,7 +430,7 @@ export default function MensajesNegocioPage() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Lista de Conversaciones */}
-        <div className={`${selectedConversation ? 'hidden lg:flex' : 'flex'} w-full lg:w-96 flex-col border-r border-gray-700 bg-transparent/50`}>
+        <div className={`${selectedConversation ? 'hidden lg:flex' : 'flex'} w-full lg:w-96 flex-col border-r border-white/10 bg-gray-900/50`}>
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
@@ -441,22 +441,22 @@ export default function MensajesNegocioPage() {
           ) : conversations.length === 0 ? (
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">Sin mensajes</h3>
-                <p className="text-sm text-gray-400">Los usuarios pueden enviarte mensajes desde tu negocio</p>
+                <p className="text-sm text-white/50">Los usuarios pueden enviarte mensajes desde tu negocio</p>
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto rounded">
               {conversations.map((conv) => (
                 <div
                   key={conv.conversation_id}
-                  className={`relative w-full p-4 flex items-center gap-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 ${
-                    selectedConversation?.conversation_id === conv.conversation_id ? 'bg-gray-700/70' : ''
+                  className={`relative w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-white/5 ${
+                    selectedConversation?.conversation_id === conv.conversation_id ? 'bg-blue-600/10 border-l-2 border-l-blue-500' : ''
                   }`}
                 >
                   <button
@@ -464,9 +464,9 @@ export default function MensajesNegocioPage() {
                     className="absolute inset-0 w-full h-full"
                     aria-label={`Abrir conversación con ${conv.user_name || conv.user_email}`}
                   />
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                     <span className="text-white font-bold text-lg">
-                      {conv.user_name?.[0] || conv.user_email[0]}
+                      {conv.user_name?.[0]?.toUpperCase() || conv.user_email[0].toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0 text-left">
@@ -487,7 +487,7 @@ export default function MensajesNegocioPage() {
                     </p>
                   </div>
                   {conv.unread_count_business > 0 && (
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
+                    <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 relative z-10">
                       <span className="text-xs font-bold text-white">{conv.unread_count_business}</span>
                     </div>
                   )}
@@ -505,10 +505,10 @@ export default function MensajesNegocioPage() {
                       </svg>
                     </button>
                     {openMenuId === conv.conversation_id && (
-                      <div className="absolute right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
+                      <div className="absolute right-0 mt-1 bg-white/10 border border-white/20 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
                         <button
                           onClick={(e) => handleDeleteConversation(conv.conversation_id, e)}
-                          className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/10 transition-colors flex items-center gap-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -525,7 +525,7 @@ export default function MensajesNegocioPage() {
         </div>
 
         {/* Área de Chat */}
-        <div className={`${selectedConversation ? 'flex' : 'hidden lg:flex'} flex-1 flex-col bg-gray-900`}>
+        <div className={`${selectedConversation ? 'flex' : 'hidden lg:flex'} flex-1 flex-col bg-gray-900/30`}>
           {selectedConversation ? (
             <>
               {/* Mensajes */}
@@ -538,11 +538,11 @@ export default function MensajesNegocioPage() {
                         msg.status === 'sending' ? 'opacity-70' : 'opacity-100'
                       } ${
                         isOwn 
-                          ? 'bg-blue-500 text-white rounded-br-sm' 
-                          : 'bg-gray-700 text-gray-100 rounded-bl-sm'
+                          ? 'bg-blue-600 text-white rounded-br-sm shadow-lg shadow-blue-500/20' 
+                          : 'bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-bl-sm'
                       }`}>
                         <p className="text-sm sm:text-base break-words">{msg.content}</p>
-                        <span className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-blue-100' : 'text-gray-400'}`}>
+                        <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${isOwn ? 'text-blue-200' : 'text-white/50'}`}>
                           {msg.status === 'sending' && isOwn && (
                             <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -555,7 +555,12 @@ export default function MensajesNegocioPage() {
                             </svg>
                           )}
                           {new Date(msg.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                          {isOwn && msg.status !== 'sending' && msg.status !== 'error' && (
+                            <svg className="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )
@@ -563,33 +568,35 @@ export default function MensajesNegocioPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700 bg-transparent/50 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onClick={enableNotifications} // 🔔 Habilitar notificaciones al primer clic
-                    placeholder="Escribe un mensaje..."
-                    className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                    disabled={sending}
-                  />
-                  <button
-                    type="submit"
-                    disabled={sending || !newMessage.trim()}
-                    className="w-12 h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                  >
-                    {sending ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </form>
+              {/* Input - Separado del BottomNav */}
+              <div className="flex-shrink-0 bg-gray-900/95 backdrop-blur-xl border-t border-white/10 p-3 pb-4 mb-16 lg:mb-0">
+                <form onSubmit={handleSendMessage}>
+                  <div className="flex flex-row bg-gray-800/80 rounded-full p-1.5 items-center gap-2 shadow-lg">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onClick={enableNotifications}
+                      placeholder="Escribe un mensaje..."
+                      className="flex-1 bg-transparent text-white px-4 py-2.5 rounded-full focus:outline-none placeholder:text-gray-500"
+                      disabled={sending}
+                    />
+                    <button
+                      type="submit"
+                      disabled={sending || !newMessage.trim()}
+                      className="w-11 h-11 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg"
+                    >
+                      {sending ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center p-8">
@@ -606,8 +613,10 @@ export default function MensajesNegocioPage() {
           )}
         </div>
       </div>
-
+        
       <BottomNav isCompany={isCompany} unreadCount={totalUnread} />
+    
+
     </div>
   )
 }

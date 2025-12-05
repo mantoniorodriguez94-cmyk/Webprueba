@@ -62,3 +62,4 @@ COMMENT ON POLICY "Users can view their own receipts" ON storage.objects IS
   'Usuarios solo ven sus propios recibos';
 
 
+

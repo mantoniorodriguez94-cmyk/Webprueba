@@ -19,6 +19,7 @@ export default function PaymentSuccessPage() {
 
   useEffect(() => {
     capturePayment()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const capturePayment = async () => {

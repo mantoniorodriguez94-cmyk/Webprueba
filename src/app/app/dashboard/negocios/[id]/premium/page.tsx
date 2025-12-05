@@ -25,17 +25,25 @@ export default function PremiumPage() {
   const [currentSubscription, setCurrentSubscription] = useState<BusinessSubscriptionWithPlan | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<PremiumPlan | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'manual'>('paypal')
-  const [manualPaymentMethod, setManualPaymentMethod] = useState<'zelle' | 'bank_transfer'>('zelle')
+  const [manualPaymentMethod, setManualPaymentMethod] = useState<'pago_movil' | 'zelle' | 'bank_transfer'>('pago_movil')
   const [reference, setReference] = useState('')
   const [screenshot, setScreenshot] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  const copyToClipboard = (text: string, fieldName: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedField(fieldName)
+    setTimeout(() => setCopiedField(null), 2000)
+  }
 
   useEffect(() => {
     if (user) {
       loadData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId, user])
 
   const loadData = async () => {
@@ -239,9 +247,9 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20">
+    <div className="min-h-screen pb-24 lg:pb-8">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
+      <div className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -260,7 +268,7 @@ export default function PremiumPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Estado Actual */}
-        {currentSubscription && (
+        {currentSubscription && currentSubscription.plan && (
           <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-3">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,11 +311,11 @@ export default function PremiumPage() {
             {currentSubscription ? 'Renovar o Cambiar Plan' : 'Elige tu Plan Premium'}
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`bg-gray-800 border-2 rounded-lg p-6 cursor-pointer transition-all ${
+                className={`mt-3 bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer ${
                   selectedPlan?.id === plan.id
                     ? 'border-blue-500 shadow-lg shadow-blue-500/20'
                     : 'border-gray-700 hover:border-gray-600'
@@ -329,7 +337,9 @@ export default function PremiumPage() {
                 <div className="text-3xl font-bold text-white mb-4">
                   ${plan.price_usd}
                   <span className="text-base text-gray-400 font-normal">
-                    /{plan.billing_period === 'monthly' ? 'mes' : 'año'}
+                    /{plan.billing_period === 'monthly' ? 'mes' : 
+                      plan.billing_period === 'quarterly' ? '3 meses' :
+                      plan.billing_period === 'semiannual' ? '6 meses' : 'año'}
                   </span>
                 </div>
 
@@ -366,7 +376,7 @@ export default function PremiumPage() {
 
         {/* Métodos de Pago */}
         {selectedPlan && (
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="mt-3 bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/20 transition-all cursor-pointer">
             <h3 className="text-xl font-bold text-white mb-6">Método de Pago</h3>
 
             {/* Selector de Método */}
@@ -415,6 +425,137 @@ export default function PremiumPage() {
             {/* Pago Manual */}
             {paymentMethod === 'manual' && (
               <form onSubmit={handleManualPayment} className="space-y-4">
+                {/* Pago Móvil BDV */}
+                <div className="bg-gradient-to-r from-[#004B93] to-[#0066CC] rounded-lg p-5 mb-4">
+                  <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                    <span className="text-2xl">🏦</span>
+                    Pago Móvil - Banco de Venezuela
+                  </h4>
+                  
+                  {/* Datos para copiar */}
+                  <div className="space-y-3 mb-5">
+                    <div className="bg-white/10 rounded-lg p-3 flex justify-between items-center">
+                      <div>
+                        <p className="text-blue-200 text-xs">Teléfono</p>
+                        <p className="text-white font-mono font-bold text-lg">0426-1010281</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('04261010281', 'telefono')}
+                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                          copiedField === 'telefono' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        {copiedField === 'telefono' ? '✅ Copiado' : '📋 Copiar'}
+                      </button>
+                    </div>
+                    
+                    <div className="bg-white/10 rounded-lg p-3 flex justify-between items-center">
+                      <div>
+                        <p className="text-blue-200 text-xs">Cédula</p>
+                        <p className="text-white font-mono font-bold text-lg">V-23480465</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('23480465', 'cedula')}
+                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                          copiedField === 'cedula' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        {copiedField === 'cedula' ? '✅ Copiado' : '📋 Copiar'}
+                      </button>
+                    </div>
+                    
+                    <div className="bg-white/10 rounded-lg p-3 flex justify-between items-center">
+                      <div>
+                        <p className="text-blue-200 text-xs">Banco</p>
+                        <p className="text-white font-bold">Banco de Venezuela (0102)</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('0102', 'banco')}
+                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                          copiedField === 'banco' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                      >
+                        {copiedField === 'banco' ? '✅ Copiado' : '📋 Copiar'}
+                      </button>
+                    </div>
+                    
+                    <div className="bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3 flex justify-between items-center">
+                      <div>
+                        <p className="text-yellow-200 text-xs">Monto a pagar</p>
+                        <p className="text-yellow-300 font-mono font-bold text-xl">${selectedPlan.price_usd} USD</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selectedPlan.price_usd.toString(), 'monto')}
+                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                          copiedField === 'monto' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-yellow-500/30 hover:bg-yellow-500/40 text-yellow-200'
+                        }`}
+                      >
+                        {copiedField === 'monto' ? '✅ Copiado' : '📋 Copiar'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Botón copiar todos los datos */}
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(
+                      `Pago Móvil BDV\nTeléfono: 04261010281\nCédula: V-23480465\nBanco: 0102\nMonto: $${selectedPlan.price_usd}`,
+                      'todos'
+                    )}
+                    className={`flex items-center justify-center gap-2 w-full py-3 px-6 rounded-lg transition-all shadow-lg mb-3 font-bold ${
+                      copiedField === 'todos'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-white hover:bg-gray-100 text-[#004B93]'
+                    }`}
+                  >
+                    {copiedField === 'todos' ? (
+                      <>✅ ¡Todos los datos copiados!</>
+                    ) : (
+                      <>
+                        <span className="text-xl">📋</span>
+                        Copiar todos los datos
+                      </>
+                    )}
+                  </button>
+
+                  {/* Botón para abrir app del banco */}
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.bdv.movil"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-white/20 hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-3"
+                  >
+                    <span className="text-xl">📱</span>
+                    Abrir/Descargar App BDV
+                  </a>
+                  
+                  <p className="text-blue-100 text-xs text-center">
+                    Copia los datos arriba y realiza el pago móvil desde tu app del banco.
+                    <br />Luego sube el comprobante abajo para activar tu Premium.
+                  </p>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-600"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-gray-800 text-gray-400">o paga con otro método</span>
+                  </div>
+                </div>
+
                 {/* Instrucciones */}
                 <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-4 mb-4">
                   <h4 className="text-blue-400 font-semibold mb-2">Instrucciones de Pago</h4>
@@ -432,6 +573,7 @@ export default function PremiumPage() {
                     onChange={(e) => setManualPaymentMethod(e.target.value as any)}
                     className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
+                    <option value="pago_movil">Pago Móvil Venezuela</option>
                     <option value="zelle">Zelle</option>
                     <option value="bank_transfer">Transferencia Bancaria</option>
                   </select>

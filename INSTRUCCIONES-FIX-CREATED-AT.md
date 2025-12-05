@@ -164,3 +164,4 @@ Si después de ejecutar el script:
 **AHORA:** Ejecuta `scripts/FIX-CREATED-AT-AUTOMATICO.sql` en Supabase y luego prueba crear un negocio.
 
 
+

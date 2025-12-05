@@ -66,3 +66,4 @@ Para probar en Sandbox:
 4. Puedes aprobar/rechazar pagos desde el dashboard de Sandbox
 
 
+

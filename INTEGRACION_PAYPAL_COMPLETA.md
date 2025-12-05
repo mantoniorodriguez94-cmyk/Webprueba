@@ -431,3 +431,4 @@ AND created_at >= DATE_TRUNC('month', NOW());
 **Fecha:** Diciembre 2024
 
 
+

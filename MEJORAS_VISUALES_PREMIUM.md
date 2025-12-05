@@ -230,3 +230,4 @@ Después de recargar la app:
 **Versión:** 1.2.0
 
 
+

@@ -217,3 +217,4 @@ El botón premium está **100% funcional** y listo para que los usuarios se susc
 **Archivo:** `src/app/app/dashboard/perfil/page.tsx`
 
 
+

@@ -185,3 +185,4 @@ ORDER BY created_at DESC;
 - **Filtro:** `src/app/app/dashboard/page.tsx` (línea ~460)
 
 
+

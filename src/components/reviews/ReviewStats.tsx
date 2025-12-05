@@ -20,7 +20,7 @@ export default function ReviewStats({ stats }: ReviewStatsProps) {
   const maxCount = Math.max(...ratingDistribution.map(d => d.count));
 
   return (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 border border-white/20 shadow-2xl">
+    <div className="bg-transparent backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 bg-blue-500/20 rounded-2xl flex items-center justify-center">
           <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -103,7 +103,7 @@ export default function ReviewStats({ stats }: ReviewStatsProps) {
 
       {/* Review Insights - PREMIUM CARDS */}
       {stats.total_reviews > 0 && (
-        <div className="mt-8 pt-8 border-t border-white/20">
+        <div className="  mt-8 pt-8 border-t border-white/20">
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
               <div className="text-3xl font-extrabold text-green-400">

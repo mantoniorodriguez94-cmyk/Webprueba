@@ -293,3 +293,4 @@ end_date: 2025-01-01          ← ✅ 30 días después (monthly)
 **Versión:** 1.1.0
 
 
+

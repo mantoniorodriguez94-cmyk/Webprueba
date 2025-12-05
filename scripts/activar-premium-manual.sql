@@ -187,3 +187,4 @@ ORDER BY created_at DESC;
 -- Si usaste la OPCIÓN A, asegúrate de cambiar los IDs primero.
 
 
+

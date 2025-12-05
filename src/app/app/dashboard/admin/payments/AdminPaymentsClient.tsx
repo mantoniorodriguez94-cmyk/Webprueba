@@ -18,8 +18,8 @@ interface SubmissionWithDetails extends ManualPaymentSubmission {
     price_usd: number
   }
   user: {
-    email: string
-  }
+    full_name?: string
+  } | null
 }
 
 interface AdminPaymentsClientProps {
@@ -202,7 +202,7 @@ export default function AdminPaymentsClient({
                   <div className="space-y-3">
                     <div>
                       <h3 className="text-lg font-bold text-white">{submission.business?.name || 'N/A'}</h3>
-                      <p className="text-gray-400 text-sm">{submission.user?.email || 'N/A'}</p>
+                      <p className="text-gray-400 text-sm">{submission.user?.full_name || 'Usuario'}</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm">

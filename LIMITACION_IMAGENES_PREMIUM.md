@@ -375,3 +375,4 @@ O elimina algunas fotos antes de agregar nuevas.`)
 **Versión:** 1.3.0
 
 
+
