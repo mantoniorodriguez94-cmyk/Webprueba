@@ -4,6 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import AdminActionButton from "../components/AdminActionButton"
 
+// Forzar renderizado dinámico porque usa cookies para autenticación
+export const dynamic = 'force-dynamic'
+
 /**
  * Página de gestión de negocios (Admin)
  * - Lista todos los negocios del sistema

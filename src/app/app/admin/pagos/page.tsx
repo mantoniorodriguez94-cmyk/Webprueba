@@ -3,6 +3,9 @@ import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import PaymentActionButton from "../components/PaymentActionButton"
 
+// Forzar renderizado dinámico porque usa cookies para autenticación
+export const dynamic = 'force-dynamic'
+
 /**
  * Página de pagos manuales pendientes (Admin)
  * - Lista todos los pagos manuales que esperan aprobación

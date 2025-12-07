@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import InstallPWA from "@/components/InstallPWA";
-export const metadata1 : Metadata = {
-  title: 'Encuentra - Dashboard',
-  description: 'Panel de control de Encuentra',
-}
 
 export const metadata: Metadata = {
   title: "Encuentra - Conecta negocios y personas",
@@ -29,61 +25,6 @@ export const metadata: Metadata = {
     ],
   },
 };
-export const metadata2 = {
-  metadataBase: new URL("https://encuentr.app"),
-  title: {
-    default: "Encuentra.app – Busca negocios locales | Plataforma profesional",
-    template: "%s | Encuentra.app"
-  },
-  description:
-    "Encuentra negocios cerca de ti. Rápido, moderno y confiable. Chat, reseñas, fotos, promociones y más.",
-  applicationName: "Encuentra.app",
-  keywords: [
-    "negocios",
-    "Venezuela",
-    "encuentra",
-    "directorio",
-    "servicios",
-    "profesionales",
-    "local",
-    "mapas",
-    "chat",
-    "reseñas"
-  ],
-  authors: [{ name: "Encuentra" }],
-  creator: "Encuentra",
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    type: "website",
-    url: "https://encuentr.app",
-    title: "Encuentra.app",
-    description:
-      "La forma más rápida y visual de encontrar negocios cerca de ti.",
-    siteName: "Encuentra.app",
-    images: [
-      {
-        url: "/og-encuentra.png",
-        width: 1200,
-        height: 630,
-        alt: "Encuentra.app – Encuentra negocios locales"
-      }
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Encuentra.app",
-    description: "La forma más moderna de conectar personas con negocios.",
-    images: ["/og-encuentra.png"],
-  },
-  icons: {
-    icon: "/icons/icon-192.png",
-    apple: "/icons/icon-192.png",
-    shortcut: "/favicon.ico",
-  }
-}
 
 export const viewport: Viewport = {
   themeColor: "#3b82f6",
@@ -133,9 +74,4 @@ export default function RootLayout({
     </html>
   );
 }
-
-
-
-
-
 

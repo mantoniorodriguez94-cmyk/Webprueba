@@ -3,6 +3,9 @@ import { requireAdmin } from "@/utils/admin-auth"
 import Link from "next/link"
 import Image from "next/image"
 
+// Forzar renderizado dinámico porque usa cookies para autenticación
+export const dynamic = 'force-dynamic'
+
 /**
  * Dashboard principal del panel administrativo
  * - Carga datos reales desde Supabase usando SSR

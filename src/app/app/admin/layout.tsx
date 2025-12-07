@@ -2,6 +2,9 @@ import { requireAdmin } from "@/utils/admin-auth"
 import AdminLayoutClient from "./components/AdminLayoutClient"
 import { redirect } from "next/navigation"
 
+// Forzar renderizado dinámico porque usa cookies para autenticación
+export const dynamic = 'force-dynamic'
+
 /**
  * Layout del panel administrativo
  * - Verifica que el usuario sea admin antes de renderizar

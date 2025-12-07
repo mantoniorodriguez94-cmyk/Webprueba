@@ -1,6 +1,10 @@
 import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image";
+
+// Forzar renderizado dinámico porque usa cookies para autenticación
+export const dynamic = 'force-dynamic'
+
 /**
  * Página de gestión de usuarios (Admin)
  * - Lista todos los usuarios registrados en el sistema
