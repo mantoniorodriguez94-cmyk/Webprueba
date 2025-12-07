@@ -8,8 +8,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkAdminAuth } from '@/utils/admin-auth'
 
-// Cliente de Supabase para API routes (servidor)
+// Cliente de Supabase con service role para operaciones admin (bypass RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -42,53 +43,24 @@ function calculateEndDate(billingPeriod: string): Date {
 
 export async function POST(request: NextRequest) {
   try {
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
+    // Verificar que el usuario es admin usando nuestra utilidad
+    const { user, error: authError } = await checkAdminAuth()
     
-    if (!token) {
+    if (authError || !user || !user.isAdmin) {
       return NextResponse.json(
-        { success: false, error: 'No autenticado - Token faltante' },
-        { status: 401 }
+        { success: false, error: 'No autorizado - Se requieren permisos de administrador' },
+        { status: 403 }
       )
     }
-
-    // Verificar el token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'No autenticado - Token inválido' },
-        { status: 401 }
-      )
-    }
-
-    // TODO: Verificar que el usuario es admin
-    // Esto depende de cómo implementes los roles en tu app
-    // Por ejemplo, podrías tener un campo is_admin en la tabla profiles
-    // o usar metadata en auth.users
-    
-    // Ejemplo básico (ajusta según tu implementación):
-    // const { data: profile } = await supabase
-    //   .from('profiles')
-    //   .select('is_admin')
-    //   .eq('id', user.id)
-    //   .single()
-    // 
-    // if (!profile?.is_admin) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'No autorizado' },
-    //     { status: 403 }
-    //   )
-    // }
 
     // Parsear body
     const body = await request.json()
-    const { submission_id, admin_notes } = body
+    const { submissionId, submission_id, admin_notes } = body
+    const submission_id_final = submissionId || submission_id // Soporta ambos nombres
 
-    if (!submission_id) {
+    if (!submission_id_final) {
       return NextResponse.json(
-        { success: false, error: 'submission_id requerido' },
+        { success: false, error: 'submissionId requerido' },
         { status: 400 }
       )
     }
@@ -97,7 +69,7 @@ export async function POST(request: NextRequest) {
     const { data: submission, error: submissionError } = await supabase
       .from('manual_payment_submissions')
       .select('*, premium_plans(*)')
-      .eq('id', submission_id)
+      .eq('id', submission_id_final)
       .single()
 
     if (submissionError || !submission) {
@@ -123,7 +95,7 @@ export async function POST(request: NextRequest) {
         admin_notes: admin_notes || null,
         reviewed_at: new Date().toISOString(),
       })
-      .eq('id', submission_id)
+      .eq('id', submission_id_final)
 
     if (updateSubmissionError) {
       console.error('Error actualizando submission:', updateSubmissionError)
@@ -137,12 +109,15 @@ export async function POST(request: NextRequest) {
     await supabase
       .from('payments')
       .update({ status: 'completed' })
-      .eq('external_id', submission_id)
+      .eq('external_id', submission_id_final)
       .eq('method', 'manual')
 
     // Calcular fechas de la suscripción
     const startDate = new Date()
-    const endDate = calculateEndDate(submission.premium_plans.billing_period)
+    const plan = Array.isArray(submission.premium_plans) 
+      ? submission.premium_plans[0] 
+      : submission.premium_plans
+    const endDate = calculateEndDate(plan?.billing_period || 'monthly')
 
     // Crear o actualizar suscripción
     const { data: existingSubscription } = await supabase
