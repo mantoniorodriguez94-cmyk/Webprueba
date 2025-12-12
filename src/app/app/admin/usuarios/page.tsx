@@ -30,7 +30,7 @@ export default async function AdminUsuariosPage() {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error cargando usuarios:", JSON.stringify(error, null, 2))
+    console.error("Error cargando usuarios:", error)
   }
 
   return (
@@ -40,15 +40,6 @@ export default async function AdminUsuariosPage() {
         <p className="text-gray-400 text-sm">
           {usuarios?.length || 0} {usuarios?.length === 1 ? "usuario" : "usuarios"} registrados
         </p>
-        {error && (
-          <div className="mt-4 p-4 bg-red-500/20 border border-red-500/40 rounded-xl">
-            <p className="text-red-300 font-semibold mb-2">Error al cargar usuarios</p>
-            <p className="text-red-200 text-sm">{error.message}</p>
-            <p className="text-red-200 text-xs mt-2">
-              💡 Ejecuta el script: scripts/fix-profiles-admin-rls.sql en Supabase SQL Editor
-            </p>
-          </div>
-        )}
       </div>
 
       {usuarios && usuarios.length > 0 ? (

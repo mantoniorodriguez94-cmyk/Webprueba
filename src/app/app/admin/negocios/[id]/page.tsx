@@ -227,12 +227,7 @@ export default async function AdminBusinessDetailPage({
         <div className="mt-6 pt-6 border-t border-white/20">
           <h3 className="text-lg font-bold mb-4">Acciones Administrativas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <AdminActionButton 
-              id={business.id} 
-              type="verificar" 
-              label={business.is_premium ? "✓ Premium Activo" : "Verificar (Activar Premium)"}
-              disabled={business.is_premium && business.premium_until && new Date(business.premium_until) > new Date()}
-            />
+            <AdminActionButton id={business.id} type="verificar" label="Verificar Pago" />
             <AdminActionButton id={business.id} type="suspender" label="Suspender Premium" />
             <AdminActionButton id={business.id} type="destacar" label={business.is_featured ? "Quitar Destacado" : "Destacar"} />
             <AdminActionButton id={business.id} type="foto_limite" label={`+ Fotos (${business.max_photos || 5})`} />

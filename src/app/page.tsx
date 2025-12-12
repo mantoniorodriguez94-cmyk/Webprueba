@@ -14,23 +14,26 @@ export default function Home() {
   // Función para scroll suave a sección
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (!element) return;
+
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
     setMobileMenuOpen(false); // Cerrar menú móvil después de hacer click
   };
 
-  // Función para scroll al inicio
+  // Función para scroll al inicio (usa scrollToSection para consistencia)
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setMobileMenuOpen(false);
+    scrollToSection('inicio');
   };
 
   return (
     <>
       <main className="min-h-screen text-white flex flex-col">
         {/* BLOQUE 1 — HEADER */}
-        <header className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700/50" id="inicio">
+        <header className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 sm:py-4">
               {/* Logo */}
@@ -68,6 +71,12 @@ export default function Home() {
                   className="text-gray-300 hover:text-white transition"
                 >
                   Cómo funciona
+                </button>
+                <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Para personas
                 </button>
                 <button 
                   onClick={() => scrollToSection('para-negocios')}
@@ -135,6 +144,12 @@ export default function Home() {
                   Cómo funciona
                 </button>
                 <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
+                >
+                  Para personas
+                </button>
+                <button 
                   onClick={() => scrollToSection('para-negocios')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
@@ -163,7 +178,7 @@ export default function Home() {
         </header>
 
         {/* BLOQUE 2 — HERO */}
-        <section className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0">
+        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0 scroll-mt-24 lg:scroll-mt-[148px]">
           <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
               
@@ -249,7 +264,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 3 — CÓMO FUNCIONA */}
-        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-[370px] lg:scroll-mt-[148px]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -301,7 +316,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
-        <section className="w-full py-20">
+        <section id="para-personas" className="w-full py-20 scroll-mt-[370px] lg:scroll-mt-[148px]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -371,7 +386,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-[370px] lg:scroll-mt-[148px]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">

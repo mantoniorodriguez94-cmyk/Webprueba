@@ -95,8 +95,8 @@ export default async function AdminNegociosPage() {
                   <AdminActionButton 
                     id={b.id} 
                     type="verificar" 
-                    label={b.is_premium && b.premium_until && new Date(b.premium_until) > new Date() ? "✓ Premium" : "Verificar"}
-                    disabled={b.is_premium && b.premium_until && new Date(b.premium_until) > new Date()}
+                    label={b.is_verified ? "✓ Verificado" : "Verificar"}
+                    disabled={b.is_verified}
                   />
                   <AdminActionButton id={b.id} type="suspender" label="Suspender" />
                   <AdminActionButton id={b.id} type="destacar" label="Destacar" />
