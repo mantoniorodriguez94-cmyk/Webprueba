@@ -126,7 +126,7 @@ export default function Home() {
               <div className="lg:hidden pb-4 border-t border-gray-700 mt-2 pt-4 space-y-3">
                 <button 
                   onClick={scrollToTop}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
+                  className="block w-full text-left text-gray-300 scroll-mt-[600px] hover:text-white transition py-2"
                 >
                   Inicio
                 </button>
@@ -178,7 +178,7 @@ export default function Home() {
         </header>
 
         {/* BLOQUE 2 — HERO */}
-        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0 scroll-mt-24 lg:scroll-mt-[148px]">
+        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0 scroll-mt-[370px] lg:scroll-mt-[148px]">
           <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
               
