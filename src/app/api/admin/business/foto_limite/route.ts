@@ -48,17 +48,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calcular nuevo límite
+    // BLOQUE 4: Incrementar límite de fotos - Override administrativo
+    // Si no tiene max_photos, usar el límite por defecto del plan o 5
     const currentLimit = business.max_photos || 5
-    const newLimit = currentLimit + (typeof increment === 'number' ? increment : 5)
+    const incrementValue = typeof increment === 'number' ? increment : 5
+    const newLimit = currentLimit + incrementValue
 
-    // Actualizar el límite de fotos
+    // Actualizar el límite de fotos (override administrativo, sin pagos)
     const { error: updateError } = await supabase
       .from('businesses')
       .update({ max_photos: newLimit })
       .eq('id', businessId)
 
     if (updateError) {
+      // Si el campo no existe, retornar error informativo
+      if (updateError.code === '42703') { // Column does not exist
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Campo max_photos no existe. Ejecuta el script add-admin-fields-businesses.sql primero.' 
+          },
+          { status: 500 }
+        )
+      }
+      
       console.error('Error actualizando límite de fotos:', updateError)
       return NextResponse.json(
         { success: false, error: 'Error al actualizar el límite de fotos' },

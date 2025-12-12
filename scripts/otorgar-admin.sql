@@ -21,7 +21,7 @@ ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
 DO $$
 DECLARE
   admin_user_id UUID;
-  admin_email TEXT := 'mantoniorodriguez94@gmail.com';  -- 👈 CAMBIA ESTO
+  admin_email TEXT := 'omernava1993@gmail.com';  -- 👈 CAMBIA ESTO
 BEGIN
   -- Buscar el user_id por email
   SELECT id INTO admin_user_id
@@ -64,7 +64,7 @@ SELECT
   END as estado
 FROM public.profiles p
 JOIN auth.users u ON u.id = p.id
-WHERE u.email = 'mantoniorodriguez94@gmail.com';  -- 👈 CAMBIA ESTO también
+WHERE u.email = 'omernava1993@gmail.com';  -- 👈 CAMBIA ESTO también
 
 -- ============================================
 -- ALTERNATIVA: Si conoces tu UUID de usuario

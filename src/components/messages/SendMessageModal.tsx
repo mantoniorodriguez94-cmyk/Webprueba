@@ -129,7 +129,7 @@ export default function SendMessageModal({
           </div>
 
           {/* Contenido - Scrollable */}
-          <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto pb-24 sm:pb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Tu mensaje
             </label>
@@ -139,7 +139,7 @@ export default function SendMessageModal({
               placeholder={`Escribe tu mensaje para ${business.name}...`}
               rows={6}
               disabled={sending}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-50 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-400"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-500"
               maxLength={500}
             />
             <p className="text-xs text-gray-500 mt-2">

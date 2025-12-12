@@ -106,18 +106,18 @@ export default function ReviewForm({
           onChange={(e) => setComment(e.target.value)}
           placeholder="Cuéntanos sobre tu experiencia con este negocio. ¿Qué te gustó? ¿Qué podría mejorar?"
           rows={4}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 bg-white/90 text-gray-900 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none placeholder:text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed pb-20 sm:pb-3"
           disabled={isSubmitting}
         />
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-400">
           Mínimo 10 caracteres ({comment.length}/500)
         </p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mb-4 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-lg">
+          <p className="text-sm text-red-400 font-medium">{error}</p>
         </div>
       )}
 
@@ -158,7 +158,7 @@ export default function ReviewForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-6 py-3 border border-gray-300 text-white font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 border-2 border-gray-300 bg-white/90 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>

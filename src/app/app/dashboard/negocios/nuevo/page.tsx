@@ -148,8 +148,30 @@ export default function NuevoNegocioPage() {
     e.preventDefault()
     setError("")
     
+    // Validación: Nombre obligatorio y longitud mínima
     if (!name.trim()) {
       setError("El nombre es obligatorio")
+      return
+    }
+    
+    if (name.trim().length < 3) {
+      setError("El nombre del negocio debe tener al menos 3 caracteres")
+      return
+    }
+    
+    if (name.trim().length > 100) {
+      setError("El nombre del negocio no puede exceder 100 caracteres")
+      return
+    }
+    
+    // Validación: Descripción razonable (si se proporciona)
+    if (description.trim().length > 0 && description.trim().length < 10) {
+      setError("La descripción debe tener al menos 10 caracteres o dejarse vacía")
+      return
+    }
+    
+    if (description.trim().length > 1000) {
+      setError("La descripción no puede exceder 1000 caracteres")
       return
     }
     
@@ -171,6 +193,48 @@ export default function NuevoNegocioPage() {
         setError("Debes iniciar sesión para crear un negocio")
         setLoading(false)
         return
+      }
+
+      // Verificar rol de usuario
+      const userRole = user.user_metadata?.role ?? "person"
+      if (userRole !== "company") {
+        setError("⚠️ Solo las cuentas tipo Empresa pueden crear negocios")
+        setLoading(false)
+        return
+      }
+
+      // Verificar límite de negocios (validación anti-spam)
+      const isAdmin = user.user_metadata?.is_admin ?? false
+      if (!isAdmin) {
+        // Contar negocios actuales del usuario
+        const { data: existingBusinesses, error: countError } = await supabase
+          .from("businesses")
+          .select("id, name")
+          .eq("owner_id", user.id)
+        
+        if (countError) throw countError
+        
+        const currentCount = existingBusinesses?.length ?? 0
+        const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
+        
+        // Verificar límite
+        if (currentCount >= allowedBusinesses) {
+          setError(`⚠️ Has alcanzado el límite de ${allowedBusinesses} ${allowedBusinesses === 1 ? 'negocio' : 'negocios'} de tu plan. ⭐ Mejora a Premium para crear más negocios.`)
+          setLoading(false)
+          return
+        }
+        
+        // Prevenir spam: verificar si ya existe un negocio con el mismo nombre (del mismo usuario)
+        const nameNormalized = name.trim().toLowerCase()
+        const duplicateExists = existingBusinesses?.some(b => 
+          b.name.trim().toLowerCase() === nameNormalized
+        )
+        
+        if (duplicateExists) {
+          setError("⚠️ Ya tienes un negocio con este nombre. Por favor, usa un nombre diferente.")
+          setLoading(false)
+          return
+        }
       }
 
       let logoUrl: string | null = null
@@ -271,7 +335,7 @@ export default function NuevoNegocioPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Ej: Panadería El Sol"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -287,7 +351,7 @@ export default function NuevoNegocioPage() {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
                 rows={4}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400 resize-none"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500 resize-none pb-20 sm:pb-3"
                 disabled={loading}
               />
             </div>
@@ -303,7 +367,7 @@ export default function NuevoNegocioPage() {
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -332,7 +396,7 @@ export default function NuevoNegocioPage() {
                   value={address}
                   onChange={e => setAddress(e.target.value)}
                   placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                   disabled={loading}
                 />
                 {address && (
@@ -427,7 +491,7 @@ export default function NuevoNegocioPage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -443,7 +507,7 @@ export default function NuevoNegocioPage() {
                 value={whatsapp}
                 onChange={e => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>

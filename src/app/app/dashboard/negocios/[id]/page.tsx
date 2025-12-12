@@ -15,6 +15,7 @@ import ReviewForm from "@/components/reviews/ReviewForm"
 import BusinessLocation from "@/components/BusinessLocation"
 import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 import SendMessageModal from "@/components/messages/SendMessageModal"
+import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
 
 type Promotion = {
   id: string
@@ -45,6 +46,7 @@ export default function BusinessDetailPage() {
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [reviewsLoading, setReviewsLoading] = useState(true)
   const [showMessageModal, setShowMessageModal] = useState(false)
+  const [showReportBusinessModal, setShowReportBusinessModal] = useState(false)
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
@@ -468,6 +470,19 @@ export default function BusinessDetailPage() {
                 </svg>
                 Enviar Mensaje
               </button>
+
+              {/* Botón Reportar (solo para usuarios no dueños) */}
+              {user && !isOwner && (
+                <button
+                  onClick={() => setShowReportBusinessModal(true)}
+                  className="flex items-center justify-center gap-2 bg-transparent border-2 border-red-500/50 text-red-400 px-6 py-3 rounded-full hover:bg-red-500/10 transition-all font-semibold flex-1"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Reportar
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -920,6 +935,15 @@ export default function BusinessDetailPage() {
             // Redirigir al chat con el negocio
             router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
           }}
+        />
+      )}
+
+      {/* Modal de Reportar Negocio */}
+      {showReportBusinessModal && business && (
+        <ReportBusinessModal
+          businessId={business.id}
+          businessName={business.name}
+          onClose={() => setShowReportBusinessModal(false)}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 /**
  * Utilidad para verificar autenticación y permisos de administrador
- * Compatible con Next.js 15 y Supabase SSR
+ * 100% compatible con Next.js 15 + Supabase SSR
  */
 
 import { createClient } from "@/utils/supabase/server"
@@ -16,35 +16,34 @@ export interface AdminAuthResult {
 }
 
 /**
- * Verifica si el usuario actual es administrador
- * Retorna null si no está autenticado o no es admin
+ * Verifica si el usuario actual es administrador (SSR SAFE)
  */
 export async function checkAdminAuth(): Promise<AdminAuthResult> {
   try {
+    // 1️⃣ Crear el cliente ESPERANDO la promesa (Next.js 15)
     const supabase = await createClient()
-    
-    // Obtener usuario autenticado
+
+    // 2️⃣ Verificar sesión con getUser()
+    // Nota: getUser valida el token real contra Supabase
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+
     if (authError || !user) {
-      return {
-        user: null,
-        error: "No autenticado"
+      // No logueamos error 400 (session missing) para no ensuciar la consola, es normal si no hay sesión
+      if (authError && !authError.message.includes("session missing")) {
+         console.error("⚠️ Error de Auth en admin:", authError.message)
       }
+      return { user: null, error: "No autenticado" }
     }
 
-    // Verificar si es admin desde la tabla profiles
+    // 3️⃣ Verificar rol en tabla "profiles"
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, email")
       .eq("id", user.id)
       .single()
 
     if (profileError || !profile) {
-      return {
-        user: null,
-        error: "Perfil no encontrado"
-      }
+      return { user: null, error: "Perfil no encontrado" }
     }
 
     const isAdmin = profile.is_admin === true
@@ -52,31 +51,30 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
     return {
       user: {
         id: user.id,
-        email: user.email || "",
+        email: profile.email || user.email || "",
         isAdmin
       },
       error: isAdmin ? null : "No autorizado"
     }
-  } catch (error) {
-    console.error("Error en checkAdminAuth:", error)
-    return {
-      user: null,
-      error: "Error al verificar permisos"
-    }
+
+  } catch (err) {
+    console.error("❌ Error CRÍTICO en checkAdminAuth:", err)
+    return { user: null, error: "Error interno" }
   }
 }
 
 /**
- * Protege una ruta admin - redirige si no es admin
- * Usar en Server Components o Server Actions
+ * Redirige si el usuario no es administrador
+ * Úsalo en layouts o page.tsx
  */
 export async function requireAdmin() {
-  const { user, error } = await checkAdminAuth()
-  
-  if (!user || !user.isAdmin) {
+  const result = await checkAdminAuth()
+
+  // Si falla la autenticación o no es admin, redirigir
+  if (!result.user || !result.user.isAdmin) {
+    // Opcional: Redirigir a login en lugar de dashboard si el error es "No autenticado"
     redirect("/app/dashboard")
   }
-  
-  return user
-}
 
+  return result.user
+}

@@ -3,8 +3,9 @@ import { createClient } from "@/utils/supabase/server"
 import Link from "next/link"
 import dayjs from "dayjs"
 import Image from "next/image"
+import AdminButton from "./AdminButton"
 export default async function AdminSuscripcionesPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Obtener suscripciones activas + datos del negocio + plan
   const { data: subs } = await supabase
@@ -153,48 +154,5 @@ export default async function AdminSuscripcionesPage() {
         })}
       </div>
     </div>
-  )
-}
-
-/* =====================================
-   COMPONENTE DE BOTÓN ADMIN REUTILIZABLE
-   ===================================== */
-
-function AdminButton({ label, actionTitle, subscriptionId, api, extra = {}, variant = "default" }: { label: string, actionTitle: string, subscriptionId: string, api: string, extra?: any, variant?: "default" | "danger" | "success" }) {
-  const color =
-    variant === "danger"
-      ? "bg-red-600 hover:bg-red-700"
-      : variant === "success"
-      ? "bg-green-600 hover:bg-green-700"
-      : "bg-gray-800 hover:bg-gray-700"
-
-  async function handleClick() {
-    const body = {
-      subscriptionId,
-      ...extra,
-    }
-
-    const res = await fetch(api, {
-      method: "POST",
-      body: JSON.stringify(body),
-    })
-
-    if (!res.ok) {
-      alert("Error procesando la acción")
-      return
-    }
-
-    alert("Acción realizada con éxito")
-    location.reload()
-  }
-
-  return (
-    <button
-      onClick={handleClick}
-      title={actionTitle}
-      className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${color}`}
-    >
-      {label}
-    </button>
   )
 }

@@ -20,12 +20,13 @@ export default async function AdminNegociosPage() {
 
   const { data: negocios, error } = await supabase
     .from("businesses")
-    .select("id, name, logo_url, is_premium, premium_until, is_verified, max_photos, created_at")
+    .select("id, name, logo_url, is_premium, premium_until, created_at, is_verified")
     .order("created_at", { ascending: false })
 
-  if (error) {
-    console.error("Error cargando negocios:", error)
-  }
+    if (error) {
+      // ✅ Esto nos mostrará el mensaje real (mensaje, código, detalles)
+      console.error("🔥 ERROR DETALLADO:", JSON.stringify(error, null, 2))
+    }
 
   return (
     <div className="min-h-screen text-white">
@@ -74,9 +75,11 @@ export default async function AdminNegociosPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Fotos máx: {b.max_photos || 5}
-                  </p>
+                  {b.premium_until && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Premium hasta: {new Date(b.premium_until).toLocaleDateString("es-ES")}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -89,7 +92,12 @@ export default async function AdminNegociosPage() {
                 </Link>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <AdminActionButton id={b.id} type="verificar" label="Verificar" />
+                  <AdminActionButton 
+                    id={b.id} 
+                    type="verificar" 
+                    label={b.is_premium && b.premium_until && new Date(b.premium_until) > new Date() ? "✓ Premium" : "Verificar"}
+                    disabled={b.is_premium && b.premium_until && new Date(b.premium_until) > new Date()}
+                  />
                   <AdminActionButton id={b.id} type="suspender" label="Suspender" />
                   <AdminActionButton id={b.id} type="destacar" label="Destacar" />
                   <AdminActionButton id={b.id} type="foto_limite" label="+ Fotos" />

@@ -204,36 +204,77 @@ export default function DashboardPage() {
           .select("*")
         
         // Obtener conteo de visitas por negocio
-        const { data: viewsData } = await supabase
-          .from("business_views")
-          .select("business_id")
+        // Solo intentar si el usuario está autenticado
+        let viewsData = null
+        let savesData = null
+        let sharesData = null
         
-        // Obtener conteo de guardados por negocio
-        const { data: savesData } = await supabase
-          .from("business_saves")
-          .select("business_id")
+        if (user) {
+          try {
+            const viewsResponse = await supabase
+              .from("business_views")
+              .select("business_id")
+            
+            if (!viewsResponse.error) {
+              viewsData = viewsResponse.data
+            } else {
+              console.warn("No se pudieron obtener vistas (puede ser por permisos):", viewsResponse.error.message)
+            }
+          } catch (err) {
+            console.warn("Error obteniendo vistas:", err)
+          }
+          
+          try {
+            const savesResponse = await supabase
+              .from("business_saves")
+              .select("business_id")
+            
+            if (!savesResponse.error) {
+              savesData = savesResponse.data
+            } else {
+              console.warn("No se pudieron obtener guardados:", savesResponse.error.message)
+            }
+          } catch (err) {
+            console.warn("Error obteniendo guardados:", err)
+          }
+          
+          try {
+            const sharesResponse = await supabase
+              .from("business_interactions")
+              .select("business_id")
+              .eq("interaction_type", "share")
+            
+            if (!sharesResponse.error) {
+              sharesData = sharesResponse.data
+            } else {
+              console.warn("No se pudieron obtener compartidos:", sharesResponse.error.message)
+            }
+          } catch (err) {
+            console.warn("Error obteniendo compartidos:", err)
+          }
+        }
         
-        // Obtener conteo de compartidos por negocio
-        const { data: sharesData } = await supabase
-          .from("business_interactions")
-          .select("business_id")
-          .eq("interaction_type", "share")
-        
-        // Crear mapas de conteos
+        // Crear mapas de conteos (manejar casos donde los datos son null)
         const viewsMap = new Map<string, number>()
-        viewsData?.forEach(v => {
-          viewsMap.set(v.business_id, (viewsMap.get(v.business_id) || 0) + 1)
-        })
+        if (viewsData) {
+          viewsData.forEach(v => {
+            viewsMap.set(v.business_id, (viewsMap.get(v.business_id) || 0) + 1)
+          })
+        }
         
         const savesMap = new Map<string, number>()
-        savesData?.forEach(s => {
-          savesMap.set(s.business_id, (savesMap.get(s.business_id) || 0) + 1)
-        })
+        if (savesData) {
+          savesData.forEach(s => {
+            savesMap.set(s.business_id, (savesMap.get(s.business_id) || 0) + 1)
+          })
+        }
         
         const sharesMap = new Map<string, number>()
-        sharesData?.forEach(sh => {
-          sharesMap.set(sh.business_id, (sharesMap.get(sh.business_id) || 0) + 1)
-        })
+        if (sharesData) {
+          sharesData.forEach(sh => {
+            sharesMap.set(sh.business_id, (sharesMap.get(sh.business_id) || 0) + 1)
+          })
+        }
         
         const statsMap = new Map(stats?.map(s => [s.business_id, s]) || [])
         
@@ -284,15 +325,15 @@ export default function DashboardPage() {
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
-        setAllBusinesses(sortedBusinesses)
-        setFilteredBusinesses(sortedBusinesses)
-      }
-    } catch (err: any) {
-      console.error("Error fetching all businesses:", err)
-    } finally {
-      setLoading(false)
+      setAllBusinesses(sortedBusinesses)
+      setFilteredBusinesses(sortedBusinesses)
     }
-  }, [])
+  } catch (err: any) {
+    console.error("Error fetching all businesses:", err)
+  } finally {
+    setLoading(false)
+  }
+}, [user])
 
   useEffect(() => {
     if (user) {

@@ -1,21 +1,35 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const registered = searchParams.get("registered");
+    if (verified) {
+      setSuccess("Correo confirmado exitosamente. Ya puedes iniciar sesión.");
+    } else if (registered) {
+      setSuccess("Registro creado. Revisa tu correo, confirma y luego inicia sesión.");
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     
     // Validación básica
     if (!email || !password) {
@@ -74,6 +88,18 @@ export default function LoginPage() {
               Bienvenido de nuevo a Encuentra
             </p>
           </div>
+
+          {/* Success message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm text-green-700 font-medium">{success}</p>
+              </div>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (

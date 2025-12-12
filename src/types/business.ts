@@ -21,6 +21,12 @@ export type Business = {
   is_premium?: boolean;
   premium_until?: string | null;
   premium_plan_id?: string | null;
+  // Admin fields
+  is_featured?: boolean;
+  max_photos?: number;
+  is_verified?: boolean;
+  verified_at?: string | null;
+  verified_by?: string | null;
   // Extended fields (from joins or calculations)
   total_reviews?: number;
   average_rating?: number;

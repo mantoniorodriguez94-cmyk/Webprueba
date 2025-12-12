@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Review } from '@/types/review';
 import StarRating from './StarRating';
+import ReportReviewModal from '@/components/reports/ReportReviewModal';
 
 interface ReviewListProps {
   reviews: Review[];
@@ -57,6 +58,8 @@ export default function ReviewList({ reviews, loading = false }: ReviewListProps
 }
 
 function ReviewCard({ review }: { review: Review }) {
+  const [showReportModal, setShowReportModal] = useState(false)
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -121,8 +124,30 @@ function ReviewCard({ review }: { review: Review }) {
               {review.comment}
             </p>
           )}
+
+          {/* Botón Reportar */}
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Reportar reseña
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Modal de Reportar Reseña */}
+      {showReportModal && (
+        <ReportReviewModal
+          reviewId={review.id}
+          reviewComment={review.comment}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
     </div>
   );
 }

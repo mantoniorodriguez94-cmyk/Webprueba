@@ -6,14 +6,15 @@ interface AdminActionButtonProps {
   id: string
   type: "verificar" | "suspender" | "destacar" | "foto_limite"
   label: string
+  disabled?: boolean
 }
 
-export default function AdminActionButton({ id, type, label }: AdminActionButtonProps) {
+export default function AdminActionButton({ id, type, label, disabled = false }: AdminActionButtonProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleClick() {
-    if (loading) return
+    if (loading || disabled) return
     
     setLoading(true)
     setError(null)
@@ -33,6 +34,12 @@ export default function AdminActionButton({ id, type, label }: AdminActionButton
         throw new Error(data.error || "Error al procesar la acción")
       }
 
+      // Mostrar mensaje de éxito si existe
+      if (data.message) {
+        // Opcional: mostrar toast/notificación
+        console.log("✅", data.message)
+      }
+
       // Recargar la página para ver los cambios
       window.location.reload()
     } catch (err: any) {
@@ -45,9 +52,9 @@ export default function AdminActionButton({ id, type, label }: AdminActionButton
     <div className="flex flex-col gap-1">
       <button
         onClick={handleClick}
-        disabled={loading}
+        disabled={loading || disabled}
         className={`px-4 py-2 rounded-xl text-sm transition-colors ${
-          loading
+          loading || disabled
             ? "bg-gray-700 cursor-not-allowed opacity-50"
             : "bg-gray-800 hover:bg-gray-700"
         }`}

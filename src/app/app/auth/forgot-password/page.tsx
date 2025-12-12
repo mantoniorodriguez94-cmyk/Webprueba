@@ -21,17 +21,34 @@ export default function ForgotPasswordPage() {
     }
 
     setLoading(true);
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/app/auth/reset-password`,
-    });
-    setLoading(false);
+    
+    try {
+      // Construir la URL de redirección
+      const redirectUrl = `${window.location.origin}/app/auth/reset-password`;
+      
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
 
-    if (resetError) {
-      setError(resetError.message);
-      return;
+      if (resetError) {
+        // Manejar errores específicos
+        if (resetError.message.includes('rate limit')) {
+          setError("Has solicitado demasiados enlaces. Por favor espera unos minutos antes de intentar de nuevo.");
+        } else if (resetError.message.includes('not found')) {
+          setError("No encontramos una cuenta con ese correo electrónico.");
+        } else {
+          setError(resetError.message || "Error al enviar el correo de recuperación. Por favor intenta de nuevo.");
+        }
+        return;
+      }
+
+      setSuccess(true);
+    } catch (err: any) {
+      console.error("Error en recuperación de contraseña:", err);
+      setError("Error inesperado. Por favor intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
-
-    setSuccess(true);
   };
 
   return (
@@ -86,7 +103,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleResetPassword} className="space-y-5">
                 {/* Email Input */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-semibold text-white">
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-300">
                     Correo electrónico
                   </label>
                   <div className="relative">

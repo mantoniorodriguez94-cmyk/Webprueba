@@ -1,18 +1,22 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refParam = searchParams.get('ref'); // Capturar parámetro ref
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState("person");
@@ -42,6 +46,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
   
     // Validación
     if (!fullName || !email || !password || !confirmPassword) {
@@ -86,6 +91,66 @@ export default function RegisterPage() {
         setError("Error al crear usuario");
         return;
       }
+
+      // Verificar que el perfil se haya creado correctamente
+      // Esperar un momento para que el trigger se ejecute
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, role")
+        .eq("id", data.user.id)
+        .single();
+
+      // Registrar referencia si existe
+      if (refParam && data.user) {
+        try {
+          // Verificar que el inviter existe
+          const { data: inviterCheck } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", refParam)
+            .single();
+
+          if (inviterCheck) {
+            // Buscar si ya existe un referral con este email (creado antes del registro)
+            const { data: existingRef } = await supabase
+              .from("referrals")
+              .select("id")
+              .eq("inviter_id", refParam)
+              .eq("invited_email", email)
+              .single();
+
+            if (existingRef) {
+              // Actualizar el referral existente con el invited_id
+              await supabase
+                .from("referrals")
+                .update({ invited_id: data.user.id })
+                .eq("id", existingRef.id);
+            } else {
+              // Crear nuevo referral
+              await supabase
+                .from("referrals")
+                .insert({
+                  inviter_id: refParam,
+                  invited_email: email,
+                  invited_id: data.user.id
+                });
+            }
+          }
+        } catch (refError) {
+          // Silenciar errores de referral para no interrumpir el registro
+          console.warn("Error registrando referral:", refError);
+        }
+      }
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.warn("Advertencia: No se pudo verificar el perfil:", profileError);
+        // No bloqueamos el registro si el perfil no se encuentra inmediatamente
+        // El trigger debería crearlo automáticamente
+      } else if (profile) {
+        console.log("✅ Perfil creado correctamente:", profile);
+      }
   
       // 2. Si hay sesión activa, redirigir inmediatamente
       if (data.session) {
@@ -95,10 +160,8 @@ export default function RegisterPage() {
       }
   
       // 3. Si no hay sesión, significa que necesita confirmar email
-      setError("✅ Registro exitoso! Revisa tu email para confirmar tu cuenta.");
-      setTimeout(() => {
-        router.push("/app/auth/login");
-      }, 3000);
+      setSuccessMessage("¡Cuenta creada! Revisa tu correo para confirmar tu cuenta y luego inicia sesión.");
+      setShowSuccessModal(true);
     } catch (err: any) {
       console.error("Error en registro:", err);
       setError(err.message || "Error al registrar usuario");
@@ -106,6 +169,15 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  // Redirigir al login automáticamente después de mostrar la ventana de éxito
+  useEffect(() => {
+    if (!showSuccessModal) return;
+    const timer = setTimeout(() => {
+      router.push("/app/auth/login?registered=1");
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [showSuccessModal, router]);
   
 
   return (
@@ -441,6 +513,36 @@ export default function RegisterPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modal de éxito */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-green-600">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="text-green-700 font-semibold">Registro exitoso</p>
+            </div>
+            <p className="text-gray-700">{successMessage}</p>
+            <p className="text-sm text-gray-500">Te redirigiremos al inicio de sesión en unos segundos.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => router.push("/app/auth/login?registered=1")}
+                className="w-full sm:w-auto bg-[#0288D1] text-white px-4 py-2 rounded-xl hover:bg-[#0277BD] transition-colors"
+              >
+                Ir al inicio de sesión
+              </button>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full sm:w-auto border border-gray-200 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors text-gray-700"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes fadeIn {

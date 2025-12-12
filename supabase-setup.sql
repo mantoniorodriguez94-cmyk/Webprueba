@@ -8,10 +8,15 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
+  email TEXT,
   role TEXT NOT NULL CHECK (role IN ('person', 'company')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Agregar email si la tabla ya existe
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- 2. HABILITAR ROW LEVEL SECURITY (RLS)
 -- ============================================
@@ -53,12 +58,18 @@ SET search_path = public
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, role)
+  INSERT INTO public.profiles (id, full_name, role, email)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'person')
-  );
+    COALESCE(NEW.raw_user_meta_data->>'role', 'person'),
+    NEW.email
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET 
+    full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
+    role = COALESCE(EXCLUDED.role, profiles.role),
+    email = COALESCE(EXCLUDED.email, profiles.email);
   RETURN NEW;
 EXCEPTION
   WHEN OTHERS THEN
@@ -80,6 +91,7 @@ CREATE TRIGGER on_auth_user_created
 -- 7. ÍNDICES PARA MEJOR PERFORMANCE
 -- ============================================
 CREATE INDEX IF NOT EXISTS profiles_role_idx ON public.profiles(role);
+CREATE INDEX IF NOT EXISTS profiles_email_idx ON public.profiles(email);
 
 -- 8. FUNCIÓN PARA ACTUALIZAR updated_at AUTOMÁTICAMENTE
 -- ============================================

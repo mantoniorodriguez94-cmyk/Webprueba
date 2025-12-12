@@ -16,13 +16,85 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    // Verificar si hay un token de recuperación en la URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
+    // Procesar el token de recuperación cuando la página carga
+    let mounted = true;
     
-    if (!accessToken) {
-      setError("Enlace inválido o expirado. Por favor solicita un nuevo enlace de recuperación.");
-    }
+    const processRecoveryToken = async () => {
+      try {
+        // Verificar si hay un token en la URL
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+        const type = hashParams.get('type') || queryParams.get('type');
+        
+        if (accessToken && type === 'recovery') {
+          console.log('Token de recuperación detectado, esperando procesamiento...');
+          
+          // Escuchar cambios en el estado de autenticación
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+              console.log('✅ Sesión establecida después de recuperación:', event);
+              
+              if (mounted && session) {
+                // Limpiar la URL para ocultar el token
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setError(""); // Limpiar cualquier error previo
+              }
+            }
+          });
+          
+          // También verificar después de un breve delay
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError) {
+              console.error('Error obteniendo sesión:', sessionError);
+              if (mounted) {
+                setError("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
+              }
+              return;
+            }
+            
+            if (session) {
+              console.log('✅ Sesión establecida correctamente');
+              if (mounted) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setError("");
+              }
+            } else {
+              console.warn('Token detectado pero no se estableció la sesión aún');
+            }
+            
+            // Limpiar la suscripción después de verificar
+            subscription.unsubscribe();
+          }, 2000);
+          
+          return () => {
+            subscription.unsubscribe();
+          };
+        } else if (!accessToken && !type) {
+          // No hay token, verificar si hay una sesión existente
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session && mounted) {
+            // No hay token ni sesión, pero no mostramos error inmediatamente
+            // El usuario puede estar llegando aquí directamente
+          }
+        }
+      } catch (err) {
+        console.error('Error procesando token de recuperación:', err);
+        if (mounted) {
+          setError("Error al procesar el enlace de recuperación. Por favor intenta de nuevo.");
+        }
+      }
+    };
+
+    processRecoveryToken();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -48,20 +120,63 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
+      // Verificar que el usuario tenga una sesión válida (requerido para cambiar contraseña)
+      let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      // Si no hay sesión, verificar si hay un token en la URL y procesarlo
+      if (!session) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+        const type = hashParams.get('type') || queryParams.get('type');
+        
+        if (accessToken && type === 'recovery') {
+          // Esperar un momento más para que Supabase procese el token
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Intentar obtener la sesión nuevamente
+          const sessionResult = await supabase.auth.getSession();
+          session = sessionResult.data.session;
+          sessionError = sessionResult.error;
+          
+          if (sessionError) {
+            throw new Error("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
+          }
+        }
+      }
+      
+      if (sessionError) {
+        throw new Error("No hay una sesión válida. Por favor, usa el enlace del correo electrónico.");
+      }
+
+      if (!session) {
+        throw new Error("No hay una sesión válida. Por favor, usa el enlace del correo electrónico para restablecer tu contraseña.");
+      }
+
+      // Actualizar la contraseña
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        // Errores comunes
+        if (updateError.message.includes('session')) {
+          throw new Error("Tu sesión ha expirado. Por favor solicita un nuevo enlace de recuperación.");
+        }
+        throw updateError;
+      }
 
       setSuccess(true);
       
-      // Redirigir al login después de 3 segundos
+      // Cerrar sesión y redirigir al login después de 3 segundos
+      await supabase.auth.signOut();
+      
       setTimeout(() => {
         router.push("/app/auth/login");
       }, 3000);
     } catch (err: any) {
-      setError(err.message || "Error al actualizar la contraseña");
+      console.error("Error al actualizar contraseña:", err);
+      setError(err.message || "Error al actualizar la contraseña. Por favor intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -95,10 +210,10 @@ export default function ResetPasswordPage() {
           {!success ? (
             <>
               <div className="mb-6">
-                <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-300">
                   Nueva contraseña
                 </h2>
-                <p className="text-gray-500 mt-2 text-sm sm:text-base">
+                <p className="text-gray-300 mt-2 text-sm sm:text-base">
                   Ingresa tu nueva contraseña a continuación
                 </p>
               </div>
@@ -119,7 +234,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleResetPassword} className="space-y-5">
                 {/* Password Input */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-300">
                     Nueva contraseña
                   </label>
                   <div className="relative">
@@ -129,7 +244,7 @@ export default function ResetPasswordPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 sm:py-4 pr-12 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                      className="w-full px-4 py-3 sm:py-4 pr-12 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                       disabled={loading}
                     />
                     <button
@@ -156,7 +271,7 @@ export default function ResetPasswordPage() {
 
                 {/* Confirm Password Input */}
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-300">
                     Confirmar contraseña
                   </label>
                   <div className="relative">
@@ -166,7 +281,7 @@ export default function ResetPasswordPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 sm:py-4 pr-12 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-white placeholder-gray-400 text-sm sm:text-base"
+                      className="w-full px-4 py-3 sm:py-4 pr-12 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                       disabled={loading}
                     />
                     <button

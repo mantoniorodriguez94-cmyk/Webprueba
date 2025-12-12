@@ -1,27 +1,27 @@
-import { cookies } from "next/headers"
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export function createClient() {
-  const cookieStore = cookies()
-
-  // NOTA IMPORTANTE:
-  // ESTA FUNCIÓN NO ES async — debe devolver EL CLIENTE DIRECTAMENTE.
+export async function createClient() {
+  const cookieStore = await cookies(); // 👈 El await es CRUCIAL en Next 15
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.then(cookieStore => cookieStore.get(name)?.value ?? null)
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: any) {
-          try { cookieStore.then(cookieStore => cookieStore.set(name, value, options)) } catch {}
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignorar error si se llama desde un Server Component
+          }
         },
-        remove(name: string, options: any) {
-          try { cookieStore.then(cookieStore => cookieStore.set(name, "", { ...options, maxAge: 0 })) } catch {}
-        }
-      }
+      },
     }
-  )
+  );
 }

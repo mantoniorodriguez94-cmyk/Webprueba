@@ -15,6 +15,7 @@ export default async function AdminPagosPage() {
   // Verificar que el usuario es admin
   await requireAdmin()
   
+  // Crear cliente de Supabase (await necesario en Next.js 15)
   const supabase = await createClient()
 
   const { data: pagos, error } = await supabase
@@ -32,21 +33,30 @@ export default async function AdminPagosPage() {
       created_at,
       admin_notes,
       businesses(name),
-      premium_plans(name, billing_period)
+      premium_plans(name, billing_period, max_photos)
     `)
-    .eq("status", "pending")
     .order("created_at", { ascending: false })
 
   if (error) {
     console.error("Error cargando pagos:", error)
   }
 
+  // Cargar perfiles de usuarios de una vez
+  const userIds = pagos ? [...new Set(pagos.map(p => p.user_id))] : []
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, email, full_name")
+    .in("id", userIds)
+
+  // Crear mapa de user_id -> profile para acceso rápido
+  const profilesMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
   return (
     <div className="min-h-screen text-white">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Pagos Manuales Pendientes</h1>
+        <h1 className="text-3xl font-bold mb-2">Gestión de Pagos Manuales</h1>
         <p className="text-gray-400 text-sm">
-          {pagos?.length || 0} {pagos?.length === 1 ? "pago pendiente" : "pagos pendientes"} de revisión
+          {pagos?.filter(p => p.status === 'pending').length || 0} pendientes • {pagos?.filter(p => p.status === 'approved').length || 0} aprobados • {pagos?.filter(p => p.status === 'rejected').length || 0} rechazados
         </p>
       </div>
 
@@ -55,33 +65,60 @@ export default async function AdminPagosPage() {
           {pagos.map((pago) => {
             const business = Array.isArray(pago.businesses) ? pago.businesses[0] : pago.businesses
             const plan = Array.isArray(pago.premium_plans) ? pago.premium_plans[0] : pago.premium_plans
+            const profile = profilesMap.get(pago.user_id)
+
+            const statusColors = {
+              pending: "border-yellow-500/40 bg-yellow-500/10",
+              approved: "border-green-500/40 bg-green-500/10",
+              rejected: "border-red-500/40 bg-red-500/10"
+            }
+
+            const statusLabels = {
+              pending: "Pendiente",
+              approved: "Aprobado",
+              rejected: "Rechazado"
+            }
 
             return (
               <div
                 key={pago.id}
-                className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:border-blue-500 transition-all"
+                className={`bg-white/10 backdrop-blur-md p-6 rounded-2xl border-2 ${statusColors[pago.status as keyof typeof statusColors] || "border-white/20"} hover:border-blue-500 transition-all`}
               >
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold mb-1">
-                    {business?.name || "Negocio desconocido"}
-                  </h2>
-                  <p className="text-gray-300 text-sm mb-2">
-                    Plan: {plan?.name || "N/A"}
-                  </p>
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-400">
-                    <span>Monto: ${pago.amount_usd || "0"} USD</span>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h2 className="text-xl font-bold mb-1">
+                        {business?.name || "Negocio desconocido"}
+                      </h2>
+                      <p className="text-gray-300 text-sm mb-1">
+                        Plan: {plan?.name || "N/A"} {plan?.max_photos && `(${plan.max_photos} fotos máx.)`}
+                      </p>
+                      <p className="text-xs text-gray-400 mb-2">
+                        Usuario: {profile?.full_name || profile?.email || pago.user_id.substring(0, 8)}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      pago.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                      pago.status === 'approved' ? 'bg-green-500/20 text-green-300' :
+                      'bg-red-500/20 text-red-300'
+                    }`}>
+                      {statusLabels[pago.status as keyof typeof statusLabels]}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-2">
+                    <span>💰 Monto: ${pago.amount_usd || "0"} USD</span>
                     <span>•</span>
-                    <span>Método: {pago.payment_method || "N/A"}</span>
+                    <span>💳 Método: {pago.payment_method || "N/A"}</span>
                     {pago.reference && (
                       <>
                         <span>•</span>
-                        <span>Ref: {pago.reference}</span>
+                        <span>🔖 Ref: {pago.reference}</span>
                       </>
                     )}
                   </div>
                   {pago.created_at && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Enviado: {new Date(pago.created_at).toLocaleDateString("es-ES", {
+                    <p className="text-xs text-gray-500">
+                      📅 Enviado: {new Date(pago.created_at).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
@@ -89,6 +126,12 @@ export default async function AdminPagosPage() {
                         minute: "2-digit"
                       })}
                     </p>
+                  )}
+                  {pago.admin_notes && (
+                    <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <p className="text-xs text-blue-300 font-semibold mb-1">📝 Notas del Admin:</p>
+                      <p className="text-xs text-blue-200">{pago.admin_notes}</p>
+                    </div>
                   )}
                 </div>
 
@@ -109,21 +152,28 @@ export default async function AdminPagosPage() {
                   </div>
                 )}
 
-                {/* BOTONES */}
-                <div className="flex gap-3 mt-5">
-                  <PaymentActionButton 
-                    id={pago.id} 
-                    action="approve" 
-                    label="Aprobar" 
-                    variant="success"
-                  />
-                  <PaymentActionButton 
-                    id={pago.id} 
-                    action="reject" 
-                    label="Rechazar" 
-                    variant="danger"
-                  />
-                </div>
+                {/* BOTONES - Solo mostrar si está pendiente */}
+                {pago.status === 'pending' && (
+                  <div className="flex gap-3 mt-5">
+                    <PaymentActionButton 
+                      id={pago.id} 
+                      action="approve" 
+                      label="Aprobar" 
+                      variant="success"
+                    />
+                    <PaymentActionButton 
+                      id={pago.id} 
+                      action="reject" 
+                      label="Rechazar" 
+                      variant="danger"
+                    />
+                  </div>
+                )}
+                {pago.status !== 'pending' && (
+                  <div className="mt-4 text-xs text-gray-400">
+                    Este pago ya fue procesado ({pago.status === 'approved' ? 'aprobado' : 'rechazado'})
+                  </div>
+                )}
               </div>
             )
           })}

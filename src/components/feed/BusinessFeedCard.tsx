@@ -95,8 +95,8 @@ export default function BusinessFeedCard({
       await trackBusinessInteraction(business.id, 'share', currentUser?.id)
     }
     
-    // Copiar URL al portapapeles o compartir nativo
-    const url = `${window.location.origin}/app/dashboard/negocios/${business.id}`
+    // Copiar URL pública al portapapeles o compartir nativo (SEO-friendly)
+    const url = `${window.location.origin}/negocio/${business.id}`
     
     if (navigator.share) {
       try {

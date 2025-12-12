@@ -48,35 +48,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Suspender el negocio (agregar campo is_suspended si existe, o usar un campo existente)
-    // Asumiendo que hay un campo is_active o similar. Si no existe, podemos agregarlo.
-    // Por ahora, usaremos un enfoque que funcione con la estructura actual.
-    // Si necesitas un campo específico, puedes agregarlo a la tabla businesses.
-    
-    // Opción 1: Si tienes un campo is_active o is_suspended
+    // BLOQUE 2: Suspender premium - Quitar is_premium, mantener historial
+    // No eliminamos datos ni pagos históricos, solo quitamos el premium activo
     const { error: updateError } = await supabase
       .from('businesses')
       .update({ 
-        // is_suspended: true, // Descomentar si el campo existe
-        // O usar otro campo disponible
+        is_premium: false,
+        // No tocamos premium_until para mantener el historial
+        // No eliminamos suscripciones ni pagos
       })
       .eq('id', businessId)
-
-    // Por ahora, retornamos éxito pero con nota
-    // TODO: Agregar campo is_suspended a la tabla businesses si no existe
 
     if (updateError) {
       console.error('Error suspendiendo negocio:', updateError)
       return NextResponse.json(
-        { success: false, error: 'Error al suspender el negocio' },
+        { success: false, error: 'Error al suspender el premium del negocio' },
         { status: 500 }
       )
     }
 
+    // Opcional: Marcar suscripción como cancelada (no eliminarla)
+    await supabase
+      .from('business_subscriptions')
+      .update({ 
+        status: 'canceled',
+        updated_at: new Date().toISOString()
+      })
+      .eq('business_id', businessId)
+      .eq('status', 'active')
+
     return NextResponse.json({
       success: true,
-      message: `Negocio "${business.name}" suspendido exitosamente`,
-      note: 'Nota: Asegúrate de tener un campo is_suspended en la tabla businesses para que esta acción tenga efecto'
+      message: `Premium suspendido para "${business.name}". El negocio ya no tiene beneficios premium activos.`,
     })
 
   } catch (error: any) {

@@ -48,12 +48,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Destacar el negocio (usar campo is_featured si existe, o crear uno)
+    // BLOQUE 3: Destacar negocio - Alternar is_featured (true/false)
+    const newFeaturedStatus = !business.is_featured
+
     const { error: updateError } = await supabase
       .from('businesses')
       .update({ 
-        is_featured: true, // Si el campo existe
-        // Si no existe, necesitarás agregarlo a la tabla
+        is_featured: newFeaturedStatus
       })
       .eq('id', businessId)
 
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { 
             success: false, 
-            error: 'Campo is_featured no existe en la tabla businesses. Agrégalo primero.' 
+            error: 'Campo is_featured no existe. Ejecuta el script add-admin-fields-businesses.sql primero.' 
           },
           { status: 500 }
         )
@@ -78,7 +79,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Negocio "${business.name}" destacado exitosamente`,
+      message: `Negocio "${business.name}" ${newFeaturedStatus ? 'destacado' : 'removido de destacados'} exitosamente`,
+      data: {
+        is_featured: newFeaturedStatus
+      }
     })
 
   } catch (error: any) {

@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
     // ÚLTIMOS NEGOCIOS CREADOS
     supabase
       .from("businesses")
-      .select("id, name, logo_url, created_at")
+      .select("id, name, logo_url, created_at, is_verified")
       .order("created_at", { ascending: false })
       .limit(6)
   ])
@@ -119,17 +119,25 @@ export default async function AdminDashboardPage() {
 
       {/* ÚLTIMOS NEGOCIOS */}
       <div>
-        <h2 className="text-xl font-bold mb-4">Últimos negocios creados</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Últimos negocios creados</h2>
+          <Link
+            href="/app/admin/negocios"
+            className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Ver todos →
+          </Link>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {recentBusinesses && recentBusinesses.length > 0 ? (
             recentBusinesses.map((b) => (
               <Link
                 href={`/app/admin/negocios/${b.id}`}
                 key={b.id}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 hover:border-blue-500 transition-all"
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 hover:border-blue-500 hover:bg-white/15 transition-all cursor-pointer group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gray-700 overflow-hidden flex-shrink-0">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-700 overflow-hidden flex-shrink-0 border-2 border-white/20 group-hover:border-blue-500 transition-colors">
                     {b.logo_url ? (
                       <Image 
                         src={b.logo_url} 
@@ -146,15 +154,30 @@ export default async function AdminDashboardPage() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold truncate">{b.name || "Sin nombre"}</p>
-                    <p className="text-xs text-gray-400">
-                      {b.created_at ? new Date(b.created_at).toLocaleDateString("es-ES", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric"
-                      }) : "Fecha desconocida"}
+                    <p className="font-semibold truncate text-white group-hover:text-blue-300 transition-colors">
+                      {b.name || "Sin nombre"}
                     </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-gray-400">
+                        {b.created_at ? new Date(b.created_at).toLocaleDateString("es-ES", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        }) : "Fecha desconocida"}
+                      </p>
+                      {b.is_verified && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40">
+                          ✓
+                        </span>
+                      )}
+                    </div>
                   </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-blue-400 group-hover:text-blue-300 transition-colors font-medium">
+                  <span>Ver información completa</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </Link>
             ))
