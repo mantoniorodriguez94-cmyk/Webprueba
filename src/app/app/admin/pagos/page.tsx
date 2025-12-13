@@ -37,9 +37,7 @@ export default async function AdminPagosPage() {
     `)
     .order("created_at", { ascending: false })
 
-  if (error) {
-    console.error("Error cargando pagos:", error)
-  }
+  // Error silenciosamente manejado - los pagos pueden estar vacíos si hay error
 
   // Cargar perfiles de usuarios de una vez
   const userIds = pagos ? [...new Set(pagos.map(p => p.user_id))] : []

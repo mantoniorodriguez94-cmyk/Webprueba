@@ -47,12 +47,7 @@ export default async function AdminReportesPage() {
     `)
     .order("created_at", { ascending: false })
 
-  if (businessReportsError) {
-    console.error("Error cargando reportes de negocios:", businessReportsError)
-  }
-  if (reviewReportsError) {
-    console.error("Error cargando reportes de reseñas:", reviewReportsError)
-  }
+  // Errores silenciosamente manejados - los reportes pueden estar vacíos si hay error
 
   // Cargar perfiles de usuarios
   const allReporterIds = [

@@ -23,11 +23,27 @@ export async function POST(request: NextRequest) {
 
     // Parsear body
     const body = await request.json()
-    const { businessId, increment = 5 } = body
+    const { businessId, maxPhotos } = body
 
     if (!businessId) {
       return NextResponse.json(
         { success: false, error: 'businessId requerido' },
+        { status: 400 }
+      )
+    }
+
+    // Validar maxPhotos
+    if (maxPhotos === undefined || maxPhotos === null) {
+      return NextResponse.json(
+        { success: false, error: 'maxPhotos es requerido' },
+        { status: 400 }
+      )
+    }
+
+    const maxPhotosNumber = parseInt(maxPhotos, 10)
+    if (isNaN(maxPhotosNumber) || maxPhotosNumber < 0) {
+      return NextResponse.json(
+        { success: false, error: 'maxPhotos debe ser un número mayor o igual a 0' },
         { status: 400 }
       )
     }
@@ -48,16 +64,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // BLOQUE 4: Incrementar límite de fotos - Override administrativo
-    // Si no tiene max_photos, usar el límite por defecto del plan o 5
     const currentLimit = business.max_photos || 5
-    const incrementValue = typeof increment === 'number' ? increment : 5
-    const newLimit = currentLimit + incrementValue
 
     // Actualizar el límite de fotos (override administrativo, sin pagos)
     const { error: updateError } = await supabase
       .from('businesses')
-      .update({ max_photos: newLimit })
+      .update({ max_photos: maxPhotosNumber })
       .eq('id', businessId)
 
     if (updateError) {
@@ -84,7 +96,7 @@ export async function POST(request: NextRequest) {
       message: `Límite de fotos actualizado para "${business.name}"`,
       data: {
         previousLimit: currentLimit,
-        newLimit: newLimit
+        newLimit: maxPhotosNumber
       }
     })
 

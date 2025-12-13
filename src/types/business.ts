@@ -23,6 +23,7 @@ export type Business = {
   premium_plan_id?: string | null;
   // Admin fields
   is_featured?: boolean;
+  featured_until?: string | null;
   max_photos?: number;
   is_verified?: boolean;
   verified_at?: string | null;

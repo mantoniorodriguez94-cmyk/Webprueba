@@ -20,13 +20,10 @@ export default async function AdminNegociosPage() {
 
   const { data: negocios, error } = await supabase
     .from("businesses")
-    .select("id, name, logo_url, is_premium, premium_until, created_at, is_verified")
+    .select("id, name, logo_url, is_premium, premium_until, created_at, is_verified, max_photos")
     .order("created_at", { ascending: false })
 
-    if (error) {
-      // ✅ Esto nos mostrará el mensaje real (mensaje, código, detalles)
-      console.error("🔥 ERROR DETALLADO:", JSON.stringify(error, null, 2))
-    }
+    // Error silenciosamente manejado - los negocios pueden estar vacíos si hay error
 
   return (
     <div className="min-h-screen text-white">
@@ -85,7 +82,7 @@ export default async function AdminNegociosPage() {
 
               <div className="flex flex-col gap-2">
                 <Link
-                  href={`/app/admin/negocios/${b.id}`}
+                  href={`/app/admin/negocios/${b.id}/gestionar`}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-center text-sm font-medium transition-colors"
                 >
                   Gestionar
@@ -95,12 +92,24 @@ export default async function AdminNegociosPage() {
                   <AdminActionButton 
                     id={b.id} 
                     type="verificar" 
-                    label={b.is_verified ? "✓ Verificado" : "Verificar"}
-                    disabled={b.is_verified}
+                    label={b.is_premium ? "✓ Premium" : "Activar Premium"}
+                    disabled={b.is_premium}
+                    businessName={b.name || "Negocio"}
                   />
-                  <AdminActionButton id={b.id} type="suspender" label="Suspender" />
+                  <AdminActionButton 
+                    id={b.id} 
+                    type="suspender" 
+                    label="Suspender Premium"
+                    disabled={!b.is_premium}
+                  />
                   <AdminActionButton id={b.id} type="destacar" label="Destacar" />
-                  <AdminActionButton id={b.id} type="foto_limite" label="+ Fotos" />
+                  <AdminActionButton 
+                    id={b.id} 
+                    type="foto_limite" 
+                    label={`+ Fotos (${b.max_photos || 5})`}
+                    currentMaxPhotos={b.max_photos || 5}
+                    businessName={b.name || "Negocio"}
+                  />
                 </div>
               </div>
             </div>

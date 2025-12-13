@@ -17,20 +17,79 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
+  // Contar usuarios usando service role key para evitar problemas de RLS
+  let usersCount = 0
+  
+  // Primero intentar con service role key (bypasea RLS)
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+      const serviceSupabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      
+      // Contar desde profiles usando service role (sin RLS)
+      const { count: serviceCount, error: serviceError } = await serviceSupabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+      
+      if (!serviceError && serviceCount !== null) {
+        usersCount = serviceCount
+        console.log("✅ Usuarios contados con service role:", usersCount)
+      } else {
+        // Fallback: intentar con auth.admin.listUsers()
+        try {
+          const { data: authData } = await serviceSupabase.auth.admin.listUsers()
+          usersCount = authData?.users?.length || 0
+          console.log("✅ Usuarios contados con auth.admin.listUsers():", usersCount)
+        } catch {
+          // Silenciosamente continuar si falla
+        }
+      }
+    } catch {
+      // Silenciosamente continuar si falla
+    }
+  }
+  
+  // Si service role no funcionó, intentar con el cliente normal (puede fallar por RLS)
+  if (usersCount === 0) {
+    try {
+      const { count: profilesCount, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+      
+      if (!profilesError && profilesCount !== null) {
+        usersCount = profilesCount
+        console.log("✅ Usuarios contados con cliente normal:", usersCount)
+      }
+    } catch {
+      // Silenciosamente continuar si falla
+    }
+  }
+  
+  // Si aún es 0, intentar una última vez con auth.admin.listUsers() del cliente normal
+  if (usersCount === 0) {
+    try {
+      const { data: authData } = await supabase.auth.admin.listUsers()
+      if (authData?.users) {
+        usersCount = authData.users.length
+        console.log("✅ Usuarios contados con auth.admin.listUsers() (cliente normal):", usersCount)
+      }
+    } catch {
+      // Silenciosamente continuar si falla
+    }
+  }
+
   // Cargar todas las estadísticas en paralelo para mejor rendimiento
   const [
-    { count: usersCount },
     { count: businessesCount },
     { count: premiumCount },
     { count: pendingPaymentsCount },
     { count: expiringCount },
+    { count: featuredCount },
     { data: recentBusinesses }
   ] = await Promise.all([
-    // TOTAL DE USUARIOS
-    supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true }),
-    
     // TOTAL DE NEGOCIOS
     supabase
       .from("businesses")
@@ -55,6 +114,14 @@ export default async function AdminDashboardPage() {
       .lte("end_date", new Date(Date.now() + 7 * 86400000).toISOString())
       .eq("status", "active"),
     
+    // NEGOCIOS DESTACADOS ACTIVOS
+    supabase
+      .from("businesses")
+      .select("*", { count: "exact", head: true })
+      .eq("is_featured", true)
+      .not("featured_until", "is", null)
+      .gt("featured_until", new Date().toISOString()),
+    
     // ÚLTIMOS NEGOCIOS CREADOS
     supabase
       .from("businesses")
@@ -64,11 +131,12 @@ export default async function AdminDashboardPage() {
   ])
 
   const stats = {
-    users: usersCount || 0,
+    users: usersCount,
     businesses: businessesCount || 0,
     premiumBusinesses: premiumCount || 0,
     pendingPayments: pendingPaymentsCount || 0,
     expiringSoon: expiringCount || 0,
+    featuredBusinesses: featuredCount || 0,
   }
 
   return (
@@ -114,6 +182,13 @@ export default async function AdminDashboardPage() {
           value={stats.expiringSoon}
           iconBg="from-purple-400 to-purple-600"
           href="/app/admin/negocios?filter=expiring"
+        />
+
+        <AdminCard
+          title="Negocios Destacados"
+          value={stats.featuredBusinesses}
+          iconBg="from-pink-400 to-pink-600"
+          href="/app/admin/destacados"
         />
       </div>
 

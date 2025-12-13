@@ -48,14 +48,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ⚠️ IMPORTANTE: Esta acción SOLO modifica campos relacionados con Premium en businesses
+    // NO debe modificar la tabla profiles, is_admin, role, ni ningún campo del perfil del usuario
     // BLOQUE 2: Suspender premium - Quitar is_premium, mantener historial
     // No eliminamos datos ni pagos históricos, solo quitamos el premium activo
     const { error: updateError } = await supabase
       .from('businesses')
       .update({ 
-        is_premium: false,
-        // No tocamos premium_until para mantener el historial
-        // No eliminamos suscripciones ni pagos
+        is_premium: false
+        // ⚠️ SEGURIDAD: Solo campos de premium. NO tocar:
+        // - premium_until (mantener historial)
+        // - NO tocar tabla profiles
+        // - NO tocar is_admin, role, ni campos del usuario
       })
       .eq('id', businessId)
 

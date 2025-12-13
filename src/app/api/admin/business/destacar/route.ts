@@ -23,11 +23,18 @@ export async function POST(request: NextRequest) {
 
     // Parsear body
     const body = await request.json()
-    const { businessId } = body
+    const { businessId, days } = body
 
     if (!businessId) {
       return NextResponse.json(
         { success: false, error: 'businessId requerido' },
+        { status: 400 }
+      )
+    }
+
+    if (!days || typeof days !== 'number' || days <= 0 || days > 365) {
+      return NextResponse.json(
+        { success: false, error: 'days debe ser un número entre 1 y 365' },
         { status: 400 }
       )
     }
@@ -37,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Verificar que el negocio existe
     const { data: business, error: businessError } = await supabase
       .from('businesses')
-      .select('id, name, is_featured')
+      .select('id, name, is_featured, featured_until')
       .eq('id', businessId)
       .single()
 
@@ -48,13 +55,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // BLOQUE 3: Destacar negocio - Alternar is_featured (true/false)
-    const newFeaturedStatus = !business.is_featured
+    // Calcular fecha hasta cuando estará destacado
+    const now = new Date()
+    const featuredUntil = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
 
+    // Actualizar negocio: destacar con fecha de expiración
     const { error: updateError } = await supabase
       .from('businesses')
       .update({ 
-        is_featured: newFeaturedStatus
+        is_featured: true,
+        featured_until: featuredUntil.toISOString()
+        // ⚠️ SEGURIDAD: Solo campos de destacado del negocio. NO tocar:
+        // - NO tocar tabla profiles
+        // - NO tocar is_admin, role, ni campos del usuario
+        // - NO tocar is_premium ni premium_until
       })
       .eq('id', businessId)
 
@@ -79,9 +93,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Negocio "${business.name}" ${newFeaturedStatus ? 'destacado' : 'removido de destacados'} exitosamente`,
+      message: `Negocio "${business.name}" destacado por ${days} ${days === 1 ? 'día' : 'días'} exitosamente`,
       data: {
-        is_featured: newFeaturedStatus
+        is_featured: true,
+        featured_until: featuredUntil.toISOString()
       }
     })
 

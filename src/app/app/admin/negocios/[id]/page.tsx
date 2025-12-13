@@ -227,10 +227,22 @@ export default async function AdminBusinessDetailPage({
         <div className="mt-6 pt-6 border-t border-white/20">
           <h3 className="text-lg font-bold mb-4">Acciones Administrativas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <AdminActionButton id={business.id} type="verificar" label="Verificar Pago" />
+            <AdminActionButton 
+              id={business.id} 
+              type="verificar" 
+              label={business.is_premium ? "✓ Premium Activo" : "Activar Premium"}
+              disabled={business.is_premium}
+              businessName={business.name || "Negocio"}
+            />
             <AdminActionButton id={business.id} type="suspender" label="Suspender Premium" />
             <AdminActionButton id={business.id} type="destacar" label={business.is_featured ? "Quitar Destacado" : "Destacar"} />
-            <AdminActionButton id={business.id} type="foto_limite" label={`+ Fotos (${business.max_photos || 5})`} />
+            <AdminActionButton 
+              id={business.id} 
+              type="foto_limite" 
+              label={`+ Fotos (${business.max_photos || 5})`}
+              currentMaxPhotos={business.max_photos || 5}
+              businessName={business.name || "Negocio"}
+            />
           </div>
 
           {/* Pagos pendientes */}
@@ -248,10 +260,20 @@ export default async function AdminBusinessDetailPage({
                 )
               })}
               <p className="text-xs text-yellow-200 mt-2">
-                Usa el botón &ldquo;Verificar Pago&rdquo; arriba para aprobar
+                Usa el botón &ldquo;Activar Premium&rdquo; arriba para aprobar
               </p>
             </div>
           )}
+
+          {/* Botón para gestionar todo el negocio */}
+          <div className="mt-6 pt-6 border-t border-white/20">
+            <Link
+              href={`/app/admin/negocios/${business.id}/gestionar`}
+              className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-center text-sm font-medium transition-colors w-full"
+            >
+              Gestionar Negocio Completo (Galería, Horarios, Promociones, Eliminar)
+            </Link>
+          </div>
         </div>
       </div>
 

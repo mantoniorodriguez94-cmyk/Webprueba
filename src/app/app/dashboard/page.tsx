@@ -511,40 +511,30 @@ export default function DashboardPage() {
   }
 
   // DESTACADOS: Negocios con interacciones reales O premium activo
-  // Cumple AL MENOS UNA de estas condiciones:
-  // - is_premium = true Y premium_until > now (PRIORIDAD MÁXIMA)
-  // - saved_count > 0 (guardados)
-  // - shared_count > 0 (compartidos)
-  // - views_count > 10 (más de 10 visitas)
-  // - total_reviews > 0 (tiene reseñas)
+  // DESTACADOS: Solo negocios manualmente destacados por administrador
+  // - is_featured = true Y featured_until > now
+  // - NO incluir negocios premium (solo destacados manualmente)
   const featuredBusinesses = allBusinesses
     .filter((business) => {
-      // Verificar si es premium activo
-      const isPremiumActive = business.is_premium === true && 
-                             business.premium_until && 
-                             new Date(business.premium_until) > new Date()
+      // Verificar si está destacado manualmente
+      const isFeatured = business.is_featured === true
       
-      // Verificar interacciones
-      const hasSaves = (business.saved_count || 0) > 0
-      const hasShares = (business.shared_count || 0) > 0
-      const hasViews = (business.views_count || 0) > 10
-      const hasReviews = (business.total_reviews || 0) > 0
+      // Verificar que la fecha de destacado no haya expirado
+      const now = new Date()
+      const featuredUntil = business.featured_until 
+        ? new Date(business.featured_until) 
+        : null
       
-      // Premium siempre aparece en destacados, o si cumple otras condiciones
-      return isPremiumActive || hasSaves || hasShares || hasViews || hasReviews
+      const isFeaturedActive = isFeatured && 
+        (featuredUntil === null || featuredUntil > now)
+      
+      // SOLO incluir si está destacado y activo
+      // EXCLUIR completamente los premium de esta sección
+      return isFeaturedActive
     })
     .sort((a, b) => {
-      // PRIORIDAD 1: Negocios premium primero
-      const aIsPremium = a.is_premium === true && a.premium_until && new Date(a.premium_until) > new Date()
-      const bIsPremium = b.is_premium === true && b.premium_until && new Date(b.premium_until) > new Date()
-      
-      if (aIsPremium && !bIsPremium) return -1
-      if (!aIsPremium && bIsPremium) return 1
-      
-      // PRIORIDAD 2: Por puntuación de interacciones (solo si ambos no son premium o ambos son premium)
-      const popularityA = (a.views_count || 0) + (a.saved_count || 0) * 5 + (a.shared_count || 0) * 3 + (a.total_reviews || 0) * 2
-      const popularityB = (b.views_count || 0) + (b.saved_count || 0) * 5 + (b.shared_count || 0) * 3 + (b.total_reviews || 0) * 2
-      return popularityB - popularityA
+      // Ordenar por fecha de creación (más recientes primero)
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
     })
   
   // RECIENTES: Negocios creados en los últimos 7 días
@@ -779,7 +769,7 @@ export default function DashboardPage() {
                   {activeTab === "recientes" 
                     ? "No se han agregado negocios nuevos en los últimos 7 días" 
                     : activeTab === "destacados"
-                    ? "Los negocios destacados son aquellos con visitas, guardados, compartidos o reseñas"
+                    ? "Los negocios destacados son asignados manualmente por los administradores"
                     : "Intenta ajustar los filtros de búsqueda"}
                 </p>
               </div>

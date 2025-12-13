@@ -1,12 +1,12 @@
 /**
- * API Route: Verificar negocio (ADMIN) - BLOQUE 1
+ * API Route: Verificar negocio = Activar Premium (ADMIN)
  * POST /api/admin/business/verificar
  * 
- * Verifica directamente un negocio (NO depende de pagos):
- * - Marca is_verified = true
- * - Guarda verified_at y verified_by
- * - NO modifica premium ni pagos
- * - Funciona siempre, independientemente de pagos pendientes
+ * Activa premium para un negocio con la duración especificada:
+ * - Activa is_premium = true
+ * - Establece premium_until = now() + durationDays
+ * - Actualiza max_photos según plan premium (10 por defecto)
+ * - Si ya es premium, extiende la fecha de expiración
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -27,11 +27,22 @@ export async function POST(request: NextRequest) {
 
     // Parsear body
     const body = await request.json()
-    const { businessId } = body
+    const { businessId, durationDays } = body
 
     if (!businessId) {
       return NextResponse.json(
         { success: false, error: 'businessId requerido' },
+        { status: 400 }
+      )
+    }
+
+    // Validar durationDays (debe ser 30, 90, 180 o 365)
+    const validDurations = [30, 90, 180, 365]
+    const finalDurationDays = durationDays || 30 // Default a 30 días si no se especifica
+    
+    if (!validDurations.includes(finalDurationDays)) {
+      return NextResponse.json(
+        { success: false, error: 'Duración inválida. Debe ser 30, 90, 180 o 365 días' },
         { status: 400 }
       )
     }
@@ -41,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Obtener información del negocio
     const { data: business, error: businessError } = await supabase
       .from('businesses')
-      .select('id, name, is_verified')
+      .select('id, name, is_premium, premium_until')
       .eq('id', businessId)
       .single()
 
@@ -52,53 +63,53 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar si ya está verificado
-    if (business.is_verified) {
-      return NextResponse.json({
-        success: true,
-        message: `Negocio "${business.name}" ya está verificado`,
-        alreadyVerified: true
-      })
+    // Calcular nueva fecha de expiración
+    const now = new Date()
+    let newPremiumUntil: Date
+
+    // Si ya es premium y tiene fecha de expiración, extender desde esa fecha
+    if (business.is_premium && business.premium_until) {
+      const currentExpiry = new Date(business.premium_until)
+      // Si la fecha actual es mayor que la de expiración, empezar desde ahora
+      if (currentExpiry > now) {
+        newPremiumUntil = new Date(currentExpiry.getTime() + finalDurationDays * 24 * 60 * 60 * 1000)
+      } else {
+        newPremiumUntil = new Date(now.getTime() + finalDurationDays * 24 * 60 * 60 * 1000)
+      }
+    } else {
+      // Si no es premium, empezar desde ahora
+      newPremiumUntil = new Date(now.getTime() + finalDurationDays * 24 * 60 * 60 * 1000)
     }
 
-    const now = new Date()
-
-    // Actualizar el negocio: solo verificación (NO toca premium ni pagos)
+    // ⚠️ IMPORTANTE: Esta acción activa premium en businesses
+    // NO debe modificar la tabla profiles, is_admin, role, ni ningún campo del perfil del usuario
     const { error: updateBusinessError } = await supabase
       .from('businesses')
       .update({
-        is_verified: true,
-        verified_at: now.toISOString(),
-        verified_by: user.id
+        is_premium: true,
+        premium_until: newPremiumUntil.toISOString(),
+        max_photos: 10 // Beneficio premium: 10 fotos
+        // ⚠️ SEGURIDAD: Solo campos de premium del negocio. NO tocar:
+        // - NO tocar tabla profiles
+        // - NO tocar is_admin, role, ni campos del usuario
       })
       .eq('id', businessId)
 
     if (updateBusinessError) {
-      // Si el campo no existe, retornar error informativo
-      if (updateBusinessError.code === '42703') { // Column does not exist
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Campo is_verified no existe. Ejecuta el script add-admin-fields-businesses.sql primero.' 
-          },
-          { status: 500 }
-        )
-      }
-      
       console.error('Error actualizando negocio:', updateBusinessError)
       return NextResponse.json(
-        { success: false, error: 'Error al verificar el negocio' },
+        { success: false, error: 'Error al activar premium' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      message: `Negocio "${business.name}" verificado exitosamente`,
+      message: `Premium activado para "${business.name}" por ${finalDurationDays} días`,
       data: {
-        is_verified: true,
-        verified_at: now.toISOString(),
-        verified_by: user.id
+        is_premium: true,
+        premium_until: newPremiumUntil.toISOString(),
+        durationDays: finalDurationDays
       }
     })
 

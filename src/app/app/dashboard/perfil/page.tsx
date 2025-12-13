@@ -13,17 +13,43 @@ export default function PerfilPage() {
   // ============================================================
   // 🔥 DETECTAR SI EL USUARIO ES ADMIN
   // ============================================================
+  // ⚠️ IMPORTANTE: Usamos API route para evitar problemas de RLS
+  // que pueden impedir leer is_admin desde el cliente
   useEffect(() => {
     const loadAdminFlag = async () => {
-      if (!user) return
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single()
-
-      setIsAdmin(data?.is_admin === true)
+      try {
+        // Usar API route del servidor para leer is_admin
+        const response = await fetch('/api/user/is-admin', {
+          cache: 'no-store' // Evitar cache
+        })
+        const data = await response.json()
+        
+        console.log('🔍 Verificación admin:', {
+          isAdmin: data.isAdmin,
+          error: data.error,
+          userId: user.id
+        })
+        
+        if (data.isAdmin === true) {
+          setIsAdmin(true)
+          console.log('✅ Usuario es administrador')
+        } else {
+          setIsAdmin(false)
+          if (data.error) {
+            console.warn('⚠️ Error verificando admin:', data.error)
+          } else {
+            console.log('ℹ️ Usuario no es administrador')
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error verificando admin:', error)
+        setIsAdmin(false)
+      }
     }
 
     loadAdminFlag()
@@ -32,9 +58,6 @@ export default function PerfilPage() {
   const router = useRouter()
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [converting, setConverting] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [negocios, setNegocios] = useState<{id: string, name?: string, is_premium?: boolean, premium_until?: string}[]>([])
   const [premiumSubscription, setPremiumSubscription] = useState<{
     business_id: string
@@ -181,40 +204,6 @@ export default function PerfilPage() {
       router.push("/")
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
-    }
-  }
-
-  // ============================================================
-  // Eliminar cuenta
-  // ============================================================
-  const handleDeleteAccount = async () => {
-    if (!user) return
-
-    setDeleting(true)
-    setDeleteError(null)
-
-    try {
-      const response = await fetch('/api/user/delete-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al eliminar la cuenta')
-      }
-
-      // Cerrar sesión y redirigir
-      await supabase.auth.signOut()
-      router.push('/app/auth/login')
-      
-    } catch (error: any) {
-      console.error('Error eliminando cuenta:', error)
-      setDeleteError(error.message || 'Error al eliminar la cuenta. Por favor, intenta de nuevo.')
-      setDeleting(false)
     }
   }
 
@@ -405,7 +394,7 @@ export default function PerfilPage() {
 
             {/* Mis Negocios */}
             <Link href="/app/dashboard/mis-negocios">
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
+              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -427,7 +416,7 @@ export default function PerfilPage() {
                 ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
                 : "/app/dashboard/mis-negocios"
             }>
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
+              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
                 <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -666,21 +655,8 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* ELIMINAR CUENTA */}
-        <div className="pt-4">
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="w-full flex items-center justify-center gap-3 bg-red-600/20 hover:bg-red-600/30 border-2 border-red-600/50 text-red-400 font-bold py-4 rounded-3xl transition-all mb-3"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Eliminar Cuenta
-          </button>
-        </div>
-
         {/* CERRAR SESIÓN */}
-        <div className="pt-2">
+        <div className="pt-4">
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-3 bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 text-red-400 font-bold py-4 rounded-3xl transition-all"
@@ -693,70 +669,6 @@ export default function PerfilPage() {
         </div>
 
       </div>
-
-      {/* MODAL ELIMINAR CUENTA */}
-      {showDeleteModal && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/70 z-50"
-            onClick={() => !deleting && setShowDeleteModal(false)}
-          />
-          <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-            <div className="bg-gray-900/95 backdrop-blur-xl border border-red-500/30 rounded-3xl p-6 max-w-md w-full">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white">Eliminar Cuenta</h3>
-              </div>
-
-              <p className="text-gray-300 text-sm mb-2">
-                Esta acción es <strong className="text-red-400">permanente</strong> y no se puede deshacer.
-              </p>
-              
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
-                <p className="text-red-300 text-sm font-medium mb-2">Se eliminará permanentemente:</p>
-                <ul className="text-red-200 text-xs space-y-1 list-disc list-inside">
-                  <li>Tu cuenta y perfil</li>
-                  <li>Todos tus negocios (si tienes)</li>
-                  <li>Todos tus mensajes y conversaciones</li>
-                  <li>Todas tus reseñas</li>
-                  <li>Todos tus datos relacionados</li>
-                </ul>
-              </div>
-
-              {deleteError && (
-                <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl">
-                  <p className="text-red-300 text-sm">{deleteError}</p>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <button
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {deleting ? "Eliminando cuenta..." : "Sí, eliminar mi cuenta"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false)
-                    setDeleteError(null)
-                  }}
-                  disabled={deleting}
-                  className="w-full bg-gray-600/40 hover:bg-gray-600/60 py-3 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* MODAL CONVERTIR A NEGOCIO */}
       {showConvertModal && (

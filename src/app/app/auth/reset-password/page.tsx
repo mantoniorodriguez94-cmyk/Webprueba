@@ -18,30 +18,20 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     // Procesar el token de recuperación cuando la página carga
     let mounted = true;
-    let subscription: any = null;
     
     const processRecoveryToken = async () => {
       try {
-        // Verificar si hay un token en la URL (tanto en hash como en query params)
+        // Verificar si hay un token en la URL
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const queryParams = new URLSearchParams(window.location.search);
         const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
         const type = hashParams.get('type') || queryParams.get('type');
         
-        console.log('🔍 Verificando token de recuperación...', {
-          hasHash: !!window.location.hash,
-          hasQuery: !!window.location.search,
-          accessToken: !!accessToken,
-          type
-        });
-        
         if (accessToken && type === 'recovery') {
-          console.log('✅ Token de recuperación detectado, procesando...');
+          console.log('Token de recuperación detectado, esperando procesamiento...');
           
           // Escuchar cambios en el estado de autenticación
-          subscription = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('📡 Auth state change:', event, session ? 'Sesión establecida' : 'Sin sesión');
-            
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
               console.log('✅ Sesión establecida después de recuperación:', event);
               
@@ -53,23 +43,15 @@ export default function ResetPasswordPage() {
             }
           });
           
-          // Esperar y verificar la sesión múltiples veces
-          const checkSession = async (attempts = 0) => {
-            if (!mounted || attempts >= 5) {
-              if (attempts >= 5 && mounted) {
-                console.error('❌ No se pudo establecer sesión después de varios intentos');
-                setError("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
-              }
-              return;
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 500));
+          // También verificar después de un breve delay
+          setTimeout(async () => {
+            if (!mounted) return;
             
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
             
             if (sessionError) {
-              console.error('❌ Error obteniendo sesión:', sessionError);
-              if (mounted && attempts >= 3) {
+              console.error('Error obteniendo sesión:', sessionError);
+              if (mounted) {
                 setError("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
               }
               return;
@@ -82,28 +64,26 @@ export default function ResetPasswordPage() {
                 setError("");
               }
             } else {
-              console.log(`⏳ Intento ${attempts + 1}: Esperando sesión...`);
-              checkSession(attempts + 1);
+              console.warn('Token detectado pero no se estableció la sesión aún');
             }
+            
+            // Limpiar la suscripción después de verificar
+            subscription.unsubscribe();
+          }, 2000);
+          
+          return () => {
+            subscription.unsubscribe();
           };
-          
-          checkSession();
-          
         } else if (!accessToken && !type) {
           // No hay token, verificar si hay una sesión existente
           const { data: { session } } = await supabase.auth.getSession();
           if (!session && mounted) {
-            console.log('⚠️ No hay token ni sesión en la página de reset');
-            // No mostramos error inmediatamente, puede que el usuario esté llegando directamente
-          }
-        } else if (accessToken && type !== 'recovery') {
-          console.warn('⚠️ Token detectado pero tipo incorrecto:', type);
-          if (mounted) {
-            setError("Este enlace no es válido para recuperar contraseña. Por favor solicita uno nuevo.");
+            // No hay token ni sesión, pero no mostramos error inmediatamente
+            // El usuario puede estar llegando aquí directamente
           }
         }
       } catch (err) {
-        console.error('❌ Error procesando token de recuperación:', err);
+        console.error('Error procesando token de recuperación:', err);
         if (mounted) {
           setError("Error al procesar el enlace de recuperación. Por favor intenta de nuevo.");
         }
@@ -114,9 +94,6 @@ export default function ResetPasswordPage() {
     
     return () => {
       mounted = false;
-      if (subscription) {
-        subscription.data.subscription.unsubscribe();
-      }
     };
   }, []);
 

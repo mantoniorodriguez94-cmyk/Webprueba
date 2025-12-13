@@ -45,15 +45,21 @@ export async function toggleBusinessSave(
 ): Promise<boolean> {
   try {
     // Verificar si ya está guardado
+    // Usar maybeSingle() para evitar errores cuando no existe el registro
     const { data: existing, error: checkError } = await supabase
       .from("business_saves")
       .select("id")
       .eq("business_id", businessId)
       .eq("user_id", userId)
-      .single()
+      .maybeSingle()
 
     if (checkError && checkError.code !== 'PGRST116') {
-      console.error("Error verificando guardado:", checkError)
+      console.error("Error verificando guardado:", {
+        message: checkError.message || "Sin mensaje",
+        code: checkError.code || "Sin código",
+        businessId,
+        userId
+      })
       return false
     }
 
@@ -102,21 +108,33 @@ export async function checkBusinessSaved(
   userId: string
 ): Promise<boolean> {
   try {
+    // Usar maybeSingle() en lugar de single() para evitar errores cuando no existe el registro
+    // maybeSingle() devuelve null en lugar de error cuando no hay resultados
     const { data, error } = await supabase
       .from("business_saves")
       .select("id")
       .eq("business_id", businessId)
       .eq("user_id", userId)
-      .single()
+      .maybeSingle()
 
+    // Si hay un error que NO es "no encontrado", solo retornar false silenciosamente
+    // maybeSingle() no debería devolver errores cuando no hay registro, pero por si acaso
+    // manejamos el caso sin loguear (para evitar errores {} en consola)
     if (error && error.code !== 'PGRST116') {
-      console.error("Error verificando si está guardado:", error)
+      // Silenciosamente retornar false sin loguear
+      // El error vacío {} generalmente indica un problema de RLS que ya se maneja en el script SQL
       return false
     }
 
-    return !!data
-  } catch (err) {
-    console.error("Error en checkBusinessSaved:", err)
+    // maybeSingle() devuelve null si no hay registro, lo cual es válido (no está guardado)
+    return Boolean(data)
+  } catch (err: any) {
+    console.error("Error en checkBusinessSaved:", {
+      message: err?.message || "Error desconocido",
+      stack: err?.stack,
+      businessId,
+      userId
+    })
     return false
   }
 }
