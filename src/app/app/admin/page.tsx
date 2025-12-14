@@ -17,32 +17,43 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
-  // Contar usuarios usando service role key para evitar problemas de RLS
+  // Contar usuarios usando la misma lógica que la página de usuarios
+  // Esto asegura que el conteo sea consistente
   let usersCount = 0
   
-  // Primero intentar con service role key (bypasea RLS)
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  // Usar service role key directamente - misma lógica que admin/usuarios/page.tsx
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
     try {
       const { createClient: createServiceClient } = await import('@supabase/supabase-js')
       const serviceSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
       )
       
-      // Contar desde profiles usando service role (sin RLS)
-      const { count: serviceCount, error: serviceError } = await serviceSupabase
+      // Intentar cargar todos los usuarios desde profiles (misma lógica que usuarios/page.tsx)
+      const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
         .from("profiles")
-        .select("*", { count: "exact", head: true })
+        .select("id")
+        .order("created_at", { ascending: false })
       
-      if (!serviceError && serviceCount !== null) {
-        usersCount = serviceCount
-        console.log("✅ Usuarios contados con service role:", usersCount)
-      } else {
-        // Fallback: intentar con auth.admin.listUsers()
+      if (!serviceError && serviceUsuarios) {
+        usersCount = serviceUsuarios.length
+        console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
+      } else if (serviceError) {
+        // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
         try {
-          const { data: authData } = await serviceSupabase.auth.admin.listUsers()
-          usersCount = authData?.users?.length || 0
-          console.log("✅ Usuarios contados con auth.admin.listUsers():", usersCount)
+          const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+          
+          if (!authError && authData?.users) {
+            usersCount = authData.users.length
+            console.log("✅ Usuarios contados con auth.admin.listUsers():", usersCount)
+          }
         } catch {
           // Silenciosamente continuar si falla
         }
@@ -52,23 +63,7 @@ export default async function AdminDashboardPage() {
     }
   }
   
-  // Si service role no funcionó, intentar con el cliente normal (puede fallar por RLS)
-  if (usersCount === 0) {
-    try {
-      const { count: profilesCount, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-      
-      if (!profilesError && profilesCount !== null) {
-        usersCount = profilesCount
-        console.log("✅ Usuarios contados con cliente normal:", usersCount)
-      }
-    } catch {
-      // Silenciosamente continuar si falla
-    }
-  }
-  
-  // Si aún es 0, intentar una última vez con auth.admin.listUsers() del cliente normal
+  // Si aún es 0, intentar con el cliente normal como último recurso
   if (usersCount === 0) {
     try {
       const { data: authData } = await supabase.auth.admin.listUsers()
