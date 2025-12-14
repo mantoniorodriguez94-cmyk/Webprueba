@@ -17,63 +17,76 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
-  // Contar usuarios usando la misma lógica que la página de usuarios
-  // Esto asegura que el conteo sea consistente
+  // Contar usuarios usando EXACTAMENTE la misma lógica que admin/usuarios/page.tsx
+  // Esto asegura que el conteo sea 100% consistente
   let usersCount = 0
+  let usuarios: any[] | null = null
   
-  // Usar service role key directamente - misma lógica que admin/usuarios/page.tsx
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    try {
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-      const serviceSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
-      )
-      
-      // Intentar cargar todos los usuarios desde profiles (misma lógica que usuarios/page.tsx)
-      const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-        .from("profiles")
-        .select("id")
-        .order("created_at", { ascending: false })
-      
-      if (!serviceError && serviceUsuarios) {
-        usersCount = serviceUsuarios.length
-        console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
-      } else if (serviceError) {
-        // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
-        try {
-          const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
-          
-          if (!authError && authData?.users) {
-            usersCount = authData.users.length
-            console.log("✅ Usuarios contados con auth.admin.listUsers():", usersCount)
-          }
-        } catch {
-          // Silenciosamente continuar si falla
+  try {
+    // Usar service role key directamente - EXACTAMENTE igual que usuarios/page.tsx
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      throw new Error("Variables de entorno de Supabase no configuradas")
+    }
+
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+    
+    // Crear cliente con service role - EXACTAMENTE igual que usuarios/page.tsx
+    const serviceSupabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
         }
       }
-    } catch {
-      // Silenciosamente continuar si falla
-    }
-  }
-  
-  // Si aún es 0, intentar con el cliente normal como último recurso
-  if (usersCount === 0) {
-    try {
-      const { data: authData } = await supabase.auth.admin.listUsers()
+    )
+    
+    // Intentar cargar desde profiles con service role - EXACTAMENTE igual que usuarios/page.tsx
+    const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
+      .from("profiles")
+      .select(`
+        id,
+        full_name,
+        email,
+        role,
+        is_admin,
+        created_at,
+        avatar_url
+      `)
+      .order("created_at", { ascending: false })
+    
+    if (serviceError) {
+      // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
+      // EXACTAMENTE igual que usuarios/page.tsx
+      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+      
+      if (authError) {
+        throw new Error(`Error con auth.admin.listUsers(): ${authError.message}`)
+      }
+      
       if (authData?.users) {
-        usersCount = authData.users.length
-        console.log("✅ Usuarios contados con auth.admin.listUsers() (cliente normal):", usersCount)
+        // Convertir usuarios de auth.users a formato profiles - EXACTAMENTE igual que usuarios/page.tsx
+        usuarios = authData.users.map((user) => ({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          role: user.user_metadata?.role || "person",
+          is_admin: user.user_metadata?.is_admin === true || false,
+          created_at: user.created_at,
+          avatar_url: user.user_metadata?.avatar_url || null
+        }))
+        usersCount = usuarios.length
+        console.log("✅ Usuarios contados desde auth.users:", usersCount)
       }
-    } catch {
-      // Silenciosamente continuar si falla
+    } else if (serviceUsuarios) {
+      usuarios = serviceUsuarios
+      usersCount = usuarios.length
+      console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
     }
+  } catch (err: any) {
+    // Silenciosamente manejar el error - igual que usuarios/page.tsx
+    console.error("Error contando usuarios:", err)
   }
 
   // Cargar todas las estadísticas en paralelo para mejor rendimiento
