@@ -70,6 +70,12 @@ export default function Home() {
                   Cómo funciona
                 </button>
                 <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Para personas
+                </button>
+                <button 
                   onClick={() => scrollToSection('para-negocios')}
                   className="text-gray-300 hover:text-white transition"
                 >
@@ -133,6 +139,12 @@ export default function Home() {
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
                   Cómo funciona
+                </button>
+                <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
+                >
+                  Para personas
                 </button>
                 <button 
                   onClick={() => scrollToSection('para-negocios')}
@@ -244,12 +256,10 @@ export default function Home() {
         </section>
 
         {/* Carrusel de Negocios */}
-        <section className="w-full py-12">
-          <WaveMasonryCarousel />
-        </section>
+        
 
         {/* BLOQUE 3 — CÓMO FUNCIONA */}
-        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm mt-[10px] md:mt-0 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -301,7 +311,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
-        <section className="w-full py-20">
+        <section id="para-personas" className="w-full py-20 mt-[10px] md:mt-0 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -371,7 +381,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -434,7 +444,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 6 — CONFIANZA / CREDIBILIDAD */}
-        <section className="w-full py-16">
+        <section className="w-full py-16 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div className="space-y-3">
