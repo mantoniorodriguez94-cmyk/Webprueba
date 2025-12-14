@@ -129,6 +129,18 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
         }
       }
 
+      // Si no hay perfil pero tenemos metadataIsAdmin, aceptar como admin
+      if (!profile && metadataIsAdmin) {
+        return {
+          user: {
+            id: user.id,
+            email: user.email || "",
+            isAdmin: true
+          },
+          error: null
+        }
+      }
+
       if (!profile) {
         return { user: null, error: `Error al leer perfil: ${profileError?.message || "Perfil no encontrado"}` }
       }
