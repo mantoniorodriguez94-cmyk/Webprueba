@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
-try {
+  try {
+    // 1. Validar Content-Type
     const contentType = request.headers.get('content-type') || ''
     if (!contentType.includes('application/json')) {
       return NextResponse.json(
@@ -11,7 +12,8 @@ try {
       )
     }
 
-let body: { secret?: string; email?: string }
+    // 2. Leer body de forma segura
+    let body: { secret?: string; email?: string }
     try {
       body = await request.json()
     } catch {
@@ -23,14 +25,15 @@ let body: { secret?: string; email?: string }
 
     const { secret, email } = body
 
-if (!secret || !email) {
+    if (!secret || !email) {
       return NextResponse.json(
         { success: false, error: 'Secret y email son requeridos' },
         { status: 400 }
       )
     }
 
-if (!process.env.ADMIN_SETUP_SECRET) {
+    // 3. Validar secret
+    if (!process.env.ADMIN_SETUP_SECRET) {
       return NextResponse.json(
         { success: false, error: 'ADMIN_SETUP_SECRET no configurado' },
         { status: 500 }
@@ -44,6 +47,7 @@ if (!process.env.ADMIN_SETUP_SECRET) {
       )
     }
 
+    // 4. Validar Supabase envs
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
       !process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -54,6 +58,7 @@ if (!process.env.ADMIN_SETUP_SECRET) {
       )
     }
 
+    // 5. Crear cliente service role
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -65,15 +70,18 @@ if (!process.env.ADMIN_SETUP_SECRET) {
       }
     )
 
-    const { data, error } = await supabase.auth.admin.listUsers()
-    if (error) {
+    // 6. Buscar usuario
+    const { data, error: listError } = await supabase.auth.admin.listUsers()
+
+    if (listError) {
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: listError.message },
         { status: 500 }
       )
     }
 
     const user = data.users.find(u => u.email === email)
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Usuario no encontrado' },
@@ -81,6 +89,7 @@ if (!process.env.ADMIN_SETUP_SECRET) {
       )
     }
 
+    // 7. Actualizar perfil
     await supabase
       .from('profiles')
       .upsert(
@@ -88,6 +97,7 @@ if (!process.env.ADMIN_SETUP_SECRET) {
         { onConflict: 'id' }
       )
 
+    // 8. Actualizar metadata
     await supabase.auth.admin.updateUserById(user.id, {
       user_metadata: { ...user.user_metadata, is_admin: true },
     })
@@ -96,8 +106,8 @@ if (!process.env.ADMIN_SETUP_SECRET) {
       success: true,
       message: `Usuario ${email} configurado como administrador`,
     })
-  } catch (err) {
-    console.error('set-admin error:', err)
+  } catch (error) {
+    console.error('set-admin error:', error)
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
