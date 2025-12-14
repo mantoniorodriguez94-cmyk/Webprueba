@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
-  try {
-    // ✅ Verificar Content-Type
+try {
     const contentType = request.headers.get('content-type') || ''
     if (!contentType.includes('application/json')) {
       return NextResponse.json(
@@ -12,8 +11,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ✅ Parsear body de forma segura
-    let body: { secret?: string; email?: string }
+let body: { secret?: string; email?: string }
     try {
       body = await request.json()
     } catch {
@@ -25,16 +23,14 @@ export async function POST(request: NextRequest) {
 
     const { secret, email } = body
 
-    // ✅ Validaciones duras
-    if (!secret || !email) {
+if (!secret || !email) {
       return NextResponse.json(
         { success: false, error: 'Secret y email son requeridos' },
         { status: 400 }
       )
     }
 
-    // ✅ NO fallback de seguridad
-    if (!process.env.ADMIN_SETUP_SECRET) {
+if (!process.env.ADMIN_SETUP_SECRET) {
       return NextResponse.json(
         { success: false, error: 'ADMIN_SETUP_SECRET no configurado' },
         { status: 500 }
@@ -48,22 +44,63 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
       return NextResponse.json(
-        { success: false, error: 'Supabase service role no configurado' },
+        { success: false, error: 'Credenciales de Supabase no configuradas' },
         { status: 500 }
       )
     }
 
-    const serviceSupabase = createServiceClient(
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
-      { auth: { autoRefreshToken: false, persistSession: false } }
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
     )
 
-    // 🔍 Buscar usuario
-    const { data, error: listError } = await serviceSupabase.auth.admin.listUsers()
-
-    if (listError) {
+    const { data, error } = await supabase.auth.admin.listUsers()
+    if (error) {
       return NextResponse.json(
-        { success: false, er
+        { success: false, error: error.message },
+        { status: 500 }
+      )
+    }
+
+    const user = data.users.find(u => u.email === email)
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    await supabase
+      .from('profiles')
+      .upsert(
+        { id: user.id, email: user.email, is_admin: true },
+        { onConflict: 'id' }
+      )
+
+    await supabase.auth.admin.updateUserById(user.id, {
+      user_metadata: { ...user.user_metadata, is_admin: true },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: `Usuario ${email} configurado como administrador`,
+    })
+  } catch (err) {
+    console.error('set-admin error:', err)
+    return NextResponse.json(
+      { success: false, error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
