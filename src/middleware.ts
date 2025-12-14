@@ -1,17 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-
-export const middlewareConfig = {
-  matcher: [
-    /*
-      Excluye:
-      - /api
-      - /_next
-      - archivos estáticos
-    */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
-}
+import { createClient } from '@supabase/supabase-js'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -47,13 +36,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * Aplica middleware SOLO a páginas,
+     * excluyendo:
+     * - api routes
+     * - archivos estáticos
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
-
+} 
