@@ -43,24 +43,71 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
     }
 
     // 3️⃣ Verificar rol en tabla "profiles"
-    // ⚠️ CRUCIAL: await necesario para queries a Supabase
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("is_admin, email")
-      .eq("id", user.id)
-      .single()
+    // ⚠️ IMPORTANTE: En producción, siempre intentar con service role key primero si está disponible
+    // Esto bypassa problemas de RLS y asegura que funcione correctamente
+    
+    let profile: { is_admin: boolean; email: string | null } | null = null
+    let profileError: any = null
+
+    // Si tenemos service role key, usarlo directamente (más confiable en producción)
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+        const serviceSupabase = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          }
+        )
+        
+        const { data: serviceProfile, error: serviceError } = await serviceSupabase
+          .from("profiles")
+          .select("is_admin, email")
+          .eq("id", user.id)
+          .single()
+
+        if (!serviceError && serviceProfile) {
+          profile = serviceProfile
+          profileError = null
+        } else {
+          profileError = serviceError
+        }
+      } catch (err: any) {
+        profileError = err
+      }
+    }
+
+    // Si no funcionó con service role (o no está disponible), intentar con cliente normal
+    if (!profile && !profileError) {
+      const result = await supabase
+        .from("profiles")
+        .select("is_admin, email")
+        .eq("id", user.id)
+        .single()
+      
+      profile = result.data
+      profileError = result.error
+    }
 
     // Manejar error de perfil
-    if (profileError) {
-      // Si es un error de RLS o perfil no encontrado, intentar con service role como fallback
-      // No logueamos el error inicial para evitar errores {} en consola
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (profileError || !profile) {
+      // Si es un error de RLS o perfil no encontrado, intentar con service role como fallback final
+      if (profileError && process.env.SUPABASE_SERVICE_ROLE_KEY && !profile) {
         try {
-          console.log("🔄 Intentando leer perfil con service role key...")
           const { createClient: createServiceClient } = await import('@supabase/supabase-js')
           const serviceSupabase = createServiceClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+              auth: {
+                autoRefreshToken: false,
+                persistSession: false
+              }
+            }
           )
           
           const { data: serviceProfile, error: serviceError } = await serviceSupabase
@@ -70,40 +117,17 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
             .single()
 
           if (!serviceError && serviceProfile) {
-            console.log("✅ Lectura exitosa con service role key")
-            const isAdmin = serviceProfile.is_admin === true
-            
-            if (isAdmin) {
-              console.log("✅ Usuario admin verificado (service role):", {
-                userId: user.id,
-                email: serviceProfile.email || user.email
-              })
-            }
-            
-            return {
-              user: {
-                id: user.id,
-                email: serviceProfile.email || user.email || "",
-                isAdmin
-              },
-              error: isAdmin ? null : "No autorizado"
-            }
+            profile = serviceProfile
+            profileError = null
           }
-          // Silenciosamente continuar si hay error con service role
         } catch {
           // Silenciosamente manejar el error - el fallback ya falló
         }
       }
 
-      return { user: null, error: `Error al leer perfil: ${profileError.message || "Error desconocido"}` }
-    }
-
-    if (!profile) {
-      console.error("❌ Perfil no existe para usuario:", {
-        userId: user.id,
-        email: user.email
-      })
-      return { user: null, error: "Perfil no encontrado" }
+      if (!profile) {
+        return { user: null, error: `Error al leer perfil: ${profileError?.message || "Perfil no encontrado"}` }
+      }
     }
 
     const isAdmin = profile.is_admin === true
