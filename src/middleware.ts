@@ -1,6 +1,18 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+export const middlewareConfig = {
+  matcher: [
+    /*
+      Excluye:
+      - /api
+      - /_next
+      - archivos estáticos
+    */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
