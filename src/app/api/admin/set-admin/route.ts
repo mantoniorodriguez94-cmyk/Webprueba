@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validar Content-Type
     const contentType = request.headers.get('content-type') || ''
     if (!contentType.includes('application/json')) {
       return NextResponse.json(
@@ -12,7 +11,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Leer body de forma segura
     let body: { secret?: string; email?: string }
     try {
       body = await request.json()
@@ -32,7 +30,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 3. Validar secret
     if (!process.env.ADMIN_SETUP_SECRET) {
       return NextResponse.json(
         { success: false, error: 'ADMIN_SETUP_SECRET no configurado' },
@@ -47,7 +44,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Validar Supabase envs
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
       !process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -58,19 +54,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Crear cliente service role
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
       {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
+        auth: { autoRefreshToken: false, persistSession: false },
       }
     )
 
-    // 6. Buscar usuario
     const { data, error: listError } = await supabase.auth.admin.listUsers()
 
     if (listError) {
@@ -89,7 +80,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 7. Actualizar perfil
     await supabase
       .from('profiles')
       .upsert(
@@ -97,7 +87,6 @@ export async function POST(request: NextRequest) {
         { onConflict: 'id' }
       )
 
-    // 8. Actualizar metadata
     await supabase.auth.admin.updateUserById(user.id, {
       user_metadata: { ...user.user_metadata, is_admin: true },
     })
