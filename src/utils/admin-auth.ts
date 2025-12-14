@@ -42,6 +42,10 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
       return { user: null, error: "No autenticado" }
     }
 
+    // 2.5️⃣ Verificar is_admin en user_metadata como fallback rápido
+    // Esto ayuda cuando is_admin está en metadata pero no en profiles aún
+    const metadataIsAdmin = user.user_metadata?.is_admin === true
+
     // 3️⃣ Verificar rol en tabla "profiles"
     // ⚠️ IMPORTANTE: En producción, siempre intentar con service role key primero si está disponible
     // Esto bypassa problemas de RLS y asegura que funcione correctamente
@@ -130,13 +134,16 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
       }
     }
 
-    const isAdmin = profile.is_admin === true
+    // Verificar is_admin de múltiples fuentes para máxima compatibilidad
+    const profileIsAdmin = profile.is_admin === true
+    const isAdmin = profileIsAdmin || metadataIsAdmin
 
     // Log para debugging (solo si es admin para no ensuciar logs)
     if (isAdmin) {
       console.log("✅ Usuario admin verificado:", {
         userId: user.id,
-        email: profile.email || user.email
+        email: profile.email || user.email,
+        source: profileIsAdmin ? "profile" : "metadata"
       })
     }
 
