@@ -1,3 +1,4 @@
+console.log('PROJECT CHECK – ADMIN_SETUP_SECRET:', process.env.ADMIN_SETUP_SECRET)
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
