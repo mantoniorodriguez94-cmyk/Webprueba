@@ -99,9 +99,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Redirigir al dashboard
-    // Los usuarios nuevos y existentes van al mismo lugar según el código actual
-    return NextResponse.redirect(new URL('/app/dashboard', request.url))
+    // Redirigir al dashboard usando URL absoluta
+    // Extraer el origen de la request para construir la URL correcta
+    const origin = requestUrl.origin
+    const dashboardUrl = `${origin}/app/dashboard`
+    
+    console.log('✅ OAuth exitoso, redirigiendo a:', dashboardUrl)
+    
+    return NextResponse.redirect(dashboardUrl)
 
   } catch (err: any) {
     console.error('❌ Error inesperado en callback:', err)
