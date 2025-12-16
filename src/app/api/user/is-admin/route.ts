@@ -1,125 +1,63 @@
-/**
- * API Route: Verificar si el usuario actual es admin
- * GET /api/user/is-admin
- * 
- * ⚠️ IMPORTANTE: Esta ruta lee is_admin desde el servidor para evitar problemas de RLS
- * NO modifica ningún campo, solo lee el estado actual
- */
-
 import { NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient } from '@/utils/supabase/server' // Cliente para autenticación (Auth)
+import { createClient as createServiceClient } from '@supabase/supabase-js' // Cliente para base de datos (Admin)
 
 export async function GET() {
   try {
+    // 1️⃣ PASO 1: Identificar al usuario (Usamos cliente normal)
+    // Necesitamos verificar quién hace la petición leyendo las cookies
     const supabase = await createClient()
-
-    // Verificar que el usuario está autenticado
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      console.log('❌ No autenticado:', authError?.message)
-      return NextResponse.json({
-        isAdmin: false,
-        error: 'No autenticado'
-      })
+      console.log('❌ API is-admin: Usuario no autenticado')
+      return NextResponse.json({ isAdmin: false, error: 'No autenticado' }, { status: 401 })
     }
 
-    console.log('🔍 Verificando admin para usuario:', user.id, user.email)
-
-    // ⚠️ IMPORTANTE: Solo LECTURA, nunca UPDATE
-    // Intentar leer is_admin desde el servidor
-    let profile, profileError
+    // 2️⃣ PASO 2: Leer la base de datos (Usamos Service Role)
+    // ⚠️ CRUCIAL: Usamos DIRECTAMENTE el Service Role para saltarnos las RLS
+    // Esto evita el error de "Infinite Recursion" que tienes ahora.
     
-    try {
-      const result = await supabase
-        .from('profiles')
-        .select('is_admin, email, role')
-        .eq('id', user.id)
-        .single()
-      
-      profile = result.data
-      profileError = result.error
-    } catch (err: any) {
-      profileError = err
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ ERROR CRÍTICO: Falta SUPABASE_SERVICE_ROLE_KEY en .env.local')
+      return NextResponse.json({ isAdmin: false, error: 'Error de configuración del servidor' }, { status: 500 })
     }
 
-    // Si hay error de RLS, intentar con service role key como fallback
-    if (profileError && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.log('⚠️ Error con cliente normal, intentando con service role:', profileError.message)
-      
-      try {
-        const serviceSupabase = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
-        
-        const { data: serviceProfile, error: serviceError } = await serviceSupabase
-          .from('profiles')
-          .select('is_admin, email, role')
-          .eq('id', user.id)
-          .single()
-        
-        if (!serviceError && serviceProfile) {
-          profile = serviceProfile
-          profileError = null
-          console.log('✅ Lectura exitosa con service role')
-        }
-      } catch (serviceErr: any) {
-        console.error('❌ Error incluso con service role:', serviceErr)
-      }
+    const supabaseAdmin = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data: profile, error: dbError } = await supabaseAdmin
+      .from('profiles')
+      .select('is_admin, email, role') // Traemos solo lo necesario
+      .eq('id', user.id)
+      .single()
+
+    if (dbError) {
+      console.error('❌ Error leyendo perfil (Admin Client):', dbError.message)
+      // Si falla la DB, por seguridad devolvemos false
+      return NextResponse.json({ isAdmin: false, error: dbError.message }, { status: 500 })
     }
 
-    if (profileError) {
-      console.error('❌ Error leyendo perfil:', profileError)
-      return NextResponse.json({
-        isAdmin: false,
-        error: profileError.message || 'Error al leer perfil',
-        debug: {
-          userId: user.id,
-          email: user.email,
-          errorCode: profileError.code,
-          errorMessage: profileError.message
-        }
-      })
-    }
+    // 3️⃣ PASO 3: Validación estricta
+    const isAdmin = profile?.is_admin === true
 
-    if (!profile) {
-      console.error('❌ Perfil no encontrado para usuario:', user.id)
-      return NextResponse.json({
-        isAdmin: false,
-        error: 'Perfil no encontrado'
-      })
-    }
-
-    // Verificar is_admin de forma estricta (solo TRUE booleano)
-    const isAdmin = profile.is_admin === true
-
-    console.log('📊 Resultado verificación admin:', {
-      userId: user.id,
-      email: user.email,
-      isAdmin,
-      is_admin_value: profile.is_admin,
-      role: profile.role
-    })
+    console.log(`✅ Verificación Admin completada: ${user.email} -> ${isAdmin ? 'ES ADMIN' : 'NO ES ADMIN'}`)
 
     return NextResponse.json({
       isAdmin,
-      error: null,
       debug: {
         userId: user.id,
-        email: user.email,
-        is_admin_value: profile.is_admin,
-        role: profile.role
+        role: profile?.role // Útil para debug, pero no determina admin
       }
     })
 
   } catch (error: any) {
-    console.error('❌ Error en is-admin:', error)
+    console.error('❌ Error fatal en API is-admin:', error)
     return NextResponse.json(
       { isAdmin: false, error: error.message || 'Error interno' },
       { status: 500 }
     )
   }
 }
-

@@ -73,15 +73,59 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
   const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
   
   // Calcular el límite de negocios permitidos y rol del usuario
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
-  const isAdmin = user?.user_metadata?.is_admin ?? false
   const allowedBusinesses = isCompany 
     ? (isAdmin ? 999 : (user?.user_metadata?.allowed_businesses ?? 5))
     : 0
   const canCreateMore = isCompany && (isAdmin || negocios.length < allowedBusinesses)
+
+  // ============================================================
+  // 🔥 DETECTAR SI EL USUARIO ES ADMIN (desde tabla profiles)
+  // ============================================================
+  // ⚠️ IMPORTANTE: Usamos API route para leer is_admin desde profiles
+  // NO desde user_metadata que puede estar desincronizado
+  useEffect(() => {
+    const loadAdminFlag = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
+
+      try {
+        // Usar API route del servidor para leer is_admin desde profiles
+        const response = await fetch('/api/user/is-admin', {
+          cache: 'no-store' // Evitar cache
+        })
+        const data = await response.json()
+        
+        console.log('🔍 Dashboard - Verificación admin:', {
+          isAdmin: data.isAdmin,
+          error: data.error,
+          userId: user.id,
+          debug: data.debug
+        })
+        
+        if (data.isAdmin === true) {
+          setIsAdmin(true)
+          console.log('✅ Usuario es administrador (dashboard)')
+        } else {
+          setIsAdmin(false)
+          if (data.error) {
+            console.warn('⚠️ Error verificando admin:', data.error)
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error verificando admin en dashboard:', error)
+        setIsAdmin(false)
+      }
+    }
+
+    loadAdminFlag()
+  }, [user])
   
   // [MANTENER TODA LA LÓGICA ORIGINAL - NO CAMBIAR]
   useEffect(() => {
