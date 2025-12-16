@@ -97,6 +97,7 @@ export default function DashboardPage() {
 
       try {
         // Usar API route del servidor para leer is_admin desde profiles
+        // ⚠️ IMPORTANTE: Usar ruta relativa (no URL absoluta) para que funcione en local y producción
         const response = await fetch('/api/user/is-admin', {
           cache: 'no-store' // Evitar cache
         })

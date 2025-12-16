@@ -24,6 +24,7 @@ export default function PerfilPage() {
 
       try {
         // Usar API route del servidor para leer is_admin
+        // ⚠️ IMPORTANTE: Usar ruta relativa (no URL absoluta) para que funcione en local y producción
         const response = await fetch('/api/user/is-admin', {
           cache: 'no-store' // Evitar cache
         })
