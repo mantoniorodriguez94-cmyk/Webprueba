@@ -101,3 +101,4 @@ La API route requiere:
 **Error: "Variables de entorno no configuradas"**
 - Verifica que `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` estén configuradas
 
+

@@ -5,18 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
 import useUser from "@/hooks/useUser";
+import { scrollToSection } from "@/utils/scroll";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
 
-  // Función para scroll suave a sección
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  // Función para scroll suave a sección usando la utilidad mejorada
+  const handleScrollToSection = (id: string) => {
+    scrollToSection(id);
     setMobileMenuOpen(false); // Cerrar menú móvil después de hacer click
   };
 
@@ -64,19 +62,19 @@ export default function Home() {
                   Negocios
                 </Link>
                 <button 
-                  onClick={() => scrollToSection('como-funciona')}
+                  onClick={() => handleScrollToSection('como-funciona')}
                   className="text-gray-300 hover:text-white transition"
                 >
                   Cómo funciona
                 </button>
                 <button 
-                  onClick={() => scrollToSection('para-personas')}
+                  onClick={() => handleScrollToSection('para-personas')}
                   className="text-gray-300 hover:text-white transition"
                 >
                   Para personas
                 </button>
                 <button 
-                  onClick={() => scrollToSection('para-negocios')}
+                  onClick={() => handleScrollToSection('para-negocios')}
                   className="text-gray-300 hover:text-white transition"
                 >
                   Para negocios
@@ -135,19 +133,19 @@ export default function Home() {
                   Negocios
                 </Link>
                 <button 
-                  onClick={() => scrollToSection('como-funciona')}
+                  onClick={() => handleScrollToSection('como-funciona')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
                   Cómo funciona
                 </button>
                 <button 
-                  onClick={() => scrollToSection('para-personas')}
+                  onClick={() => handleScrollToSection('para-personas')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
                   Para personas
                 </button>
                 <button 
-                  onClick={() => scrollToSection('para-negocios')}
+                  onClick={() => handleScrollToSection('para-negocios')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
                   Para negocios
@@ -311,7 +309,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
-        <section id="para-personas" className="w-full py-20 mt-[10px] md:mt-0 scroll-mt-24">
+        <section id="para-personas" className="w-full py-20 mt-[10px] md:mt-0 scroll-mt-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -381,7 +379,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-24">
+        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm px-[10px] md:px-0 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -444,7 +442,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 6 — CONFIANZA / CREDIBILIDAD */}
-        <section className="w-full py-16 scroll-mt-24">
+        <section className="w-full py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div className="space-y-3">
@@ -533,7 +531,7 @@ export default function Home() {
                   </li>
                   <li>
                     <button 
-                      onClick={() => scrollToSection('como-funciona')}
+                      onClick={() => handleScrollToSection('como-funciona')}
                       className="hover:text-white transition text-left"
                     >
                       Cómo funciona
@@ -556,7 +554,7 @@ export default function Home() {
                   </li>
                   <li>
                     <button 
-                      onClick={() => scrollToSection('para-negocios')}
+                      onClick={() => handleScrollToSection('para-negocios')}
                       className="hover:text-white transition text-left"
                     >
                       Beneficios premium
