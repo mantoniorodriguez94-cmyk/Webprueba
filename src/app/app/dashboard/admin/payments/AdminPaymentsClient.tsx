@@ -114,9 +114,10 @@ function ReceiptImage({
   }, [submission.screenshot_url, submission.id])
 
   const displayUrl = imageUrl || submission.screenshot_url
+  const hasUrl = !!submission.screenshot_url
 
   return (
-    <>
+    <div>
       <div 
         className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
         onClick={() => displayUrl && onImageClick(displayUrl)}
@@ -146,18 +147,21 @@ function ReceiptImage({
           />
         )}
       </div>
+      
+      {/* Botones SIEMPRE visibles - Solo deshabilitados si no hay URL */}
       <div className="flex gap-2 mt-2 justify-center">
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
             const url = imageUrl || submission.screenshot_url
             if (url) {
-              const fileName = `comprobante-${submission.business?.name || submission.id}-${submission.id}.jpg`
+              const fileName = `comprobante-${(submission.business?.name || submission.id).replace(/[^a-z0-9]/gi, '_')}-${submission.id}.jpg`
               onDownload(url, fileName)
             }
           }}
-          disabled={isLoading && !imageUrl && !submission.screenshot_url}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Descargar comprobante"
+          disabled={!hasUrl}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={hasUrl ? "Descargar comprobante" : "No hay imagen disponible"}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -165,13 +169,14 @@ function ReceiptImage({
           {isLoading ? 'Cargando...' : 'Descargar'}
         </button>
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
             const url = imageUrl || submission.screenshot_url
             if (url) onImageClick(url)
           }}
-          disabled={isLoading && !imageUrl && !submission.screenshot_url}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Ver en pantalla completa"
+          disabled={!hasUrl}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={hasUrl ? "Ver en pantalla completa" : "No hay imagen disponible"}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -179,7 +184,7 @@ function ReceiptImage({
           Ampliar
         </button>
       </div>
-    </>
+    </div>
   )
 }
 
