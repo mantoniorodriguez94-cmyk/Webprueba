@@ -194,3 +194,4 @@ Después de seguir estos pasos:
 - La respuesta de la API cuando la pruebas directamente
 - Un screenshot de las variables de entorno configuradas (sin mostrar los valores)
 
+

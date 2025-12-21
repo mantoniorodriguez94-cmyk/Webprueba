@@ -6,12 +6,13 @@
  * Métodos de pago: PayPal y Manual (Zelle/Banco)
  */
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import type { PremiumPlan, BusinessSubscriptionWithPlan } from "@/types/subscriptions"
 import type { Business } from "@/types/business"
+import { submitManualPayment } from "@/actions/payments"
 
 export default function PremiumPage() {
   const router = useRouter()
@@ -28,7 +29,7 @@ export default function PremiumPage() {
   const [manualPaymentMethod, setManualPaymentMethod] = useState<'pago_movil' | 'zelle' | 'bank_transfer'>('pago_movil')
   const [reference, setReference] = useState('')
   const [screenshot, setScreenshot] = useState<File | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -101,10 +102,12 @@ export default function PremiumPage() {
     }
   }
 
+  const [paypalSubmitting, setPaypalSubmitting] = useState(false)
+
   const handlePayPalPayment = async () => {
     if (!selectedPlan || !user) return
 
-    setSubmitting(true)
+    setPaypalSubmitting(true)
     setError('')
 
     try {
@@ -151,7 +154,7 @@ export default function PremiumPage() {
 
     } catch (err: any) {
       setError(err.message || 'Error procesando pago')
-      setSubmitting(false)
+      setPaypalSubmitting(false)
     }
   }
 
@@ -159,53 +162,43 @@ export default function PremiumPage() {
     e.preventDefault()
     if (!selectedPlan || !screenshot || !user) return
 
-    setSubmitting(true)
     setError('')
     setSuccess('')
 
-    try {
-      // Obtener token de autenticación
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error('No hay sesión activa')
+    // Crear FormData para la Server Action
+    const formData = new FormData()
+    formData.append('plan_id', selectedPlan.id)
+    formData.append('business_id', businessId)
+    formData.append('payment_method', manualPaymentMethod)
+    formData.append('reference', reference || '')
+    formData.append('screenshot', screenshot)
+
+    // Usar useTransition para manejar el estado de carga
+    startTransition(async () => {
+      try {
+        const result = await submitManualPayment(formData)
+
+        if (!result.success) {
+          setError(result.error || 'Error enviando pago')
+          return
+        }
+
+        // Éxito
+        setSuccess(result.message || '¡Pago enviado exitosamente! Tu solicitud será revisada pronto.')
+        setSelectedPlan(null)
+        setReference('')
+        setScreenshot(null)
+
+        // Recargar datos después de 2 segundos
+        setTimeout(() => {
+          loadData()
+        }, 2000)
+
+      } catch (err: any) {
+        console.error('Error en handleManualPayment:', err)
+        setError(err.message || 'Error enviando pago manual')
       }
-
-      const formData = new FormData()
-      formData.append('plan_id', selectedPlan.id)
-      formData.append('business_id', businessId)
-      formData.append('payment_method', manualPaymentMethod)
-      formData.append('reference', reference)
-      formData.append('screenshot', screenshot)
-
-      const response = await fetch('/api/payments/manual/submit', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (!data.success) {
-        throw new Error(data.error || 'Error enviando pago')
-      }
-
-      setSuccess('¡Pago enviado exitosamente! Tu solicitud será revisada pronto.')
-      setSelectedPlan(null)
-      setReference('')
-      setScreenshot(null)
-
-      // Recargar datos después de 2 segundos
-      setTimeout(() => {
-        loadData()
-      }, 2000)
-
-    } catch (err: any) {
-      setError(err.message || 'Error enviando pago manual')
-    } finally {
-      setSubmitting(false)
-    }
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -411,10 +404,10 @@ export default function PremiumPage() {
               <div>
                 <button
                   onClick={handlePayPalPayment}
-                  disabled={submitting}
+                  disabled={paypalSubmitting}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Procesando...' : `Pagar $${selectedPlan.price_usd} con PayPal`}
+                  {paypalSubmitting ? 'Procesando...' : `Pagar $${selectedPlan.price_usd} con PayPal`}
                 </button>
                 <p className="text-gray-400 text-sm mt-3 text-center">
                   Serás redirigido a PayPal para completar tu pago de forma segura
@@ -606,10 +599,20 @@ export default function PremiumPage() {
 
                 <button
                   type="submit"
-                  disabled={submitting || !screenshot}
+                  disabled={isPending || !screenshot}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Enviando...' : 'Enviar para Verificación'}
+                  {isPending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Subiendo...
+                    </span>
+                  ) : (
+                    'Enviar para Verificación'
+                  )}
                 </button>
 
                 <p className="text-gray-400 text-sm text-center">

@@ -102,3 +102,4 @@ La API route requiere:
 - Verifica que `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` estén configuradas
 
 
+

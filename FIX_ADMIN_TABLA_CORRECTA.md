@@ -128,3 +128,4 @@ Después de este fix:
 **Fecha de fix:** [Fecha actual]
 **Archivos modificados:** `src/app/app/dashboard/page.tsx`
 
+
