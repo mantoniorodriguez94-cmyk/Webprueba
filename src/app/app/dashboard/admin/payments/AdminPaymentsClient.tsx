@@ -151,25 +151,25 @@ function ReceiptImage({
           onClick={() => {
             const url = imageUrl || submission.screenshot_url
             if (url) {
-              const fileName = `comprobante-${submission.id}.jpg`
+              const fileName = `comprobante-${submission.business?.name || submission.id}-${submission.id}.jpg`
               onDownload(url, fileName)
             }
           }}
-          disabled={isLoading || error || !imageUrl}
+          disabled={isLoading && !imageUrl && !submission.screenshot_url}
           className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Descargar comprobante"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Descargar
+          {isLoading ? 'Cargando...' : 'Descargar'}
         </button>
         <button
           onClick={() => {
             const url = imageUrl || submission.screenshot_url
             if (url) onImageClick(url)
           }}
-          disabled={isLoading || error || !imageUrl}
+          disabled={isLoading && !imageUrl && !submission.screenshot_url}
           className="flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Ver en pantalla completa"
         >

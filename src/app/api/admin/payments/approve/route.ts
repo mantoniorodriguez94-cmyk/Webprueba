@@ -13,7 +13,12 @@ import { checkAdminAuth } from '@/utils/admin-auth'
 // Cliente de Supabase con service role para operaciones admin (bypass RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 /**
  * Calcular fecha de fin según el período de facturación
@@ -65,19 +70,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('[APPROVE] Buscando pago con ID:', submission_id_final)
+
     // Obtener información del pago manual con el plan
+    // IMPORTANTE: Usamos el cliente con service role key que bypasea RLS
     const { data: submission, error: submissionError } = await supabase
       .from('manual_payment_submissions')
-      .select('*, plan:premium_plans(*)')
+      .select('*, premium_plans(*)')
       .eq('id', submission_id_final)
       .single()
 
-    if (submissionError || !submission) {
+    if (submissionError) {
+      console.error('[APPROVE] Error buscando submission:', submissionError)
+      return NextResponse.json(
+        { success: false, error: `Error al buscar el pago: ${submissionError.message}` },
+        { status: 404 }
+      )
+    }
+
+    if (!submission) {
+      console.error('[APPROVE] Submission no encontrado con ID:', submission_id_final)
       return NextResponse.json(
         { success: false, error: 'Pago manual no encontrado' },
         { status: 404 }
       )
     }
+
+    console.log('[APPROVE] Submission encontrado:', submission.id, 'Status:', submission.status)
 
     // Verificar que está pendiente
     if (submission.status !== 'pending') {
@@ -99,26 +118,36 @@ export async function POST(request: NextRequest) {
       .eq('id', submission_id_final)
 
     if (updateSubmissionError) {
-      console.error('Error actualizando submission:', updateSubmissionError)
+      console.error('[APPROVE] Error actualizando submission:', updateSubmissionError)
       return NextResponse.json(
-        { success: false, error: 'Error al actualizar el pago' },
+        { success: false, error: `Error al actualizar el pago: ${updateSubmissionError.message}` },
         { status: 500 }
       )
     }
 
+    console.log('[APPROVE] Submission actualizado exitosamente')
+
     // Actualizar payment a 'completed'
-    await supabase
+    const { error: updatePaymentError } = await supabase
       .from('payments')
       .update({ status: 'completed' })
       .eq('external_id', submission_id_final)
       .eq('method', 'manual')
 
+    if (updatePaymentError) {
+      console.warn('[APPROVE] Advertencia al actualizar payments:', updatePaymentError)
+    }
+
     // Calcular fechas de la suscripción según el plan pagado
     const startDate = new Date()
-    // El plan viene con el alias 'plan' gracias al select anterior
-    const plan = (submission as any).plan
+    // El plan viene como premium_plans (puede ser array u objeto)
+    const plan = Array.isArray(submission.premium_plans) 
+      ? submission.premium_plans[0] 
+      : submission.premium_plans
     const billingPeriod = plan?.billing_period || 'monthly'
     const endDate = calculateEndDate(billingPeriod)
+
+    console.log('[APPROVE] Calculando fechas:', { billingPeriod, endDate: endDate.toISOString() })
 
     // Crear o actualizar suscripción
     const { data: existingSubscription } = await supabase
@@ -131,16 +160,20 @@ export async function POST(request: NextRequest) {
 
     if (existingSubscription) {
       // Extender suscripción existente
-      await supabase
+      const { error: extendError } = await supabase
         .from('business_subscriptions')
         .update({
           end_date: endDate.toISOString(),
           plan_id: submission.plan_id,
         })
         .eq('id', existingSubscription.id)
+
+      if (extendError) {
+        console.error('[APPROVE] Error extendiendo suscripción:', extendError)
+      }
     } else {
       // Crear nueva suscripción
-      await supabase
+      const { error: createError } = await supabase
         .from('business_subscriptions')
         .insert({
           business_id: submission.business_id,
@@ -150,6 +183,10 @@ export async function POST(request: NextRequest) {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
         })
+
+      if (createError) {
+        console.error('[APPROVE] Error creando suscripción:', createError)
+      }
     }
 
     // Activar premium en el negocio
@@ -163,8 +200,14 @@ export async function POST(request: NextRequest) {
       .eq('id', submission.business_id)
 
     if (updateBusinessError) {
-      console.error('Error activando premium:', updateBusinessError)
+      console.error('[APPROVE] Error activando premium:', updateBusinessError)
+      return NextResponse.json(
+        { success: false, error: `Error al activar premium: ${updateBusinessError.message}` },
+        { status: 500 }
+      )
     }
+
+    console.log('[APPROVE] Premium activado exitosamente para business:', submission.business_id)
 
     return NextResponse.json({
       success: true,
@@ -172,11 +215,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('Error en approve payment:', error)
+    console.error('[APPROVE] Error en approve payment:', error)
     return NextResponse.json(
       { success: false, error: error.message || 'Error interno del servidor' },
       { status: 500 }
     )
   }
 }
-

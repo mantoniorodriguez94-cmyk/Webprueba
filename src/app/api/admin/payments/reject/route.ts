@@ -12,7 +12,12 @@ import { checkAdminAuth } from '@/utils/admin-auth'
 // Cliente de Supabase con service role para operaciones admin (bypass RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,19 +43,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('[REJECT] Buscando pago con ID:', submission_id_final)
+
     // Obtener información del pago manual (incluyendo created_at para validar 24h)
+    // IMPORTANTE: Usamos el cliente con service role key que bypasea RLS
     const { data: submission, error: submissionError } = await supabase
       .from('manual_payment_submissions')
       .select('id, status, created_at, user_id, business_id')
       .eq('id', submission_id_final)
       .single()
 
-    if (submissionError || !submission) {
+    if (submissionError) {
+      console.error('[REJECT] Error buscando submission:', submissionError)
+      return NextResponse.json(
+        { success: false, error: `Error al buscar el pago: ${submissionError.message}` },
+        { status: 404 }
+      )
+    }
+
+    if (!submission) {
+      console.error('[REJECT] Submission no encontrado con ID:', submission_id_final)
       return NextResponse.json(
         { success: false, error: 'Pago manual no encontrado' },
         { status: 404 }
       )
     }
+
+    console.log('[REJECT] Submission encontrado:', submission.id, 'Status:', submission.status)
 
     // Verificar que está pendiente
     if (submission.status !== 'pending') {
@@ -88,19 +107,25 @@ export async function POST(request: NextRequest) {
       .eq('id', submission_id_final)
 
     if (updateSubmissionError) {
-      console.error('Error actualizando submission:', updateSubmissionError)
+      console.error('[REJECT] Error actualizando submission:', updateSubmissionError)
       return NextResponse.json(
-        { success: false, error: 'Error al actualizar el pago' },
+        { success: false, error: `Error al actualizar el pago: ${updateSubmissionError.message}` },
         { status: 500 }
       )
     }
 
+    console.log('[REJECT] Submission actualizado exitosamente')
+
     // Actualizar payment a 'failed'
-    await supabase
+    const { error: updatePaymentError } = await supabase
       .from('payments')
       .update({ status: 'failed' })
       .eq('external_id', submission_id_final)
       .eq('method', 'manual')
+
+    if (updatePaymentError) {
+      console.warn('[REJECT] Advertencia al actualizar payments:', updatePaymentError)
+    }
 
     // TODO: Aquí podrías agregar una notificación al usuario
     // Por ejemplo, crear un registro en una tabla de notificaciones
@@ -123,11 +148,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('Error en reject payment:', error)
+    console.error('[REJECT] Error en reject payment:', error)
     return NextResponse.json(
       { success: false, error: error.message || 'Error interno del servidor' },
       { status: 500 }
     )
   }
 }
-
