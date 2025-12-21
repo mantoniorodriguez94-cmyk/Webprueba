@@ -8,6 +8,7 @@
 import { useState, useEffect } from "react"
 import type { ManualPaymentSubmission } from "@/types/subscriptions"
 import Image from "next/image"
+import { supabase } from "@/lib/supabaseClient"
 
 interface SubmissionWithDetails extends ManualPaymentSubmission {
   business: {
@@ -22,57 +23,162 @@ interface SubmissionWithDetails extends ManualPaymentSubmission {
   } | null
 }
 
-// Componente para mostrar la imagen del comprobante
+// Componente para mostrar la imagen del comprobante usando signed URLs
 function ReceiptImage({ 
   submission, 
-  receiptUrl, 
-  onLoadUrl, 
   onImageClick,
-  isLoading 
+  onDownload
 }: { 
   submission: SubmissionWithDetails
-  receiptUrl: string
-  onLoadUrl: () => void
   onImageClick: (url: string) => void
-  isLoading: boolean
+  onDownload: (url: string, fileName: string) => void
 }) {
-  useEffect(() => {
-    // Cargar signed URL cuando el componente se monta
-    if (!receiptUrl || receiptUrl === submission.screenshot_url) {
-      onLoadUrl()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submission.id])
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const imageUrl = receiptUrl || submission.screenshot_url
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        setIsLoading(true)
+        setError(false)
+
+        // Extraer el path del archivo desde la URL guardada
+        const screenshotUrl = submission.screenshot_url
+        if (!screenshotUrl) {
+          setError(true)
+          setIsLoading(false)
+          return
+        }
+
+        // Extraer el path del archivo desde la URL
+        // La URL guardada es: https://xxx.supabase.co/storage/v1/object/public/payment_receipts/userId/businessId/file.jpg
+        // Necesitamos extraer: userId/businessId/file.jpg
+        let filePath = ''
+        
+        try {
+          // Buscar el path después de "payment_receipts/"
+          const match = screenshotUrl.match(/payment_receipts[\/\\](.+?)(?:\?|$)/)
+          if (match && match[1]) {
+            filePath = match[1]
+          } else {
+            // Si no encontramos el patrón, intentar parsear como URL
+            const url = new URL(screenshotUrl)
+            const pathParts = url.pathname.split('/')
+            const bucketIndex = pathParts.findIndex(p => p === 'payment_receipts')
+            
+            if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
+              filePath = pathParts.slice(bucketIndex + 1).join('/')
+            }
+          }
+        } catch (urlError) {
+          // Si no es una URL válida, intentar extraer con regex directamente
+          const match = screenshotUrl.match(/payment_receipts[\/\\](.+?)(?:\?|$)/)
+          if (match && match[1]) {
+            filePath = match[1]
+          }
+        }
+
+        if (!filePath) {
+          // Si no podemos extraer el path, intentar usar la URL directamente
+          // Esto puede funcionar si el bucket es público
+          console.warn('No se pudo extraer el path del archivo, usando URL original:', screenshotUrl)
+          setImageUrl(screenshotUrl)
+          setIsLoading(false)
+          return
+        }
+
+        // Generar signed URL válida por 1 hora
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from('payment_receipts')
+          .createSignedUrl(filePath, 3600) // 1 hora
+
+        if (signedUrlError || !signedUrlData) {
+          console.warn('Error generando signed URL, usando URL original:', signedUrlError)
+          // Fallback a URL pública o original
+          setImageUrl(screenshotUrl)
+        } else {
+          setImageUrl(signedUrlData.signedUrl)
+        }
+      } catch (err) {
+        console.error('Error cargando imagen:', err)
+        setError(true)
+        // Fallback a URL original
+        setImageUrl(submission.screenshot_url)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadImage()
+  }, [submission.screenshot_url, submission.id])
+
+  const displayUrl = imageUrl || submission.screenshot_url
 
   return (
     <>
       <div 
         className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-        onClick={() => onImageClick(imageUrl)}
+        onClick={() => displayUrl && onImageClick(displayUrl)}
       >
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
+        ) : error || !displayUrl ? (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+            <div className="text-center">
+              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-sm">No se pudo cargar la imagen</p>
+            </div>
+          </div>
         ) : (
           <Image
-            src={imageUrl}
+            src={displayUrl}
             alt="Comprobante de pago"
             fill
             className="object-contain"
-            onError={(e) => {
-              // Si falla, intentar cargar la signed URL
-              console.error('Error cargando imagen:', e)
-              onLoadUrl()
+            onError={() => {
+              setError(true)
             }}
           />
         )}
       </div>
-      <p className="text-gray-500 text-xs mt-1 text-center">
-        Click para ampliar
-      </p>
+      <div className="flex gap-2 mt-2 justify-center">
+        <button
+          onClick={() => {
+            const url = imageUrl || submission.screenshot_url
+            if (url) {
+              const fileName = `comprobante-${submission.id}.jpg`
+              onDownload(url, fileName)
+            }
+          }}
+          disabled={isLoading || error || !imageUrl}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Descargar comprobante"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Descargar
+        </button>
+        <button
+          onClick={() => {
+            const url = imageUrl || submission.screenshot_url
+            if (url) onImageClick(url)
+          }}
+          disabled={isLoading || error || !imageUrl}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Ver en pantalla completa"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+          </svg>
+          Ampliar
+        </button>
+      </div>
     </>
   )
 }
@@ -91,8 +197,39 @@ export default function AdminPaymentsClient({
   const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>(initialFilter)
   const [processing, setProcessing] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [receiptUrls, setReceiptUrls] = useState<Record<string, string>>({})
-  const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({})
+
+  // Manejar tecla ESC para cerrar el modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedImage) {
+        setSelectedImage(null)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [selectedImage])
+
+  // Función para descargar la imagen
+  const handleDownload = async (url: string, fileName: string) => {
+    try {
+      // Si es una signed URL o URL pública, podemos descargarla directamente
+      const response = await fetch(url)
+      const blob = await response.blob()
+      
+      // Crear un enlace temporal y hacer clic para descargar
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (err) {
+      console.error('Error descargando imagen:', err)
+      alert('Error al descargar la imagen. Por favor, intenta nuevamente.')
+    }
+  }
 
   const loadSubmissions = async (newFilter: 'pending' | 'approved' | 'rejected') => {
     try {
@@ -123,6 +260,10 @@ export default function AdminPaymentsClient({
   }
 
   const handleApprove = async (submissionId: string) => {
+    if (!confirm('¿Estás seguro de que deseas aprobar este pago? Esto activará el plan premium.')) {
+      return
+    }
+
     const notes = prompt('Notas del admin (opcional):')
     
     setProcessing(submissionId)
@@ -133,7 +274,7 @@ export default function AdminPaymentsClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           submission_id: submissionId,
-          admin_notes: notes,
+          admin_notes: notes || null,
         }),
       })
 
@@ -143,11 +284,18 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error aprobando pago')
       }
 
-      alert('Pago aprobado exitosamente')
-      loadSubmissions(filter)
+      alert('✅ Pago aprobado exitosamente. El premium ha sido activado.')
+      
+      // Si estamos viendo pendientes, recargar para que desaparezca de la lista
+      if (filter === 'pending') {
+        loadSubmissions('pending')
+      } else {
+        loadSubmissions(filter)
+      }
 
     } catch (err: any) {
-      alert(err.message)
+      console.error('Error aprobando pago:', err)
+      alert(`❌ Error: ${err.message || 'Error desconocido'}`)
     } finally {
       setProcessing(null)
     }
@@ -156,7 +304,10 @@ export default function AdminPaymentsClient({
   const handleReject = async (submissionId: string) => {
     // Verificar que han pasado al menos 24 horas
     const submission = submissions.find(s => s.id === submissionId)
-    if (!submission) return
+    if (!submission) {
+      alert('Error: No se encontró el pago')
+      return
+    }
 
     const createdAt = new Date(submission.created_at)
     const now = new Date()
@@ -164,13 +315,17 @@ export default function AdminPaymentsClient({
 
     if (hoursSinceCreation < 24) {
       const hoursRemaining = Math.ceil(24 - hoursSinceCreation)
-      alert(`No se puede rechazar el pago todavía. Debes esperar al menos 24 horas desde que fue enviado. Faltan aproximadamente ${hoursRemaining} horas.`)
+      alert(`⏳ No se puede rechazar el pago todavía. Debes esperar al menos 24 horas desde que fue enviado. Faltan aproximadamente ${hoursRemaining} horas.`)
       return
     }
 
     const notes = prompt('Motivo del rechazo (este mensaje se enviará al usuario):')
     if (!notes || notes.trim() === '') {
-      alert('Debes proporcionar un motivo para el rechazo')
+      alert('❌ Debes proporcionar un motivo para el rechazo')
+      return
+    }
+
+    if (!confirm('¿Estás seguro de que deseas rechazar este pago?')) {
       return
     }
 
@@ -192,11 +347,18 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error rechazando pago')
       }
 
-      alert('Pago rechazado exitosamente. El usuario ha sido notificado.')
-      loadSubmissions(filter)
+      alert('✅ Pago rechazado exitosamente. El usuario ha sido notificado.')
+      
+      // Si estamos viendo pendientes, recargar para que desaparezca de la lista
+      if (filter === 'pending') {
+        loadSubmissions('pending')
+      } else {
+        loadSubmissions(filter)
+      }
 
     } catch (err: any) {
-      alert(err.message)
+      console.error('Error rechazando pago:', err)
+      alert(`❌ Error: ${err.message || 'Error desconocido'}`)
     } finally {
       setProcessing(null)
     }
@@ -226,35 +388,6 @@ export default function AdminPaymentsClient({
     const now = new Date()
     const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
     return Math.max(0, Math.ceil(24 - hoursSinceCreation))
-  }
-
-  // Función para cargar signed URL de la imagen
-  const loadReceiptUrl = async (submissionId: string) => {
-    if (receiptUrls[submissionId]) {
-      return receiptUrls[submissionId]
-    }
-
-    setLoadingImages(prev => ({ ...prev, [submissionId]: true }))
-
-    try {
-      const response = await fetch(`/api/admin/payments/get-receipt-url?submission_id=${submissionId}`)
-      const data = await response.json()
-
-      if (data.success && data.url) {
-        setReceiptUrls(prev => ({ ...prev, [submissionId]: data.url }))
-        return data.url
-      }
-
-      // Fallback a la URL original
-      const submission = submissions.find(s => s.id === submissionId)
-      return submission?.screenshot_url || ''
-    } catch (err) {
-      console.error('Error cargando URL del comprobante:', err)
-      const submission = submissions.find(s => s.id === submissionId)
-      return submission?.screenshot_url || ''
-    } finally {
-      setLoadingImages(prev => ({ ...prev, [submissionId]: false }))
-    }
   }
 
   return (
@@ -363,7 +496,7 @@ export default function AdminPaymentsClient({
                         <button
                           onClick={() => handleApprove(submission.id)}
                           disabled={processing === submission.id}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {processing === submission.id ? 'Procesando...' : 'Aprobar'}
                         </button>
@@ -376,7 +509,7 @@ export default function AdminPaymentsClient({
                             {processing === submission.id ? 'Procesando...' : 'Rechazar'}
                           </button>
                           {!canReject(submission.created_at) && (
-                            <div className="absolute -top-8 left-0 right-0 bg-yellow-600 text-white text-xs py-1 px-2 rounded text-center">
+                            <div className="absolute -top-8 left-0 right-0 bg-yellow-600 text-white text-xs py-1 px-2 rounded text-center z-10">
                               Espera {getHoursUntilCanReject(submission.created_at)}h más para rechazar
                             </div>
                           )}
@@ -390,10 +523,8 @@ export default function AdminPaymentsClient({
                     <p className="text-gray-400 text-sm mb-2">Comprobante de Pago</p>
                     <ReceiptImage 
                       submission={submission}
-                      receiptUrl={receiptUrls[submission.id] || submission.screenshot_url}
-                      onLoadUrl={() => loadReceiptUrl(submission.id)}
                       onImageClick={(url) => setSelectedImage(url)}
-                      isLoading={loadingImages[submission.id]}
+                      onDownload={handleDownload}
                     />
                   </div>
                 </div>
@@ -406,26 +537,73 @@ export default function AdminPaymentsClient({
       {/* Modal para ver imagen completa */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4"
+          onClick={(e) => {
+            // Cerrar solo si se hace clic en el fondo, no en la imagen
+            if (e.target === e.currentTarget) {
+              setSelectedImage(null)
+            }
+          }}
         >
-          <div className="relative max-w-4xl w-full aspect-video">
-            <Image
-              src={selectedImage}
-              alt="Comprobante ampliado"
-              fill
-              className="object-contain"
-            />
+          <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full max-h-[90vh] flex items-center justify-center">
+              <Image
+                src={selectedImage}
+                alt="Comprobante ampliado"
+                width={1920}
+                height={1080}
+                className="max-w-full max-h-full object-contain"
+                unoptimized
+                priority
+              />
+            </div>
+            
+            {/* Botones de control */}
+            <div className="absolute top-4 right-4 flex gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(selectedImage)
+                    const blob = await response.blob()
+                    const downloadUrl = window.URL.createObjectURL(blob)
+                    const link = document.createElement('a')
+                    link.href = downloadUrl
+                    link.download = `comprobante-${Date.now()}.jpg`
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    window.URL.revokeObjectURL(downloadUrl)
+                  } catch (err) {
+                    console.error('Error descargando imagen:', err)
+                    alert('Error al descargar la imagen')
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                title="Descargar imagen"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Descargar
+              </button>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                title="Cerrar (ESC)"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Instrucciones */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-lg">
+              Click fuera de la imagen o presiona ESC para cerrar
+            </div>
           </div>
-          <button
-            onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 bg-white text-black w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-          >
-            ✕
-          </button>
         </div>
       )}
     </div>
   )
 }
-

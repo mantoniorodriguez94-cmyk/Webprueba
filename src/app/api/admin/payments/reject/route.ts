@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!submission_id_final) {
       return NextResponse.json(
-        { success: false, error: 'submissionId requerido' },
+        { success: false, error: 'submission_id es requerido' },
         { status: 400 }
       )
     }
