@@ -55,7 +55,9 @@ export async function GET() {
     }
 
     // Fallback: Intentar con cliente normal si Service Role falló o no está disponible
-    if (!profile && !dbError) {
+    // NOTA: Intentamos con cliente normal siempre que no tengamos perfil,
+    // incluso si hubo un error con service role (como fallback adicional)
+    if (!profile) {
       const { data: normalProfile, error: normalError } = await supabase
         .from('profiles')
         .select('is_admin, email, role')
@@ -64,8 +66,10 @@ export async function GET() {
 
       if (!normalError && normalProfile) {
         profile = normalProfile
+        dbError = null // Limpiar error previo si cliente normal funcionó
         console.log('✅ Perfil leído con cliente normal (anónimo)')
-      } else {
+      } else if (!dbError) {
+        // Solo actualizar error si no teníamos uno previo
         dbError = normalError
         console.error('❌ Error leyendo perfil con cliente normal:', normalError?.message)
       }

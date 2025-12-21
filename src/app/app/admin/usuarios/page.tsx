@@ -17,71 +17,115 @@ export default async function AdminUsuariosPage() {
   
   const supabase = await createClient()
 
-  // Cargar usuarios usando service role key (bypasea RLS completamente)
+  // Cargar usuarios usando múltiples estrategias de fallback
   let usuarios: any[] | null = null
   let error: any = null
+  let debugInfo: { method?: string; hasServiceKey?: boolean; errorDetails?: string } = {}
 
   try {
-    // Usar service role key directamente - bypasea TODAS las políticas RLS
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      throw new Error("Variables de entorno de Supabase no configuradas")
-    }
-
     const { createClient: createServiceClient } = await import('@supabase/supabase-js')
     
-    // Crear cliente con service role - este cliente IGNORA completamente RLS
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
+    debugInfo.hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    // ESTRATEGIA 1: Usar service role key si está disponible
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      try {
+        // Crear cliente con service role - este cliente IGNORA completamente RLS
+        const serviceSupabase = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          }
+        )
+        
+        // Intentar cargar desde profiles con service role
+        const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
+          .from("profiles")
+          .select(`
+            id,
+            full_name,
+            email,
+            role,
+            is_admin,
+            created_at,
+            avatar_url
+          `)
+          .order("created_at", { ascending: false })
+        
+        if (!serviceError && serviceUsuarios) {
+          usuarios = serviceUsuarios
+          debugInfo.method = "service_role_profiles"
+          console.log("✅ Usuarios cargados desde profiles (service role):", usuarios.length)
+        } else if (serviceError) {
+          console.warn("⚠️ Error con service role profiles:", serviceError.message)
+          debugInfo.errorDetails = serviceError.message
+          
+          // Fallback 1B: usar auth.admin.listUsers() con service role
+          const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+          
+          if (!authError && authData?.users) {
+            // Convertir usuarios de auth.users a formato profiles
+            usuarios = authData.users.map((user) => ({
+              id: user.id,
+              email: user.email,
+              full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+              role: user.user_metadata?.role || "person",
+              is_admin: user.user_metadata?.is_admin === true || false,
+              created_at: user.created_at,
+              avatar_url: user.user_metadata?.avatar_url || null
+            }))
+            debugInfo.method = "service_role_auth_users"
+            console.log("✅ Usuarios cargados desde auth.users (service role):", usuarios.length)
+          } else if (authError) {
+            console.warn("⚠️ Error con auth.admin.listUsers:", authError.message)
+            debugInfo.errorDetails = `Profiles: ${serviceError.message}, Auth: ${authError.message}`
+          }
         }
+      } catch (serviceErr: any) {
+        console.warn("⚠️ Excepción con service role:", serviceErr.message)
+        debugInfo.errorDetails = serviceErr.message
       }
-    )
-    
-    // Intentar cargar desde profiles con service role
-    const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-      .from("profiles")
-      .select(`
-        id,
-        full_name,
-        email,
-        role,
-        is_admin,
-        created_at,
-        avatar_url
-      `)
-      .order("created_at", { ascending: false })
-    
-    if (serviceError) {
-      // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
-      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
-      
-      if (authError) {
-        throw new Error(`Error con auth.admin.listUsers(): ${authError.message}`)
-      }
-      
-      if (authData?.users) {
-        // Convertir usuarios de auth.users a formato profiles
-        usuarios = authData.users.map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-          role: user.user_metadata?.role || "person",
-          is_admin: user.user_metadata?.is_admin === true || false,
-          created_at: user.created_at,
-          avatar_url: user.user_metadata?.avatar_url || null
-        }))
-        console.log("✅ Usuarios cargados desde auth.users:", usuarios.length)
-      }
-    } else if (serviceUsuarios) {
-      usuarios = serviceUsuarios
-      console.log("✅ Usuarios cargados desde profiles (service role):", usuarios.length)
     }
+
+    // ESTRATEGIA 2: Si service role no funcionó, intentar con cliente normal (admin con RLS)
+    if (!usuarios) {
+      console.log("🔄 Intentando fallback con cliente normal (RLS)...")
+      
+      const { data: rlsUsuarios, error: rlsError } = await supabase
+        .from("profiles")
+        .select(`
+          id,
+          full_name,
+          email,
+          role,
+          is_admin,
+          created_at,
+          avatar_url
+        `)
+        .order("created_at", { ascending: false })
+      
+      if (!rlsError && rlsUsuarios) {
+        usuarios = rlsUsuarios
+        debugInfo.method = "client_rls"
+        console.log("✅ Usuarios cargados con cliente normal (RLS):", usuarios.length)
+      } else if (rlsError) {
+        console.error("❌ Error con cliente normal:", rlsError.message)
+        debugInfo.errorDetails = (debugInfo.errorDetails || "") + ` | RLS: ${rlsError.message}`
+        throw new Error(`No se pudieron cargar usuarios: ${rlsError.message}`)
+      }
+    }
+
+    // Si aún no hay usuarios y no hubo error, significa que simplemente no hay usuarios
+    if (!usuarios) {
+      usuarios = []
+    }
+
   } catch (err: any) {
-    // Silenciosamente manejar el error
+    console.error("❌ Error cargando usuarios:", err.message)
     error = err
   }
 
@@ -100,11 +144,21 @@ export default async function AdminUsuariosPage() {
           <p className="text-yellow-300 text-sm mb-2">
             Hubo un problema al cargar los usuarios. Verifica los logs del servidor.
           </p>
-          {error.code && (
-            <p className="text-yellow-200 text-xs">
-              Código de error: {error.code}
+          {error.message && (
+            <p className="text-yellow-200 text-xs mb-1">
+              Error: {error.message}
             </p>
           )}
+          {error.code && (
+            <p className="text-yellow-200 text-xs">
+              Código: {error.code}
+            </p>
+          )}
+          <div className="mt-3 p-2 bg-black/20 rounded text-xs text-gray-400">
+            <p>Debug: Service Key configurada: {debugInfo.hasServiceKey ? "Sí" : "No"}</p>
+            {debugInfo.method && <p>Método usado: {debugInfo.method}</p>}
+            {debugInfo.errorDetails && <p>Detalles: {debugInfo.errorDetails}</p>}
+          </div>
         </div>
       )}
 

@@ -86,15 +86,22 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
     }
 
     // Si no funcionó con service role (o no está disponible), intentar con cliente normal
-    if (!profile && !profileError) {
+    // NOTA: Intentamos con cliente normal siempre que no tengamos perfil,
+    // incluso si hubo un error con service role (como fallback)
+    if (!profile) {
       const result = await supabase
         .from("profiles")
         .select("is_admin, email")
         .eq("id", user.id)
         .single()
       
-      profile = result.data
-      profileError = result.error
+      if (!result.error && result.data) {
+        profile = result.data
+        profileError = null // Limpiar error previo si cliente normal funcionó
+      } else if (!profileError) {
+        // Solo actualizar el error si no teníamos uno previo de service role
+        profileError = result.error
+      }
     }
 
     // Manejar error de perfil
