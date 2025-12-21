@@ -41,6 +41,7 @@ function ReceiptImage({
     if (!receiptUrl || receiptUrl === submission.screenshot_url) {
       onLoadUrl()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submission.id])
 
   const imageUrl = receiptUrl || submission.screenshot_url
@@ -153,8 +154,25 @@ export default function AdminPaymentsClient({
   }
 
   const handleReject = async (submissionId: string) => {
-    const notes = prompt('Motivo del rechazo:')
-    if (!notes) return
+    // Verificar que han pasado al menos 24 horas
+    const submission = submissions.find(s => s.id === submissionId)
+    if (!submission) return
+
+    const createdAt = new Date(submission.created_at)
+    const now = new Date()
+    const hoursSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
+
+    if (hoursSinceCreation < 24) {
+      const hoursRemaining = Math.ceil(24 - hoursSinceCreation)
+      alert(`No se puede rechazar el pago todavía. Debes esperar al menos 24 horas desde que fue enviado. Faltan aproximadamente ${hoursRemaining} horas.`)
+      return
+    }
+
+    const notes = prompt('Motivo del rechazo (este mensaje se enviará al usuario):')
+    if (!notes || notes.trim() === '') {
+      alert('Debes proporcionar un motivo para el rechazo')
+      return
+    }
 
     setProcessing(submissionId)
 
@@ -174,7 +192,7 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error rechazando pago')
       }
 
-      alert('Pago rechazado')
+      alert('Pago rechazado exitosamente. El usuario ha sido notificado.')
       loadSubmissions(filter)
 
     } catch (err: any) {
@@ -208,6 +226,35 @@ export default function AdminPaymentsClient({
     const now = new Date()
     const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
     return Math.max(0, Math.ceil(24 - hoursSinceCreation))
+  }
+
+  // Función para cargar signed URL de la imagen
+  const loadReceiptUrl = async (submissionId: string) => {
+    if (receiptUrls[submissionId]) {
+      return receiptUrls[submissionId]
+    }
+
+    setLoadingImages(prev => ({ ...prev, [submissionId]: true }))
+
+    try {
+      const response = await fetch(`/api/admin/payments/get-receipt-url?submission_id=${submissionId}`)
+      const data = await response.json()
+
+      if (data.success && data.url) {
+        setReceiptUrls(prev => ({ ...prev, [submissionId]: data.url }))
+        return data.url
+      }
+
+      // Fallback a la URL original
+      const submission = submissions.find(s => s.id === submissionId)
+      return submission?.screenshot_url || ''
+    } catch (err) {
+      console.error('Error cargando URL del comprobante:', err)
+      const submission = submissions.find(s => s.id === submissionId)
+      return submission?.screenshot_url || ''
+    } finally {
+      setLoadingImages(prev => ({ ...prev, [submissionId]: false }))
+    }
   }
 
   return (
