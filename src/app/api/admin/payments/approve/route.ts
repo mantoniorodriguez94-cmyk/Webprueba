@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Obtener información del pago manual
+    // Obtener información del pago manual con el plan
     const { data: submission, error: submissionError } = await supabase
       .from('manual_payment_submissions')
-      .select('*, premium_plans(*)')
+      .select('*, plan:premium_plans(*)')
       .eq('id', submission_id_final)
       .single()
 
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
         status: 'approved',
         admin_notes: admin_notes || null,
         reviewed_at: new Date().toISOString(),
+        reviewed_by: user.id,
       })
       .eq('id', submission_id_final)
 
@@ -112,12 +113,12 @@ export async function POST(request: NextRequest) {
       .eq('external_id', submission_id_final)
       .eq('method', 'manual')
 
-    // Calcular fechas de la suscripción
+    // Calcular fechas de la suscripción según el plan pagado
     const startDate = new Date()
-    const plan = Array.isArray(submission.premium_plans) 
-      ? submission.premium_plans[0] 
-      : submission.premium_plans
-    const endDate = calculateEndDate(plan?.billing_period || 'monthly')
+    // El plan viene con el alias 'plan' gracias al select anterior
+    const plan = (submission as any).plan
+    const billingPeriod = plan?.billing_period || 'monthly'
+    const endDate = calculateEndDate(billingPeriod)
 
     // Crear o actualizar suscripción
     const { data: existingSubscription } = await supabase

@@ -42,9 +42,15 @@ export async function submitManualPayment(
 
     // Validar campos requeridos
     if (!plan_id || !business_id || !payment_method || !screenshot) {
+      const missingFields: string[] = []
+      if (!plan_id) missingFields.push('Plan')
+      if (!business_id) missingFields.push('Negocio')
+      if (!payment_method) missingFields.push('Método de pago')
+      if (!screenshot) missingFields.push('Captura de pantalla')
+      
       return {
         success: false,
-        error: 'Faltan campos requeridos: plan_id, business_id, payment_method, screenshot'
+        error: `Faltan campos requeridos: ${missingFields.join(', ')}. Por favor, completa todos los campos del formulario.`
       }
     }
 
@@ -157,9 +163,26 @@ export async function submitManualPayment(
 
     if (!uploadResult || uploadResult.error) {
       console.error('Error subiendo imagen:', uploadResult?.error)
+      
+      // Mensajes de error más amigables
+      const errorMsg = uploadResult?.error?.message || 'Error desconocido'
+      let userFriendlyError = 'Error al subir la captura de pantalla'
+      
+      if (errorMsg.includes('already exists') || errorMsg.includes('duplicate')) {
+        userFriendlyError = 'Esta imagen ya fue subida anteriormente. Por favor, intenta con otra imagen.'
+      } else if (errorMsg.includes('size') || errorMsg.includes('too large')) {
+        userFriendlyError = 'El archivo es demasiado grande. El tamaño máximo permitido es 10MB.'
+      } else if (errorMsg.includes('permission') || errorMsg.includes('unauthorized')) {
+        userFriendlyError = 'No tienes permisos para subir archivos. Por favor, verifica tu sesión.'
+      } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
+        userFriendlyError = 'Problema de conexión al subir la imagen. Por favor, verifica tu internet e intenta nuevamente.'
+      } else {
+        userFriendlyError = 'Error al subir la captura de pantalla. Por favor, intenta nuevamente o usa una imagen diferente.'
+      }
+      
       return {
         success: false,
-        error: `Error al subir la captura: ${uploadResult?.error?.message || 'Error desconocido'}`
+        error: userFriendlyError
       }
     }
 
@@ -247,9 +270,23 @@ export async function submitManualPayment(
         console.error('Error limpiando archivo después de fallo:', cleanupErr)
       }
 
+      // Mensaje de error más amigable
+      const errorMsg = submissionError?.message || 'Error desconocido'
+      let userFriendlyError = 'Error al procesar tu solicitud de pago'
+      
+      if (errorMsg.includes('duplicate') || errorMsg.includes('unique')) {
+        userFriendlyError = 'Ya existe una solicitud de pago pendiente para este plan. Por favor, espera a que sea procesada.'
+      } else if (errorMsg.includes('foreign key') || errorMsg.includes('constraint')) {
+        userFriendlyError = 'Error en los datos del pago. Por favor, recarga la página e intenta nuevamente.'
+      } else if (errorMsg.includes('permission') || errorMsg.includes('unauthorized')) {
+        userFriendlyError = 'No tienes permisos para realizar esta acción. Por favor, verifica tu sesión.'
+      } else {
+        userFriendlyError = 'Error al registrar el pago. Por favor, intenta nuevamente o contacta al soporte si el problema persiste.'
+      }
+
       return {
         success: false,
-        error: `Error al registrar el pago: ${submissionError?.message || 'Error desconocido'}`
+        error: userFriendlyError
       }
     }
 

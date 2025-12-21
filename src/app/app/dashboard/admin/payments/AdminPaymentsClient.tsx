@@ -5,7 +5,7 @@
  * Maneja filtros, acciones y modal de imagen
  */
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { ManualPaymentSubmission } from "@/types/subscriptions"
 import Image from "next/image"
 
@@ -22,6 +22,60 @@ interface SubmissionWithDetails extends ManualPaymentSubmission {
   } | null
 }
 
+// Componente para mostrar la imagen del comprobante
+function ReceiptImage({ 
+  submission, 
+  receiptUrl, 
+  onLoadUrl, 
+  onImageClick,
+  isLoading 
+}: { 
+  submission: SubmissionWithDetails
+  receiptUrl: string
+  onLoadUrl: () => void
+  onImageClick: (url: string) => void
+  isLoading: boolean
+}) {
+  useEffect(() => {
+    // Cargar signed URL cuando el componente se monta
+    if (!receiptUrl || receiptUrl === submission.screenshot_url) {
+      onLoadUrl()
+    }
+  }, [submission.id])
+
+  const imageUrl = receiptUrl || submission.screenshot_url
+
+  return (
+    <>
+      <div 
+        className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+        onClick={() => onImageClick(imageUrl)}
+      >
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <Image
+            src={imageUrl}
+            alt="Comprobante de pago"
+            fill
+            className="object-contain"
+            onError={(e) => {
+              // Si falla, intentar cargar la signed URL
+              console.error('Error cargando imagen:', e)
+              onLoadUrl()
+            }}
+          />
+        )}
+      </div>
+      <p className="text-gray-500 text-xs mt-1 text-center">
+        Click para ampliar
+      </p>
+    </>
+  )
+}
+
 interface AdminPaymentsClientProps {
   initialSubmissions: SubmissionWithDetails[]
   initialFilter: 'pending' | 'approved' | 'rejected'
@@ -36,6 +90,8 @@ export default function AdminPaymentsClient({
   const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>(initialFilter)
   const [processing, setProcessing] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [receiptUrls, setReceiptUrls] = useState<Record<string, string>>({})
+  const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({})
 
   const loadSubmissions = async (newFilter: 'pending' | 'approved' | 'rejected') => {
     try {
@@ -136,6 +192,22 @@ export default function AdminPaymentsClient({
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  // Función para verificar si han pasado 24 horas
+  const canReject = (createdAt: string) => {
+    const created = new Date(createdAt)
+    const now = new Date()
+    const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
+    return hoursSinceCreation >= 24
+  }
+
+  // Función para obtener horas restantes hasta poder rechazar
+  const getHoursUntilCanReject = (createdAt: string) => {
+    const created = new Date(createdAt)
+    const now = new Date()
+    const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
+    return Math.max(0, Math.ceil(24 - hoursSinceCreation))
   }
 
   return (
@@ -240,21 +312,28 @@ export default function AdminPaymentsClient({
 
                     {/* Botones de acción */}
                     {submission.status === 'pending' && (
-                      <div className="flex gap-2 pt-3">
+                      <div className="space-y-2 pt-3">
                         <button
                           onClick={() => handleApprove(submission.id)}
                           disabled={processing === submission.id}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
                         >
                           {processing === submission.id ? 'Procesando...' : 'Aprobar'}
                         </button>
-                        <button
-                          onClick={() => handleReject(submission.id)}
-                          disabled={processing === submission.id}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          Rechazar
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => handleReject(submission.id)}
+                            disabled={processing === submission.id || !canReject(submission.created_at)}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {processing === submission.id ? 'Procesando...' : 'Rechazar'}
+                          </button>
+                          {!canReject(submission.created_at) && (
+                            <div className="absolute -top-8 left-0 right-0 bg-yellow-600 text-white text-xs py-1 px-2 rounded text-center">
+                              Espera {getHoursUntilCanReject(submission.created_at)}h más para rechazar
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -262,20 +341,13 @@ export default function AdminPaymentsClient({
                   {/* Captura de pantalla */}
                   <div>
                     <p className="text-gray-400 text-sm mb-2">Comprobante de Pago</p>
-                    <div 
-                      className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => setSelectedImage(submission.screenshot_url)}
-                    >
-                      <Image
-                        src={submission.screenshot_url}
-                        alt="Comprobante de pago"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-gray-500 text-xs mt-1 text-center">
-                      Click para ampliar
-                    </p>
+                    <ReceiptImage 
+                      submission={submission}
+                      receiptUrl={receiptUrls[submission.id] || submission.screenshot_url}
+                      onLoadUrl={() => loadReceiptUrl(submission.id)}
+                      onImageClick={(url) => setSelectedImage(url)}
+                      isLoading={loadingImages[submission.id]}
+                    />
                   </div>
                 </div>
               </div>

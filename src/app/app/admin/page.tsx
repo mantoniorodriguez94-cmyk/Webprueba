@@ -115,12 +115,14 @@ export default async function AdminDashboardPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
     
-    // SUSCRIPCIONES POR EXPIRAR (7 días)
+    // SUSCRIPCIONES POR EXPIRAR (30 días o menos)
     supabase
-      .from("business_subscriptions")
+      .from("businesses")
       .select("*", { count: "exact", head: true })
-      .lte("end_date", new Date(Date.now() + 7 * 86400000).toISOString())
-      .eq("status", "active"),
+      .eq("is_premium", true)
+      .not("premium_until", "is", null)
+      .gte("premium_until", new Date().toISOString()) // Aún no expirado
+      .lte("premium_until", new Date(Date.now() + 30 * 86400000).toISOString()), // Expira en 30 días o menos
     
     // NEGOCIOS DESTACADOS ACTIVOS
     supabase

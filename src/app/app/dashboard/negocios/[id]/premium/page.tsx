@@ -33,11 +33,56 @@ export default function PremiumPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [errorModal, setErrorModal] = useState<{ show: boolean; message: string; details?: string }>({
+    show: false,
+    message: '',
+    details: undefined
+  })
 
   const copyToClipboard = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text)
     setCopiedField(fieldName)
     setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  // Función para obtener detalles del error y sugerencias
+  const getErrorDetails = (errorMessage: string): string | undefined => {
+    const lowerError = errorMessage.toLowerCase()
+    
+    if (lowerError.includes('faltan campos requeridos') || lowerError.includes('campos requeridos')) {
+      return 'Por favor, asegúrate de completar todos los campos del formulario, incluyendo la selección del método de pago y la captura de pantalla del comprobante.'
+    }
+    
+    if (lowerError.includes('imagen') || lowerError.includes('archivo debe ser')) {
+      return 'Solo se permiten archivos de imagen. Formatos aceptados: JPEG, PNG, WEBP o GIF. Por favor, selecciona una imagen válida.'
+    }
+    
+    if (lowerError.includes('demasiado grande') || lowerError.includes('10mb') || lowerError.includes('tamaño')) {
+      return 'El tamaño máximo permitido es 10MB. Por favor, comprime la imagen o selecciona una con menor tamaño. Puedes usar herramientas online de compresión de imágenes.'
+    }
+    
+    if (lowerError.includes('subir') || lowerError.includes('upload')) {
+      return 'Hubo un problema al subir tu imagen. Por favor, verifica tu conexión a internet e intenta nuevamente. Si el problema persiste, intenta con una imagen diferente.'
+    }
+    
+    if (lowerError.includes('negocio no encontrado') || lowerError.includes('no autorizado')) {
+      return 'No tienes permisos para realizar esta acción en este negocio. Por favor, verifica que estés usando la cuenta correcta.'
+    }
+    
+    if (lowerError.includes('plan') && (lowerError.includes('no encontrado') || lowerError.includes('no está disponible'))) {
+      return 'El plan seleccionado ya no está disponible. Por favor, selecciona otro plan o recarga la página para ver los planes actualizados.'
+    }
+    
+    if (lowerError.includes('registrar') || lowerError.includes('registro')) {
+      return 'Hubo un problema al procesar tu solicitud. Por favor, intenta nuevamente. Si el problema persiste, contacta al soporte.'
+    }
+    
+    if (lowerError.includes('autenticado') || lowerError.includes('sesión')) {
+      return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente e intenta de nuevo.'
+    }
+    
+    return 'Por favor, verifica que todos los campos estén completos correctamente e intenta nuevamente. Si el problema persiste, contacta al soporte.'
   }
 
   useEffect(() => {
@@ -179,20 +224,24 @@ export default function PremiumPage() {
         const result = await submitManualPayment(formData)
 
         if (!result.success) {
-          setError(result.error || 'Error enviando pago')
+          // Mostrar modal de error con mensaje detallado
+          const errorMessage = result.error || 'Error enviando pago'
+          setErrorModal({
+            show: true,
+            message: errorMessage,
+            details: getErrorDetails(errorMessage)
+          })
           return
         }
 
-        // Éxito
-        setSuccess(result.message || '¡Pago enviado exitosamente! Tu solicitud será revisada pronto.')
+        // Éxito - Mostrar modal de éxito
+        setShowSuccessModal(true)
         setSelectedPlan(null)
         setReference('')
         setScreenshot(null)
 
-        // Recargar datos después de 2 segundos
-        setTimeout(() => {
-          loadData()
-        }, 2000)
+        // Recargar datos después de cerrar el modal
+        // (se hará en el onClose del modal)
 
       } catch (err: any) {
         console.error('Error en handleManualPayment:', err)
@@ -285,16 +334,135 @@ export default function PremiumPage() {
           </div>
         )}
 
-        {/* Mensajes */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg mb-6">
-            {error}
+        {/* Modal de Éxito - Pop-up Obligatorio (Solo se puede cerrar con el botón) */}
+        {showSuccessModal && (
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-lg p-4"
+            style={{ pointerEvents: 'auto' }}
+          >
+            <div 
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 max-w-lg w-full mx-4 border-2 border-green-500 shadow-2xl shadow-green-500/30 transform transition-all animate-scaleIn"
+              style={{ animation: 'scaleIn 0.3s ease-out' }}
+            >
+              {/* Icono de éxito */}
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Título */}
+              <h2 className="text-2xl font-bold text-white text-center mb-4">
+                ¡Pago Enviado Exitosamente!
+              </h2>
+
+              {/* Mensaje */}
+              <div className="space-y-4 mb-6">
+                <p className="text-gray-300 text-center leading-relaxed">
+                  Tu comprobante de pago ha sido recibido correctamente. 
+                </p>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-blue-300 font-medium mb-1">Próximos pasos</p>
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        Nuestro equipo verificará tu pago y activará tu suscripción premium en un plazo máximo de <span className="font-semibold text-white">24 horas</span>. 
+                        Te notificaremos cuando tu plan esté activo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-400 text-sm text-center">
+                  Puedes cerrar esta ventana y continuar navegando.
+                </p>
+              </div>
+
+              {/* Botón de cierre */}
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false)
+                  loadData()
+                }}
+                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
+              >
+                Entendido
+              </button>
+            </div>
           </div>
         )}
 
-        {success && (
-          <div className="bg-green-500/10 border border-green-500 text-green-500 p-4 rounded-lg mb-6">
-            {success}
+        {/* Modal de Error - Pop-up Obligatorio (Solo se puede cerrar con el botón) */}
+        {errorModal.show && (
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-lg p-4"
+            style={{ pointerEvents: 'auto' }}
+          >
+            <div 
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 max-w-lg w-full mx-4 border-2 border-red-500 shadow-2xl shadow-red-500/30"
+              style={{ animation: 'scaleIn 0.3s ease-out' }}
+            >
+              {/* Icono de error */}
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Título */}
+              <h2 className="text-2xl font-bold text-white text-center mb-4">
+                Error al Enviar el Pago
+              </h2>
+
+              {/* Mensaje de error */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                  <p className="text-red-300 font-medium text-center">
+                    {errorModal.message}
+                  </p>
+                </div>
+
+                {/* Detalles y sugerencias */}
+                {errorModal.details && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-blue-300 font-medium mb-2">¿Qué puedo hacer?</p>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {errorModal.details}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tips adicionales */}
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+                  <p className="text-gray-400 text-xs text-center">
+                    💡 Tip: Asegúrate de que la imagen del comprobante sea clara y completa
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón de cierre */}
+              <button
+                onClick={() => {
+                  setErrorModal({ show: false, message: '', details: undefined })
+                }}
+                className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors"
+              >
+                Entendido
+              </button>
+            </div>
           </div>
         )}
 

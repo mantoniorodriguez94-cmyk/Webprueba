@@ -11,26 +11,83 @@ export const dynamic = 'force-dynamic'
  * Página de gestión de negocios (Admin)
  * - Lista todos los negocios del sistema
  * - Permite acciones administrativas sobre cada negocio
+ * - Soporta filtros: ?filter=premium, ?filter=expiring
  */
-export default async function AdminNegociosPage() {
+export default async function AdminNegociosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
   // Verificar que el usuario es admin
   await requireAdmin()
   
   const supabase = await createClient()
+  const params = await searchParams
+  const filter = params?.filter
 
-  const { data: negocios, error } = await supabase
+  // Construir query según el filtro
+  let query = supabase
     .from("businesses")
     .select("id, name, logo_url, is_premium, premium_until, created_at, is_verified, max_photos")
+
+  // Aplicar filtros
+  if (filter === 'premium') {
+    query = query.eq("is_premium", true)
+      .not("premium_until", "is", null)
+      .gte("premium_until", new Date().toISOString()) // Aún no expirado
+  } else if (filter === 'expiring') {
+    // Negocios premium que expiran en 30 días o menos
+    const now = new Date()
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 86400000)
+    
+    query = query
+      .eq("is_premium", true)
+      .not("premium_until", "is", null)
+      .gte("premium_until", now.toISOString()) // Aún no expirado
+      .lte("premium_until", thirtyDaysFromNow.toISOString()) // Expira en 30 días o menos
+  }
+
+  const { data: negocios, error } = await query.order("premium_until", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
 
     // Error silenciosamente manejado - los negocios pueden estar vacíos si hay error
 
+  // Calcular días restantes para negocios premium
+  const getDaysUntilExpiry = (premiumUntil: string | null) => {
+    if (!premiumUntil) return null
+    const expiry = new Date(premiumUntil)
+    const now = new Date()
+    const diffTime = expiry.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays > 0 ? diffDays : 0
+  }
+
   return (
     <div className="min-h-screen text-white">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Gestión de Negocios</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold">
+            {filter === 'expiring' 
+              ? 'Suscripciones por Expirar' 
+              : filter === 'premium'
+              ? 'Negocios Premium'
+              : 'Gestión de Negocios'}
+          </h1>
+          {filter && (
+            <Link
+              href="/app/admin/negocios"
+              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Ver todos →
+            </Link>
+          )}
+        </div>
         <p className="text-gray-400 text-sm">
-          {negocios?.length || 0} {negocios?.length === 1 ? "negocio" : "negocios"} registrados
+          {filter === 'expiring' 
+            ? `${negocios?.length || 0} ${negocios?.length === 1 ? "negocio" : "negocios"} con suscripción expirando en 30 días o menos`
+            : filter === 'premium'
+            ? `${negocios?.length || 0} ${negocios?.length === 1 ? "negocio" : "negocios"} premium activos`
+            : `${negocios?.length || 0} ${negocios?.length === 1 ? "negocio" : "negocios"} registrados`}
         </p>
       </div>
 
@@ -73,9 +130,39 @@ export default async function AdminNegociosPage() {
                     )}
                   </div>
                   {b.premium_until && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Premium hasta: {new Date(b.premium_until).toLocaleDateString("es-ES")}
-                    </p>
+                    <div className="mt-1 space-y-0.5">
+                      <p className="text-xs text-gray-400">
+                        Premium hasta: {new Date(b.premium_until).toLocaleDateString("es-ES", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </p>
+                      {(() => {
+                        const daysLeft = getDaysUntilExpiry(b.premium_until)
+                        if (daysLeft !== null) {
+                          const isExpiringSoon = daysLeft <= 30
+                          return (
+                            <p className={`text-xs font-semibold ${
+                              daysLeft <= 7 
+                                ? 'text-red-400' 
+                                : daysLeft <= 30 
+                                ? 'text-yellow-400' 
+                                : 'text-green-400'
+                            }`}>
+                              {daysLeft === 0 
+                                ? '⚠️ Expira hoy' 
+                                : daysLeft === 1
+                                ? '⚠️ Expira mañana'
+                                : isExpiringSoon
+                                ? `⚠️ ${daysLeft} días restantes`
+                                : `${daysLeft} días restantes`}
+                            </p>
+                          )
+                        }
+                        return null
+                      })()}
+                    </div>
                   )}
                 </div>
               </div>
