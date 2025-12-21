@@ -6,15 +6,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Cliente de Supabase para API routes (servidor)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    // Crear cliente de Supabase admin
+    const supabase = createAdminClient()
+    
     // Obtener el parámetro de status
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'pending'

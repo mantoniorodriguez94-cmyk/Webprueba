@@ -6,13 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/utils/supabase/admin'
 import type { PayPalCaptureOrderRequest, PayPalCaptureOrderResponse } from '@/types/subscriptions'
-
-// Cliente de Supabase para API routes (servidor)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 const PAYPAL_API_BASE = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -97,6 +92,9 @@ function calculateEndDate(billingPeriod: string): Date {
 
 export async function POST(request: NextRequest) {
   try {
+    // Crear cliente de Supabase admin
+    const supabase = createAdminClient()
+    
     // Obtener token de autenticación
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')

@@ -6,18 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { checkAdminAuth } from '@/utils/admin-auth'
-
-// Cliente de Supabase con service role para operaciones admin (bypass RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
 
 /**
  * Calcular fecha de fin según el período de facturación
@@ -47,6 +37,9 @@ function calculateEndDate(billingPeriod: string): Date {
 
 export async function POST(request: NextRequest) {
   try {
+    // Crear cliente de Supabase admin
+    const supabase = createAdminClient()
+    
     // Verificar que el usuario es admin
     const { user, error: authError } = await checkAdminAuth()
     
