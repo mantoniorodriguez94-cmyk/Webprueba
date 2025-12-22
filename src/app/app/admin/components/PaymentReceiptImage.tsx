@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { createClient } from "@/utils/supabase/client"
+import { supabase } from "@/lib/supabaseClient"
 
 interface PaymentReceiptImageProps {
   screenshotUrl: string
@@ -72,10 +72,7 @@ export default function PaymentReceiptImage({
           return
         }
 
-        // Crear cliente de Supabase en el lado del cliente
-        const supabase = createClient()
-
-        // Generar Signed URL válida por 1 hora (3600 segundos)
+        // Generar Signed URL válida por 1 hora (3600 segundos) usando el cliente de Supabase
         const { data, error: signedUrlError } = await supabase.storage
           .from('payment_receipts')
           .createSignedUrl(filePath, 3600)
