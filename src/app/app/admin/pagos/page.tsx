@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
-import Image from "next/image"
 import PaymentActionButton from "../components/PaymentActionButton"
+import PaymentReceiptImage from "../components/PaymentReceiptImage"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -133,20 +133,14 @@ export default async function AdminPagosPage() {
                   )}
                 </div>
 
-                {/* Screenshot */}
+                {/* Screenshot con Signed URL para bucket privado */}
                 {pago.screenshot_url && (
                   <div className="mt-4 mb-4">
-                    <p className="text-xs text-gray-400 mb-2">Comprobante de pago:</p>
-                    <div className="rounded-xl overflow-hidden border border-white/10">
-                      <Image
-                        src={pago.screenshot_url}
-                        width={400}
-                        height={400}
-                        alt="Comprobante de pago"
-                        className="w-full h-auto object-contain"
-                        unoptimized
-                      />
-                    </div>
+                    <PaymentReceiptImage
+                      screenshotUrl={pago.screenshot_url}
+                      businessName={business?.name}
+                      paymentId={pago.id}
+                    />
                   </div>
                 )}
 

@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
     icon: <StarIcon />,
   },
   {
-    href: "/app/admin/usuarrios",
+    href: "/app/admin/usuarios",
     label: "Usuarios",
     icon: <UsersIcon />,
   },
