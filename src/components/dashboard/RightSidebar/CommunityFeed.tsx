@@ -217,7 +217,7 @@ export default function CommunityFeed() {
                   {/* Comment preview */}
                   {review.comment && (
                     <p className="text-xs text-gray-400 line-clamp-2 mb-2 italic">
-                      "{review.comment}"
+                      &ldquo;{review.comment}&rdquo;
                     </p>
                   )}
 

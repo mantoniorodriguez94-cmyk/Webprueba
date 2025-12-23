@@ -234,7 +234,7 @@ export default function TopRatedBusinesses() {
                 {/* Comentario */}
                 {review.comment && (
                   <p className="text-sm text-gray-300 line-clamp-3 italic leading-relaxed">
-                    "{review.comment}"
+                    &ldquo;{review.comment}&rdquo;
                   </p>
                 )}
 

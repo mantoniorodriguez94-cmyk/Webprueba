@@ -12,100 +12,22 @@ export const dynamic = 'force-dynamic'
  * - Muestra información relevante de cada usuario
  */
 export default async function AdminUsuariosPage() {
-  // Verificar que el usuario es admin
   await requireAdmin()
-  
   const supabase = await createClient()
 
-  // Cargar usuarios usando diferentes métodos
-  let usuarios: any[] | null = null
+  let usuarios: any[] = []
   let error: any = null
-  let debugInfo: string[] = []
 
-  try {
-    // Verificar variables de entorno
-    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
-    const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-    
-    debugInfo.push(`✓ Service Role Key presente: ${hasServiceKey}`)
-    debugInfo.push(`✓ Supabase URL presente: ${hasUrl}`)
-    
-    if (!hasServiceKey || !hasUrl) {
-      throw new Error("Variables de entorno no configuradas correctamente en producción")
-    }
+  const { data: profilesData, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, role, is_admin, created_at, avatar_url")
+    .order("created_at", { ascending: false })
 
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    
-    // Crear cliente con service role
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-    
-    debugInfo.push('✓ Cliente service role creado')
-    
-    // MÉTODO 1: Intentar desde auth.admin.listUsers() PRIMERO (más confiable)
-    try {
-      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
-      
-      if (authError) {
-        debugInfo.push(`✗ auth.admin.listUsers() falló: ${authError.message}`)
-        throw authError
-      }
-      
-      if (authData?.users) {
-        // Convertir usuarios de auth.users a formato profiles
-        usuarios = authData.users.map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-          role: user.user_metadata?.role || "person",
-          is_admin: user.user_metadata?.is_admin === true || false,
-          created_at: user.created_at,
-          avatar_url: user.user_metadata?.avatar_url || null
-        }))
-        debugInfo.push(`✓ ${usuarios.length} usuarios cargados desde auth.admin.listUsers()`)
-        console.log("✅ Usuarios cargados desde auth.users:", usuarios.length)
-      }
-    } catch (authErr: any) {
-      debugInfo.push(`✗ Método auth.admin falló, intentando profiles: ${authErr.message}`)
-      
-      // MÉTODO 2: Fallback a profiles
-      const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-        .from("profiles")
-        .select(`
-          id,
-          full_name,
-          email,
-          role,
-          is_admin,
-          created_at,
-          avatar_url
-        `)
-        .order("created_at", { ascending: false })
-      
-      if (serviceError) {
-        debugInfo.push(`✗ Profiles query falló: ${serviceError.message}`)
-        throw new Error(`Ambos métodos fallaron. Auth: ${authErr.message}, Profiles: ${serviceError.message}`)
-      }
-      
-      if (serviceUsuarios) {
-        usuarios = serviceUsuarios
-        debugInfo.push(`✓ ${usuarios.length} usuarios cargados desde profiles`)
-        console.log("✅ Usuarios cargados desde profiles (service role):", usuarios.length)
-      }
-    }
-  } catch (err: any) {
-    error = err
-    debugInfo.push(`✗ Error final: ${err.message}`)
-    console.error("❌ Error cargando usuarios:", err)
-    console.error("Debug info:", debugInfo)
+  if (profilesError) {
+    error = profilesError
+    console.error("Error cargando usuarios desde profiles:", profilesError)
+  } else {
+    usuarios = profilesData || []
   }
 
   return (
@@ -120,29 +42,7 @@ export default async function AdminUsuariosPage() {
       {error && (
         <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
           <p className="text-red-400 font-semibold mb-2">❌ Error al cargar usuarios</p>
-          <p className="text-red-300 text-sm mb-3">
-            {error.message || 'Error desconocido'}
-          </p>
-          
-          {/* Debug info expandible */}
-          <details className="text-xs text-red-200 bg-red-950/50 p-3 rounded-lg">
-            <summary className="cursor-pointer font-semibold mb-2">🔍 Información de diagnóstico</summary>
-            <div className="mt-2 space-y-1 font-mono">
-              {debugInfo.map((info, idx) => (
-                <div key={idx}>{info}</div>
-              ))}
-            </div>
-          </details>
-
-          <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-300 text-xs font-semibold mb-1">💡 Soluciones posibles:</p>
-            <ul className="text-blue-200 text-xs space-y-1 list-disc list-inside">
-              <li>Verificar que SUPABASE_SERVICE_ROLE_KEY está configurada en producción</li>
-              <li>Revisar que la Service Role Key tiene permisos de admin</li>
-              <li>Confirmar que la URL de Supabase es correcta</li>
-              <li>Verificar los logs del servidor de Next.js</li>
-            </ul>
-          </div>
+          <p className="text-red-300 text-sm">{error.message || 'Error desconocido'}</p>
         </div>
       )}
 
