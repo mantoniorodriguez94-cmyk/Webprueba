@@ -20,29 +20,50 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 /**
- * Calcular fecha de fin según el período de facturación
+ * Obtener días según el período de facturación
+ * Solo soporta planes Mensual (30 días) y Anual (365 días)
  */
-function calculateEndDate(billingPeriod: string): Date {
-  const now = new Date()
-  
+function getDaysFromBillingPeriod(billingPeriod: string): number {
   switch (billingPeriod) {
     case 'monthly':
-      now.setDate(now.getDate() + 30)
-      break
-    case 'quarterly':
-      now.setDate(now.getDate() + 90)
-      break
-    case 'semiannual':
-      now.setDate(now.getDate() + 180)
-      break
+      return 30
     case 'yearly':
-      now.setDate(now.getDate() + 365)
-      break
+      return 365
     default:
-      now.setDate(now.getDate() + 30)
+      // Fallback por seguridad (no debería ocurrir)
+      console.warn(`⚠️ Período de facturación no reconocido: ${billingPeriod}, usando 30 días por defecto`)
+      return 30
+  }
+}
+
+/**
+ * Calcular fecha de fin sumando días restantes si existe membresía activa
+ * @param billingPeriod - Período del nuevo plan
+ * @param currentPremiumUntil - Fecha de expiración actual (si existe)
+ * @returns Nueva fecha de expiración
+ */
+function calculateEndDate(billingPeriod: string, currentPremiumUntil?: string | null): Date {
+  const now = new Date()
+  const daysToAdd = getDaysFromBillingPeriod(billingPeriod)
+  
+  // Si existe una membresía activa (fecha futura), sumar días a esa fecha
+  if (currentPremiumUntil) {
+    const existingExpiry = new Date(currentPremiumUntil)
+    
+    // Solo sumar si la fecha es futura (membresía aún activa)
+    if (existingExpiry > now) {
+      const newDate = new Date(existingExpiry)
+      newDate.setDate(newDate.getDate() + daysToAdd)
+      console.log(`✅ Sumando ${daysToAdd} días a membresía existente. Antes: ${existingExpiry.toISOString()}, Después: ${newDate.toISOString()}`)
+      return newDate
+    }
   }
   
-  return now
+  // Si no hay membresía activa o ya expiró, empezar desde hoy
+  const newDate = new Date(now)
+  newDate.setDate(newDate.getDate() + daysToAdd)
+  console.log(`✅ Creando nueva membresía de ${daysToAdd} días desde hoy: ${newDate.toISOString()}`)
+  return newDate
 }
 
 export async function POST(request: NextRequest) {
@@ -133,10 +154,18 @@ export async function POST(request: NextRequest) {
       .eq('external_id', submission_id_final)
       .eq('method', 'manual')
 
+    // Obtener el negocio para verificar si tiene membresía activa
+    const { data: business } = await supabase
+      .from('businesses')
+      .select('premium_until, is_premium')
+      .eq('id', submission.business_id)
+      .single()
+
     // Calcular fechas de la suscripción según el plan pagado
+    // Si existe premium_until y es futuro, se sumarán los días a esa fecha
     const startDate = new Date()
     const billingPeriod = plan.billing_period || 'monthly'
-    const endDate = calculateEndDate(billingPeriod)
+    const endDate = calculateEndDate(billingPeriod, business?.premium_until)
 
     // Crear o actualizar suscripción
     const { data: existingSubscription } = await supabase

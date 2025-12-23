@@ -6,7 +6,7 @@
 // PLANES PREMIUM
 // ============================================
 
-export type BillingPeriod = 'monthly' | 'quarterly' | 'semiannual' | 'yearly'
+export type BillingPeriod = 'monthly' | 'yearly'
 
 export interface PremiumPlan {
   id: string

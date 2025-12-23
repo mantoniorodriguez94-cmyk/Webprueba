@@ -29,24 +29,28 @@ const FilterSidebar = dynamic(
   }
 )
 
-const HighlightsSidebar = dynamic(
-  () => import("@/components/feed/HighlightsSidebar"),
+const RightSidebar = dynamic(
+  () => import("@/components/dashboard/RightSidebar"),
   {
     ssr: false,
     loading: () => (
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-6 animate-pulse">
-        <div className="h-6 w-32 bg-white/10 rounded mb-4" />
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/10 rounded-xl" />
-              <div className="flex-1">
-                <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
-                <div className="h-3 bg-white/10 rounded w-1/2" />
-              </div>
+      <div className="space-y-5">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 animate-pulse">
+            <div className="h-6 w-32 bg-white/10 rounded mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/10 rounded-full" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
+                    <div className="h-3 bg-white/10 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     ),
   }
@@ -704,8 +708,8 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
+      <div className="w-full px-4 py-4 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-4 max-w-[1600px] mx-auto">
           {/* Sidebar Izquierdo (Desktop Only) */}
           <div className="hidden lg:block">
             <FilterSidebar onFilterChange={handleFilterChange} />
@@ -833,12 +837,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Sidebar Derecho (Desktop Only) */}
-          <div className="hidden lg:block">
-            <HighlightsSidebar 
-              featuredBusinesses={featuredBusinesses}
-            />
-          </div>
+          {/* Sidebar Derecho (Desktop Only) - Nuevo diseño modular */}
+          <RightSidebar />
         </div>
       </div>
 

@@ -114,7 +114,7 @@ export default function PremiumPage() {
 
       setBusiness(businessData)
 
-      // Cargar planes disponibles
+      // Cargar planes disponibles (solo Mensual y Anual)
       const { data: plansData, error: plansError } = await supabase
         .from('premium_plans')
         .select('*')
@@ -122,7 +122,12 @@ export default function PremiumPage() {
         .order('price_usd', { ascending: true })
 
       if (plansError) throw plansError
-      setPlans(plansData || [])
+      
+      // Filtrar solo planes Mensual y Anual
+      const filteredPlans = (plansData || []).filter(
+        plan => plan.billing_period === 'monthly' || plan.billing_period === 'yearly'
+      )
+      setPlans(filteredPlans)
 
       // Cargar suscripción actual si existe
       const { data: subData } = await supabase
@@ -498,9 +503,7 @@ export default function PremiumPage() {
                 <div className="text-3xl font-bold text-white mb-4">
                   ${plan.price_usd}
                   <span className="text-base text-gray-400 font-normal">
-                    /{plan.billing_period === 'monthly' ? 'mes' : 
-                      plan.billing_period === 'quarterly' ? '3 meses' :
-                      plan.billing_period === 'semiannual' ? '6 meses' : 'año'}
+                    /{plan.billing_period === 'monthly' ? 'mes' : 'año'}
                   </span>
                 </div>
 
