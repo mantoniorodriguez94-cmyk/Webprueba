@@ -13,7 +13,7 @@ interface Promotion {
   business_id: string
   businesses: {
     name: string
-  } | null
+  }
 }
 
 export default function ActivePromotions() {
@@ -48,7 +48,12 @@ export default function ActivePromotions() {
         console.error('Error loading promotions:', error)
         setPromotions([])
       } else {
-        setPromotions(data || [])
+        // Transform data to match Promotion interface
+        const transformedData = (data || []).map((item: any) => ({
+          ...item,
+          businesses: Array.isArray(item.businesses) ? item.businesses[0] : item.businesses
+        }))
+        setPromotions(transformedData)
       }
     } catch (err) {
       console.error('Error loading promotions:', err)
@@ -126,7 +131,7 @@ export default function ActivePromotions() {
       <div className="space-y-3">
         {promotions.map((promo) => {
           const daysLeft = getDaysRemaining(promo.end_date)
-          const businessName = promo.businesses?.name || 'Negocio'
+          const businessName = promo.businesses.name || 'Negocio'
           
           return (
             <Link 

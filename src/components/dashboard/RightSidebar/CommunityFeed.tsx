@@ -15,10 +15,10 @@ interface Review {
   profiles: {
     full_name: string | null
     avatar_url: string | null
-  } | null
+  }
   businesses: {
     name: string
-  } | null
+  }
 }
 
 export default function CommunityFeed() {
@@ -50,7 +50,13 @@ export default function CommunityFeed() {
         console.error('Error loading reviews:', error)
         setReviews([])
       } else {
-        setReviews(data || [])
+        // Transform data to match Review interface
+        const transformedData = (data || []).map((item: any) => ({
+          ...item,
+          profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
+          businesses: Array.isArray(item.businesses) ? item.businesses[0] : item.businesses
+        }))
+        setReviews(transformedData)
       }
     } catch (err) {
       console.error('Error loading community feed:', err)
@@ -144,9 +150,9 @@ export default function CommunityFeed() {
         <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500/50 via-blue-500/50 to-purple-500/50" />
 
         {reviews.map((review, index) => {
-          const userName = review.profiles?.full_name || 'Usuario'
-          const businessName = review.businesses?.name || 'Negocio'
-          const avatarUrl = review.profiles?.avatar_url
+          const userName = review.profiles.full_name || 'Usuario'
+          const businessName = review.businesses.name || 'Negocio'
+          const avatarUrl = review.profiles.avatar_url
 
           return (
             <Link 
@@ -203,7 +209,7 @@ export default function CommunityFeed() {
                   {/* Comment preview */}
                   {review.comment && (
                     <p className="text-xs text-gray-400 line-clamp-2 mb-2 italic">
-                      "{review.comment}"
+                      &ldquo;{review.comment}&rdquo;
                     </p>
                   )}
 
