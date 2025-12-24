@@ -195,3 +195,4 @@ Después de seguir estos pasos:
 - Un screenshot de las variables de entorno configuradas (sin mostrar los valores)
 
 
+

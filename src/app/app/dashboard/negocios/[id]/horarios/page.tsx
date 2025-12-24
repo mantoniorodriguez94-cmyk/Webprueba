@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
+import NotificationModal from "@/components/ui/NotificationModal"
 
 type DaySchedule = {
   day: string
@@ -42,6 +43,22 @@ export default function HorariosPage() {
     }))
   )
 
+  // State for notification modal
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "info" as "success" | "error" | "warning" | "info",
+    title: "",
+    message: "",
+  })
+
+  const showNotification = (type: "success" | "error" | "warning" | "info", message: string, title: string = "") => {
+    setNotification({ isOpen: true, type, title, message })
+  }
+
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isOpen: false }))
+  }
+
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
   const isAdmin = user?.user_metadata?.is_admin ?? false
@@ -64,8 +81,8 @@ export default function HorariosPage() {
         // Verificar permisos
         const hasPermission = data.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para configurar los horarios de este negocio")
-          router.push("/app/dashboard")
+          showNotification("error", "No tienes permiso para configurar los horarios de este negocio", "Acceso Denegado")
+          setTimeout(() => router.push("/app/dashboard"), 2000)
           return
         }
 
@@ -84,8 +101,8 @@ export default function HorariosPage() {
         }
       } catch (error) {
         console.error("Error cargando negocio:", error)
-        alert("Error cargando el negocio")
-        router.push("/app/dashboard")
+        showNotification("error", "Error cargando el negocio", "Error de Carga")
+        setTimeout(() => router.push("/app/dashboard"), 2000)
       } finally {
         setLoading(false)
       }
@@ -128,11 +145,11 @@ export default function HorariosPage() {
 
       if (error) throw error
 
-      alert("✅ Horarios guardados exitosamente")
-      router.push(`/app/dashboard/negocios/${businessId}`)
+      showNotification("success", "Los horarios han sido guardados exitosamente", "¡Guardado!")
+      setTimeout(() => router.push(`/app/dashboard/negocios/${businessId}`), 1500)
     } catch (error: any) {
       console.error("Error guardando horarios:", error)
-      alert("❌ Error al guardar los horarios: " + (error.message || "Error desconocido"))
+      showNotification("error", `Error al guardar los horarios: ${error.message || "Error desconocido"}`, "Error al Guardar")
     } finally {
       setSaving(false)
     }
@@ -173,9 +190,9 @@ export default function HorariosPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Volver"
+                onClick={() => router.push('/app/dashboard')}
+                className="hidden lg:block p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Volver al Dashboard"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -314,6 +331,15 @@ export default function HorariosPage() {
           </button>
         </div>
       </div>
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+      />
     </div>
   )
 }

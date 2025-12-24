@@ -202,3 +202,4 @@ Puedes encontrar esta clave en:
 - 🔒 **Private Bucket**: El bucket `payment_receipts` es privado, por eso necesitamos signed URLs para ver las imágenes
 - 📝 **Logging**: Se agregó logging detallado en los endpoints para facilitar el debugging
 
+

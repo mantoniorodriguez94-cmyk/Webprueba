@@ -88,3 +88,4 @@ Ver `GOOGLE_OAUTH_SETUP.md` para:
 **Estado:** ✅ Listo para probar y configurar en Supabase
 
 
+

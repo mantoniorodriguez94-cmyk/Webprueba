@@ -87,3 +87,4 @@ FROM pg_policies
 WHERE tablename = 'manual_payment_submissions'
 ORDER BY policyname;
 
+

@@ -129,3 +129,4 @@ Después de este fix:
 **Archivos modificados:** `src/app/app/dashboard/page.tsx`
 
 
+

@@ -7,6 +7,8 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import GoldenBorderToggle from "@/components/business/GoldenBorderToggle"
+import NotificationModal from "@/components/ui/NotificationModal"
 
 type Promotion = {
   id: string
@@ -24,6 +26,29 @@ export default function GestionarNegocioPage() {
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const businessId = params?.id as string
+  
+  const [notification, setNotification] = useState<{
+    isOpen: boolean
+    type: "success" | "error" | "warning" | "info"
+    title?: string
+    message: string
+  }>({
+    isOpen: false,
+    type: "info",
+    message: "",
+  })
+
+  const showNotification = (
+    type: "success" | "error" | "warning" | "info",
+    message: string,
+    title?: string
+  ) => {
+    setNotification({ isOpen: true, type, message, title })
+  }
+
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isOpen: false }))
+  }
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -72,8 +97,8 @@ export default function GestionarNegocioPage() {
 
         // Verificar que el usuario es el dueño
         if (data.owner_id !== user.id) {
-          alert("No tienes permiso para gestionar este negocio")
-          router.push("/app/dashboard")
+          showNotification("error", "No tienes permiso para gestionar este negocio", "Acceso denegado")
+          setTimeout(() => router.push("/app/dashboard"), 2000)
           return
         }
 
@@ -110,8 +135,8 @@ export default function GestionarNegocioPage() {
         }
       } catch (error) {
         console.error("Error cargando negocio:", error)
-        alert("Error cargando el negocio")
-        router.push("/app/dashboard")
+        showNotification("error", "No se pudo cargar la información del negocio", "Error de carga")
+        setTimeout(() => router.push("/app/dashboard"), 2000)
       } finally {
         setLoading(false)
       }
@@ -155,9 +180,9 @@ export default function GestionarNegocioPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Volver"
+                onClick={() => router.push('/app/dashboard')}
+                className="hidden lg:block p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Volver al Dashboard"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -201,7 +226,30 @@ export default function GestionarNegocioPage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">{business.name}</h2>
+              <div className="flex items-start gap-3 mb-3">
+                <h2 className="text-2xl font-bold text-white">{business.name}</h2>
+                
+                {/* Badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {business.is_premium && business.premium_until && new Date(business.premium_until) > new Date() && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 text-xs font-bold rounded-full shadow-lg">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      PREMIUM
+                    </span>
+                  )}
+                  
+                  {/* Control de Borde Dorado */}
+                  <GoldenBorderToggle
+                    businessId={business.id}
+                    businessName={business.name}
+                    isPremium={business.is_premium || false}
+                    premiumUntil={business.premium_until || null}
+                  />
+                </div>
+              </div>
+              
               {business.category && (
                 <p className="text-gray-300 flex items-center gap-2 mb-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,8 +442,106 @@ export default function GestionarNegocioPage() {
             </Link>
           </div>
 
+          {/* Membresía Premium */}
+          <div className={`rounded-3xl shadow-2xl border-2 p-6 transition-all ${
+            business.is_premium && business.premium_until && new Date(business.premium_until) > new Date()
+              ? "bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-amber-500/40"
+              : "bg-transparent backdrop-blur-sm border-white/20/40"
+          }`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                business.is_premium && business.premium_until && new Date(business.premium_until) > new Date()
+                  ? "bg-gradient-to-br from-amber-400 to-yellow-500"
+                  : "bg-gradient-to-br from-amber-400/50 to-yellow-500/50"
+              }`}>
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  Membresía Premium
+                  {business.is_premium && business.premium_until && new Date(business.premium_until) > new Date() && (
+                    <span className="text-xs bg-amber-500 text-gray-900 px-2 py-0.5 rounded-full font-bold">
+                      ACTIVA
+                    </span>
+                  )}
+                </h3>
+                <p className="text-xs text-gray-400">
+                  {business.is_premium && business.premium_until && new Date(business.premium_until) > new Date()
+                    ? "✅ Este negocio es Premium"
+                    : "Destaca tu negocio"
+                  }
+                </p>
+              </div>
+            </div>
+
+            {business.is_premium && business.premium_until && new Date(business.premium_until) > new Date() ? (
+              <>
+                {/* Información detallada de suscripción */}
+                <div className="space-y-3 mb-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                      <p className="text-xs text-blue-300 mb-1">📅 Expira el:</p>
+                      <p className="text-sm font-semibold text-white">
+                        {new Date(business.premium_until).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+                      <p className="text-xs text-green-300 mb-1">⏱️ Días restantes:</p>
+                      <p className="text-sm font-semibold text-white">
+                        {Math.ceil((new Date(business.premium_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} días
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href={`/app/dashboard/negocios/${business.id}/membresia-premium?action=renew`}
+                    className="text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 font-semibold py-2.5 px-3 rounded-xl hover:bg-amber-500/30 hover:border-amber-400 transition-all text-sm"
+                  >
+                    🔄 Renovar
+                  </Link>
+                  <Link
+                    href={`/app/dashboard/negocios/${business.id}/membresia-premium?action=change`}
+                    className="text-center bg-purple-500/20 border border-purple-500/40 text-purple-300 font-semibold py-2.5 px-3 rounded-xl hover:bg-purple-500/30 hover:border-purple-400 transition-all text-sm"
+                  >
+                    💎 Cambiar Plan
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-300 text-sm mb-4">
+                  Activa la membresía premium para este negocio y obtén mayor visibilidad, borde dorado y más beneficios.
+                </p>
+                <Link
+                  href={`/app/dashboard/negocios/${business.id}/membresia-premium`}
+                  className="block w-full text-center bg-amber-50 text-amber-700 px-4 py-3 rounded-xl hover:bg-amber-100 transition-colors font-semibold text-sm"
+                >
+                  ⭐ Activar Premium
+                </Link>
+              </>
+            )}
+          </div>
+
         </div>
       </div>
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+      />
     </div>
   )
 }
