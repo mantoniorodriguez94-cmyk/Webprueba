@@ -7,7 +7,6 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import Image from "next/image"
-import NotificationModal from "@/components/ui/NotificationModal"
 
 type Promotion = {
   id: string
@@ -30,29 +29,6 @@ export default function PromocionesPage() {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const businessId = params?.id as string
-  
-  const [notification, setNotification] = useState<{
-    isOpen: boolean
-    type: "success" | "error" | "warning" | "info"
-    title?: string
-    message: string
-  }>({
-    isOpen: false,
-    type: "info",
-    message: "",
-  })
-
-  const showNotification = (
-    type: "success" | "error" | "warning" | "info",
-    message: string,
-    title?: string
-  ) => {
-    setNotification({ isOpen: true, type, message, title })
-  }
-
-  const closeNotification = () => {
-    setNotification(prev => ({ ...prev, isOpen: false }))
-  }
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
@@ -77,8 +53,8 @@ export default function PromocionesPage() {
         // Verificar permisos
         const hasPermission = businessData.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          showNotification("error", "No tienes permiso para gestionar las promociones de este negocio", "Acceso denegado")
-          setTimeout(() => router.push("/app/dashboard"), 2000)
+          alert("No tienes permiso para gestionar las promociones de este negocio")
+          router.push("/app/dashboard")
           return
         }
 
@@ -95,8 +71,8 @@ export default function PromocionesPage() {
         setPromotions(promotionsData || [])
       } catch (error) {
         console.error("Error cargando datos:", error)
-        showNotification("error", "No se pudieron cargar los datos", "Error de carga")
-        setTimeout(() => router.push("/app/dashboard"), 2000)
+        alert("Error cargando datos")
+        router.push("/app/dashboard")
       } finally {
         setLoading(false)
       }
@@ -118,10 +94,10 @@ export default function PromocionesPage() {
       if (error) throw error
 
       setPromotions(promotions.filter(p => p.id !== id))
-      showNotification("success", "La promoción ha sido eliminada correctamente", "Promoción eliminada")
+      alert("✅ Promoción eliminada exitosamente")
     } catch (error: any) {
       console.error("Error eliminando promoción:", error)
-      showNotification("error", "No se pudo eliminar la promoción", "Error")
+      alert("❌ Error al eliminar la promoción")
     }
   }
 
@@ -140,7 +116,7 @@ export default function PromocionesPage() {
       ))
     } catch (error: any) {
       console.error("Error actualizando promoción:", error)
-      showNotification("error", "No se pudo actualizar el estado de la promoción", "Error")
+      alert("❌ Error al actualizar la promoción")
     }
   }
 
@@ -181,9 +157,9 @@ export default function PromocionesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/app/dashboard')}
-                className="hidden lg:block p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Volver al Dashboard"
+                onClick={() => router.back()}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -254,22 +230,12 @@ export default function PromocionesPage() {
         <CreatePromotionModal
           businessId={businessId}
           onClose={() => setShowCreateModal(false)}
-          showNotification={showNotification}
           onSuccess={(newPromotion) => {
             setPromotions([newPromotion, ...promotions])
             setShowCreateModal(false)
           }}
         />
       )}
-
-      {/* Notification Modal */}
-      <NotificationModal
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-        type={notification.type}
-        title={notification.title}
-        message={notification.message}
-      />
     </div>
   )
 }
@@ -379,13 +345,9 @@ function PromotionCard({
 function CreatePromotionModal({ 
   businessId, 
   onClose, 
-  onSuccess,
-  showNotification
+  onSuccess 
 }: { 
   businessId: string
-  onClose: () => void
-  onSuccess: (promo: Promotion) => void
-  showNotification: (type: "success" | "error" | "warning" | "info", message: string, title?: string) => void
   onClose: () => void
   onSuccess: (promotion: Promotion) => void
 }) {
@@ -402,12 +364,12 @@ function CreatePromotionModal({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      showNotification("warning", "La imagen no debe superar los 5MB", "Archivo muy grande")
+      alert("La imagen no debe superar los 5MB")
       return
     }
 
     if (!file.type.startsWith('image/')) {
-      showNotification("warning", "Solo se permiten archivos de imagen", "Formato no válido")
+      alert("Solo se permiten archivos de imagen")
       return
     }
 
@@ -423,17 +385,17 @@ function CreatePromotionModal({
     e.preventDefault()
 
     if (!name.trim()) {
-      showNotification("warning", "Por favor ingresa un nombre para la promoción", "Campo requerido")
+      alert("Por favor ingresa un nombre para la promoción")
       return
     }
 
     if (!startDate || !endDate) {
-      showNotification("warning", "Por favor selecciona las fechas de la promoción", "Fechas requeridas")
+      alert("Por favor selecciona las fechas de la promoción")
       return
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      showNotification("warning", "La fecha de fin debe ser posterior a la fecha de inicio", "Fechas inválidas")
+      alert("La fecha de fin debe ser posterior a la fecha de inicio")
       return
     }
 
@@ -477,12 +439,11 @@ function CreatePromotionModal({
 
       if (error) throw error
 
-      showNotification("success", "Tu promoción ha sido creada y publicada exitosamente", "¡Promoción creada!")
+      alert("✅ Promoción creada exitosamente")
       onSuccess(data)
-      onClose()
     } catch (error: any) {
       console.error("Error creando promoción:", error)
-      showNotification("error", `No se pudo crear la promoción: ${error.message || "Error desconocido"}`, "Error")
+      alert("❌ Error al crear la promoción: " + (error.message || "Error desconocido"))
     } finally {
       setCreating(false)
     }

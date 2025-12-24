@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
-import NotificationModal from "@/components/ui/NotificationModal"
 
 type AnalyticsSummary = {
   total_views: number
@@ -45,22 +44,6 @@ export default function EstadisticasPage() {
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canView = isOwner || isAdmin
 
-  // State for notification modal
-  const [notification, setNotification] = useState({
-    isOpen: false,
-    type: "info" as "success" | "error" | "warning" | "info",
-    title: "",
-    message: "",
-  })
-
-  const showNotification = (type: "success" | "error" | "warning" | "info", message: string, title: string = "") => {
-    setNotification({ isOpen: true, type, title, message })
-  }
-
-  const closeNotification = () => {
-    setNotification(prev => ({ ...prev, isOpen: false }))
-  }
-
   useEffect(() => {
     const fetchData = async () => {
       if (!businessId || !user) return
@@ -76,8 +59,8 @@ export default function EstadisticasPage() {
 
         const hasPermission = businessData.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          showNotification("error", "No tienes permiso para ver las estadísticas de este negocio", "Acceso Denegado")
-          setTimeout(() => router.push("/app/dashboard"), 2000)
+          alert("No tienes permiso para ver las estadísticas de este negocio")
+          router.push("/app/dashboard")
           return
         }
 
@@ -134,8 +117,8 @@ export default function EstadisticasPage() {
         }
       } catch (error) {
         console.error("Error cargando estadísticas:", error)
-        showNotification("error", "Error cargando estadísticas", "Error de Carga")
-        setTimeout(() => router.push("/app/dashboard"), 2000)
+        alert("Error cargando estadísticas")
+        router.push("/app/dashboard")
       } finally {
         setLoading(false)
       }
@@ -194,9 +177,9 @@ export default function EstadisticasPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/app/dashboard')}
-                className="hidden lg:block p-2 hover:bg-gray-700 rounded-full transition-colors"
-                title="Volver al Dashboard"
+                onClick={() => router.back()}
+                className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -457,15 +440,6 @@ export default function EstadisticasPage() {
           </div>
         </div>
       </div>
-
-      {/* Notification Modal */}
-      <NotificationModal
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-        type={notification.type}
-        title={notification.title}
-        message={notification.message}
-      />
     </div>
   )
 }

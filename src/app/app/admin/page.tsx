@@ -17,11 +17,77 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
-  const { data: profilesData } = await supabase
-    .from("profiles")
-    .select("id")
+  // Contar usuarios usando EXACTAMENTE la misma lógica que admin/usuarios/page.tsx
+  // Esto asegura que el conteo sea 100% consistente
+  let usersCount = 0
+  let usuarios: any[] | null = null
+  
+  try {
+    // Usar service role key directamente - EXACTAMENTE igual que usuarios/page.tsx
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      throw new Error("Variables de entorno de Supabase no configuradas")
+    }
 
-  const usersCount = profilesData?.length || 0
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+    
+    // Crear cliente con service role - EXACTAMENTE igual que usuarios/page.tsx
+    const serviceSupabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+    
+    // Intentar cargar desde profiles con service role - EXACTAMENTE igual que usuarios/page.tsx
+    const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
+      .from("profiles")
+      .select(`
+        id,
+        full_name,
+        email,
+        role,
+        is_admin,
+        created_at,
+        avatar_url
+      `)
+      .order("created_at", { ascending: false })
+    
+    if (serviceError) {
+      // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
+      // EXACTAMENTE igual que usuarios/page.tsx
+      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+      
+      if (authError) {
+        throw new Error(`Error con auth.admin.listUsers(): ${authError.message}`)
+      }
+      
+      if (authData?.users) {
+        // Convertir usuarios de auth.users a formato profiles - EXACTAMENTE igual que usuarios/page.tsx
+        usuarios = authData.users.map((user) => ({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          role: user.user_metadata?.role || "person",
+          is_admin: user.user_metadata?.is_admin === true || false,
+          created_at: user.created_at,
+          avatar_url: user.user_metadata?.avatar_url || null
+        }))
+        usersCount = usuarios.length
+        console.log("✅ Usuarios contados desde auth.users:", usersCount)
+      }
+    } else if (serviceUsuarios) {
+      usuarios = serviceUsuarios
+      usersCount = usuarios.length
+      console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
+    }
+  } catch (err: any) {
+    // Silenciosamente manejar el error - igual que usuarios/page.tsx
+    console.error("Error contando usuarios:", err)
+  }
 
   // Cargar todas las estadísticas en paralelo para mejor rendimiento
   const [
@@ -49,14 +115,12 @@ export default async function AdminDashboardPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
     
-    // SUSCRIPCIONES POR EXPIRAR (30 días o menos)
+    // SUSCRIPCIONES POR EXPIRAR (7 días)
     supabase
-      .from("businesses")
+      .from("business_subscriptions")
       .select("*", { count: "exact", head: true })
-      .eq("is_premium", true)
-      .not("premium_until", "is", null)
-      .gte("premium_until", new Date().toISOString()) // Aún no expirado
-      .lte("premium_until", new Date(Date.now() + 30 * 86400000).toISOString()), // Expira en 30 días o menos
+      .lte("end_date", new Date(Date.now() + 7 * 86400000).toISOString())
+      .eq("status", "active"),
     
     // NEGOCIOS DESTACADOS ACTIVOS
     supabase

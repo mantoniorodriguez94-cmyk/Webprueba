@@ -31,41 +31,27 @@ export default function CommunityFeed() {
 
   const loadRecentReviews = async () => {
     try {
-      const { data: reviewsData, error } = await supabase
+      const { data, error } = await supabase
         .from('reviews')
-        .select('id, rating, comment, created_at, business_id, user_id')
+        .select(`
+          id,
+          rating,
+          comment,
+          created_at,
+          business_id,
+          user_id,
+          profiles!inner(full_name, avatar_url),
+          businesses!inner(name)
+        `)
         .order('created_at', { ascending: false })
         .limit(5)
 
       if (error) {
         console.error('Error loading reviews:', error)
         setReviews([])
-        return
+      } else {
+        setReviews(data || [])
       }
-
-      if (!reviewsData || reviewsData.length === 0) {
-        setReviews([])
-        return
-      }
-
-      const userIds = [...new Set(reviewsData.map(r => r.user_id))]
-      const businessIds = [...new Set(reviewsData.map(r => r.business_id))]
-
-      const [{ data: profilesData }, { data: businessesData }] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, avatar_url').in('id', userIds),
-        supabase.from('businesses').select('id, name').in('id', businessIds)
-      ])
-
-      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || [])
-      const businessesMap = new Map(businessesData?.map(b => [b.id, b]) || [])
-
-      const enrichedReviews = reviewsData.map(review => ({
-        ...review,
-        profiles: profilesMap.get(review.user_id) || null,
-        businesses: businessesMap.get(review.business_id) || null
-      }))
-
-      setReviews(enrichedReviews)
     } catch (err) {
       console.error('Error loading community feed:', err)
       setReviews([])
@@ -217,7 +203,7 @@ export default function CommunityFeed() {
                   {/* Comment preview */}
                   {review.comment && (
                     <p className="text-xs text-gray-400 line-clamp-2 mb-2 italic">
-                      &ldquo;{review.comment}&rdquo;
+                      "{review.comment}"
                     </p>
                   )}
 

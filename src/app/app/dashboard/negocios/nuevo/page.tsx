@@ -1,10 +1,8 @@
 "use client"
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import LocationSelector from "@/components/business/LocationSelector"
-import NotificationModal from "@/components/ui/NotificationModal"
 
 // Simple ID generator (no need for uuid package)
 function generateId() {
@@ -16,9 +14,6 @@ export default function NuevoNegocioPage() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [stateId, setStateId] = useState<number | null>(null)
-  const [municipalityId, setMunicipalityId] = useState<number | null>(null)
-  const [addressDetails, setAddressDetails] = useState("")
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
@@ -32,30 +27,6 @@ export default function NuevoNegocioPage() {
   const [checking, setChecking] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
   const [galleryError, setGalleryError] = useState("")
-  
-  // Estado para notificaciones
-  const [notification, setNotification] = useState<{
-    isOpen: boolean
-    type: "success" | "error" | "warning" | "info"
-    title?: string
-    message: string
-  }>({
-    isOpen: false,
-    type: "info",
-    message: "",
-  })
-
-  const showNotification = (
-    type: "success" | "error" | "warning" | "info",
-    message: string,
-    title?: string
-  ) => {
-    setNotification({ isOpen: true, type, message, title })
-  }
-
-  const closeNotification = () => {
-    setNotification(prev => ({ ...prev, isOpen: false }))
-  }
   
   // Límites de imágenes según plan
   const MAX_IMAGES_FREE = 3
@@ -76,8 +47,8 @@ export default function NuevoNegocioPage() {
         // Verificar si el usuario es tipo company
         const userRole = user.user_metadata?.role ?? "person"
         if (userRole !== "company") {
-          showNotification("warning", "Para crear negocios, necesitas una cuenta tipo Empresa.", "Cuenta no autorizada")
-          setTimeout(() => router.push("/app/dashboard"), 2000)
+          alert("⚠️ Para crear negocios, necesitas una cuenta tipo Empresa.")
+          router.push("/app/dashboard")
           return
         }
         
@@ -117,15 +88,11 @@ export default function NuevoNegocioPage() {
           // Si ya alcanzó el límite, mostrar alerta premium
           if (currentCount >= allowedBusinesses) {
             if (!isPremium) {
-              showNotification(
-                "info",
-                "Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados\n• Borde dorado especial\n\nPrecio: $5 USD/mes",
-                "⭐ Mejora a Premium"
-              )
+              alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados\n• Borde dorado especial\n\nPrecio: $5 USD/mes")
             } else {
-              showNotification("warning", "Has alcanzado el límite de negocios de tu plan Premium.", "Límite alcanzado")
+              alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
             }
-            setTimeout(() => router.push("/app/dashboard/mis-negocios"), 2500)
+            router.push("/app/dashboard/mis-negocios")
             return
           }
         }
@@ -139,15 +106,6 @@ export default function NuevoNegocioPage() {
     
     checkBusinessLimit()
   }, [router])
-
-  // Callbacks memoizados para LocationSelector (previene renders infinitos)
-  const handleStateChange = useCallback((id: number | null, name: string) => {
-    setStateId(id)
-  }, [])
-
-  const handleMunicipalityChange = useCallback((id: number | null, name: string) => {
-    setMunicipalityId(id)
-  }, [])
 
   const uploadFile = async (file: File, folder: string) => {
     const id = generateId()
@@ -217,9 +175,12 @@ export default function NuevoNegocioPage() {
       return
     }
     
-    // Validar ubicación: estado y municipio son obligatorios
-    if (!stateId || !municipalityId) {
-      setError("⚠️ Debes seleccionar Estado y Municipio")
+    // Validar que al menos dirección o coordenadas estén presentes
+    const hasAddress = address.trim().length > 0
+    const hasCoordinates = latitude.trim().length > 0 && longitude.trim().length > 0
+    
+    if (!hasAddress && !hasCoordinates) {
+      setError("⚠️ Debes completar al menos uno: Dirección manual O Ubicación GPS")
       return
     }
     
@@ -298,9 +259,6 @@ export default function NuevoNegocioPage() {
           name,
           description: description || null,
           category: category || null,
-          state_id: stateId,
-          municipality_id: municipalityId,
-          address_details: addressDetails || null,
           address: address || null,
           phone: phone ? Number(phone) : null,
           whatsapp: whatsapp ? Number(whatsapp) : null,
@@ -312,10 +270,8 @@ export default function NuevoNegocioPage() {
 
       if (insertError) throw insertError
 
-      showNotification("success", "Tu negocio ha sido creado exitosamente y ya está visible en la plataforma", "¡Negocio creado!")
-      setTimeout(() => {
-        window.location.href = "/app/dashboard/mis-negocios"
-      }, 1500)
+      // Usar window.location para forzar recarga completa y asegurar que los datos se actualicen
+      window.location.href = "/app/dashboard"
     } catch (err: any) {
       setError(err.message || "Error al crear negocio")
       console.error("Error:", err)
@@ -342,9 +298,8 @@ export default function NuevoNegocioPage() {
         {/* Header */}
         <div className="mb-8">
           <button 
-            onClick={() => router.push('/app/dashboard')}
-            className="hidden lg:inline-flex text-sm text-gray-300 hover:text-white transition-colors items-center gap-2 group mb-4"
-            title="Volver al Dashboard"
+            onClick={() => router.back()}
+            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group mb-4"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -417,7 +372,7 @@ export default function NuevoNegocioPage() {
               />
             </div>
 
-            {/* Ubicación del Negocio */}
+            {/* Dirección y Ubicación GPS */}
             <div className="space-y-4 p-4 bg-blue-500/10 rounded-2xl border-2 border-blue-500/30">
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,64 +381,49 @@ export default function NuevoNegocioPage() {
                 </svg>
                 <h3 className="font-bold text-white">Ubicación del Negocio *</h3>
               </div>
-
-              {/* Selector de Estado y Municipio */}
-              <LocationSelector
-                selectedStateId={stateId}
-                selectedMunicipalityId={municipalityId}
-                onStateChange={handleStateChange}
-                onMunicipalityChange={handleMunicipalityChange}
-                required={true}
-                disabled={loading}
-              />
-
-              {/* Detalles de dirección (opcional) */}
+              <p className="text-xs text-gray-400 mb-3">
+                ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
+              </p>
+              
+              {/* Opción A: Dirección Manual */}
               <div>
-                <label htmlFor="addressDetails" className="block text-sm font-medium text-gray-200 mb-2">
-                  Punto de referencia o detalles adicionales (Opcional)
+                <label htmlFor="address" className="block text-sm font-semibold text-white mb-2">
+                  📍 Opción A: Dirección Manual
                 </label>
                 <input
-                  id="addressDetails"
+                  id="address"
                   type="text"
-                  value={addressDetails}
-                  onChange={e => setAddressDetails(e.target.value)}
-                  placeholder="Ej: Al lado del banco, frente a la plaza"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  placeholder="Ej: Calle Principal #123, Ciudad"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                   disabled={loading}
                 />
+                {address && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Dirección completada
+                  </p>
+                )}
               </div>
 
-              {/* Sección Opcional: Dirección completa y GPS */}
-              <div className="mt-6 pt-6 border-t border-white/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-sm text-gray-300">Información adicional</span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-500/20 text-gray-400">(Opcional)</span>
-                </div>
-
-                {/* Dirección completa */}
-                <div className="mb-4">
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-2">
-                    📍 Dirección completa (Opcional)
-                  </label>
-                  <input
-                    id="address"
-                    type="text"
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    placeholder="Ej: Calle Principal #123"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400"
-                    disabled={loading}
-                  />
+              {/* Divisor */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <span className="text-xs font-semibold text-gray-500">O</span>
+                <div className="flex-1 h-px bg-gray-300"></div>
               </div>
 
-                {/* Coordenadas GPS */}
+              {/* Opción B: Ubicación GPS */}
               <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    🗺️ Ubicación GPS - Coordenadas (Opcional)
+                <label className="block text-sm font-semibold text-white mb-2">
+                  🗺️ Opción B: Ubicación GPS (Coordenadas)
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                      <label htmlFor="latitude" className="block text-xs text-gray-400 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
                       Latitud
                     </label>
                     <input
@@ -493,12 +433,12 @@ export default function NuevoNegocioPage() {
                       value={latitude}
                       onChange={e => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white text-sm placeholder:text-gray-500"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                      <label htmlFor="longitude" className="block text-xs text-gray-400 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
                       Longitud
                     </label>
                     <input
@@ -508,27 +448,35 @@ export default function NuevoNegocioPage() {
                       value={longitude}
                       onChange={e => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white text-sm placeholder:text-gray-500"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
                       disabled={loading}
                     />
                   </div>
                 </div>
+                
+                {latitude && longitude && (
+                  <p className="text-xs text-green-600 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Coordenadas GPS completadas
+                  </p>
+                )}
 
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-4 rounded-xl transition-all border border-white/20"
+                  className="w-full flex items-center justify-center gap-2 bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
                   disabled={loading}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
-                    Seleccionar en mapa
+                  Colocar ubicación en mapa
                 </button>
                 <p className="text-xs text-gray-500 mt-2 text-center">
-                    Opcional: Selecciona tu ubicación exacta en un mapa
+                  Haz clic para seleccionar tu ubicación en un mapa interactivo
                 </p>
-                </div>
               </div>
             </div>
 
@@ -663,20 +611,20 @@ export default function NuevoNegocioPage() {
             className="fixed inset-0 bg-black/80 z-50"
             onClick={() => setShowMapModal(false)}
           />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-900 rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto border border-gray-700">
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">📍 Seleccionar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-gray-800 rounded-full transition-all"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-300">
                 Obtén tu ubicación actual o ingresa las coordenadas manualmente
               </p>
             </div>
@@ -691,16 +639,16 @@ export default function NuevoNegocioPage() {
                       (position) => {
                         setLatitude(position.coords.latitude.toFixed(6))
                         setLongitude(position.coords.longitude.toFixed(6))
+                        alert("✅ Ubicación obtenida exitosamente!")
                         setShowMapModal(false)
-                        showNotification("success", "Tu ubicación GPS ha sido detectada correctamente", "¡Ubicación obtenida!")
                       },
                       (error) => {
                         console.error("Error obteniendo ubicación:", error)
-                        showNotification("warning", "No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.", "Ubicación no disponible")
+                        alert("⚠️ No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
                       }
                     )
                   } else {
-                    showNotification("warning", "Tu navegador no soporta geolocalización", "Función no disponible")
+                    alert("⚠️ Tu navegador no soporta geolocalización")
                   }
                 }}
                 className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl"
@@ -711,22 +659,22 @@ export default function NuevoNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-400 mt-2 text-center">
+              <p className="text-xs text-gray-500 mt-2 text-center">
                 Detectará automáticamente tu posición GPS
               </p>
             </div>
 
             {/* Divisor */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-gray-700"></div>
-              <span className="text-xs font-semibold text-gray-400">O ingresa manualmente</span>
-              <div className="flex-1 h-px bg-gray-700"></div>
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="text-xs font-semibold text-gray-500">O ingresa manualmente</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
             </div>
 
             {/* Opción 2: Ingresar coordenadas manualmente */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-200 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Latitud
                 </label>
                 <input
@@ -735,11 +683,11 @@ export default function NuevoNegocioPage() {
                   value={latitude}
                   onChange={e => setLatitude(e.target.value)}
                   placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white placeholder:text-gray-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-200 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Longitud
                 </label>
                 <input
@@ -748,15 +696,15 @@ export default function NuevoNegocioPage() {
                   value={longitude}
                   onChange={e => setLongitude(e.target.value)}
                   placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white placeholder:text-gray-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
                 />
               </div>
 
               {/* Vista previa de Google Maps */}
               {latitude && longitude && (
-                <div className="bg-gray-800 rounded-2xl p-4 border border-gray-700">
-                  <p className="text-sm font-semibold text-gray-200 mb-2">Vista previa:</p>
-                  <div className="bg-gray-700 rounded-xl overflow-hidden">
+                <div className="bg-gray-100 rounded-2xl p-4">
+                  <p className="text-sm font-semibold text-white mb-2">Vista previa:</p>
+                  <div className="bg-gray-200 rounded-xl overflow-hidden">
                     <iframe
                       title="Mapa de ubicación"
                       width="100%"
@@ -766,7 +714,7 @@ export default function NuevoNegocioPage() {
                       className="w-full"
                     ></iframe>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-gray-300 mt-2">
                     📍 Lat: {latitude}, Lng: {longitude}
                   </p>
                 </div>
@@ -776,7 +724,7 @@ export default function NuevoNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(false)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-2xl transition-all"
+                  className="flex-1 bg-[#0288D1] hover:bg-[#0277BD] text-white font-bold py-3 px-6 rounded-2xl transition-all"
                 >
                   Confirmar
                 </button>
@@ -786,7 +734,7 @@ export default function NuevoNegocioPage() {
                     setLatitude("")
                     setLongitude("")
                   }}
-                  className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold rounded-2xl transition-all"
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-2xl transition-all"
                 >
                   Limpiar
                 </button>
@@ -794,8 +742,8 @@ export default function NuevoNegocioPage() {
             </div>
 
             {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-900/30 border border-blue-800/50 rounded-2xl">
-              <p className="text-xs text-blue-300">
+            <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
+              <p className="text-xs text-gray-300">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>
@@ -803,15 +751,6 @@ export default function NuevoNegocioPage() {
           </div>
         </>
       )}
-
-      {/* Notification Modal */}
-      <NotificationModal
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-        type={notification.type}
-        title={notification.title}
-        message={notification.message}
-      />
     </div>
   )
 }

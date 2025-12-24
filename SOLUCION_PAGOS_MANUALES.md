@@ -203,3 +203,4 @@ Puedes encontrar esta clave en:
 - 📝 **Logging**: Se agregó logging detallado en los endpoints para facilitar el debugging
 
 
+

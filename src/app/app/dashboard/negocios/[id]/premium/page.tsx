@@ -299,9 +299,8 @@ export default function PremiumPage() {
       <div className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
-            onClick={() => router.push('/app/dashboard')}
-            className="hidden lg:block p-2 hover:bg-gray-700 rounded-full transition-colors"
-            title="Volver al Dashboard"
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
           >
             <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
