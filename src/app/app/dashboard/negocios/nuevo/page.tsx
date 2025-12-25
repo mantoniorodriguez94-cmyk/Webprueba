@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import LocationSelector from "@/components/LocationSelector"
 
 // Simple ID generator (no need for uuid package)
 function generateId() {
@@ -27,6 +28,10 @@ export default function NuevoNegocioPage() {
   const [checking, setChecking] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
   const [galleryError, setGalleryError] = useState("")
+  // Ubicación (Estado y Municipio)
+  const [stateId, setStateId] = useState<number | null>(null)
+  const [municipalityId, setMunicipalityId] = useState<number | null>(null)
+  const [addressDetails, setAddressDetails] = useState("")
   
   // Límites de imágenes según plan
   const MAX_IMAGES_FREE = 3
@@ -175,12 +180,9 @@ export default function NuevoNegocioPage() {
       return
     }
     
-    // Validar que al menos dirección o coordenadas estén presentes
-    const hasAddress = address.trim().length > 0
-    const hasCoordinates = latitude.trim().length > 0 && longitude.trim().length > 0
-    
-    if (!hasAddress && !hasCoordinates) {
-      setError("⚠️ Debes completar al menos uno: Dirección manual O Ubicación GPS")
+    // Validar que estado y municipio estén seleccionados (obligatorio)
+    if (!stateId || !municipalityId) {
+      setError("⚠️ Debes seleccionar el Estado y el Municipio donde se encuentra tu negocio")
       return
     }
     
@@ -260,12 +262,15 @@ export default function NuevoNegocioPage() {
           description: description || null,
           category: category || null,
           address: address || null,
+          address_details: addressDetails.trim() || null,
           phone: phone ? Number(phone) : null,
           whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
           gallery_urls: galleryUrls.length > 0 ? galleryUrls : null,
           latitude: latitude ? Number(latitude) : null,
-          longitude: longitude ? Number(longitude) : null
+          longitude: longitude ? Number(longitude) : null,
+          state_id: stateId,
+          municipality_id: municipalityId
         })
 
       if (insertError) throw insertError
@@ -315,10 +320,10 @@ export default function NuevoNegocioPage() {
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm text-red-700 font-medium">{error}</p>
+                <p className="text-sm text-red-400 font-medium">{error}</p>
               </div>
             </div>
           )}
@@ -335,7 +340,7 @@ export default function NuevoNegocioPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Ej: Panadería El Sol"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -351,7 +356,7 @@ export default function NuevoNegocioPage() {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
                 rows={4}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500 resize-none pb-20 sm:pb-3"
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500 resize-none pb-20 sm:pb-3"
                 disabled={loading}
               />
             </div>
@@ -367,12 +372,12 @@ export default function NuevoNegocioPage() {
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
 
-            {/* Dirección y Ubicación GPS */}
+            {/* Ubicación: Estado y Municipio (Obligatorio) */}
             <div className="space-y-4 p-4 bg-blue-500/10 rounded-2xl border-2 border-blue-500/30">
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,49 +386,55 @@ export default function NuevoNegocioPage() {
                 </svg>
                 <h3 className="font-bold text-white">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-400 mb-3">
-                ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
-              </p>
               
-              {/* Opción A: Dirección Manual */}
+              {/* Selector de Estado y Municipio */}
+              <LocationSelector
+                selectedStateId={stateId}
+                selectedMunicipalityId={municipalityId}
+                onStateChange={setStateId}
+                onMunicipalityChange={setMunicipalityId}
+                disabled={loading}
+                required={true}
+              />
+
+              {/* Detalles adicionales de dirección (opcional) */}
               <div>
-                <label htmlFor="address" className="block text-sm font-semibold text-white mb-2">
-                  📍 Opción A: Dirección Manual
+                <label htmlFor="addressDetails" className="block text-sm font-semibold text-white mb-2">
+                  Detalles adicionales de dirección (opcional)
                 </label>
                 <input
-                  id="address"
+                  id="addressDetails"
                   type="text"
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                  value={addressDetails}
+                  onChange={e => setAddressDetails(e.target.value)}
+                  placeholder="Ej: Calle Principal #123, Sector Los Pinos, Punto de referencia..."
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                   disabled={loading}
                 />
-                {address && (
-                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Dirección completada
-                  </p>
-                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  Información adicional para ayudar a los clientes a encontrarte
+                </p>
               </div>
+            </div>
 
-              {/* Divisor */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-300"></div>
-                <span className="text-xs font-semibold text-gray-500">O</span>
-                <div className="flex-1 h-px bg-gray-300"></div>
+            {/* Ubicación GPS (Opcional) */}
+            <div className="space-y-4 p-4 bg-gray-500/10 rounded-2xl border-2 border-gray-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                <h3 className="font-bold text-gray-400">
+                  Ubicación GPS (Opcional)
+                </h3>
               </div>
-
-              {/* Opción B: Ubicación GPS */}
+              
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
-                  🗺️ Opción B: Ubicación GPS (Coordenadas)
+                <label className="block text-sm font-semibold text-gray-400 mb-2">
+                  🗺️ Coordenadas GPS para ubicación precisa
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-400 mb-1">
                       Latitud
                     </label>
                     <input
@@ -433,12 +444,12 @@ export default function NuevoNegocioPage() {
                       value={latitude}
                       onChange={e => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
+                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-gray-500"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-400 mb-1">
                       Longitud
                     </label>
                     <input
@@ -448,7 +459,7 @@ export default function NuevoNegocioPage() {
                       value={longitude}
                       onChange={e => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-white text-sm"
+                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-gray-500"
                       disabled={loading}
                     />
                   </div>
@@ -466,7 +477,7 @@ export default function NuevoNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
                   disabled={loading}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,7 +485,7 @@ export default function NuevoNegocioPage() {
                   </svg>
                   Colocar ubicación en mapa
                 </button>
-                <p className="text-xs text-gray-500 mt-2 text-center">
+                <p className="text-xs text-gray-400 mt-2 text-center">
                   Haz clic para seleccionar tu ubicación en un mapa interactivo
                 </p>
               </div>
@@ -491,7 +502,7 @@ export default function NuevoNegocioPage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -507,7 +518,7 @@ export default function NuevoNegocioPage() {
                 value={whatsapp}
                 onChange={e => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -557,7 +568,7 @@ export default function NuevoNegocioPage() {
               {/* Mensaje de error si excede el límite */}
               {galleryError && (
                 <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
-                  <p className="text-sm text-red-400">{galleryError}</p>
+                  <p className="text-sm text-red-400 font-medium">{galleryError}</p>
                 </div>
               )}
               
@@ -595,7 +606,7 @@ export default function NuevoNegocioPage() {
               </button>
               <Link
                 href="/app/dashboard"
-                className="flex-1 text-center border-2 border-gray-300 text-gray-300 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-50 transition-colors"
+                className="flex-1 text-center border-2 border-gray-300 text-white hover:text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-white/10 hover:border-gray-400 transition-colors"
               >
                 Cancelar
               </Link>
@@ -611,15 +622,15 @@ export default function NuevoNegocioPage() {
             className="fixed inset-0 bg-black/80 z-50"
             onClick={() => setShowMapModal(false)}
           />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">📍 Seleccionar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
+                  className="p-2 hover:bg-white/10 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -659,7 +670,7 @@ export default function NuevoNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">
+              <p className="text-xs text-gray-600 mt-2 text-center">
                 Detectará automáticamente tu posición GPS
               </p>
             </div>
@@ -667,14 +678,14 @@ export default function NuevoNegocioPage() {
             {/* Divisor */}
             <div className="flex items-center gap-3 mb-6">
               <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-xs font-semibold text-gray-500">O ingresa manualmente</span>
+              <span className="text-xs font-semibold text-gray-600">O ingresa manualmente</span>
               <div className="flex-1 h-px bg-gray-300"></div>
             </div>
 
             {/* Opción 2: Ingresar coordenadas manualmente */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Latitud
                 </label>
                 <input
@@ -683,11 +694,11 @@ export default function NuevoNegocioPage() {
                   value={latitude}
                   onChange={e => setLatitude(e.target.value)}
                   placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Longitud
                 </label>
                 <input
@@ -696,14 +707,14 @@ export default function NuevoNegocioPage() {
                   value={longitude}
                   onChange={e => setLongitude(e.target.value)}
                   placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
 
               {/* Vista previa de Google Maps */}
               {latitude && longitude && (
-                <div className="bg-gray-100 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-white mb-2">Vista previa:</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Vista previa:</p>
                   <div className="bg-gray-200 rounded-xl overflow-hidden">
                     <iframe
                       title="Mapa de ubicación"
@@ -714,7 +725,7 @@ export default function NuevoNegocioPage() {
                       className="w-full"
                     ></iframe>
                   </div>
-                  <p className="text-xs text-gray-300 mt-2">
+                  <p className="text-xs text-gray-700 mt-2">
                     📍 Lat: {latitude}, Lng: {longitude}
                   </p>
                 </div>
@@ -742,8 +753,8 @@ export default function NuevoNegocioPage() {
             </div>
 
             {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-              <p className="text-xs text-gray-300">
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+              <p className="text-xs text-blue-900">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>

@@ -637,24 +637,25 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       {/* Header Móvil Moderno */}
-      <header className="sticky top-0 z-40 bg-transparent backdrop-blur-md border-b border-white/20">
-        <div className="px-4 py-3">
+      <header className="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
+        <div className="px-4 py-4 lg:px-6">
           {/* Top Row - Logo y Acciones */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                📍 Encuentra
+              <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
+                <span className="text-2xl">📍</span>
+                Encuentra
               </h1>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {allBusinesses.length} negocios disponibles
+              <p className="text-xs lg:text-sm text-gray-400 mt-1">
+                {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Botón de Búsqueda - Solo visible en Desktop */}
               <button
                 onClick={() => setShowSearchModal(true)}
-                className="hidden lg:flex p-2.5 bg-transparent rounded-full text-gray-300 hover:text-white hover:bg-transparent transition-all"
+                className="hidden lg:flex p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white transition-all duration-200 hover:scale-105"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -664,7 +665,7 @@ export default function DashboardPage() {
               {/* Menú de Usuario */}
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-200 hover:scale-105"
               >
                 {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
               </button>
@@ -675,30 +676,30 @@ export default function DashboardPage() {
           <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
             <button
               onClick={() => setActiveTab("feed")}
-              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "feed"
-                  ? "bg-blue-500 text-white"
-                  : "bg-transparent text-gray-400"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
+                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
               }`}
             >
               Todos {filteredBusinesses.length > 0 && `(${filteredBusinesses.length})`}
             </button>
             <button
               onClick={() => setActiveTab("recientes")}
-              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "recientes"
-                  ? "bg-blue-500 text-white"
-                  : "bg-transparent text-gray-400"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
+                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
               }`}
             >
               Recientes {recentBusinesses.length > 0 && `(${recentBusinesses.length})`}
             </button>
             <button
               onClick={() => setActiveTab("destacados")}
-              className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "destacados"
-                  ? "bg-blue-500 text-white"
-                  : "bg-transparent text-gray-400"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
+                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
               }`}
             >
               ⭐ Destacados
@@ -708,7 +709,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 py-4 lg:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
           {/* Sidebar Izquierdo (Desktop Only) */}
           <div className="hidden lg:block">
@@ -719,22 +720,24 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {/* Categorías Destacadas (Solo en Tab Feed) */}
             {activeTab === "feed" && topCategories.length > 0 && (
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5">
-                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-xl shadow-black/20">
+                <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
                   Categorías Populares
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {topCategories.map(([category, businesses]) => (
                     <button
                       key={category}
                       onClick={() => handleFilterChange({ ...filters, category })}
-                      className="p-4 bg-transparent/50 rounded-2xl hover:bg-blue-500/20 hover:border-blue-500/50 border border-gray-600 transition-all duration-300"
+                      className="group relative p-5 bg-gradient-to-br from-white/5 to-white/[0.02] rounded-2xl hover:from-blue-500/20 hover:to-purple-500/20 border border-white/10 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
                     >
                       <div className="text-center">
-                        <div className="text-2xl mb-2">
+                        <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
                           {category === "Restaurantes" && "🍽️"}
                           {category === "Tiendas" && "🛍️"}
                           {category === "Servicios" && "🔧"}
@@ -746,11 +749,11 @@ export default function DashboardPage() {
                           {category === "Belleza" && "💄"}
                           {!["Restaurantes", "Tiendas", "Servicios", "Salud", "Educación", "Tecnología", "Entretenimiento", "Deportes", "Belleza"].includes(category) && "📦"}
                         </div>
-                        <p className="font-semibold text-sm text-white truncate">
+                        <p className="font-semibold text-sm text-white truncate group-hover:text-blue-300 transition-colors">
                           {category}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {businesses.length}
+                        <p className="text-xs text-gray-400 mt-1.5 group-hover:text-gray-300 transition-colors">
+                          {businesses.length} {businesses.length === 1 ? 'negocio' : 'negocios'}
                         </p>
                       </div>
                     </button>
@@ -763,15 +766,17 @@ export default function DashboardPage() {
             <div className="lg:hidden">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="w-full bg-transparent/50 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 flex items-center justify-between hover:bg-transparent/70 transition-all duration-300"
+                className="w-full bg-gradient-to-r from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between hover:from-blue-500/20 hover:to-purple-500/20 hover:border-blue-500/50 transition-all duration-300 shadow-lg shadow-black/10"
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                  </div>
                   <span className="text-white font-semibold">Filtra por Categoría, Ubicación o Nombre</span>
                   {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div className="w-2.5 h-2.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50"></div>
                   )}
                 </div>
                 <svg 
@@ -790,7 +795,7 @@ export default function DashboardPage() {
                   showFilters ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="bg-transparent/50 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+                <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl shadow-black/20">
                   <FilterSidebar onFilterChange={handleFilterChange} />
                 </div>
               </div>
@@ -798,23 +803,28 @@ export default function DashboardPage() {
 
             {/* Lista de Negocios */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="mt-4 text-gray-400">Cargando negocios...</p>
+              <div className="text-center py-16">
+                <div className="relative w-16 h-16 mx-auto mb-6">
+                  <div className="absolute inset-0 rounded-full border-4 border-blue-500/20"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin"></div>
+                </div>
+                <p className="text-gray-400 font-medium">Cargando negocios...</p>
               </div>
             ) : displayedBusinesses.length === 0 ? (
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-12 text-center">
-                <svg className="mx-auto h-16 w-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <h3 className="mt-4 text-xl font-semibold text-white">
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/10 p-16 text-center shadow-xl shadow-black/20">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center border border-blue-500/30">
+                  <svg className="h-10 w-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h3 className="mt-4 text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                   {activeTab === "recientes" 
                     ? "No hay negocios recientes" 
                     : activeTab === "destacados"
                     ? "Aún no hay negocios destacados"
                     : "No se encontraron negocios"}
                 </h3>
-                <p className="mt-2 text-gray-400">
+                <p className="mt-3 text-gray-400 max-w-md mx-auto">
                   {activeTab === "recientes" 
                     ? "No se han agregado negocios nuevos en los últimos 7 días" 
                     : activeTab === "destacados"
@@ -823,17 +833,22 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <>
-                {displayedBusinesses.map((business) => (
-                  <BusinessFeedCard 
-                    key={business.id} 
-                    business={business}
-                    currentUser={user}
-                    isAdmin={isAdmin}
-                    onDelete={handleDelete}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                {displayedBusinesses.map((business, index) => (
+                  <div 
+                    key={business.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
+                  >
+                    <BusinessFeedCard 
+                      business={business}
+                      currentUser={user}
+                      isAdmin={isAdmin}
+                      onDelete={handleDelete}
+                    />
+                  </div>
                 ))}
-              </>
+              </div>
             )}
           </div>
 

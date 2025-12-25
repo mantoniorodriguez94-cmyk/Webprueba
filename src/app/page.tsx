@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
+import PhoneMockup from "@/components/PhoneMockup";
 import useUser from "@/hooks/useUser";
 
 export default function Home() {
@@ -22,15 +23,14 @@ export default function Home() {
 
   // Función para scroll al inicio
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setMobileMenuOpen(false);
+    scrollToSection('inicio');
   };
 
   return (
     <>
       <main className="min-h-screen text-white flex flex-col">
         {/* BLOQUE 1 — HEADER */}
-        <header className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700/50" id="inicio">
+        <header className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 sm:py-4">
               {/* Logo */}
@@ -68,6 +68,12 @@ export default function Home() {
                   className="text-gray-300 hover:text-white transition"
                 >
                   Cómo funciona
+                </button>
+                <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Para personas
                 </button>
                 <button 
                   onClick={() => scrollToSection('para-negocios')}
@@ -135,6 +141,12 @@ export default function Home() {
                   Cómo funciona
                 </button>
                 <button 
+                  onClick={() => scrollToSection('para-personas')}
+                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
+                >
+                  Para personas
+                </button>
+                <button 
                   onClick={() => scrollToSection('para-negocios')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
@@ -163,7 +175,7 @@ export default function Home() {
         </header>
 
         {/* BLOQUE 2 — HERO */}
-        <section className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0">
+        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0 scroll-mt-32">
           <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
               
@@ -204,40 +216,7 @@ export default function Home() {
 
               {/* Mockup de Teléfono - Derecha (Solo Desktop) */}
               <div className="hidden lg:flex lg:w-1/2 justify-center items-center opacity-0 animate-fade-in animation-delay-400">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full scale-150"></div>
-                  <div className="relative z-10 w-[280px] h-[580px] bg-gray-900 rounded-[3rem] p-3 shadow-2xl shadow-black/50 border-8 border-gray-800">
-                    <div className="w-full h-full bg-white rounded-[2.3rem] overflow-hidden">
-                      <div className="bg-blue-500 text-white px-4 py-3 flex items-center justify-between">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <span className="font-bold text-sm">Encuentra</span>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        <div className="bg-gray-100 rounded-full px-4 py-3 text-sm text-gray-500">
-                          Buscar negocios cerca...
-                        </div>
-                        <div className="space-y-3">
-                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-3 border border-blue-200">
-                            <div className="w-full h-24 bg-blue-200 rounded-xl mb-2"></div>
-                            <div className="h-3 bg-blue-300 rounded w-3/4 mb-2"></div>
-                            <div className="h-2 bg-blue-200 rounded w-1/2"></div>
-                          </div>
-                          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-3 border border-purple-200">
-                            <div className="w-full h-24 bg-purple-200 rounded-xl mb-2"></div>
-                            <div className="h-3 bg-purple-300 rounded w-2/3 mb-2"></div>
-                            <div className="h-2 bg-purple-200 rounded w-1/3"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-700 rounded-full"></div>
-                  </div>
-                </div>
+                <PhoneMockup />
               </div>
             </div>
           </div>
@@ -249,7 +228,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 3 — CÓMO FUNCIONA */}
-        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -301,7 +280,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
-        <section className="w-full py-20">
+        <section id="para-personas" className="w-full py-20 scroll-mt-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -371,7 +350,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">

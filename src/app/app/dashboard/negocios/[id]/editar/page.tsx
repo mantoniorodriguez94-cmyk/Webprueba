@@ -221,7 +221,7 @@ export default function EditarNegocioPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -280,12 +280,12 @@ export default function EditarNegocioPage() {
         {/* Form Card */}
         <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 sm:p-8 lg:p-10">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm text-red-700 font-medium">{error}</p>
+                <p className="text-sm text-red-400 font-medium">{error}</p>
               </div>
             </div>
           )}
@@ -301,7 +301,7 @@ export default function EditarNegocioPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -332,27 +332,27 @@ export default function EditarNegocioPage() {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
 
             {/* Dirección y Ubicación GPS */}
-            <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
+            <div className="space-y-4 p-4 bg-blue-500/10 rounded-2xl border-2 border-blue-500/30">
               <div className="flex items-center gap-2 mb-2">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h3 className="font-bold text-gray-800">Ubicación del Negocio *</h3>
+                <h3 className="font-bold text-white">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-900 mb-2">
+              <p className="text-xs text-gray-300 mb-2">
                 ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
               </p>
               
               {/* Opción A: Dirección Manual */}
               <div>
-                <label htmlFor="address" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label htmlFor="address" className="block text-sm font-semibold text-white mb-2">
                   📍 Opción A: Dirección Manual
                 </label>
                 <input
@@ -361,7 +361,7 @@ export default function EditarNegocioPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Ej: Calle Principal #123, Ciudad"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                   disabled={loading}
                 />
                 {address && (
@@ -383,12 +383,12 @@ export default function EditarNegocioPage() {
 
               {/* Opción B: Ubicación GPS */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   🗺️ Opción B: Ubicación GPS (Coordenadas)
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-700 mb-1">
+                    <label htmlFor="latitude" className="block text-xs text-gray-300 mb-1">
                       Latitud
                     </label>
                     <input
@@ -398,12 +398,12 @@ export default function EditarNegocioPage() {
                       value={latitude}
                       onChange={(e) => setLatitude(e.target.value)}
                       placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-gray-900 text-sm placeholder:text-gray-500"
                       disabled={loading}
                     />
                   </div>
                   <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-700 mb-1">
+                    <label htmlFor="longitude" className="block text-xs text-gray-300 mb-1">
                       Longitud
                     </label>
                     <input
@@ -413,14 +413,14 @@ export default function EditarNegocioPage() {
                       value={longitude}
                       onChange={(e) => setLongitude(e.target.value)}
                       placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#0288D1] transition-all text-gray-900 text-sm"
+                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-gray-900 text-sm placeholder:text-gray-500"
                       disabled={loading}
                     />
                   </div>
                 </div>
                 
                 {latitude && longitude && (
-                  <p className="text-xs text-green-600 mb-2 flex items-center gap-1">
+                  <p className="text-xs text-green-400 mb-2 flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -453,7 +453,7 @@ export default function EditarNegocioPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -469,7 +469,7 @@ export default function EditarNegocioPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="Ej: 3001234567"
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -483,12 +483,12 @@ export default function EditarNegocioPage() {
                 <Image 
                   src={negocio.logo_url}
                   alt="Logo actual" 
-                  className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-gray-200"
+                  className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-white/20"
                   width={128}
                   height={128}
                 />
               ) : (
-                <div className="w-32 h-32 bg-gray-100 rounded-2xl mb-3 flex items-center justify-center">
+                <div className="w-32 h-32 bg-white/10 rounded-2xl mb-3 flex items-center justify-center border-2 border-white/20">
                   <span className="text-gray-400 text-sm">Sin logo</span>
                 </div>
               )}
@@ -500,7 +500,7 @@ export default function EditarNegocioPage() {
                 type="file"
                 accept="image/*"
                 onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#E3F2FD] file:text-[#0288D1] hover:file:bg-[#BBDEFB]"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
                 disabled={loading}
               />
             </div>
@@ -513,7 +513,7 @@ export default function EditarNegocioPage() {
               {galleryUrls.length > 0 ? (
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {galleryUrls.map((url, idx) => (
-                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border-2 border-gray-200">
+                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border-2 border-white/20">
                       <Image 
                         src={url} 
                         alt={`Imagen ${idx + 1}`} 
@@ -526,14 +526,14 @@ export default function EditarNegocioPage() {
               ) : (
                 <p className="text-sm text-gray-500 mb-3">No hay imágenes en la galería</p>
               )}
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-3">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4 mb-3">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-sm text-blue-800">
+                  <p className="text-sm text-blue-200">
                     <strong>Tip:</strong> Para gestionar tu galería completa (agregar/eliminar fotos), usa la sección{" "}
-                    <Link href={`/app/dashboard/negocios/${negocio.id}/galeria`} className="underline font-semibold hover:text-blue-900">
+                    <Link href={`/app/dashboard/negocios/${negocio.id}/galeria`} className="underline font-semibold hover:text-blue-100">
                       Gestionar Galería
                     </Link>
                   </p>
@@ -580,15 +580,15 @@ export default function EditarNegocioPage() {
             className="fixed inset-0 bg-black/80 z-50"
             onClick={() => setShowMapModal(false)}
           />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">📍 Actualizar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
+                  className="p-2 hover:bg-white/10 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -628,16 +628,16 @@ export default function EditarNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">
+              <p className="text-xs text-gray-400 mt-2 text-center">
                 Detectará automáticamente tu posición GPS
               </p>
             </div>
 
             {/* Divisor */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-xs font-semibold text-gray-500">O ingresa manualmente</span>
-              <div className="flex-1 h-px bg-gray-300"></div>
+              <div className="flex-1 h-px bg-white/20"></div>
+              <span className="text-xs font-semibold text-gray-300">O ingresa manualmente</span>
+              <div className="flex-1 h-px bg-white/20"></div>
             </div>
 
             {/* Opción 2: Ingresar coordenadas manualmente */}
@@ -652,7 +652,7 @@ export default function EditarNegocioPage() {
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                   placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
               <div>
@@ -665,13 +665,13 @@ export default function EditarNegocioPage() {
                   value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
                   placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all text-white"
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
 
               {/* Vista previa de Mapa */}
               {latitude && longitude && (
-                <div className="bg-gray-100 rounded-2xl p-4">
+                <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
                   <p className="text-sm font-semibold text-white mb-2">Vista previa:</p>
                   <div className="bg-gray-200 rounded-xl overflow-hidden">
                     <iframe
@@ -693,7 +693,7 @@ export default function EditarNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(false)}
-                  className="flex-1 bg-[#0288D1] hover:bg-[#0277BD] text-white font-bold py-3 px-6 rounded-2xl transition-all"
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-blue-500/30"
                 >
                   Confirmar
                 </button>
@@ -703,7 +703,7 @@ export default function EditarNegocioPage() {
                     setLatitude("")
                     setLongitude("")
                   }}
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-2xl transition-all"
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white font-semibold rounded-2xl transition-all border border-white/20"
                 >
                   Limpiar
                 </button>
@@ -711,8 +711,8 @@ export default function EditarNegocioPage() {
             </div>
 
             {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-              <p className="text-xs text-gray-300">
+            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl">
+              <p className="text-xs text-blue-200">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>

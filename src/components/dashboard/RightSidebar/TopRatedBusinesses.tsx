@@ -24,21 +24,60 @@ export default function TopRatedBusinesses() {
 
   const loadTopRated = async () => {
     try {
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('id, name, category, average_rating, review_count, logo_url')
-        .not('average_rating', 'is', null)
-        .gte('average_rating', 3) // Bajamos a 3 estrellas para tener más resultados
+      // Primero obtener los stats de reviews
+      const { data: stats, error: statsError } = await supabase
+        .from('business_review_stats')
+        .select('business_id, average_rating, total_reviews')
+        .gte('average_rating', 4)
         .order('average_rating', { ascending: false })
-        .order('review_count', { ascending: false })
+        .order('total_reviews', { ascending: false })
         .limit(3)
 
-      if (error) {
-        console.error('Error loading businesses:', error)
+      if (statsError) {
+        console.error('Error loading stats:', statsError)
         setBusinesses([])
-      } else {
-        setBusinesses(data || [])
+        setLoading(false)
+        return
       }
+
+      if (!stats || stats.length === 0) {
+        setBusinesses([])
+        setLoading(false)
+        return
+      }
+
+      // Obtener información de los negocios
+      const businessIds = stats.map(s => s.business_id)
+      const { data: businessesData, error: businessesError } = await supabase
+        .from('businesses')
+        .select('id, name, category, logo_url')
+        .in('id', businessIds)
+
+      if (businessesError) {
+        console.error('Error loading businesses:', businessesError)
+        setBusinesses([])
+        setLoading(false)
+        return
+      }
+
+      // Combinar datos
+      const statsMap = new Map(stats.map(s => [s.business_id, s]))
+      const combined = (businessesData || []).map(business => ({
+        id: business.id,
+        name: business.name,
+        category: business.category || '',
+        logo_url: business.logo_url,
+        average_rating: statsMap.get(business.id)?.average_rating || 0,
+        review_count: statsMap.get(business.id)?.total_reviews || 0
+      })).sort((a, b) => {
+        // Ordenar por rating y luego por review_count
+        if (b.average_rating !== a.average_rating) {
+          return b.average_rating - a.average_rating
+        }
+        return b.review_count - a.review_count
+      })
+
+      setBusinesses(combined)
     } catch (err) {
       console.error('Error loading top rated businesses:', err)
       setBusinesses([])
@@ -94,7 +133,7 @@ export default function TopRatedBusinesses() {
           <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          Top Calificados
+          Mejores Calificados
         </h3>
         <div className="text-center py-8">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
@@ -116,7 +155,7 @@ export default function TopRatedBusinesses() {
         <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
-        Top Calificados
+        Mejores Calificados
       </h3>
 
       <div className="space-y-2">

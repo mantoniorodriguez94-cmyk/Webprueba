@@ -8,6 +8,9 @@ export type Business = {
   description: string | null;
   category: string | null;
   address: string | null;
+  address_details: string | null;
+  state_id: number | null;
+  municipality_id: number | null;
   phone: number | null;
   whatsapp: number | null;
   logo_url: string | null;

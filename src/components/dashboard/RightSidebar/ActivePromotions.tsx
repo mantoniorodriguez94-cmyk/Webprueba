@@ -6,14 +6,13 @@ import Link from "next/link"
 
 interface Promotion {
   id: string
-  title: string
-  description: string | null
+  name: string
   start_date: string
   end_date: string
   business_id: string
   businesses: {
     name: string
-  }
+  } | null
 }
 
 export default function ActivePromotions() {
@@ -26,35 +25,61 @@ export default function ActivePromotions() {
 
   const loadActivePromotions = async () => {
     try {
-      const now = new Date().toISOString()
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
       
-      const { data, error } = await supabase
+      // Obtener promociones activas usando los campos correctos del schema
+      const { data: promotionsData, error: promotionsError } = await supabase
         .from('promotions')
-        .select(`
-          id,
-          title,
-          description,
-          start_date,
-          end_date,
-          business_id,
-          businesses!inner(name)
-        `)
-        .lte('start_date', now)
-        .gte('end_date', now)
+        .select('id, name, start_date, end_date, business_id, created_at, is_active')
+        .eq('is_active', true)
+        .lte('start_date', today)
+        .gte('end_date', today)
         .order('created_at', { ascending: false })
         .limit(3)
 
-      if (error) {
-        console.error('Error loading promotions:', error)
+      if (promotionsError) {
+        console.error('Error loading promotions:', promotionsError)
         setPromotions([])
-      } else {
-        // Transform data to match Promotion interface
-        const transformedData = (data || []).map((item: any) => ({
-          ...item,
-          businesses: Array.isArray(item.businesses) ? item.businesses[0] : item.businesses
-        }))
-        setPromotions(transformedData)
+        setLoading(false)
+        return
       }
+
+      if (!promotionsData || promotionsData.length === 0) {
+        setPromotions([])
+        setLoading(false)
+        return
+      }
+
+      // Obtener información de negocios
+      const businessIds = promotionsData.map(p => p.business_id)
+      const { data: businessesData, error: businessesError } = await supabase
+        .from('businesses')
+        .select('id, name')
+        .in('id', businessIds)
+
+      if (businessesError) {
+        console.error('Error loading businesses:', businessesError)
+        setPromotions([])
+        setLoading(false)
+        return
+      }
+
+      // Crear mapa para búsqueda rápida
+      const businessesMap = new Map((businessesData || []).map(b => [b.id, b]))
+
+      // Combinar datos
+      const combined = promotionsData.map(promo => ({
+        id: promo.id,
+        name: promo.name,
+        start_date: promo.start_date,
+        end_date: promo.end_date,
+        business_id: promo.business_id,
+        businesses: businessesMap.get(promo.business_id) ? {
+          name: businessesMap.get(promo.business_id)!.name
+        } : null
+      }))
+
+      setPromotions(combined)
     } catch (err) {
       console.error('Error loading promotions:', err)
       setPromotions([])
@@ -131,7 +156,7 @@ export default function ActivePromotions() {
       <div className="space-y-3">
         {promotions.map((promo) => {
           const daysLeft = getDaysRemaining(promo.end_date)
-          const businessName = promo.businesses.name || 'Negocio'
+          const businessName = promo.businesses?.name || 'Negocio'
           
           return (
             <Link 
@@ -147,7 +172,7 @@ export default function ActivePromotions() {
                   {/* Title & Business */}
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h4 className="font-bold text-white text-sm flex-1 group-hover:text-purple-300 transition-colors">
-                      {promo.title}
+                      {promo.name}
                     </h4>
                     {daysLeft <= 3 && (
                       <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 animate-pulse">
@@ -157,16 +182,9 @@ export default function ActivePromotions() {
                   </div>
 
                   {/* Business Name */}
-                  <p className="text-xs text-purple-300 mb-2 font-medium">
+                  <p className="text-xs text-purple-300 mb-3 font-medium">
                     📍 {businessName}
                   </p>
-
-                  {/* Description */}
-                  {promo.description && (
-                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                      {promo.description}
-                    </p>
-                  )}
 
                   {/* Footer */}
                   <div className="flex items-center justify-between text-xs">
