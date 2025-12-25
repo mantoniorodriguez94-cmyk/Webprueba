@@ -3,10 +3,10 @@ import { NextResponse } from "next/server"
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const businessId = params.id
+    const { id: businessId } = await params
     const supabase = await createClient()
 
     // Verificar autenticación
@@ -169,10 +169,10 @@ export async function POST(
 // GET: Obtener información sobre el estado del borde dorado y límites
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const businessId = params.id
+    const { id: businessId } = await params
     const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
