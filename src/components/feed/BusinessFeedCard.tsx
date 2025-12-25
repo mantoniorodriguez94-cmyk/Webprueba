@@ -145,14 +145,17 @@ export default function BusinessFeedCard({
     setShowGallery(true)
   }
 
-  // Verificar si el negocio es premium activo
+  // Verificar si el negocio es premium activo Y tiene el borde dorado activado
   const isPremiumActive = business.is_premium === true && 
                          business.premium_until && 
                          new Date(business.premium_until) > new Date()
+  
+  // Verificar si debe mostrar el borde dorado (premium + golden_border_active)
+  const showGoldenBorder = isPremiumActive && business.golden_border_active === true
 
   return (
     <div className={`backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative ${
-      isPremiumActive 
+      showGoldenBorder 
         ? 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5' 
         : 'border border-white/20 hover:border-white/30 bg-transparent'
     }`}>
@@ -165,7 +168,7 @@ export default function BusinessFeedCard({
           {/* Logo del negocio */}
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
             <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
-              isPremiumActive 
+              showGoldenBorder 
                 ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/70 shadow-lg shadow-yellow-500/30' 
                 : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600'
             }`}>

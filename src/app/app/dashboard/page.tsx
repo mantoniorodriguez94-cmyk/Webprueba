@@ -708,8 +708,8 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
+      <div className="w-full px-4 py-4 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-4 max-w-[1600px] mx-auto">
           {/* Sidebar Izquierdo (Desktop Only) */}
           <div className="hidden lg:block">
             <FilterSidebar onFilterChange={handleFilterChange} />

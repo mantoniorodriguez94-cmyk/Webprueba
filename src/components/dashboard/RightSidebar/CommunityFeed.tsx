@@ -15,10 +15,10 @@ interface Review {
   profiles: {
     full_name: string | null
     avatar_url: string | null
-  }
+  } | null
   businesses: {
     name: string
-  }
+  } | null
 }
 
 export default function CommunityFeed() {
@@ -31,33 +31,41 @@ export default function CommunityFeed() {
 
   const loadRecentReviews = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: reviewsData, error } = await supabase
         .from('reviews')
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          business_id,
-          user_id,
-          profiles!inner(full_name, avatar_url),
-          businesses!inner(name)
-        `)
+        .select('id, rating, comment, created_at, business_id, user_id')
         .order('created_at', { ascending: false })
         .limit(5)
 
       if (error) {
         console.error('Error loading reviews:', error)
         setReviews([])
-      } else {
-        // Transform data to match Review interface
-        const transformedData = (data || []).map((item: any) => ({
-          ...item,
-          profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
-          businesses: Array.isArray(item.businesses) ? item.businesses[0] : item.businesses
-        }))
-        setReviews(transformedData)
+        return
       }
+
+      if (!reviewsData || reviewsData.length === 0) {
+        setReviews([])
+        return
+      }
+
+      const userIds = [...new Set(reviewsData.map(r => r.user_id))]
+      const businessIds = [...new Set(reviewsData.map(r => r.business_id))]
+
+      const [{ data: profilesData }, { data: businessesData }] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, avatar_url').in('id', userIds),
+        supabase.from('businesses').select('id, name').in('id', businessIds)
+      ])
+
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || [])
+      const businessesMap = new Map(businessesData?.map(b => [b.id, b]) || [])
+
+      const enrichedReviews = reviewsData.map(review => ({
+        ...review,
+        profiles: profilesMap.get(review.user_id) || null,
+        businesses: businessesMap.get(review.business_id) || null
+      }))
+
+      setReviews(enrichedReviews)
     } catch (err) {
       console.error('Error loading community feed:', err)
       setReviews([])
@@ -150,9 +158,9 @@ export default function CommunityFeed() {
         <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500/50 via-blue-500/50 to-purple-500/50" />
 
         {reviews.map((review, index) => {
-          const userName = review.profiles.full_name || 'Usuario'
-          const businessName = review.businesses.name || 'Negocio'
-          const avatarUrl = review.profiles.avatar_url
+          const userName = review.profiles?.full_name || 'Usuario'
+          const businessName = review.businesses?.name || 'Negocio'
+          const avatarUrl = review.profiles?.avatar_url
 
           return (
             <Link 

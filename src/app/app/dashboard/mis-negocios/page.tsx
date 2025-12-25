@@ -6,6 +6,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import NotificationModal from "@/components/ui/NotificationModal"
 import BottomNav from "@/components/ui/BottomNav"
 
 export default function MisNegociosPage() {
@@ -13,6 +14,22 @@ export default function MisNegociosPage() {
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // State for notification modal
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "info" as "success" | "error" | "warning" | "info",
+    title: "",
+    message: "",
+  })
+
+  const showNotification = (type: "success" | "error" | "warning" | "info", message: string, title: string = "") => {
+    setNotification({ isOpen: true, type, title, message })
+  }
+
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isOpen: false }))
+  }
   
   const userRole = user?.user_metadata?.role ?? "person"
   const isPremium = user?.user_metadata?.is_premium ?? false
@@ -69,9 +86,17 @@ export default function MisNegociosPage() {
     } else {
       // Mostrar alerta premium
       if (!isPremium) {
-        alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados o Patrocinados\n• Borde dorado especial para un negocio\n\nPrecio: $5 USD/mes")
+        showNotification(
+          "info",
+          "Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados o Patrocinados\n• Borde dorado especial para un negocio\n\nPrecio: $5 USD/mes",
+          "⭐ Actualiza a Premium"
+        )
       } else {
-        alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
+        showNotification(
+          "warning",
+          "Has alcanzado el límite de negocios de tu plan Premium.",
+          "Límite Alcanzado"
+        )
       }
     }
   }
@@ -116,11 +141,11 @@ export default function MisNegociosPage() {
 
       setNegocios(prev => prev.filter(x => x.id !== id))
       setDeletingId(null)
-      alert("Negocio eliminado exitosamente")
+      showNotification("success", "El negocio ha sido eliminado exitosamente", "Negocio Eliminado")
     } catch (err: any) {
       setDeletingId(null)
       console.error("Error eliminando:", err)
-      alert("Error eliminando: " + (err.message ?? String(err)))
+      showNotification("error", `Error eliminando: ${err.message ?? String(err)}`, "Error al Eliminar")
     }
   }
 
