@@ -7,19 +7,6 @@
     @apply text-white;
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background-color: #111827;
-    background-image: url('/assets/bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-  
-  /* Para móviles: forzar aspect ratio 9:16 */
-  @media (max-width: 768px) {
-    body {
-      background-size: auto 100vh;
-      background-position: center top;
-    }
   }
 
   html {
@@ -132,6 +119,17 @@
   }
   100% {
     background-position: 1000px 0;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

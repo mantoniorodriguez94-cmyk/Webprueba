@@ -6,14 +6,16 @@ import Link from "next/link"
 
 interface Promotion {
   id: string
-  title: string
-  description: string | null
+  name: string
+  image_url: string | null
+  price: number | null
   start_date: string
   end_date: string
   business_id: string
+  is_active: boolean
   businesses: {
     name: string
-  }
+  } | null
 }
 
 export default function ActivePromotions() {
@@ -26,35 +28,42 @@ export default function ActivePromotions() {
 
   const loadActivePromotions = async () => {
     try {
-      const now = new Date().toISOString()
+      const today = new Date().toISOString().split('T')[0]
       
-      const { data, error } = await supabase
+      const { data: promosData, error } = await supabase
         .from('promotions')
-        .select(`
-          id,
-          title,
-          description,
-          start_date,
-          end_date,
-          business_id,
-          businesses!inner(name)
-        `)
-        .lte('start_date', now)
-        .gte('end_date', now)
-        .order('created_at', { ascending: false })
+        .select('id, name, image_url, price, start_date, end_date, business_id, is_active')
+        .eq('is_active', true)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .order('end_date', { ascending: true })
         .limit(3)
 
       if (error) {
         console.error('Error loading promotions:', error)
         setPromotions([])
-      } else {
-        // Transform data to match Promotion interface
-        const transformedData = (data || []).map((item: any) => ({
-          ...item,
-          businesses: Array.isArray(item.businesses) ? item.businesses[0] : item.businesses
-        }))
-        setPromotions(transformedData)
+        return
       }
+
+      if (!promosData || promosData.length === 0) {
+        setPromotions([])
+        return
+      }
+
+      const businessIds = [...new Set(promosData.map(p => p.business_id))]
+      const { data: businessesData } = await supabase
+        .from('businesses')
+        .select('id, name')
+        .in('id', businessIds)
+
+      const businessesMap = new Map(businessesData?.map(b => [b.id, b]) || [])
+
+      const enrichedPromos = promosData.map(promo => ({
+        ...promo,
+        businesses: businessesMap.get(promo.business_id) || null
+      }))
+
+      setPromotions(enrichedPromos)
     } catch (err) {
       console.error('Error loading promotions:', err)
       setPromotions([])
@@ -131,7 +140,7 @@ export default function ActivePromotions() {
       <div className="space-y-3">
         {promotions.map((promo) => {
           const daysLeft = getDaysRemaining(promo.end_date)
-          const businessName = promo.businesses.name || 'Negocio'
+          const businessName = promo.businesses?.name || 'Negocio'
           
           return (
             <Link 
@@ -147,7 +156,7 @@ export default function ActivePromotions() {
                   {/* Title & Business */}
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h4 className="font-bold text-white text-sm flex-1 group-hover:text-purple-300 transition-colors">
-                      {promo.title}
+                      {promo.name}
                     </h4>
                     {daysLeft <= 3 && (
                       <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 animate-pulse">
@@ -161,10 +170,10 @@ export default function ActivePromotions() {
                     📍 {businessName}
                   </p>
 
-                  {/* Description */}
-                  {promo.description && (
-                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                      {promo.description}
+                  {/* Price */}
+                  {promo.price && (
+                    <p className="text-lg font-bold text-white mb-2">
+                      ${promo.price.toFixed(2)}
                     </p>
                   )}
 

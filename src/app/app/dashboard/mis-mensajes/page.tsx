@@ -91,8 +91,14 @@ export default function MisMensajesPage() {
             router.replace('/app/dashboard/mis-mensajes', { scroll: false })
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error cargando conversaciones:", error)
+        console.error("Detalles del error:", {
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+          code: error?.code
+        })
       } finally {
         setLoading(false)
       }
@@ -396,6 +402,17 @@ export default function MisMensajesPage() {
                 onClick={() => setSelectedConversation(null)}
                 className="p-2 hover:bg-gray-700 rounded-full transition-colors"
                 aria-label="Volver a lista de chats"
+              >
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {!selectedConversation && (
+              <button
+                onClick={() => router.push('/app/dashboard')}
+                className="hidden lg:flex p-2 hover:bg-gray-700 rounded-full transition-colors"
+                aria-label="Volver al Dashboard"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
