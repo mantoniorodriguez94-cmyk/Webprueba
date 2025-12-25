@@ -254,7 +254,9 @@ export default function Home() {
         </section>
 
         {/* Carrusel de Negocios */}
-        
+        <section className="w-full py-12">
+          <WaveMasonryCarousel />
+        </section>
 
         {/* BLOQUE 3 — CÓMO FUNCIONA */}
         <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm mt-[10px] md:mt-0 scroll-mt-24">
