@@ -22,11 +22,14 @@ export default function PremiumMembershipSection({
   const [loading, setLoading] = useState(true)
   const [updatingBorder, setUpdatingBorder] = useState(false)
   const [hasGoldenBorder, setHasGoldenBorder] = useState(business.has_golden_border ?? true)
+  const [monthlyPlan, setMonthlyPlan] = useState<{ price_usd: number } | null>(null)
+  const [yearlyPlan, setYearlyPlan] = useState<{ price_usd: number } | null>(null)
 
-  // Cargar suscripción actual
+  // Cargar suscripción actual y planes
   useEffect(() => {
     const loadSubscription = async () => {
       try {
+        // Cargar suscripción actual
         const { data, error } = await supabase
           .from("business_subscriptions")
           .select(`
@@ -41,6 +44,20 @@ export default function PremiumMembershipSection({
           console.error("Error cargando suscripción:", error)
         } else if (data) {
           setSubscription(data as BusinessSubscriptionWithPlan)
+        }
+
+        // Cargar planes para calcular ahorro
+        const { data: plansData } = await supabase
+          .from("premium_plans")
+          .select("price_usd, billing_period")
+          .eq("is_active", true)
+          .in("billing_period", ["monthly", "yearly"])
+
+        if (plansData) {
+          const monthly = plansData.find(p => p.billing_period === 'monthly')
+          const yearly = plansData.find(p => p.billing_period === 'yearly')
+          if (monthly) setMonthlyPlan(monthly)
+          if (yearly) setYearlyPlan(yearly)
         }
       } catch (error) {
         console.error("Error cargando suscripción:", error)
@@ -70,6 +87,17 @@ export default function PremiumMembershipSection({
   const daysRemaining = calculateDaysRemaining()
   const isExpired = daysRemaining !== null && daysRemaining <= 0
   const planType = subscription?.plan?.billing_period // 'monthly' | 'yearly' | undefined
+
+  // Calcular ahorro del plan anual
+  const calculateSavings = () => {
+    if (!monthlyPlan || !yearlyPlan) return null
+    const monthlyYearlyCost = monthlyPlan.price_usd * 12
+    const savings = monthlyYearlyCost - yearlyPlan.price_usd
+    const monthlyEquivalent = yearlyPlan.price_usd / 12
+    return { savings, monthlyEquivalent }
+  }
+
+  const savingsInfo = calculateSavings()
 
   // Manejar cambio de borde dorado
   const handleToggleGoldenBorder = async (checked: boolean) => {
@@ -260,12 +288,19 @@ export default function PremiumMembershipSection({
 
         {/* Botón Upgrade a Anual (solo si plan_type === 'monthly') */}
         {planType === 'monthly' && !isExpired && (
-          <button
-            onClick={handleUpgradeToAnnual}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
-          >
-            Cambiar a Plan Anual
-          </button>
+          <div className="space-y-1">
+            <button
+              onClick={handleUpgradeToAnnual}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
+            >
+              Cambiar a Plan Anual
+            </button>
+            {savingsInfo && (
+              <p className="text-xs text-gray-400 text-center">
+                Ahorra ${savingsInfo.savings.toFixed(0)} con este plan, solo ${savingsInfo.monthlyEquivalent.toFixed(2)}/mes
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>
