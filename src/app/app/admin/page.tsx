@@ -42,31 +42,17 @@ export default async function AdminDashboardPage() {
       }
     )
     
-    // Intentar cargar desde profiles con service role - EXACTAMENTE igual que usuarios/page.tsx
-    const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-      .from("profiles")
-      .select(`
-        id,
-        full_name,
-        email,
-        role,
-        is_admin,
-        created_at,
-        avatar_url
-      `)
-      .order("created_at", { ascending: false })
-    
-    if (serviceError) {
-      // Fallback: usar auth.admin.listUsers() que definitivamente debería funcionar
-      // EXACTAMENTE igual que usuarios/page.tsx
+    // MÉTODO 1: Intentar desde auth.admin.listUsers() PRIMERO (más confiable)
+    // EXACTAMENTE igual que usuarios/page.tsx
+    try {
       const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
       
       if (authError) {
-        throw new Error(`Error con auth.admin.listUsers(): ${authError.message}`)
+        throw authError
       }
       
       if (authData?.users) {
-        // Convertir usuarios de auth.users a formato profiles - EXACTAMENTE igual que usuarios/page.tsx
+        // Convertir usuarios de auth.users a formato profiles
         usuarios = authData.users.map((user) => ({
           id: user.id,
           email: user.email,
@@ -79,14 +65,42 @@ export default async function AdminDashboardPage() {
         usersCount = usuarios.length
         console.log("✅ Usuarios contados desde auth.users:", usersCount)
       }
-    } else if (serviceUsuarios) {
-      usuarios = serviceUsuarios
-      usersCount = usuarios.length
-      console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
+    } catch (authErr: any) {
+      // MÉTODO 2: Fallback a profiles si auth.admin.listUsers() falla
+      console.warn("auth.admin.listUsers() falló, intentando profiles:", authErr.message)
+      
+      try {
+        const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
+          .from("profiles")
+          .select(`
+            id,
+            full_name,
+            email,
+            role,
+            is_admin,
+            created_at,
+            avatar_url
+          `)
+          .order("created_at", { ascending: false })
+        
+        if (serviceError) {
+          console.error("Error con profiles:", serviceError)
+          // Si ambos métodos fallan, dejar usersCount en 0
+          console.warn(`Ambos métodos fallaron. Auth: ${authErr.message}, Profiles: ${serviceError.message}`)
+        } else if (serviceUsuarios) {
+          usuarios = serviceUsuarios
+          usersCount = usuarios.length
+          console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
+        }
+      } catch (profileErr: any) {
+        console.error("Error en fallback a profiles:", profileErr)
+        // Si ambos métodos fallan, dejar usersCount en 0 (no lanzar error)
+      }
     }
   } catch (err: any) {
     // Silenciosamente manejar el error - igual que usuarios/page.tsx
     console.error("Error contando usuarios:", err)
+    // usersCount permanece en 0
   }
 
   // Cargar todas las estadísticas en paralelo para mejor rendimiento
