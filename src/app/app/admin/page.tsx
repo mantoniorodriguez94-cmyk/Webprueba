@@ -17,94 +17,9 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
-  // Contar usuarios usando EXACTAMENTE la misma lógica que admin/usuarios/page.tsx
-  // Esto asegura que el conteo sea 100% consistente
-  let usersCount = 0
-  let usuarios: any[] | null = null
-  
-  try {
-    // Usar service role key directamente - EXACTAMENTE igual que usuarios/page.tsx
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      throw new Error("Variables de entorno de Supabase no configuradas")
-    }
-
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    
-    // Crear cliente con service role - EXACTAMENTE igual que usuarios/page.tsx
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-    
-    // MÉTODO 1: Intentar desde auth.admin.listUsers() PRIMERO (más confiable)
-    // EXACTAMENTE igual que usuarios/page.tsx
-    try {
-      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
-      
-      if (authError) {
-        throw authError
-      }
-      
-      if (authData?.users) {
-        // Convertir usuarios de auth.users a formato profiles
-        usuarios = authData.users.map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-          role: user.user_metadata?.role || "person",
-          is_admin: user.user_metadata?.is_admin === true || false,
-          created_at: user.created_at,
-          avatar_url: user.user_metadata?.avatar_url || null
-        }))
-        usersCount = usuarios.length
-        console.log("✅ Usuarios contados desde auth.users:", usersCount)
-      }
-    } catch (authErr: any) {
-      // MÉTODO 2: Fallback a profiles si auth.admin.listUsers() falla
-      console.warn("auth.admin.listUsers() falló, intentando profiles:", authErr.message)
-      
-      try {
-        const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-          .from("profiles")
-          .select(`
-            id,
-            full_name,
-            email,
-            role,
-            is_admin,
-            created_at,
-            avatar_url
-          `)
-          .order("created_at", { ascending: false })
-        
-        if (serviceError) {
-          console.error("Error con profiles:", serviceError)
-          // Si ambos métodos fallan, dejar usersCount en 0
-          console.warn(`Ambos métodos fallaron. Auth: ${authErr.message}, Profiles: ${serviceError.message}`)
-        } else if (serviceUsuarios) {
-          usuarios = serviceUsuarios
-          usersCount = usuarios.length
-          console.log("✅ Usuarios contados desde profiles (service role):", usersCount)
-        }
-      } catch (profileErr: any) {
-        console.error("Error en fallback a profiles:", profileErr)
-        // Si ambos métodos fallan, dejar usersCount en 0 (no lanzar error)
-      }
-    }
-  } catch (err: any) {
-    // Silenciosamente manejar el error - igual que usuarios/page.tsx
-    console.error("Error contando usuarios:", err)
-    // usersCount permanece en 0
-  }
-
   // Cargar todas las estadísticas en paralelo para mejor rendimiento
   const [
+    { count: usersCount },
     { count: businessesCount },
     { count: premiumCount },
     { count: pendingPaymentsCount },
@@ -112,6 +27,10 @@ export default async function AdminDashboardPage() {
     { count: featuredCount },
     { data: recentBusinesses }
   ] = await Promise.all([
+    // TOTAL DE USUARIOS (igual patrón que las otras stats)
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true }),
     // TOTAL DE NEGOCIOS
     supabase
       .from("businesses")
@@ -153,7 +72,7 @@ export default async function AdminDashboardPage() {
   ])
 
   const stats = {
-    users: usersCount,
+    users: usersCount || 0,
     businesses: businessesCount || 0,
     premiumBusinesses: premiumCount || 0,
     pendingPayments: pendingPaymentsCount || 0,
