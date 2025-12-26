@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState, useTransition } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import type { PremiumPlan, BusinessSubscriptionWithPlan } from "@/types/subscriptions"
@@ -17,6 +17,7 @@ import { submitManualPayment } from "@/actions/payments"
 export default function PremiumPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const businessId = params?.id as string
   const { user } = useUser()
 
@@ -92,6 +93,29 @@ export default function PremiumPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId, user])
 
+  // Manejar query params para preseleccionar plan después de cargar datos
+  useEffect(() => {
+    if (plans.length === 0 || loading) return
+
+    const action = searchParams.get('action')
+    const planParam = searchParams.get('plan')
+
+    if (action === 'upgrade' && planParam === 'annual') {
+      // Preseleccionar plan anual
+      const annualPlan = plans.find(p => p.billing_period === 'yearly')
+      if (annualPlan) {
+        setSelectedPlan(annualPlan)
+      }
+    } else if (action === 'renew' && currentSubscription) {
+      // Preseleccionar el plan actual para renovación
+      const currentPlanId = currentSubscription.plan_id
+      const renewPlan = plans.find(p => p.id === currentPlanId)
+      if (renewPlan) {
+        setSelectedPlan(renewPlan)
+      }
+    }
+  }, [plans, currentSubscription, searchParams, loading])
+
   const loadData = async () => {
     try {
       if (!user) {
@@ -141,7 +165,7 @@ export default function PremiumPage() {
         .single()
 
       if (subData) {
-        setCurrentSubscription(subData as any)
+        setCurrentSubscription(subData as BusinessSubscriptionWithPlan)
       }
 
     } catch (err: any) {

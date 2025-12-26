@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import PremiumMembershipSection from "@/components/business/PremiumMembershipSection"
 
 type Promotion = {
   id: string
@@ -234,8 +235,27 @@ export default function GestionarNegocioPage() {
           </div>
         </div>
 
+        {/* Membresía Premium */}
+        <PremiumMembershipSection
+          businessId={business.id}
+          business={business}
+          onUpdate={() => {
+            // Recargar datos del negocio cuando se actualiza
+            supabase
+              .from("businesses")
+              .select("*")
+              .eq("id", businessId)
+              .single()
+              .then(({ data, error }) => {
+                if (!error && data) {
+                  setBusiness(data)
+                }
+              })
+          }}
+        />
+
         {/* Grid de Funcionalidades */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           
           {/* Galería de Fotos */}
           <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-6 hover:shadow-2xl hover:border-gray-600 transition-all">

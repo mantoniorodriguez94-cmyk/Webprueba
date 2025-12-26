@@ -24,6 +24,7 @@ export type Business = {
   is_premium?: boolean;
   premium_until?: string | null;
   premium_plan_id?: string | null;
+  has_golden_border?: boolean;
   // Admin fields
   is_featured?: boolean;
   featured_until?: string | null;
