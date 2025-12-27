@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Link from "next/link"
 import Image from "next/image"
+import AdminCreateBusinessWithCode from "@/components/admin/AdminCreateBusinessWithCode"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -86,6 +87,11 @@ export default async function AdminDashboardPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Panel Administrativo</h1>
         <p className="text-gray-400 text-sm">Gestión y estadísticas del sistema</p>
+      </div>
+
+      {/* CREAR NEGOCIO CON CÓDIGO (SOLO ADMIN) */}
+      <div className="mb-10">
+        <AdminCreateBusinessWithCode />
       </div>
 
       {/* SECCIÓN DE MÉTRICAS */}

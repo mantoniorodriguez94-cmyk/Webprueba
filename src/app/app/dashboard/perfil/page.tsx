@@ -5,6 +5,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import BottomNav from "@/components/ui/BottomNav"
+import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
 
 export default function PerfilPage() {
   const { user, loading: userLoading } = useUser()
@@ -340,6 +341,12 @@ export default function PerfilPage() {
             </div>
           </div>
         </div>
+
+        {/* ============================================
+            SECCIÓN RECLAMAR NEGOCIO (PARA TODOS LOS USUARIOS)
+        ============================================ */}
+        <ClaimBusinessForm />
+
         {/* ============================================
             OPCIONES PARA USUARIOS PERSONALES
         ============================================ */}

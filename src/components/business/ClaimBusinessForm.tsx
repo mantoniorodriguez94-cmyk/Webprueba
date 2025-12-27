@@ -60,12 +60,69 @@ export default function ClaimBusinessForm() {
 
   if (success) {
     return (
-      <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8 text-center">
+      <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 p-8">
         {/* Animación de celebración */}
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 mb-4 animate-bounce">
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50 animate-bounce">
+              <svg
+                className="w-10 h-10 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <div className="absolute inset-0 w-20 h-20 rounded-full bg-green-400/30 animate-ping"></div>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white">
+              ¡Negocio Reclamado Exitosamente!
+            </h2>
+            <p className="text-lg text-green-300 font-medium">
+              {businessName}
+            </p>
+            <p className="text-sm text-gray-400">
+              Ahora eres el dueño oficial y fundador de este negocio
+            </p>
+          </div>
+          
+          {/* Badge de fundador */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 border border-yellow-400/40 text-yellow-300 font-semibold">
             <svg
-              className="w-12 h-12 text-white"
+              className="w-5 h-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span>Negocio Fundador</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="h-1 w-1 rounded-full bg-gray-500 animate-pulse"></div>
+            <span>Redirigiendo a tu panel de gestión...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 overflow-hidden">
+      {/* Card Header */}
+      <div className="p-6 pb-4 border-b border-white/10">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+            <svg
+              className="w-6 h-6 text-blue-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -74,110 +131,51 @@ export default function ClaimBusinessForm() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M5 13l4 4L19 7"
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
               />
             </svg>
           </div>
-        </div>
-
-        <h2 className="text-3xl font-bold text-white mb-4">
-          ¡Negocio Reclamado Exitosamente!
-        </h2>
-        <p className="text-xl text-green-300 mb-2">
-          Has reclamado <strong>{businessName}</strong>
-        </p>
-        <p className="text-gray-300 mb-6">
-          Ahora eres el dueño oficial y fundador de este negocio.
-        </p>
-        
-        {/* Badge de fundador */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-semibold mb-6">
-          <svg
-            className="w-5 h-5"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          <span>Negocio Fundador</span>
-        </div>
-
-        <p className="text-sm text-gray-400">
-          Redirigiendo a tu panel de gestión...
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 mb-4">
-          <svg
-            className="w-8 h-8 text-blue-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-            />
-          </svg>
-        </div>
-        <h2 className="text-3xl font-bold text-white mb-2">
-          Reclamar Mi Negocio
-        </h2>
-        <p className="text-gray-400">
-          Ingresa el código de invitación que recibiste para reclamar tu negocio
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label
-            htmlFor="code"
-            className="block text-sm font-semibold text-gray-300 mb-2"
-          >
-            Código de Reclamación
-          </label>
-          <input
-            id="code"
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="ENC-XXXX"
-            className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-all font-mono text-lg tracking-wider text-center"
-            disabled={loading}
-            maxLength={10}
-          />
-          <p className="mt-2 text-xs text-gray-500">
-            Formato: ENC- seguido de 4 caracteres (ej: ENC-A9B2)
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm">
-            {error}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-bold text-white mb-1">
+              Reclama la propiedad de tu negocio
+            </h3>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Introduce el código de invitación que recibiste para acceder a tu panel de control
+            </p>
           </div>
-        )}
+        </div>
+      </div>
 
-        <button
-          type="submit"
-          disabled={loading || !code.trim()}
-          className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              Reclamando...
-            </>
-          ) : (
-            <>
+      {/* Card Content */}
+      <div className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label
+              htmlFor="claim-code"
+              className="block text-sm font-semibold text-gray-300"
+            >
+              Código de Reclamación
+            </label>
+            <input
+              id="claim-code"
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="ENC-XXXX"
+              className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-lg tracking-wider text-center"
+              disabled={loading}
+              maxLength={10}
+              autoComplete="off"
+            />
+            <p className="text-xs text-gray-500 text-center">
+              Formato: ENC- seguido de 4 caracteres (ej: ENC-A9B2)
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm flex items-start gap-3">
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 flex-shrink-0 mt-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -186,27 +184,56 @@ export default function ClaimBusinessForm() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Reclamar Negocio
-            </>
+              <span>{error}</span>
+            </div>
           )}
-        </button>
-      </form>
 
-      <div className="mt-6 pt-6 border-t border-white/20">
-        <p className="text-xs text-gray-500 text-center">
-          ¿No tienes un código?{" "}
-          <Link
-            href="/app/dashboard/negocios/nuevo"
-            className="text-blue-400 hover:text-blue-300 underline"
+          <button
+            type="submit"
+            disabled={loading || !code.trim()}
+            className="w-full px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex items-center justify-center gap-2"
           >
-            Crea un negocio desde cero
-          </Link>
-        </p>
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <span>Reclamando...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Reclamar Negocio</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="pt-4 border-t border-white/10">
+          <p className="text-xs text-gray-500 text-center">
+            ¿No tienes un código?{" "}
+            <Link
+              href="/app/dashboard/negocios/nuevo"
+              className="text-blue-400 hover:text-blue-300 underline font-medium transition-colors"
+            >
+              Crea un negocio desde cero
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
 }
-

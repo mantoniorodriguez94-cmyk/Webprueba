@@ -113,6 +113,14 @@ export default async function AdminBusinessDetailPage({
         <p className="text-gray-400 text-sm">ID: {id.substring(0, 8)}...</p>
       </div>
 
+      {/* Código de Reclamación - SECCIÓN VISIBLE */}
+      <div className="mb-6">
+        <BusinessClaimCodeSection 
+          businessId={business.id} 
+          businessName={business.name || "Negocio"}
+        />
+      </div>
+
       {/* Información Principal */}
       <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-6 mb-6">
@@ -277,12 +285,6 @@ export default async function AdminBusinessDetailPage({
           </div>
         </div>
       </div>
-
-      {/* Código de Reclamación */}
-      <BusinessClaimCodeSection 
-        businessId={business.id} 
-        businessName={business.name || "Negocio"}
-      />
 
       {/* Galería */}
       {galleryUrls.length > 0 && (
