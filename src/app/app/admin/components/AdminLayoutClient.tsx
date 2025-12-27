@@ -36,6 +36,11 @@ const navItems: NavItem[] = [
     label: "Usuarios",
     icon: <UsersIcon />,
   },
+  {
+    href: "/app/admin/invitaciones",
+    label: "Invitaciones",
+    icon: <TicketIcon />,
+  },
 ]
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -291,6 +296,14 @@ function UsersIcon() {
       <circle cx="17" cy="8" r="3.5" />
       <path d="M3 20c0-3.5 2.5-6 6-6s6 2.5 6 6" />
       <path d="M13 20c0-2.7 1.3-4.6 3.5-5.6" />
+    </svg>
+  )
+}
+
+function TicketIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+      <path d="M15 5v2M15 11v2M15 17v2M5 5h14a2 2 0 012 2v3a2 2 0 100 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 100-4V7a2 2 0 012-2z" />
     </svg>
   )
 }

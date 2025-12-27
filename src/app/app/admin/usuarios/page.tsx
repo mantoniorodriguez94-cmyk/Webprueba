@@ -1,22 +1,101 @@
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
-import { getUsersFromAuth } from "@/utils/admin-users"
+import { createClient } from "@supabase/supabase-js"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
 
+interface UserData {
+  id: string
+  email: string | undefined
+  full_name: string | null
+  role: string
+  is_admin: boolean
+  created_at: string
+  avatar_url: string | null
+}
+
 /**
  * Página de gestión de usuarios (Admin)
- * - Lista todos los usuarios registrados en el sistema usando auth.admin.listUsers()
- * - Source of Truth: auth.users (no profiles)
+ * - Lista todos los usuarios registrados en el sistema
+ * - Usa Service Role Key directamente ya que solo admins pueden acceder
  */
 export default async function AdminUsuariosPage() {
   // Verificar que el usuario es admin
   await requireAdmin()
 
-  // Obtener usuarios usando auth.admin.listUsers() - Source of Truth
-  const { users: usuarios, error, debugInfo } = await getUsersFromAuth()
+  let usuarios: UserData[] = []
+  let error: Error | null = null
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    // Crear cliente con service role (bypass RLS)
+    const serviceSupabase = createClient(
+      supabaseUrl || '',
+      serviceKey || '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
+
+    // Método 1: Intentar auth.admin.listUsers() primero (más confiable)
+    try {
+      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+
+      if (!authError && authData?.users) {
+        usuarios = authData.users.map((user): UserData => ({
+          id: user.id,
+          email: user.email,
+          full_name:
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split('@')[0] ||
+            null,
+          role: user.user_metadata?.role || 'person',
+          is_admin: user.user_metadata?.is_admin === true,
+          created_at: user.created_at,
+          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+        }))
+        console.log(`✅ ${usuarios.length} usuarios cargados desde auth.admin.listUsers()`)
+      } else {
+        throw authError || new Error('No se obtuvieron usuarios')
+      }
+    } catch (authErr: any) {
+      // Método 2: Fallback a profiles usando service role (menos restrictivo)
+      console.warn('⚠️ auth.admin.listUsers() falló, usando fallback a profiles:', authErr.message)
+      
+      const { data: profilesData, error: profilesError } = await serviceSupabase
+        .from('profiles')
+        .select('id, email, full_name, role, is_admin, created_at, avatar_url')
+        .order('created_at', { ascending: false })
+
+      if (profilesError) {
+        throw profilesError
+      }
+
+      if (profilesData) {
+        usuarios = profilesData.map((profile: any): UserData => ({
+          id: profile.id,
+          email: profile.email || undefined,
+          full_name: profile.full_name || null,
+          role: profile.role || 'person',
+          is_admin: profile.is_admin === true,
+          created_at: profile.created_at || new Date().toISOString(),
+          avatar_url: profile.avatar_url || null,
+        }))
+        console.log(`✅ ${usuarios.length} usuarios cargados desde profiles (service role)`)
+      }
+    }
+  } catch (err: any) {
+    console.error('❌ Error cargando usuarios:', err)
+    error = err as Error
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -29,7 +108,7 @@ export default async function AdminUsuariosPage() {
 
       {error && (
         <div className="mb-6 p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
-          <div className="flex items-start gap-3 mb-4">
+          <div className="flex items-start gap-3">
             <svg
               className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5"
               fill="none"
@@ -48,34 +127,10 @@ export default async function AdminUsuariosPage() {
               <p className="text-red-300 text-sm">
                 {error.message || 'Error desconocido'}
               </p>
+              <p className="text-red-200 text-xs mt-2">
+                Si el problema persiste, verifica que las variables de entorno estén configuradas correctamente.
+              </p>
             </div>
-          </div>
-          
-          {/* Debug info expandible */}
-          {debugInfo && debugInfo.length > 0 && (
-            <details className="mb-4">
-              <summary className="cursor-pointer text-xs text-red-200 font-semibold mb-2 hover:text-red-100 transition-colors">
-                🔍 Información de diagnóstico
-              </summary>
-              <div className="mt-3 p-4 bg-red-950/50 rounded-lg border border-red-500/20">
-                <div className="space-y-1 font-mono text-xs text-red-200">
-                  {debugInfo.map((info, idx) => (
-                    <div key={idx}>{info}</div>
-                  ))}
-                </div>
-              </div>
-            </details>
-          )}
-
-          <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-300 text-sm font-semibold mb-2">💡 Soluciones posibles:</p>
-            <ul className="text-blue-200 text-sm space-y-1.5 list-disc list-inside">
-              <li>Verificar que <code className="bg-black/30 px-1.5 py-0.5 rounded">SUPABASE_SERVICE_ROLE_KEY</code> está configurada en producción</li>
-              <li>Revisar que la Service Role Key tiene permisos de admin</li>
-              <li>Confirmar que la URL de Supabase es correcta</li>
-              <li>Verificar los logs del servidor de Next.js para más detalles</li>
-              <li>Verificar que la variable de entorno no tenga espacios extras o caracteres especiales</li>
-            </ul>
           </div>
         </div>
       )}
