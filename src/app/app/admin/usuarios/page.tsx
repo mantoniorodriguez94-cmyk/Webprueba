@@ -1,112 +1,22 @@
-import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
+import { getUsersFromAuth } from "@/utils/admin-users"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
 
 /**
  * Página de gestión de usuarios (Admin)
- * - Lista todos los usuarios registrados en el sistema
- * - Muestra información relevante de cada usuario
+ * - Lista todos los usuarios registrados en el sistema usando auth.admin.listUsers()
+ * - Source of Truth: auth.users (no profiles)
  */
 export default async function AdminUsuariosPage() {
   // Verificar que el usuario es admin
   await requireAdmin()
-  
-  const supabase = await createClient()
 
-  // Cargar usuarios usando diferentes métodos
-  let usuarios: any[] | null = null
-  let error: any = null
-  let debugInfo: string[] = []
-
-  try {
-    // Verificar variables de entorno
-    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
-    const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-    
-    debugInfo.push(`✓ Service Role Key presente: ${hasServiceKey}`)
-    debugInfo.push(`✓ Supabase URL presente: ${hasUrl}`)
-    
-    if (!hasServiceKey || !hasUrl) {
-      throw new Error("Variables de entorno no configuradas correctamente en producción")
-    }
-
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    
-    // Crear cliente con service role
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-    
-    debugInfo.push('✓ Cliente service role creado')
-    
-    // MÉTODO 1: Intentar desde auth.admin.listUsers() PRIMERO (más confiable)
-    try {
-      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
-      
-      if (authError) {
-        debugInfo.push(`✗ auth.admin.listUsers() falló: ${authError.message}`)
-        throw authError
-      }
-      
-      if (authData?.users) {
-        // Convertir usuarios de auth.users a formato profiles
-        usuarios = authData.users.map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-          role: user.user_metadata?.role || "person",
-          is_admin: user.user_metadata?.is_admin === true || false,
-          created_at: user.created_at,
-          avatar_url: user.user_metadata?.avatar_url || null
-        }))
-        debugInfo.push(`✓ ${usuarios.length} usuarios cargados desde auth.admin.listUsers()`)
-        console.log("✅ Usuarios cargados desde auth.users:", usuarios.length)
-      }
-    } catch (authErr: any) {
-      debugInfo.push(`✗ Método auth.admin falló, intentando profiles: ${authErr.message}`)
-      
-      // MÉTODO 2: Fallback a profiles
-      const { data: serviceUsuarios, error: serviceError } = await serviceSupabase
-        .from("profiles")
-        .select(`
-          id,
-          full_name,
-          email,
-          role,
-          is_admin,
-          created_at,
-          avatar_url
-        `)
-        .order("created_at", { ascending: false })
-      
-      if (serviceError) {
-        debugInfo.push(`✗ Profiles query falló: ${serviceError.message}`)
-        throw new Error(`Ambos métodos fallaron. Auth: ${authErr.message}, Profiles: ${serviceError.message}`)
-      }
-      
-      if (serviceUsuarios) {
-        usuarios = serviceUsuarios
-        debugInfo.push(`✓ ${usuarios.length} usuarios cargados desde profiles`)
-        console.log("✅ Usuarios cargados desde profiles (service role):", usuarios.length)
-      }
-    }
-  } catch (err: any) {
-    error = err
-    debugInfo.push(`✗ Error final: ${err.message}`)
-    console.error("❌ Error cargando usuarios:", err)
-    console.error("Debug info:", debugInfo)
-  }
+  // Obtener usuarios usando auth.admin.listUsers() - Source of Truth
+  const { users: usuarios, error, debugInfo } = await getUsersFromAuth()
 
   return (
     <div className="min-h-screen text-white">
@@ -118,29 +28,53 @@ export default async function AdminUsuariosPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-          <p className="text-red-400 font-semibold mb-2">❌ Error al cargar usuarios</p>
-          <p className="text-red-300 text-sm mb-3">
-            {error.message || 'Error desconocido'}
-          </p>
+        <div className="mb-6 p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
+          <div className="flex items-start gap-3 mb-4">
+            <svg
+              className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="text-red-400 font-semibold mb-1">❌ Error al cargar usuarios</p>
+              <p className="text-red-300 text-sm">
+                {error.message || 'Error desconocido'}
+              </p>
+            </div>
+          </div>
           
           {/* Debug info expandible */}
-          <details className="text-xs text-red-200 bg-red-950/50 p-3 rounded-lg">
-            <summary className="cursor-pointer font-semibold mb-2">🔍 Información de diagnóstico</summary>
-            <div className="mt-2 space-y-1 font-mono">
-              {debugInfo.map((info, idx) => (
-                <div key={idx}>{info}</div>
-              ))}
-            </div>
-          </details>
+          {debugInfo && debugInfo.length > 0 && (
+            <details className="mb-4">
+              <summary className="cursor-pointer text-xs text-red-200 font-semibold mb-2 hover:text-red-100 transition-colors">
+                🔍 Información de diagnóstico
+              </summary>
+              <div className="mt-3 p-4 bg-red-950/50 rounded-lg border border-red-500/20">
+                <div className="space-y-1 font-mono text-xs text-red-200">
+                  {debugInfo.map((info, idx) => (
+                    <div key={idx}>{info}</div>
+                  ))}
+                </div>
+              </div>
+            </details>
+          )}
 
-          <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-300 text-xs font-semibold mb-1">💡 Soluciones posibles:</p>
-            <ul className="text-blue-200 text-xs space-y-1 list-disc list-inside">
-              <li>Verificar que SUPABASE_SERVICE_ROLE_KEY está configurada en producción</li>
+          <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <p className="text-blue-300 text-sm font-semibold mb-2">💡 Soluciones posibles:</p>
+            <ul className="text-blue-200 text-sm space-y-1.5 list-disc list-inside">
+              <li>Verificar que <code className="bg-black/30 px-1.5 py-0.5 rounded">SUPABASE_SERVICE_ROLE_KEY</code> está configurada en producción</li>
               <li>Revisar que la Service Role Key tiene permisos de admin</li>
               <li>Confirmar que la URL de Supabase es correcta</li>
-              <li>Verificar los logs del servidor de Next.js</li>
+              <li>Verificar los logs del servidor de Next.js para más detalles</li>
+              <li>Verificar que la variable de entorno no tenga espacios extras o caracteres especiales</li>
             </ul>
           </div>
         </div>
@@ -182,7 +116,7 @@ export default async function AdminUsuariosPage() {
                         </div>
                       )}
                       <span className="font-medium">
-                        {usuario.full_name || "Sin nombre"}
+                        {usuario.full_name || usuario.email?.split('@')[0] || "Sin nombre"}
                       </span>
                     </div>
                   </td>
@@ -226,12 +160,12 @@ export default async function AdminUsuariosPage() {
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : !error ? (
         <div className="text-center py-12 text-gray-400">
           <p className="text-lg mb-2">No hay usuarios registrados</p>
           <p className="text-sm">Los usuarios aparecerán aquí cuando se registren en el sistema.</p>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import Link from "next/link"
 
 export default function ClaimBusinessForm() {
   const router = useRouter()
+  const [isExpanded, setIsExpanded] = useState(false)
   const [code, setCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -58,6 +59,47 @@ export default function ClaimBusinessForm() {
     }
   }
 
+  // Si está colapsado, mostrar solo el botón
+  if (!isExpanded) {
+    return (
+      <button
+        onClick={() => setIsExpanded(true)}
+        className="w-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-3xl border-2 border-blue-500/40 p-5 hover:border-blue-400 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all flex items-center justify-between group"
+      >
+        <div className="flex items-center gap-4 flex-1">
+          <div className="w-12 h-12 bg-blue-500/30 rounded-2xl flex items-center justify-center group-hover:bg-blue-500/40 transition-colors">
+            <svg
+              className="w-6 h-6 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              />
+            </svg>
+          </div>
+          <div className="flex-1 text-left">
+            <h3 className="font-semibold text-white text-lg">Reclama tu negocio aquí!</h3>
+            <p className="text-sm text-gray-400 mt-0.5">Usa tu código de invitación para reclamar tu negocio</p>
+          </div>
+        </div>
+        <svg 
+          className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    )
+  }
+
+  // Si está expandido, mostrar el formulario completo
   if (success) {
     return (
       <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 p-8">
@@ -117,32 +159,48 @@ export default function ClaimBusinessForm() {
 
   return (
     <div className="max-w-md mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 overflow-hidden">
-      {/* Card Header */}
+      {/* Card Header con botón de minimizar */}
       <div className="p-6 pb-4 border-b border-white/10">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
-            <svg
-              className="w-6 h-6 text-blue-400"
-              fill="none"
-              stroke="currentColor"
+        <div className="flex items-center justify-between">
+          <div className="flex items-start gap-4 flex-1">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+              <svg
+                className="w-6 h-6 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-bold text-white mb-1">
+                Reclama la propiedad de tu negocio
+              </h3>
+              <p className="text-sm text-gray-400 leading-relaxed">
+                Introduce el código de invitación que recibiste para acceder a tu panel de control
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 flex items-center justify-center transition-all flex-shrink-0 ml-4"
+            title="Minimizar"
+          >
+            <svg 
+              className="w-5 h-5 text-gray-400 hover:text-white transition-colors" 
+              fill="none" 
+              stroke="currentColor" 
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
             </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-white mb-1">
-              Reclama la propiedad de tu negocio
-            </h3>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Introduce el código de invitación que recibiste para acceder a tu panel de control
-            </p>
-          </div>
+          </button>
         </div>
       </div>
 

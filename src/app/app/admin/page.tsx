@@ -17,10 +17,23 @@ export default async function AdminDashboardPage() {
   await requireAdmin()
   
   const supabase = await createClient()
+  const { countUsersFromAuth } = await import("@/utils/admin-users")
 
-  // Cargar todas las estadísticas en paralelo para mejor rendimiento
+  // Obtener conteo de usuarios desde auth.users (Source of Truth)
+  const { count: usersCountFromAuth, error: usersCountError } = await countUsersFromAuth()
+  
+  // Si falla auth, usar fallback a profiles (con advertencia en logs)
+  let usersCount = usersCountFromAuth
+  if (usersCountError) {
+    console.warn("⚠️ No se pudo contar desde auth.users, usando fallback a profiles:", usersCountError.message)
+    const { count: profilesCount } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+    usersCount = profilesCount || 0
+  }
+
+  // Cargar todas las demás estadísticas en paralelo
   const [
-    { count: usersCount },
     { count: businessesCount },
     { count: premiumCount },
     { count: pendingPaymentsCount },
@@ -28,10 +41,6 @@ export default async function AdminDashboardPage() {
     { count: featuredCount },
     { data: recentBusinesses }
   ] = await Promise.all([
-    // TOTAL DE USUARIOS (igual patrón que las otras stats)
-    supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true }),
     // TOTAL DE NEGOCIOS
     supabase
       .from("businesses")
@@ -73,7 +82,7 @@ export default async function AdminDashboardPage() {
   ])
 
   const stats = {
-    users: usersCount || 0,
+    users: usersCount,
     businesses: businessesCount || 0,
     premiumBusinesses: premiumCount || 0,
     pendingPayments: pendingPaymentsCount || 0,
