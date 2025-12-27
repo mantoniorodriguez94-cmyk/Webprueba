@@ -7,6 +7,7 @@ import { notFound } from "next/navigation"
 import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
+import BusinessClaimCodeSection from "@/components/admin/BusinessClaimCodeSection"
 
 // Forzar renderizado dinámico
 export const dynamic = 'force-dynamic'
@@ -276,6 +277,12 @@ export default async function AdminBusinessDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Código de Reclamación */}
+      <BusinessClaimCodeSection 
+        businessId={business.id} 
+        businessName={business.name || "Negocio"}
+      />
 
       {/* Galería */}
       {galleryUrls.length > 0 && (
