@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const adminSupabase = getAdminClient()
 
     // Consultar pagos manuales
-    const { data, error } = await adminSupabase
+    const { data, error } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .select(`
         *,
@@ -58,14 +58,14 @@ export async function GET(request: NextRequest) {
     // Obtener información de usuarios desde profiles
     if (data && data.length > 0) {
       const userIds = data.map((s: any) => s.user_id)
-      const { data: profiles } = await adminSupabase
+      const { data: profiles } = await (adminSupabase as any)
         .from('profiles')
         .select('id, full_name')
         .in('id', userIds)
       
       // Mapear los perfiles a los submissions
       if (profiles) {
-        const profileMap = new Map(profiles.map(p => [p.id, p]))
+        const profileMap = new Map((profiles as any[]).map((p: any) => [p.id, p]))
         data.forEach((s: any) => {
           const profile = profileMap.get(s.user_id)
           s.user = profile ? { full_name: profile.full_name } : null

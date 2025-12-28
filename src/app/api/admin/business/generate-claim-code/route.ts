@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const adminSupabase = getAdminClient()
 
     // Verificar que el negocio existe
-    const { data: business, error: businessError } = await adminSupabase
+    const { data: business, error: businessError } = await (adminSupabase as any)
       .from('businesses')
       .select('id, name')
       .eq('id', businessId)
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si ya existe un código activo para este negocio
-    const { data: existingClaim, error: existingError } = await adminSupabase
+    const { data: existingClaim, error: existingError } = await (adminSupabase as any)
       .from('business_claims')
       .select('id, code, is_claimed')
       .eq('business_id', businessId)
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar nuevo código usando la función SQL
-    const { data: codeData, error: codeError } = await adminSupabase.rpc('generate_claim_code')
+    const { data: codeData, error: codeError } = await (adminSupabase as any).rpc('generate_claim_code')
 
     if (codeError || !codeData) {
       console.error('Error generando código:', codeError)
@@ -87,13 +87,13 @@ export async function POST(request: NextRequest) {
     const newCode = codeData as string
 
     // Insertar el código en business_claims
-    const { data: claimData, error: insertError } = await adminSupabase
+    const { data: claimData, error: insertError } = await (adminSupabase as any)
       .from('business_claims')
       .insert({
         business_id: businessId,
         code: newCode,
         is_claimed: false
-      } as any)
+      })
       .select('id, code, created_at')
       .single()
 

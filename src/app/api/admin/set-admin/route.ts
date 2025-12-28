@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await adminSupabase
+    await (adminSupabase as any)
       .from('profiles')
       .upsert(
         { id: user.id, email: user.email, is_admin: true },

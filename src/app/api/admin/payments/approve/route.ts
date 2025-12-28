@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const adminSupabase = getAdminClient()
 
     // Obtener información del pago manual - FIX: Usar alias correcto y query separada
-    const { data: submission, error: submissionError } = await adminSupabase
+    const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .select('*')
       .eq('id', submission_id_final)
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener el plan por separado para evitar problemas con relaciones
-    const { data: plan, error: planError } = await adminSupabase
+    const { data: plan, error: planError } = await (adminSupabase as any)
       .from('premium_plans')
       .select('*')
       .eq('id', submissionData.plan_id)
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       .eq('method', 'manual')
 
     // Obtener el negocio para verificar si tiene membresía activa
-    const { data: business } = await adminSupabase
+    const { data: business } = await (adminSupabase as any)
       .from('businesses')
       .select('premium_until, is_premium')
       .eq('id', submissionData.business_id)
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     const endDate = calculateEndDate(billingPeriod, businessData?.premium_until)
 
     // Crear o actualizar suscripción
-    const { data: existingSubscription } = await adminSupabase
+    const { data: existingSubscription } = await (adminSupabase as any)
       .from('business_subscriptions')
       .select('id')
       .eq('business_id', submissionData.business_id)
@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingSubscription) {
+      const subscription = existingSubscription as any
       // Extender suscripción existente
       await (adminSupabase as any)
         .from('business_subscriptions')
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
           end_date: endDate.toISOString(),
           plan_id: submissionData.plan_id,
         })
-        .eq('id', existingSubscription.id)
+        .eq('id', subscription.id)
     } else {
       // Crear nueva suscripción
       await (adminSupabase as any)

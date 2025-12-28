@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Obtener información del pago manual (incluyendo created_at para validar 24h)
     // IMPORTANTE: Usamos el cliente admin que bypasea RLS
-    const { data: submission, error: submissionError } = await adminSupabase
+    const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .select('id, status, created_at, user_id, business_id')
       .eq('id', submission_id_final)
@@ -62,10 +62,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[REJECT] Submission encontrado:', submission.id, 'Status:', submission.status)
+    const submissionData = submission as any
+    console.log('[REJECT] Submission encontrado:', submissionData.id, 'Status:', submissionData.status)
 
     // Verificar que está pendiente
-    if (submission.status !== 'pending') {
+    if (submissionData.status !== 'pending') {
       return NextResponse.json(
         { success: false, error: 'El pago ya fue procesado' },
         { status: 400 }
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar que han pasado al menos 24 horas
-    const createdAt = new Date(submission.created_at)
+    const createdAt = new Date(submissionData.created_at)
     const now = new Date()
     const hoursSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar submission a 'rejected'
-    const { error: updateSubmissionError } = await adminSupabase
+    const { error: updateSubmissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .update({
         status: 'rejected',
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
     console.log('[REJECT] Submission actualizado exitosamente')
 
     // Actualizar payment a 'failed'
-    const { error: updatePaymentError } = await adminSupabase
+    const { error: updatePaymentError } = await (adminSupabase as any)
       .from('payments')
       .update({ status: 'failed' })
       .eq('external_id', submission_id_final)
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Pago rechazado exitosamente. El usuario será notificado al revisar su estado de pago.',
-      user_id: submission.user_id, // Para referencia
+      user_id: submissionData.user_id, // Para referencia
     })
 
   } catch (error: any) {

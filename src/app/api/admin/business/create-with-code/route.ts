@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
     const adminSupabase = getAdminClient()
 
     // Crear negocio sin owner_id (NULL) - Solo admins pueden hacer esto
-    const { data: business, error: businessError } = await adminSupabase
+    const { data: business, error: businessError } = await (adminSupabase as any)
       .from('businesses')
       .insert({
-        owner_id: null as any, // Negocio sin dueño - Usar 'as any' para TypeScript
+        owner_id: null, // Negocio sin dueño
         name: name.trim(),
         description: description?.trim() || null,
         category: category?.trim() || null,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         municipality_id: parseInt(municipality_id.toString()),
         address_details: address_details?.trim() || null,
         is_founder: false, // Se establecerá cuando se reclame
-      } as any)
+      })
       .select('id, name')
       .single()
 
@@ -80,10 +80,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const businessId = (business as any).id
+    const businessData = business as any
+    const businessId = businessData.id
 
     // Generar código de reclamación automáticamente
-    const { data: codeData, error: codeError } = await adminSupabase.rpc('generate_claim_code')
+    const { data: codeData, error: codeError } = await (adminSupabase as any).rpc('generate_claim_code')
 
     if (codeError || !codeData) {
       console.error('Error generando código:', codeError)
@@ -118,14 +119,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const claimResult = claimData as any
     return NextResponse.json({
       success: true,
       message: 'Negocio creado exitosamente con código de reclamación',
       data: {
         business_id: businessId,
-        business_name: (business as any).name,
-        code: (claimData as any).code,
-        created_at: (claimData as any).created_at
+        business_name: businessData.name,
+        code: claimResult.code,
+        created_at: claimResult.created_at
       }
     })
 
