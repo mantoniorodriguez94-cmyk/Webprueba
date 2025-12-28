@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { getReferralId, clearReferralCookie } from "@/lib/utils/referral";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -109,40 +110,32 @@ export default function RegisterPage() {
         .eq("id", data.user.id)
         .single();
 
-      // Registrar referencia si existe
-      if (refParam && data.user) {
+      // Registrar referencia desde cookie o parámetro URL
+      // Prioridad: cookie > parámetro URL
+      const referralId = getReferralId() || refParam;
+
+      if (referralId && data.user && profile) {
         try {
-          // Verificar que el inviter existe
-          const { data: inviterCheck } = await supabase
+          // Verificar que el referidor (partner) existe
+          const { data: partnerCheck } = await supabase
             .from("profiles")
             .select("id")
-            .eq("id", refParam)
+            .eq("id", referralId)
             .single();
 
-          if (inviterCheck) {
-            // Buscar si ya existe un referral con este email (creado antes del registro)
-            const { data: existingRef } = await supabase
-              .from("referrals")
-              .select("id")
-              .eq("inviter_id", refParam)
-              .eq("invited_email", email)
-              .single();
+          if (partnerCheck) {
+            // Actualizar el perfil del usuario con referred_by
+            const { error: updateError } = await supabase
+              .from("profiles")
+              .update({ referred_by: referralId })
+              .eq("id", data.user.id);
 
-            if (existingRef) {
-              // Actualizar el referral existente con el invited_id
-              await supabase
-                .from("referrals")
-                .update({ invited_id: data.user.id })
-                .eq("id", existingRef.id);
+            if (updateError) {
+              console.warn("Error actualizando referred_by:", updateError);
             } else {
-              // Crear nuevo referral
-              await supabase
-                .from("referrals")
-                .insert({
-                  inviter_id: refParam,
-                  invited_email: email,
-                  invited_id: data.user.id
-                });
+              console.log(`✅ Usuario referido por: ${referralId}`);
+              // Limpiar la cookie después de usarla
+              clearReferralCookie();
             }
           }
         } catch (refError) {
