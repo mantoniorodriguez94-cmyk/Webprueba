@@ -55,7 +55,7 @@ export default function Home() {
                   onClick={scrollToTop}
                   className="text-gray-300 hover:text-white transition"
                 >
-                  Inicio
+                
                 </button>
                 <Link 
                   href="/app/dashboard"
@@ -549,12 +549,12 @@ export default function Home() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/terminos" className="hover:text-white transition">
+                    <Link href="/app/legal/terminos" className="hover:text-white transition">
                       Términos y condiciones
                     </Link>
                   </li>
                   <li>
-                    <Link href="/privacidad" className="hover:text-white transition">
+                    <Link href="/app/legal/privacidad" className="hover:text-white transition">
                       Política de privacidad
                     </Link>
                   </li>

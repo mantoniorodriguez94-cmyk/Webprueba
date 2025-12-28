@@ -1,6 +1,8 @@
 // src/components/feed/FilterSidebar.tsx - REDISEÑO MOBILE DARK THEME
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import LocationSelector from "@/components/LocationSelector"
 
 interface FilterSidebarProps {
   onFilterChange: (filters: FilterState) => void
@@ -9,7 +11,9 @@ interface FilterSidebarProps {
 export interface FilterState {
   searchTerm: string
   category: string
-  location: string
+  location: string // Mantener para compatibilidad, pero deprecated - usar state_id y municipality_id
+  state_id: number | null
+  municipality_id: number | null
   sortBy: "recent" | "name" | "popular"
 }
 
@@ -28,16 +32,58 @@ const categories = [
 ]
 
 export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Inicializar desde URL params
   const [filters, setFilters] = useState<FilterState>({
-    searchTerm: "",
-    category: "Todos",
-    location: "",
-    sortBy: "recent"
+    searchTerm: searchParams.get("search") || "",
+    category: searchParams.get("category") || "Todos",
+    location: "", // Deprecated, mantener para compatibilidad
+    state_id: searchParams.get("state_id") ? parseInt(searchParams.get("state_id")!) : null,
+    municipality_id: searchParams.get("municipality_id") ? parseInt(searchParams.get("municipality_id")!) : null,
+    sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular") || "recent"
   })
 
-  const updateFilter = (key: keyof FilterState, value: string) => {
+  // Sincronizar con URL params cuando cambien
+  useEffect(() => {
+    const stateId = searchParams.get("state_id") ? parseInt(searchParams.get("state_id")!) : null
+    const municipalityId = searchParams.get("municipality_id") ? parseInt(searchParams.get("municipality_id")!) : null
+    
+    setFilters(prev => ({
+      ...prev,
+      state_id: stateId,
+      municipality_id: municipalityId,
+      searchTerm: searchParams.get("search") || prev.searchTerm,
+      category: searchParams.get("category") || prev.category,
+      sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular") || prev.sortBy
+    }))
+  }, [searchParams])
+
+  const updateURLParams = (newFilters: FilterState) => {
+    const params = new URLSearchParams()
+    
+    if (newFilters.searchTerm) params.set("search", newFilters.searchTerm)
+    if (newFilters.category && newFilters.category !== "Todos") params.set("category", newFilters.category)
+    if (newFilters.state_id) params.set("state_id", newFilters.state_id.toString())
+    if (newFilters.municipality_id) params.set("municipality_id", newFilters.municipality_id.toString())
+    if (newFilters.sortBy && newFilters.sortBy !== "recent") params.set("sortBy", newFilters.sortBy)
+
+    // Actualizar URL sin recargar
+    const newURL = params.toString() ? `?${params.toString()}` : window.location.pathname
+    router.push(newURL, { scroll: false })
+  }
+
+  const updateFilter = (key: keyof FilterState, value: string | number | null) => {
     const newFilters = { ...filters, [key]: value }
+    
+    // Si se cambia el estado, resetear el municipio
+    if (key === "state_id" && (value === null || value !== filters.state_id)) {
+      newFilters.municipality_id = null
+    }
+    
     setFilters(newFilters)
+    updateURLParams(newFilters)
     onFilterChange(newFilters)
   }
 
@@ -46,13 +92,19 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
       searchTerm: "",
       category: "Todos",
       location: "",
+      state_id: null,
+      municipality_id: null,
       sortBy: "recent"
     }
     setFilters(resetFilters)
+    router.push(window.location.pathname, { scroll: false })
     onFilterChange(resetFilters)
   }
 
-  const hasActiveFilters = filters.category !== "Todos" || filters.location !== "" || filters.searchTerm !== ""
+  const hasActiveFilters = filters.category !== "Todos" || 
+    filters.searchTerm !== "" || 
+    filters.state_id !== null || 
+    filters.municipality_id !== null
 
   return (
     <div className="bg-transparent9/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
@@ -91,7 +143,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
         />
       </div>
 
-      {/* Location */}
+      {/* Location Selector */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
           <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,13 +152,16 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
           </svg>
           Ubicación
         </label>
-        <input
-          type="text"
-          placeholder="Ciudad, dirección..."
-          value={filters.location}
-          onChange={(e) => updateFilter("location", e.target.value)}
-          className="w-full bg-gray-700 border-2 border-gray-600 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700/80 transition-all"
-        />
+        <div className="[&_select]:!bg-gray-700 [&_select]:!border-gray-600 [&_select]:!text-white [&_select]:!placeholder-gray-400 [&_select]:focus:!border-purple-500 [&_label]:!text-gray-300">
+          <LocationSelector
+            selectedStateId={filters.state_id}
+            selectedMunicipalityId={filters.municipality_id}
+            onStateChange={(stateId) => updateFilter("state_id", stateId)}
+            onMunicipalityChange={(municipalityId) => updateFilter("municipality_id", municipalityId)}
+            disabled={false}
+            required={false}
+          />
+        </div>
       </div>
 
       {/* Categories */}

@@ -6,6 +6,7 @@ import Image from "next/image"
 import type { Business } from "@/types/business"
 import StarRating from "@/components/reviews/StarRating"
 import BusinessLocation from "@/components/BusinessLocation"
+import DistanceBadge from "@/components/ui/DistanceBadge"
 
 type Props = {
   negocio: Business
@@ -41,7 +42,7 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
           
           {/* Ubicación */}
           {(negocio.address || (negocio.latitude && negocio.longitude)) && (
-            <div className="mt-2">
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
               <BusinessLocation
                 address={negocio.address}
                 latitude={negocio.latitude}
@@ -50,6 +51,13 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
                 variant="compact"
                 className="text-xs"
               />
+              {/* Badge de distancia */}
+              {negocio.latitude && negocio.longitude && (
+                <DistanceBadge
+                  latitude={negocio.latitude}
+                  longitude={negocio.longitude}
+                />
+              )}
             </div>
           )}
           

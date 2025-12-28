@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { resend, FROM_EMAIL } from '@/lib/resend'
+import { PaymentApprovedTemplate } from '@/lib/emails/templates'
 
 /**
  * Obtener días según el período de facturación
@@ -214,6 +216,43 @@ export async function POST(request: NextRequest) {
         { success: false, error: `Error al activar premium: ${updateBusinessError.message}` },
         { status: 500 }
       )
+    }
+
+    // Enviar correo de aprobación (no bloqueante)
+    if (resend) {
+      try {
+        // Obtener email del usuario
+        const { data: userData, error: userError } = await adminSupabase.auth.admin.getUserById(submissionData.user_id)
+        
+        if (!userError && userData?.user?.email) {
+          // Obtener nombre del negocio
+          const { data: businessData } = await (adminSupabase as any)
+            .from('businesses')
+            .select('name')
+            .eq('id', submissionData.business_id)
+            .single()
+          
+          const businessName = businessData?.name || 'tu negocio'
+          
+          // Enviar correo
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: userData.user.email,
+            subject: `🎉 Pago Aprobado - Tu plan Premium está activo`,
+            html: PaymentApprovedTemplate(businessName),
+          })
+          
+          console.log('[APPROVE] Correo de aprobación enviado a:', userData.user.email)
+        } else {
+          console.warn('[APPROVE] No se pudo obtener el email del usuario:', userError?.message || 'Usuario no encontrado')
+        }
+      } catch (emailError: any) {
+        // NO hacer rollback de la aprobación si el email falla
+        console.error('[APPROVE] Error enviando correo de aprobación (no crítico):', emailError?.message || emailError)
+        // El pago ya fue aprobado, solo logueamos el error
+      }
+    } else {
+      console.warn('[APPROVE] Resend no está configurado. Correo no enviado.')
     }
 
     return NextResponse.json({

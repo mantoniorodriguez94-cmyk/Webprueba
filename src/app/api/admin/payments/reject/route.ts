@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { resend, FROM_EMAIL } from '@/lib/resend'
+import { PaymentRejectedTemplate } from '@/lib/emails/templates'
 
 export async function POST(request: NextRequest) {
   try {
@@ -121,23 +123,46 @@ export async function POST(request: NextRequest) {
       console.warn('[REJECT] Advertencia al actualizar payments:', updatePaymentError)
     }
 
-    // TODO: Aquí podrías agregar una notificación al usuario
-    // Por ejemplo, crear un registro en una tabla de notificaciones
-    // o enviar un email. Por ahora, el usuario verá el estado 'rejected'
-    // cuando consulte su pago, y las admin_notes contienen el motivo.
-    // 
-    // Ejemplo de cómo podrías implementarlo:
-    // await adminSupabase.from('notifications').insert({
-    //   user_id: submission.user_id,
-    //   type: 'payment_rejected',
-    //   title: 'Pago Rechazado',
-    //   message: `Tu pago fue rechazado. Motivo: ${admin_notes}`,
-    //   related_id: submission_id_final
-    // })
+    // Enviar correo de rechazo (no bloqueante)
+    if (resend) {
+      try {
+        // Obtener email del usuario
+        const { data: userData, error: userError } = await adminSupabase.auth.admin.getUserById(submissionData.user_id)
+        
+        if (!userError && userData?.user?.email) {
+          // Obtener nombre del negocio
+          const { data: businessData } = await (adminSupabase as any)
+            .from('businesses')
+            .select('name')
+            .eq('id', submissionData.business_id)
+            .single()
+          
+          const businessName = businessData?.name || 'tu negocio'
+          
+          // Enviar correo
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: userData.user.email,
+            subject: `Pago No Verificado - Acción Requerida`,
+            html: PaymentRejectedTemplate(businessName),
+          })
+          
+          console.log('[REJECT] Correo de rechazo enviado a:', userData.user.email)
+        } else {
+          console.warn('[REJECT] No se pudo obtener el email del usuario:', userError?.message || 'Usuario no encontrado')
+        }
+      } catch (emailError: any) {
+        // NO hacer rollback del rechazo si el email falla
+        console.error('[REJECT] Error enviando correo de rechazo (no crítico):', emailError?.message || emailError)
+        // El pago ya fue rechazado, solo logueamos el error
+      }
+    } else {
+      console.warn('[REJECT] Resend no está configurado. Correo no enviado.')
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Pago rechazado exitosamente. El usuario será notificado al revisar su estado de pago.',
+      message: 'Pago rechazado exitosamente. El usuario será notificado por correo electrónico.',
       user_id: submissionData.user_id, // Para referencia
     })
 

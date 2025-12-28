@@ -6,7 +6,7 @@
  * Métodos de pago: PayPal y Manual (Zelle/Banco)
  */
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -30,7 +30,7 @@ export default function PremiumPage() {
   const [manualPaymentMethod, setManualPaymentMethod] = useState<'pago_movil' | 'zelle' | 'bank_transfer'>('pago_movil')
   const [reference, setReference] = useState('')
   const [screenshot, setScreenshot] = useState<File | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -234,49 +234,53 @@ export default function PremiumPage() {
 
   const handleManualPayment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedPlan || !screenshot || !user) return
+    if (!selectedPlan || !screenshot || !user || isSubmitting) return
 
     setError('')
     setSuccess('')
+    setIsSubmitting(true)
 
-    // Crear FormData para la Server Action
-    const formData = new FormData()
-    formData.append('plan_id', selectedPlan.id)
-    formData.append('business_id', businessId)
-    formData.append('payment_method', manualPaymentMethod)
-    formData.append('reference', reference || '')
-    formData.append('screenshot', screenshot)
+    try {
+      // Crear FormData para la Server Action
+      const formData = new FormData()
+      formData.append('plan_id', selectedPlan.id)
+      formData.append('business_id', businessId)
+      formData.append('payment_method', manualPaymentMethod)
+      formData.append('reference', reference || '')
+      formData.append('screenshot', screenshot)
 
-    // Usar useTransition para manejar el estado de carga
-    startTransition(async () => {
-      try {
-        const result = await submitManualPayment(formData)
+      const result = await submitManualPayment(formData)
 
-        if (!result.success) {
-          // Mostrar modal de error con mensaje detallado
-          const errorMessage = result.error || 'Error enviando pago'
-          setErrorModal({
-            show: true,
-            message: errorMessage,
-            details: getErrorDetails(errorMessage)
-          })
-          return
-        }
-
-        // Éxito - Mostrar modal de éxito
-        setShowSuccessModal(true)
-        setSelectedPlan(null)
-        setReference('')
-        setScreenshot(null)
-
-        // Recargar datos después de cerrar el modal
-        // (se hará en el onClose del modal)
-
-      } catch (err: any) {
-        console.error('Error en handleManualPayment:', err)
-        setError(err.message || 'Error enviando pago manual')
+      if (!result.success) {
+        // Mostrar modal de error con mensaje detallado
+        const errorMessage = result.error || 'Error enviando pago'
+        setErrorModal({
+          show: true,
+          message: errorMessage,
+          details: getErrorDetails(errorMessage)
+        })
+        return
       }
-    })
+
+      // Éxito - Mostrar modal de éxito
+      setShowSuccessModal(true)
+      setSelectedPlan(null)
+      setReference('')
+      setScreenshot(null)
+
+      // Recargar datos después de cerrar el modal
+      // (se hará en el onClose del modal)
+
+    } catch (err: any) {
+      console.error('Error en handleManualPayment:', err)
+      setErrorModal({
+        show: true,
+        message: err.message || 'Error enviando pago manual',
+        details: getErrorDetails(err.message || 'Error desconocido')
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -794,10 +798,10 @@ export default function PremiumPage() {
 
                 <button
                   type="submit"
-                  disabled={isPending || !screenshot}
+                  disabled={isSubmitting || !screenshot}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isPending ? (
+                  {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

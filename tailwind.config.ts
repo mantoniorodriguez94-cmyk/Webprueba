@@ -22,7 +22,7 @@ const config: Config = {
           '50%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.8)' },
         },
         float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
+          '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-20px)' },
         },
         'slide-in-up': {
@@ -73,7 +73,7 @@ const config: Config = {
         marquee: 'marquee 20s linear infinite',
         glow: 'glow 2s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-        float: 'float 3s ease-in-out infinite',
+        float: 'float 6s ease-in-out infinite',
         'slide-in-up': 'slide-in-up 0.5s ease-out',
         'slide-in-down': 'slide-in-down 0.5s ease-out',
         'slide-in-left': 'slide-in-left 0.5s ease-out',
@@ -87,7 +87,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 };
 
 export default config;

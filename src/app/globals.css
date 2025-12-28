@@ -175,3 +175,13 @@
 .animation-delay-600 {
   animation-delay: 0.6s;
 }
+
+/* Animación 3D flotante para el teléfono */
+@keyframes float-3d {
+  0%, 100% {
+    transform: rotateY(-12deg) rotateX(5deg) translateY(0);
+  }
+  50% {
+    transform: rotateY(-12deg) rotateX(5deg) translateY(-20px);
+  }
+}

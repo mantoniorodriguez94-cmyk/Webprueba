@@ -1,6 +1,7 @@
 // src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
 import React, { useEffect, useState, useCallback } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
@@ -57,17 +58,26 @@ const RightSidebar = dynamic(
 )
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const searchParamsInitial = useSearchParams()
   const { user, loading: userLoading } = useUser()
+  
+  // Leer parámetros de URL para filtros de ubicación
+  const stateIdParam = searchParamsInitial.get("state_id") ? parseInt(searchParamsInitial.get("state_id")!) : null
+  const municipalityIdParam = searchParamsInitial.get("municipality_id") ? parseInt(searchParamsInitial.get("municipality_id")!) : null
+  
   const [negocios, setNegocios] = useState<Business[]>([])
   const [allBusinesses, setAllBusinesses] = useState<Business[]>([])
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [filters, setFilters] = useState<FilterState>({
-    searchTerm: "",
-    category: "Todos",
-    location: "",
-    sortBy: "recent"
+    searchTerm: searchParamsInitial.get("search") || "",
+    category: searchParamsInitial.get("category") || "Todos",
+    location: "", // Deprecated, mantener para compatibilidad
+    state_id: stateIdParam,
+    municipality_id: municipalityIdParam,
+    sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular") || "recent"
   })
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes">("feed")
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -235,14 +245,24 @@ export default function DashboardPage() {
     }
   }, [user])
 
-  const fetchAllBusinesses = useCallback(async () => {
+  const fetchAllBusinesses = useCallback(async (stateId?: number | null, municipalityId?: number | null) => {
     try {
       setLoading(true)
       
-      const { data: businesses, error: businessError } = await supabase
+      let query = supabase
         .from("businesses")
         .select("*")
-        .order("created_at", { ascending: false })
+
+      // Aplicar filtros de ubicación si están presentes
+      if (stateId) {
+        query = query.eq("state_id", stateId)
+      }
+      
+      if (municipalityId) {
+        query = query.eq("municipality_id", municipalityId)
+      }
+
+      const { data: businesses, error: businessError } = await query.order("created_at", { ascending: false })
 
       if (businessError) throw businessError
       
@@ -391,21 +411,21 @@ export default function DashboardPage() {
       } else {
         fetchUnreadMessagesForPerson()
       }
-      fetchAllBusinesses()
+      fetchAllBusinesses(stateIdParam, municipalityIdParam)
     }
-  }, [user, isCompany, fetchNegocios, fetchAllBusinesses, fetchUnreadMessagesForPerson])
+  }, [user, isCompany, fetchNegocios, fetchAllBusinesses, fetchUnreadMessagesForPerson, stateIdParam, municipalityIdParam])
   
   // Recargar negocios cuando la página recibe foco (útil después de crear un negocio)
   useEffect(() => {
     const handleFocus = () => {
       if (user) {
-        fetchAllBusinesses()
+        fetchAllBusinesses(stateIdParam, municipalityIdParam)
       }
     }
     
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [user, fetchAllBusinesses])
+  }, [user, fetchAllBusinesses, stateIdParam, municipalityIdParam])
   
   useEffect(() => {
     if (!user || !isCompany || negocios.length === 0) return
@@ -451,6 +471,8 @@ export default function DashboardPage() {
       )
     }
 
+    // Nota: Los filtros de state_id y municipality_id ya se aplican en fetchAllBusinesses
+    // Solo mantener el filtro de location (texto) para compatibilidad si existe
     if (filters.location) {
       filtered = filtered.filter(b =>
         containsText(b.address || "", filters.location)

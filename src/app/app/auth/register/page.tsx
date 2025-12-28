@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState("person");
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Password strength indicators
   const [passwordStrength, setPasswordStrength] = useState({
@@ -62,6 +63,11 @@ export default function RegisterPage() {
   
     if (!isPasswordValid) {
       setError("La contraseña no cumple con los requisitos de seguridad");
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError("Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar");
       return;
     }
   
@@ -534,10 +540,45 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Terms and Privacy Checkbox */}
+            <div className="space-y-2 mt-6">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-[#0288D1] focus:ring-2 focus:ring-[#0288D1] focus:ring-offset-2 cursor-pointer transition-colors"
+                  disabled={loading}
+                />
+                <span className="text-sm text-white/90 group-hover:text-white transition-colors">
+                  Acepto los{" "}
+                  <Link
+                    href="/app/legal/terminos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0288D1] hover:text-[#0277BD] underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Términos y Condiciones
+                  </Link>
+                  {" "}y la{" "}
+                  <Link
+                    href="/app/legal/privacidad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0288D1] hover:text-[#0277BD] underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Política de Privacidad
+                  </Link>
+                </span>
+              </label>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || !isPasswordValid || password !== confirmPassword}
+              disabled={loading || !isPasswordValid || password !== confirmPassword || !acceptedTerms}
               className="w-full bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base mt-6"
             >
               {loading ? (

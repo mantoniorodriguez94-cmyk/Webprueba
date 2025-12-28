@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function PhoneMockup() {
   return (
-    <div className="relative">
+    <div className="relative" style={{ perspective: '1000px' }}>
       {/* Glow animado de fondo */}
       <motion.div
         className="absolute inset-0 blur-3xl opacity-50"
@@ -25,8 +25,14 @@ export default function PhoneMockup() {
         }}
       />
 
-      {/* Marco del teléfono */}
-      <div className="relative z-10 w-[320px] h-[640px] bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 rounded-[3rem] p-3 shadow-2xl border-4 border-gray-800 ring-2 ring-gray-700/50">
+      {/* Marco del teléfono con efectos 3D */}
+      <div 
+        className="relative z-10 w-[320px] h-[640px] bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 rounded-[2.5rem] p-3 shadow-2xl shadow-blue-500/20 border-4 border-gray-800 ring-2 ring-gray-700/50"
+        style={{
+          transformStyle: 'preserve-3d',
+          animation: 'float-3d 6s ease-in-out infinite',
+        }}
+      >
         {/* Pantalla interna */}
         <div className="w-full h-full bg-gray-950 rounded-[2.3rem] overflow-hidden relative">
           {/* Barra de estado */}

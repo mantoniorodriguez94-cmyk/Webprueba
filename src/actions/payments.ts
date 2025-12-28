@@ -8,7 +8,7 @@
  */
 
 import { createClient } from '@/utils/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export interface SubmitManualPaymentResult {
@@ -117,13 +117,14 @@ export async function submitManualPayment(
     const fileExt = screenshot.name.split('.').pop() || 'jpg'
     const fileName = `${user.id}/${business_id}/${timestamp}-${randomStr}.${fileExt}`
 
-    // Usar Service Role Key para subir archivo (bypassa políticas de Storage si hay problemas)
-    // Pero primero intentamos con el cliente normal (más seguro)
+    // Usar Admin Client para subir archivo (bypassa políticas de Storage)
+    // Esto evita problemas de permisos con archivos grandes
+    const adminSupabase = getAdminClient()
+    
     let uploadResult: { data: any; error: any } | null = null
 
     try {
-      // Intentar con cliente normal primero
-      uploadResult = await supabase.storage
+      uploadResult = await adminSupabase.storage
         .from('payment_receipts')
         .upload(fileName, screenshot, {
           contentType: screenshot.type,
@@ -131,33 +132,10 @@ export async function submitManualPayment(
           cacheControl: '3600',
         })
     } catch (uploadErr: any) {
-      console.warn('Error subiendo con cliente normal, intentando con service role:', uploadErr)
-      
-      // Fallback: usar service role si está disponible
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const serviceSupabase = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          {
-            auth: {
-              autoRefreshToken: false,
-              persistSession: false
-            }
-          }
-        )
-
-        uploadResult = await serviceSupabase.storage
-          .from('payment_receipts')
-          .upload(fileName, screenshot, {
-            contentType: screenshot.type,
-            upsert: false,
-            cacheControl: '3600',
-          })
-      } else {
-        return {
-          success: false,
-          error: 'Error al subir la imagen. Contacta al soporte si el problema persiste.'
-        }
+      console.error('Error subiendo archivo:', uploadErr)
+      return {
+        success: false,
+        error: 'Error al subir la imagen. Por favor, verifica tu conexión e intenta nuevamente.'
       }
     }
 
@@ -187,23 +165,16 @@ export async function submitManualPayment(
     }
 
     // 6️⃣ Obtener URL del archivo subido
-    // Para bucket privado, necesitamos crear una signed URL o usar la URL pública si el bucket es público
-    // Por ahora, construimos la URL directamente (asumiendo que el bucket puede ser público o usaremos signed URLs después)
-    const { data: { publicUrl } } = supabase.storage
+    // Usar admin client para obtener la URL (bucket puede ser privado)
+    const { data: { publicUrl } } = adminSupabase.storage
       .from('payment_receipts')
       .getPublicUrl(fileName)
 
-    // Si el bucket es privado, necesitarás usar signed URLs para los admins
-    // Por ahora usamos la URL pública o construimos la ruta directamente
+    // Construir la URL completa del archivo subido
     const receipt_url = publicUrl || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payment_receipts/${fileName}`
 
-    // 7️⃣ Crear registro en manual_payment_submissions
-    // Usar Service Role para insertar (bypassa RLS si hay problemas)
-    let submission: any = null
-    let submissionError: any = null
-
-    // Intentar con cliente normal primero
-    const { data: normalSubmission, error: normalError } = await supabase
+    // 7️⃣ Crear registro en manual_payment_submissions usando Admin Client
+    const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .insert({
         user_id: user.id,
@@ -218,54 +189,12 @@ export async function submitManualPayment(
       .select()
       .single()
 
-    if (!normalError && normalSubmission) {
-      submission = normalSubmission
-    } else {
-      submissionError = normalError
-      console.warn('Error insertando con cliente normal, intentando con service role:', normalError)
-
-      // Fallback: usar service role si está disponible
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const serviceSupabase = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          {
-            auth: {
-              autoRefreshToken: false,
-              persistSession: false
-            }
-          }
-        )
-
-        const { data: serviceSubmission, error: serviceError } = await serviceSupabase
-          .from('manual_payment_submissions')
-          .insert({
-            user_id: user.id,
-            business_id,
-            plan_id,
-            amount_usd: plan.price_usd,
-            payment_method: mappedPaymentMethod,
-            reference: reference || null,
-            screenshot_url: receipt_url,
-            status: 'pending',
-          })
-          .select()
-          .single()
-
-        if (!serviceError && serviceSubmission) {
-          submission = serviceSubmission
-        } else {
-          submissionError = serviceError
-        }
-      }
-    }
-
     if (!submission || submissionError) {
       console.error('Error creando registro de pago manual:', submissionError)
       
       // Intentar eliminar la imagen subida si falló el insert
       try {
-        await supabase.storage.from('payment_receipts').remove([fileName])
+        await adminSupabase.storage.from('payment_receipts').remove([fileName])
       } catch (cleanupErr) {
         console.error('Error limpiando archivo después de fallo:', cleanupErr)
       }
@@ -290,9 +219,9 @@ export async function submitManualPayment(
       }
     }
 
-    // 8️⃣ (Opcional) Crear registro en tabla payments también
+    // 8️⃣ (Opcional) Crear registro en tabla payments también usando Admin Client
     try {
-      await supabase
+      await (adminSupabase as any)
         .from('payments')
         .insert({
           business_id,

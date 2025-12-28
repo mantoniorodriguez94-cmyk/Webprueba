@@ -10,6 +10,7 @@ import SendMessageModal from "@/components/messages/SendMessageModal"
 import StarRating from "@/components/reviews/StarRating"
 import BusinessLocation from "@/components/BusinessLocation"
 import PremiumBadge, { PremiumBanner } from "@/components/ui/PremiumBadge"
+import DistanceBadge from "@/components/ui/DistanceBadge"
 import { 
   trackBusinessInteraction, 
   toggleBusinessSave, 
@@ -323,13 +324,22 @@ export default function BusinessFeedCard({
       <div className="px-4 py-3 space-y-2 border-t border-gray-700">
         {/* Ubicación con lógica inteligente */}
         {(business.address || (business.latitude && business.longitude)) && (
-          <BusinessLocation
-            address={business.address}
-            latitude={business.latitude}
-            longitude={business.longitude}
-            showIcon={true}
-            variant="default"
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <BusinessLocation
+              address={business.address}
+              latitude={business.latitude}
+              longitude={business.longitude}
+              showIcon={true}
+              variant="default"
+            />
+            {/* Badge de distancia */}
+            {business.latitude && business.longitude && (
+              <DistanceBadge
+                latitude={business.latitude}
+                longitude={business.longitude}
+              />
+            )}
+          </div>
         )}
 
         {(business.phone || business.whatsapp) && (
