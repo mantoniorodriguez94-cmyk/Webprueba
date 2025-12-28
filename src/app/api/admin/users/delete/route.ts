@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -41,28 +42,11 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Usar service role key para eliminar el usuario
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return NextResponse.json(
-        { success: false, error: 'Configuración de Supabase no disponible' },
-        { status: 500 }
-      )
-    }
-
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
 
     // 1. Eliminar el perfil de la tabla profiles
-    const { error: profileDeleteError } = await serviceSupabase
+    const { error: profileDeleteError } = await adminSupabase
       .from('profiles')
       .delete()
       .eq('id', userId)
@@ -73,7 +57,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 2. Eliminar el usuario de auth.users
-    const { error: authDeleteError } = await serviceSupabase.auth.admin.deleteUser(userId)
+    const { error: authDeleteError } = await adminSupabase.auth.admin.deleteUser(userId)
 
     if (authDeleteError) {
       console.error('Error eliminando usuario de auth:', authDeleteError)
@@ -96,4 +80,3 @@ export async function DELETE(request: NextRequest) {
     )
   }
 }
-

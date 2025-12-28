@@ -7,8 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,13 +50,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    // Usar cliente admin (bypass RLS para crear negocio sin dueño)
+    const adminSupabase = getAdminClient()
 
     // Crear negocio sin owner_id (NULL) - Solo admins pueden hacer esto
-    const { data: business, error: businessError } = await supabase
+    const { data: business, error: businessError } = await adminSupabase
       .from('businesses')
       .insert({
-        owner_id: null, // Negocio sin dueño
+        owner_id: null as any, // Negocio sin dueño - Usar 'as any' para TypeScript
         name: name.trim(),
         description: description?.trim() || null,
         category: category?.trim() || null,
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
         municipality_id: parseInt(municipality_id.toString()),
         address_details: address_details?.trim() || null,
         is_founder: false, // Se establecerá cuando se reclame
-      })
+      } as any)
       .select('id, name')
       .single()
 
@@ -79,13 +80,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const businessId = (business as any).id
+
     // Generar código de reclamación automáticamente
-    const { data: codeData, error: codeError } = await supabase.rpc('generate_claim_code')
+    const { data: codeData, error: codeError } = await adminSupabase.rpc('generate_claim_code')
 
     if (codeError || !codeData) {
       console.error('Error generando código:', codeError)
       // Si falla generar código, eliminar el negocio creado
-      await supabase.from('businesses').delete().eq('id', business.id)
+      await adminSupabase.from('businesses').delete().eq('id', businessId)
       return NextResponse.json(
         { success: false, error: 'Error al generar código único' },
         { status: 500 }
@@ -95,21 +98,20 @@ export async function POST(request: NextRequest) {
     const newCode = codeData as string
 
     // Insertar el código en business_claims
-    const { data: claimData, error: insertError } = await supabase
+    const { data: claimData, error: insertError } = await adminSupabase
       .from('business_claims')
       .insert({
-        business_id: business.id,
+        business_id: businessId,
         code: newCode,
-        is_claimed: false,
-        created_by: user.id
-      })
+        is_claimed: false
+      } as any)
       .select('id, code, created_at')
       .single()
 
     if (insertError || !claimData) {
       console.error('Error insertando código:', insertError)
       // Si falla insertar código, eliminar el negocio creado
-      await supabase.from('businesses').delete().eq('id', business.id)
+      await adminSupabase.from('businesses').delete().eq('id', businessId)
       return NextResponse.json(
         { success: false, error: 'Error al guardar el código' },
         { status: 500 }
@@ -120,10 +122,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Negocio creado exitosamente con código de reclamación',
       data: {
-        business_id: business.id,
-        business_name: business.name,
-        code: claimData.code,
-        created_at: claimData.created_at
+        business_id: businessId,
+        business_name: (business as any).name,
+        code: (claimData as any).code,
+        created_at: (claimData as any).created_at
       }
     })
 
@@ -135,4 +137,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

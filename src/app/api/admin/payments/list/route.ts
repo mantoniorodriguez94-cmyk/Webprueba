@@ -6,15 +6,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Cliente de Supabase para API routes (servidor)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+import { checkAdminAuth } from '@/utils/admin-auth'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    // Verificar que el usuario es admin
+    const { user, error: authError } = await checkAdminAuth()
+    
+    if (authError || !user || !user.isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado - Se requieren permisos de administrador' },
+        { status: 403 }
+      )
+    }
+
     // Obtener el parámetro de status
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'pending'
@@ -27,11 +33,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // TODO: Verificar que el usuario es admin
-    // Implementar según tu lógica de autenticación
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
 
     // Consultar pagos manuales
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('manual_payment_submissions')
       .select(`
         *,
@@ -52,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Obtener información de usuarios desde profiles
     if (data && data.length > 0) {
       const userIds = data.map((s: any) => s.user_id)
-      const { data: profiles } = await supabase
+      const { data: profiles } = await adminSupabase
         .from('profiles')
         .select('id, full_name')
         .in('id', userIds)
@@ -80,4 +86,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

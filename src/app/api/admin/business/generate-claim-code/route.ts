@@ -7,8 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,10 +33,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
 
     // Verificar que el negocio existe
-    const { data: business, error: businessError } = await supabase
+    const { data: business, error: businessError } = await adminSupabase
       .from('businesses')
       .select('id, name')
       .eq('id', businessId)
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si ya existe un código activo para este negocio
-    const { data: existingClaim, error: existingError } = await supabase
+    const { data: existingClaim, error: existingError } = await adminSupabase
       .from('business_claims')
       .select('id, code, is_claimed')
       .eq('business_id', businessId)
@@ -58,21 +59,22 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     // Si hay un código activo, retornarlo en lugar de crear uno nuevo
-    if (existingClaim && !existingClaim.is_claimed) {
+    const claim = existingClaim as any
+    if (claim && !claim.is_claimed) {
       return NextResponse.json({
         success: true,
         message: 'Código activo encontrado',
         data: {
-          code: existingClaim.code,
+          code: claim.code,
           business_id: businessId,
-          business_name: business.name,
+          business_name: (business as any).name,
           is_new: false
         }
       })
     }
 
     // Generar nuevo código usando la función SQL
-    const { data: codeData, error: codeError } = await supabase.rpc('generate_claim_code')
+    const { data: codeData, error: codeError } = await adminSupabase.rpc('generate_claim_code')
 
     if (codeError || !codeData) {
       console.error('Error generando código:', codeError)
@@ -85,14 +87,13 @@ export async function POST(request: NextRequest) {
     const newCode = codeData as string
 
     // Insertar el código en business_claims
-    const { data: claimData, error: insertError } = await supabase
+    const { data: claimData, error: insertError } = await adminSupabase
       .from('business_claims')
       .insert({
         business_id: businessId,
         code: newCode,
-        is_claimed: false,
-        created_by: user.id
-      })
+        is_claimed: false
+      } as any)
       .select('id, code, created_at')
       .single()
 
@@ -104,14 +105,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const claimResult = claimData as any
+
     return NextResponse.json({
       success: true,
       message: 'Código generado exitosamente',
       data: {
-        code: claimData.code,
+        code: claimResult.code,
         business_id: businessId,
-        business_name: business.name,
-        created_at: claimData.created_at,
+        business_name: (business as any).name,
+        created_at: claimResult.created_at,
         is_new: true
       }
     })
@@ -124,4 +127,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

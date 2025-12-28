@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Link from "next/link"
 import AdminCreateBusinessWithCode from "@/components/admin/AdminCreateBusinessWithCode"
-import { createClient as createServiceClient } from "@supabase/supabase-js"
+import { getAdminClient } from "@/lib/supabase/admin"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -18,34 +18,23 @@ export default async function AdminDashboardPage() {
   
   const supabase = await createClient()
 
-  // Obtener conteo de usuarios de manera simplificada (solo para esta página)
+  // Obtener conteo de usuarios usando cliente admin
   let usersCount = 0
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (supabaseUrl && serviceKey) {
-      const serviceSupabase = createServiceClient(supabaseUrl, serviceKey, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      })
-
-      // Intentar auth.admin.listUsers() primero
-      try {
-        const { data: authData } = await serviceSupabase.auth.admin.listUsers()
-        usersCount = authData?.users?.length || 0
-      } catch {
-        // Fallback a profiles
-        const { count } = await serviceSupabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true })
-        usersCount = count || 0
-      }
-    } else {
-      // Fallback final: usar cliente normal
-      const { count } = await supabase
+    const adminSupabase = getAdminClient()
+    
+    // Intentar auth.admin.listUsers() primero
+    try {
+      const { data: authData } = await adminSupabase.auth.admin.listUsers()
+      usersCount = authData?.users?.length || 0
+      console.log(`✅ ${usersCount} usuarios contados desde auth.admin.listUsers()`)
+    } catch {
+      // Fallback a profiles con admin client
+      const { count } = await adminSupabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
       usersCount = count || 0
+      console.log(`✅ ${usersCount} usuarios contados desde profiles (admin client)`)
     }
   } catch (err) {
     console.warn("⚠️ Error contando usuarios, usando 0:", err)
@@ -91,7 +80,6 @@ export default async function AdminDashboardPage() {
       .eq("is_featured", true)
       .not("featured_until", "is", null)
       .gt("featured_until", new Date().toISOString()),
-    
   ])
 
   const stats = {

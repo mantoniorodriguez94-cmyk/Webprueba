@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+/**
+ * Cliente de Supabase para el servidor (Usuario normal)
+ * 
+ * Usa NEXT_PUBLIC_SUPABASE_ANON_KEY y maneja cookies para sesiones
+ * Respetará las políticas RLS según el usuario autenticado
+ */
 export async function createClient() {
   const cookieStore = await cookies(); // 👈 El await es CRUCIAL en Next 15
 

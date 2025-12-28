@@ -1,6 +1,13 @@
-console.log('PROJECT CHECK – ADMIN_SETUP_SECRET:', process.env.ADMIN_SETUP_SECRET)
+/**
+ * API Route: Configurar usuario como administrador
+ * POST /api/admin/set-admin
+ * 
+ * Configura un usuario como administrador usando un secreto de setup
+ * Este endpoint es especial porque no requiere autenticación previa (setup inicial)
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,25 +52,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.SUPABASE_SERVICE_ROLE_KEY
-    ) {
-      return NextResponse.json(
-        { success: false, error: 'Credenciales de Supabase no configuradas' },
-        { status: 500 }
-      )
-    }
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-      }
-    )
-
-    const { data, error: listError } = await supabase.auth.admin.listUsers()
+    const { data, error: listError } = await adminSupabase.auth.admin.listUsers()
 
     if (listError) {
       return NextResponse.json(
@@ -81,14 +73,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await supabase
+    await adminSupabase
       .from('profiles')
       .upsert(
         { id: user.id, email: user.email, is_admin: true },
         { onConflict: 'id' }
       )
 
-    await supabase.auth.admin.updateUserById(user.id, {
+    await adminSupabase.auth.admin.updateUserById(user.id, {
       user_metadata: { ...user.user_metadata, is_admin: true },
     })
 
@@ -104,8 +96,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-
-
-
-

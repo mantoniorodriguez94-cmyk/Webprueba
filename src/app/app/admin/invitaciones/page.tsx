@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/utils/admin-auth"
-import { createClient } from "@supabase/supabase-js"
+import { getAdminClient } from "@/lib/supabase/admin"
 import InvitationsTable from "./components/InvitationsTable"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
@@ -27,24 +27,11 @@ export default async function AdminInvitacionesPage() {
   let error: Error | null = null
 
   try {
-    // Verificar variables de entorno
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-    if (!serviceKey || !supabaseUrl) {
-      throw new Error("Variables de entorno no configuradas correctamente")
-    }
-
-    // Crear cliente con service role para bypass RLS
-    const serviceSupabase = createClient(supabaseUrl, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+    // Usar cliente admin (Service Role Key) para bypass RLS
+    const adminSupabase = getAdminClient()
 
     // Hacer JOIN entre business_claims y businesses
-    const { data, error: queryError } = await serviceSupabase
+    const { data, error: queryError } = await adminSupabase
       .from("business_claims")
       .select(`
         id,

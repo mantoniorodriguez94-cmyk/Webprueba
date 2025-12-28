@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
-import { createClient } from "@supabase/supabase-js"
+import { getAdminClient } from "@/lib/supabase/admin"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -19,7 +19,7 @@ interface UserData {
 /**
  * Página de gestión de usuarios (Admin)
  * - Lista todos los usuarios registrados en el sistema
- * - Usa Service Role Key directamente ya que solo admins pueden acceder
+ * - Usa cliente admin con Service Role Key para bypass RLS
  */
 export default async function AdminUsuariosPage() {
   // Verificar que el usuario es admin
@@ -29,24 +29,12 @@ export default async function AdminUsuariosPage() {
   let error: Error | null = null
 
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    // Crear cliente con service role (bypass RLS)
-    const serviceSupabase = createClient(
-      supabaseUrl || '',
-      serviceKey || '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    )
+    // Usar cliente admin (Service Role Key)
+    const adminSupabase = getAdminClient()
 
     // Método 1: Intentar auth.admin.listUsers() primero (más confiable)
     try {
-      const { data: authData, error: authError } = await serviceSupabase.auth.admin.listUsers()
+      const { data: authData, error: authError } = await adminSupabase.auth.admin.listUsers()
 
       if (!authError && authData?.users) {
         usuarios = authData.users.map((user): UserData => ({
@@ -67,10 +55,10 @@ export default async function AdminUsuariosPage() {
         throw authError || new Error('No se obtuvieron usuarios')
       }
     } catch (authErr: any) {
-      // Método 2: Fallback a profiles usando service role (menos restrictivo)
+      // Método 2: Fallback a profiles usando admin client (bypass RLS)
       console.warn('⚠️ auth.admin.listUsers() falló, usando fallback a profiles:', authErr.message)
       
-      const { data: profilesData, error: profilesError } = await serviceSupabase
+      const { data: profilesData, error: profilesError } = await adminSupabase
         .from('profiles')
         .select('id, email, full_name, role, is_admin, created_at, avatar_url')
         .order('created_at', { ascending: false })
@@ -89,7 +77,7 @@ export default async function AdminUsuariosPage() {
           created_at: profile.created_at || new Date().toISOString(),
           avatar_url: profile.avatar_url || null,
         }))
-        console.log(`✅ ${usuarios.length} usuarios cargados desde profiles (service role)`)
+        console.log(`✅ ${usuarios.length} usuarios cargados desde profiles (admin client)`)
       }
     }
   } catch (err: any) {

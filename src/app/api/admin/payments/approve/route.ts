@@ -6,18 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { checkAdminAuth } from '@/utils/admin-auth'
-
-// Cliente de Supabase con service role para operaciones admin (bypass RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
+import { getAdminClient } from '@/lib/supabase/admin'
 
 /**
  * Obtener días según el período de facturación
@@ -90,8 +80,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
+
     // Obtener información del pago manual - FIX: Usar alias correcto y query separada
-    const { data: submission, error: submissionError } = await supabase
+    const { data: submission, error: submissionError } = await adminSupabase
       .from('manual_payment_submissions')
       .select('*')
       .eq('id', submission_id_final)
@@ -105,8 +98,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const submissionData = submission as any
+
     // Verificar que está pendiente
-    if (submission.status !== 'pending') {
+    if (submissionData.status !== 'pending') {
       return NextResponse.json(
         { success: false, error: 'El pago ya fue procesado' },
         { status: 400 }
@@ -114,10 +109,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener el plan por separado para evitar problemas con relaciones
-    const { data: plan, error: planError } = await supabase
+    const { data: plan, error: planError } = await adminSupabase
       .from('premium_plans')
       .select('*')
-      .eq('id', submission.plan_id)
+      .eq('id', submissionData.plan_id)
       .single()
 
     if (planError || !plan) {
@@ -129,7 +124,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar submission a 'approved'
-    const { error: updateSubmissionError } = await supabase
+    // TypeScript no reconoce manual_payment_submissions en tipos generados, usar cast
+    const { error: updateSubmissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .update({
         status: 'approved',
@@ -148,51 +144,53 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar payment a 'completed'
-    await supabase
+    await (adminSupabase as any)
       .from('payments')
       .update({ status: 'completed' })
       .eq('external_id', submission_id_final)
       .eq('method', 'manual')
 
     // Obtener el negocio para verificar si tiene membresía activa
-    const { data: business } = await supabase
+    const { data: business } = await adminSupabase
       .from('businesses')
       .select('premium_until, is_premium')
-      .eq('id', submission.business_id)
+      .eq('id', submissionData.business_id)
       .single()
 
     // Calcular fechas de la suscripción según el plan pagado
     // Si existe premium_until y es futuro, se sumarán los días a esa fecha
     const startDate = new Date()
-    const billingPeriod = plan.billing_period || 'monthly'
-    const endDate = calculateEndDate(billingPeriod, business?.premium_until)
+    const planData = plan as any
+    const businessData = business as any
+    const billingPeriod = planData.billing_period || 'monthly'
+    const endDate = calculateEndDate(billingPeriod, businessData?.premium_until)
 
     // Crear o actualizar suscripción
-    const { data: existingSubscription } = await supabase
+    const { data: existingSubscription } = await adminSupabase
       .from('business_subscriptions')
       .select('id')
-      .eq('business_id', submission.business_id)
-      .eq('user_id', submission.user_id)
+      .eq('business_id', submissionData.business_id)
+      .eq('user_id', submissionData.user_id)
       .eq('status', 'active')
       .maybeSingle()
 
     if (existingSubscription) {
       // Extender suscripción existente
-      await supabase
+      await (adminSupabase as any)
         .from('business_subscriptions')
         .update({
           end_date: endDate.toISOString(),
-          plan_id: submission.plan_id,
+          plan_id: submissionData.plan_id,
         })
         .eq('id', existingSubscription.id)
     } else {
       // Crear nueva suscripción
-      await supabase
+      await (adminSupabase as any)
         .from('business_subscriptions')
         .insert({
-          business_id: submission.business_id,
-          user_id: submission.user_id,
-          plan_id: submission.plan_id,
+          business_id: submissionData.business_id,
+          user_id: submissionData.user_id,
+          plan_id: submissionData.plan_id,
           status: 'active',
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
@@ -200,14 +198,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Activar premium en el negocio
-    const { error: updateBusinessError } = await supabase
+    const { error: updateBusinessError } = await (adminSupabase as any)
       .from('businesses')
       .update({
         is_premium: true,
         premium_until: endDate.toISOString(),
-        premium_plan_id: submission.plan_id,
+        premium_plan_id: submissionData.plan_id,
       })
-      .eq('id', submission.business_id)
+      .eq('id', submissionData.business_id)
 
     if (updateBusinessError) {
       console.error('[APPROVE] Error activando premium:', updateBusinessError)

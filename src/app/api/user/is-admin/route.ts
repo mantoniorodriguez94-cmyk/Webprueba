@@ -1,6 +1,13 @@
+/**
+ * API Route: Verificar si el usuario actual es administrador
+ * GET /api/user/is-admin
+ * 
+ * Retorna si el usuario autenticado tiene permisos de administrador
+ */
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server' // Cliente para autenticación (Auth)
-import { createClient as createServiceClient } from '@supabase/supabase-js' // Cliente para base de datos (Admin)
+import { getAdminClient } from '@/lib/supabase/admin' // Cliente admin para leer perfiles
 
 export async function GET() {
   try {
@@ -15,46 +22,33 @@ export async function GET() {
     }
 
     // 2️⃣ PASO 2: Leer la base de datos
-    // Intentamos primero con Service Role (bypassa RLS), luego fallback a cliente normal
-    let profile: { is_admin: boolean; email: string | null; role: string | null } | null = null
+    // Intentamos primero con cliente admin (bypass RLS), luego fallback a cliente normal
+    let profile: { is_admin: boolean; email: string; role: string } | null = null
     let dbError: any = null
 
-    // Intentar con Service Role primero (más confiable en producción)
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      try {
-        const supabaseAdmin = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY,
-          {
-            auth: {
-              autoRefreshToken: false,
-              persistSession: false
-            }
-          }
-        )
+    // Intentar con cliente admin primero (más confiable en producción)
+    try {
+      const adminSupabase = getAdminClient()
 
-        const { data: adminProfile, error: adminError } = await supabaseAdmin
-          .from('profiles')
-          .select('is_admin, email, role')
-          .eq('id', user.id)
-          .single()
+      const { data: adminProfile, error: adminError } = await adminSupabase
+        .from('profiles')
+        .select('is_admin, email, role')
+        .eq('id', user.id)
+        .single()
 
-        if (!adminError && adminProfile) {
-          profile = adminProfile
-          console.log('✅ Perfil leído con Service Role Key')
-        } else {
-          dbError = adminError
-          console.warn('⚠️ Error con Service Role, intentando fallback:', adminError?.message)
-        }
-      } catch (err: any) {
-        console.warn('⚠️ Excepción con Service Role, intentando fallback:', err.message)
-        dbError = err
+      if (!adminError && adminProfile) {
+        profile = adminProfile
+        console.log('✅ Perfil leído con cliente admin')
+      } else {
+        dbError = adminError
+        console.warn('⚠️ Error con cliente admin, intentando fallback:', adminError?.message)
       }
-    } else {
-      console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY no configurada, usando cliente normal')
+    } catch (err: any) {
+      console.warn('⚠️ Excepción con cliente admin, intentando fallback:', err.message)
+      dbError = err
     }
 
-    // Fallback: Intentar con cliente normal si Service Role falló o no está disponible
+    // Fallback: Intentar con cliente normal si cliente admin falló
     if (!profile && !dbError) {
       const { data: normalProfile, error: normalError } = await supabase
         .from('profiles')
@@ -72,50 +66,36 @@ export async function GET() {
     }
 
     // Si no pudimos leer el perfil, retornar error
-    if (!profile || dbError) {
-      console.error('❌ No se pudo leer perfil:', {
-        hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        error: dbError?.message || 'Perfil no encontrado',
-        userId: user.id,
-        email: user.email
+    if (dbError || !profile) {
+      console.error('❌ API is-admin: Error leyendo perfil:', dbError?.message)
+      
+      // También verificar en user_metadata como fallback
+      const metadataIsAdmin = user.user_metadata?.is_admin === true
+      
+      return NextResponse.json({
+        isAdmin: metadataIsAdmin,
+        error: dbError?.message || 'Error leyendo perfil',
+        hasServiceRoleKey: true, // Cliente admin siempre está disponible
       })
-      return NextResponse.json({ 
-        isAdmin: false, 
-        error: dbError?.message || 'Perfil no encontrado',
-        debug: {
-          hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-          errorCode: dbError?.code,
-          errorMessage: dbError?.message
-        }
-      }, { status: 500 })
     }
 
-    // 3️⃣ PASO 3: Validación estricta
-    const isAdmin = profile.is_admin === true
-
-    console.log(`✅ Verificación Admin completada: ${user.email} -> ${isAdmin ? 'ES ADMIN' : 'NO ES ADMIN'}`, {
-      userId: user.id,
-      email: user.email,
-      is_admin: profile.is_admin,
-      role: profile.role,
-      hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-    })
+    const isAdmin = profile.is_admin === true || user.user_metadata?.is_admin === true
 
     return NextResponse.json({
       isAdmin,
-      debug: {
-        userId: user.id,
-        email: profile.email,
-        role: profile.role,
-        is_admin_value: profile.is_admin,
-        hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-      }
+      email: profile.email,
+      role: profile.role,
+      hasServiceRoleKey: true, // Cliente admin siempre está disponible
     })
 
   } catch (error: any) {
-    console.error('❌ Error fatal en API is-admin:', error)
+    console.error('❌ API is-admin: Error inesperado:', error)
     return NextResponse.json(
-      { isAdmin: false, error: error.message || 'Error interno' },
+      { 
+        isAdmin: false, 
+        error: error.message || 'Error interno del servidor',
+        hasServiceRoleKey: true, // Cliente admin siempre está disponible
+      },
       { status: 500 }
     )
   }

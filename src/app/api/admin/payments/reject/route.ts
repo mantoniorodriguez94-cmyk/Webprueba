@@ -6,18 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { checkAdminAuth } from '@/utils/admin-auth'
-
-// Cliente de Supabase con service role para operaciones admin (bypass RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,9 +35,12 @@ export async function POST(request: NextRequest) {
 
     console.log('[REJECT] Buscando pago con ID:', submission_id_final)
 
+    // Usar cliente admin (bypass RLS)
+    const adminSupabase = getAdminClient()
+
     // Obtener información del pago manual (incluyendo created_at para validar 24h)
-    // IMPORTANTE: Usamos el cliente con service role key que bypasea RLS
-    const { data: submission, error: submissionError } = await supabase
+    // IMPORTANTE: Usamos el cliente admin que bypasea RLS
+    const { data: submission, error: submissionError } = await adminSupabase
       .from('manual_payment_submissions')
       .select('id, status, created_at, user_id, business_id')
       .eq('id', submission_id_final)
@@ -96,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar submission a 'rejected'
-    const { error: updateSubmissionError } = await supabase
+    const { error: updateSubmissionError } = await adminSupabase
       .from('manual_payment_submissions')
       .update({
         status: 'rejected',
@@ -117,7 +110,7 @@ export async function POST(request: NextRequest) {
     console.log('[REJECT] Submission actualizado exitosamente')
 
     // Actualizar payment a 'failed'
-    const { error: updatePaymentError } = await supabase
+    const { error: updatePaymentError } = await adminSupabase
       .from('payments')
       .update({ status: 'failed' })
       .eq('external_id', submission_id_final)
@@ -133,7 +126,7 @@ export async function POST(request: NextRequest) {
     // cuando consulte su pago, y las admin_notes contienen el motivo.
     // 
     // Ejemplo de cómo podrías implementarlo:
-    // await supabase.from('notifications').insert({
+    // await adminSupabase.from('notifications').insert({
     //   user_id: submission.user_id,
     //   type: 'payment_rejected',
     //   title: 'Pago Rechazado',
