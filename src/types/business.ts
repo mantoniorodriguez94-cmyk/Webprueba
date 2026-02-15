@@ -41,6 +41,14 @@ export type Business = {
   views_count?: number;
   saved_count?: number;
   shared_count?: number;
+  // Owner subscription tier (from profiles join) — prefer `owner` when present
+  profiles?: {
+    subscription_tier: number | null;
+  } | null;
+  /** Owner profile from join (profiles!owner_id). Use for tier: (business.owner?.subscription_tier ?? 0) */
+  owner?: {
+    subscription_tier: number | null;
+  } | null;
 };
 
 export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;

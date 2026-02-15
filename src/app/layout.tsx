@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import InstallPWA from "@/components/InstallPWA";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Encuentra - Conecta negocios y personas",
@@ -67,6 +68,9 @@ export default function RootLayout({
         <div className="relative z-10">
           {children}
         </div>
+
+        {/* Toast Notifications */}
+        <Toaster theme="dark" richColors position="top-center" />
         
         {/* PWA Install Prompt */}
         <InstallPWA />

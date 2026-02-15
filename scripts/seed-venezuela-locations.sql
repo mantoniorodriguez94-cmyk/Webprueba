@@ -607,3 +607,6 @@ LEFT JOIN public.municipalities m ON m.state_id = s.id
 GROUP BY s.id, s.name
 ORDER BY s.name;
 
+
+
+

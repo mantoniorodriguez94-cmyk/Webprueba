@@ -175,7 +175,48 @@
 .animation-delay-600 {
   animation-delay: 0.6s;
 }
+@layer components {
+  /* Brillo para Destaca (Tier 2) */
+  .tier-silver-glow {
+    @apply border-slate-300/80 ring-1 ring-slate-200/50;
+    box-shadow: 
+      0 0 15px rgba(148, 163, 184, 0.3),
+      0 0 30px rgba(148, 163, 184, 0.15);
+    transition: all 0.3s ease;
+  }
 
+  .tier-silver-glow:hover {
+    box-shadow: 
+      0 0 20px rgba(148, 163, 184, 0.4),
+      0 0 40px rgba(148, 163, 184, 0.2);
+    @apply border-slate-200;
+  }
+
+  /* Brillo Animado para Fundador (Tier 3) */
+  .tier-gold-glow {
+    @apply border-yellow-500/90 ring-2 ring-yellow-400/60;
+    animation: gold-pulse 3s infinite ease-in-out;
+  }
+
+  .tier-gold-glow:hover {
+    @apply border-yellow-400 ring-yellow-300/80;
+  }
+
+  @keyframes gold-pulse {
+    0%, 100% { 
+      box-shadow: 
+        0 0 10px rgba(234, 179, 8, 0.5),
+        0 0 20px rgba(234, 179, 8, 0.3),
+        0 0 30px rgba(234, 179, 8, 0.1);
+    }
+    50% { 
+      box-shadow: 
+        0 0 20px rgba(234, 179, 8, 0.8),
+        0 0 40px rgba(234, 179, 8, 0.5),
+        0 0 60px rgba(234, 179, 8, 0.2);
+    }
+  }
+}
 /* Animación 3D flotante para el teléfono */
 @keyframes float-3d {
   0%, 100% {

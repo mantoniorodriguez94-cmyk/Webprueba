@@ -1,6 +1,6 @@
 // src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -11,6 +11,8 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
+import PromotionsManager from "@/components/dashboard/PromotionsManager"
+import { Crown } from "lucide-react"
 
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
@@ -88,6 +90,17 @@ export default function DashboardPage() {
   const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
   const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
   const [isAdmin, setIsAdmin] = useState(false)
+  
+  // Scroll infinito
+  const ITEMS_PER_PAGE = 10 // Cargar 10 más cada vez
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE) // Mostrar 10 negocios inicialmente
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  
+  // Resetear contador cuando cambia la pestaña
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE)
+  }, [activeTab])
   
   // Calcular el límite de negocios permitidos y rol del usuario
   const userRole = user?.user_metadata?.role ?? "person"
@@ -246,26 +259,46 @@ export default function DashboardPage() {
   }, [user])
 
   const fetchAllBusinesses = useCallback(async (stateId?: number | null, municipalityId?: number | null) => {
-    try {
-      setLoading(true)
-      
-      let query = supabase
-        .from("businesses")
-        .select("*")
+    setLoading(true)
+    type Row = Record<string, unknown> & { owner_id?: string | null; owner?: { subscription_tier?: number | null } | null; profiles?: { subscription_tier?: number | null } | null }
+    let rawRows: Row[] | null = null
 
-      // Aplicar filtros de ubicación si están presentes
-      if (stateId) {
-        query = query.eq("state_id", stateId)
-      }
-      
-      if (municipalityId) {
-        query = query.eq("municipality_id", municipalityId)
-      }
+    try {
+      // Fetch negocios directamente sin join (más confiable)
+      let query = supabase.from("businesses").select("*")
+      if (stateId) query = query.eq("state_id", stateId)
+      if (municipalityId) query = query.eq("municipality_id", municipalityId)
 
       const { data: businesses, error: businessError } = await query.order("created_at", { ascending: false })
 
-      if (businessError) throw businessError
-      
+      if (businessError) {
+        console.error("[CRITICAL DEBUG] businesses fetch failed:", businessError)
+        rawRows = []
+      } else {
+        rawRows = (businesses ?? null) as Row[] | null
+      }
+
+    const rows = rawRows ?? []
+    // Fetch profiles for all owners in one query (más eficiente)
+    const ownerIds = [...new Set(rows.map(b => b.owner_id).filter(Boolean) as string[])]
+    const profilesMap = new Map<string, number | null>()
+    if (ownerIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("id, subscription_tier").in("id", ownerIds)
+      profiles?.forEach(p => profilesMap.set(p.id, p.subscription_tier))
+    }
+
+    const normalizedBusinesses: Business[] = rows.map(business => {
+      const hasOwner = Boolean(business.owner_id)
+      const subscription_tier = hasOwner ? (profilesMap.get(business.owner_id!) ?? 0) : 0
+      return {
+        ...business,
+        owner: hasOwner ? { subscription_tier } : null,
+        profiles: hasOwner ? { subscription_tier } : null
+      } as Business
+    })
+
+    console.log("[dashboard] Negocios normalizados:", normalizedBusinesses.length)
+
       try {
         // Obtener estadísticas de reviews
         const { data: stats, error: statsError } = await supabase
@@ -347,7 +380,7 @@ export default function DashboardPage() {
         
         const statsMap = new Map(stats?.map(s => [s.business_id, s]) || [])
         
-        const businessesWithStats = (businesses ?? []).map(business => ({
+        const businessesWithStats = normalizedBusinesses.map(business => ({
           ...business,
           total_reviews: statsMap.get(business.id)?.total_reviews || 0,
           average_rating: statsMap.get(business.id)?.average_rating || 0,
@@ -356,24 +389,32 @@ export default function DashboardPage() {
           shared_count: sharesMap.get(business.id) || 0
         }))
         
-        // Ordenar: Premium activos primero, luego por fecha de creación
+        // Ordenar: Por tier de suscripción del dueño (descendente), luego premium activos, luego por fecha de creación
+        // Esto asegura que Tier 3 (Fundador) y Tier 2 (Destaca) aparezcan primero
         const sortedBusinesses = businessesWithStats.sort((a, b) => {
           const now = new Date()
           const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
           const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
           
-          // Premium primero
+          // 1. Ordenar por tier del dueño (owner o profiles, null-safe)
+          const tierA = (a.owner?.subscription_tier ?? a.profiles?.subscription_tier) ?? 0
+          const tierB = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
+          if (tierA !== tierB) {
+            return tierB - tierA
+          }
+          
+          // 2. Si tienen el mismo tier, premium activos primero
           if (aIsPremium && !bIsPremium) return -1
           if (!aIsPremium && bIsPremium) return 1
           
-          // Si ambos son premium o ambos no son premium, ordenar por fecha (más reciente primero)
+          // 3. Si ambos tienen el mismo tier y mismo estado premium, ordenar por fecha (más reciente primero)
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
         setAllBusinesses(sortedBusinesses)
         setFilteredBusinesses(sortedBusinesses)
       } catch {
-        const businessesWithDefaults = (businesses ?? []).map(business => ({
+        const businessesWithDefaults = normalizedBusinesses.map((business: Business) => ({
           ...business,
           total_reviews: 0,
           average_rating: 0,
@@ -382,8 +423,7 @@ export default function DashboardPage() {
           shared_count: 0
         }))
         
-        // Ordenar: Premium activos primero, luego por fecha de creación
-        const sortedBusinesses = businessesWithDefaults.sort((a, b) => {
+        const sortedBusinesses = businessesWithDefaults.sort((a: Business, b: Business) => {
           const now = new Date()
           const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
           const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
@@ -397,8 +437,14 @@ export default function DashboardPage() {
       setAllBusinesses(sortedBusinesses)
       setFilteredBusinesses(sortedBusinesses)
     }
-  } catch (err: any) {
-    console.error("Error fetching all businesses:", err)
+  } catch (err: unknown) {
+    console.error("[CRITICAL DEBUG]", err)
+    if (err instanceof Error) console.error("[dashboard] Stack trace:", err.stack)
+    console.error("[dashboard] Error details:", JSON.stringify(err, null, 2))
+    
+    // Asegurar que siempre hay un array, incluso en caso de error
+    setAllBusinesses([])
+    setFilteredBusinesses([])
   } finally {
     setLoading(false)
   }
@@ -508,7 +554,54 @@ export default function DashboardPage() {
     })
 
     setFilteredBusinesses(filtered)
-  }, [filters, allBusinesses])
+    // Resetear contador cuando cambian los filtros
+    setVisibleCount(ITEMS_PER_PAGE)
+  }, [filters, allBusinesses, ITEMS_PER_PAGE])
+
+  // Intersection Observer para scroll infinito (debe estar antes de los early returns)
+  useEffect(() => {
+    // Calcular displayedBusinesses aquí para el useEffect
+    const displayedBusinesses = 
+      activeTab === "destacados" ? allBusinesses.filter((business) => {
+        const isFeatured = business.is_featured === true
+        const now = new Date()
+        const featuredUntil = business.featured_until 
+          ? new Date(business.featured_until) 
+          : null
+        return isFeatured && (featuredUntil === null || featuredUntil > now)
+      }) :
+      activeTab === "recientes" ? allBusinesses.filter((business) => {
+        if (!business.created_at) return false
+        const created = new Date(business.created_at)
+        const now = new Date()
+        const diffTime = now.getTime() - created.getTime()
+        const diffDays = diffTime / (1000 * 60 * 60 * 24)
+        return diffDays >= 0 && diffDays < 7
+      }) :
+      filteredBusinesses
+
+    const hasMore = visibleCount < displayedBusinesses.length
+
+    if (!loadMoreRef.current || !hasMore || isLoadingMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore) {
+          setIsLoadingMore(true)
+          // Simular carga con un pequeño delay para mejor UX
+          setTimeout(() => {
+            setVisibleCount(prev => Math.min(prev + ITEMS_PER_PAGE, displayedBusinesses.length))
+            setIsLoadingMore(false)
+          }, 300)
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' } // Cargar 100px antes de llegar al final
+    )
+    
+    observer.observe(loadMoreRef.current)
+    
+    return () => observer.disconnect()
+  }, [isLoadingMore, visibleCount, activeTab, allBusinesses, filteredBusinesses, ITEMS_PER_PAGE])
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters)
@@ -655,24 +748,54 @@ export default function DashboardPage() {
     activeTab === "recientes" ? recentBusinesses :
     filteredBusinesses
 
+  // Negocios visibles para scroll infinito
+  const visibleBusinesses = displayedBusinesses.slice(0, visibleCount)
+  const hasMore = visibleCount < displayedBusinesses.length
+
   // ========== NUEVO UI MOBILE-FIRST ==========
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       {/* Header Móvil Moderno */}
       <header className="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
         <div className="px-4 py-4 lg:px-6">
-          {/* Top Row - Logo y Acciones */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
-                <span className="text-2xl">📍</span>
-                Encuentra
-              </h1>
-              <p className="text-xs lg:text-sm text-gray-400 mt-1">
+          {/* Top Row - Logo, Navegación y Acciones */}
+          <div className="flex items-center justify-between gap-4 mb-4">
+            {/* Logo clickable */}
+            <div className="flex items-center gap-6">
+              <Link href="/" className="inline-block cursor-pointer">
+                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
+                  <span className="text-2xl">📍</span>
+                  Encuentra
+                </h1>
+              </Link>
+              <p className="hidden lg:block text-xs lg:text-sm text-gray-400 mt-1">
                 {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
               </p>
             </div>
+
+            {/* Navegación de Dashboard (Desktop) */}
+            <nav className="hidden md:flex items-center gap-6 text-xs lg:text-sm text-gray-400">
+              <Link
+                href="/app/dashboard"
+                className="hover:text-white transition-colors"
+              >
+                Explorar
+              </Link>
+              <Link
+                href="/app/dashboard/negocios"
+                className="hover:text-white transition-colors"
+              >
+                Mis Negocios
+              </Link>
+              <Link
+                href="/app/dashboard/membresia"
+                className="flex items-center gap-1 hover:text-emerald-400 transition-colors"
+              >
+                <span className="text-[13px]">Membresía</span>
+              </Link>
+            </nav>
             
+            {/* Acciones (Buscar + Usuario) */}
             <div className="flex items-center gap-3">
               {/* Botón de Búsqueda - Solo visible en Desktop */}
               <button
@@ -855,27 +978,55 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-                {displayedBusinesses.map((business, index) => (
+              <>
+                {/* Layout: 1 columna en desktop (lg y xl), 2 en tablet (md), 1 en móvil */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-1 gap-6 lg:gap-8">
+                  {visibleBusinesses.map((business, index) => (
+                    <div 
+                      key={business.id}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
+                    >
+                      <BusinessFeedCard 
+                        business={business}
+                        currentUser={user}
+                        isAdmin={isAdmin}
+                        onDelete={handleDelete}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Trigger para scroll infinito */}
+                {hasMore && (
                   <div 
-                    key={business.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
+                    ref={loadMoreRef}
+                    className="h-20 flex items-center justify-center"
                   >
-                    <BusinessFeedCard 
-                      business={business}
-                      currentUser={user}
-                      isAdmin={isAdmin}
-                      onDelete={handleDelete}
-                    />
+                    {isLoadingMore && (
+                      <div className="flex items-center gap-3 text-gray-400">
+                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm">Cargando más negocios...</span>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                )}
+
+                {/* Indicador de fin de lista */}
+                {!hasMore && displayedBusinesses.length > 0 && (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    <p>Has visto todos los negocios disponibles</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
           {/* Sidebar Derecho (Desktop Only) - Nuevo diseño modular */}
-          <RightSidebar />
+          <div className="hidden lg:block space-y-4">
+            <RightSidebar />
+            <PromotionsManager />
+          </div>
         </div>
       </div>
 
@@ -942,11 +1093,16 @@ export default function DashboardPage() {
                 <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
                   {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg">
+                <div className="flex flex-col">
+                  <h3 className="font-bold text-lg leading-tight">
                     {user?.user_metadata?.full_name || "Usuario"}
                   </h3>
-                  <p className="text-sm text-white/80">
+                  {user?.email && (
+                    <p className="text-xs text-blue-100/90 break-all">
+                      {user.email}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-white/80">
                     {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
                   </p>
                 </div>
@@ -1070,15 +1226,22 @@ export default function DashboardPage() {
                 </svg>
               </Link>
 
-              <div className="flex items-center gap-3 p-3 border-t border-gray-700 mt-2 pt-4">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <div>
-                  <p className="text-xs text-gray-400">Email</p>
-                  <p className="text-sm text-white break-all">{user?.email}</p>
+              {/* Membresía / Patrocinador */}
+              <Link
+                href="/app/dashboard/membresia"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
+              >
+                <Crown className="w-5 h-5 text-yellow-400" />
+                <div className="flex-1">
+                  <p className="font-semibold text-yellow-300">Membresía</p>
+                  <p className="text-xs text-yellow-200/80">Hazte patrocinador</p>
                 </div>
-              </div>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
             </div>
 
             {/* Logout */}

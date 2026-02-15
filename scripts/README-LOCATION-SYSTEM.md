@@ -116,3 +116,6 @@ ALTER TABLE businesses
 
 3. **Filtros por ubicación**: Ahora puedes implementar filtros en el dashboard para buscar negocios por estado o municipio.
 
+
+
+

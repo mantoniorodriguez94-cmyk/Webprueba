@@ -4,10 +4,12 @@ import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import PremiumMembershipSection from "@/components/business/PremiumMembershipSection"
+import { Sparkles, Star, Crown, User, Rocket, TrendingUp, Award, Heart } from "lucide-react"
 
 type Promotion = {
   id: string
@@ -24,7 +26,28 @@ export default function GestionarNegocioPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
   const businessId = params?.id as string
+
+  const { tier, loading: tierLoading } = useMembershipAccess()
+
+  // Admin check: legacy "Membresía Premium" section only visible to admins
+  useEffect(() => {
+    const loadAdminFlag = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
+      try {
+        const res = await fetch("/api/user/is-admin", { cache: "no-store" })
+        const data = await res.json()
+        setIsAdmin(data.isAdmin === true)
+      } catch {
+        setIsAdmin(false)
+      }
+    }
+    loadAdminFlag()
+  }, [user])
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -235,24 +258,102 @@ export default function GestionarNegocioPage() {
           </div>
         </div>
 
-        {/* Membresía Premium */}
-        <PremiumMembershipSection
-          businessId={business.id}
-          business={business}
-          onUpdate={() => {
-            // Recargar datos del negocio cuando se actualiza
-            supabase
-              .from("businesses")
-              .select("*")
-              .eq("id", businessId)
-              .single()
-              .then(({ data, error }) => {
-                if (!error && data) {
-                  setBusiness(data)
-                }
-              })
-          }}
-        />
+        {/* Nivel de Visibilidad del Negocio — visible para todos los dueños */}
+        <div className="mt-6 bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:border-white/30 transition-all">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Nivel de Visibilidad del Negocio</h3>
+              <p className="text-sm text-gray-400">Tu suscripción define qué canales de contacto ven los clientes</p>
+            </div>
+          </div>
+          {tierLoading ? (
+            <div className="flex items-center gap-2 text-gray-400 py-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-500 border-t-transparent" />
+              <span className="text-sm">Cargando nivel...</span>
+            </div>
+          ) : (
+            <>
+              {/* Plan actual — badge visible para mostrar progreso (Next-Step CRO) */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Plan actual</p>
+                <span className={`
+                  inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border
+                  ${tier === 0 ? "bg-gray-600/30 text-gray-300 border-gray-500/50" : ""}
+                  ${tier === 1 ? "bg-orange-500/20 text-orange-200 border-orange-500/50" : ""}
+                  ${tier === 2 ? "bg-slate-500/20 text-slate-200 border-slate-400/50" : ""}
+                  ${tier === 3 ? "bg-gradient-to-r from-yellow-500/30 to-amber-500/30 text-yellow-100 border-yellow-500/50" : ""}
+                `}>
+                  {tier === 0 && <User className="w-4 h-4" />}
+                  {tier === 1 && <User className="w-4 h-4" />}
+                  {tier === 2 && <Star className="w-4 h-4 fill-slate-200" />}
+                  {tier === 3 && <Crown className="w-4 h-4 fill-yellow-200" />}
+                  {tier === 0 && "Básico"}
+                  {tier === 1 && "Conecta"}
+                  {tier === 2 && "Destaca"}
+                  {tier === 3 && "Fundador"}
+                </span>
+              </div>
+              {/* Next-Step: solo el beneficio que les falta (persuasión por tier) */}
+              <div className="flex gap-3 mb-4">
+                <span className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-lg">
+                  {tier === 0 && <Rocket className="w-5 h-5 text-indigo-400" />}
+                  {tier === 1 && <TrendingUp className="w-5 h-5 text-orange-400" />}
+                  {tier === 2 && <Award className="w-5 h-5 text-slate-300" />}
+                  {tier === 3 && <Heart className="w-5 h-5 text-amber-400" />}
+                </span>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {tier === 0 && (
+                    <>¡Tu negocio está listo! Activa el <strong className="text-white font-semibold">Chat en Vivo</strong> con el plan <strong className="text-white font-semibold">Conecta</strong> y no dejes que ningún cliente se vaya con dudas.</>
+                  )}
+                  {tier === 1 && (
+                    <>📈 ¿Buscas resultados más directos? Al subir a <strong className="text-white font-semibold">Destaca</strong>, tus botones de WhatsApp y Llamada aparecerán al instante.</>
+                  )}
+                  {tier === 2 && (
+                    <>👑 ¡Domina tu categoría! El plan <strong className="text-white font-semibold">Fundador</strong> te pone en la cima de todos los resultados de búsqueda con prioridad máxima.</>
+                  )}
+                  {tier === 3 && (
+                    <>✨ Eres un Miembro <strong className="text-white font-semibold">Fundador</strong>. Tu negocio cuenta con visibilidad total y prioridad máxima.</>
+                  )}
+                </p>
+              </div>
+              <Link
+                href="/app/dashboard/membresia"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                {tier === 3 ? "Ver Beneficios" : "Mejorar Visibilidad"}
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Membresía Premium (legacy): solo visible para admins */}
+        {isAdmin && (
+          <>
+            <div className="mb-2 px-2 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold uppercase tracking-wide">
+              ADMIN: Legacy Management
+            </div>
+            <PremiumMembershipSection
+              businessId={business.id}
+              business={business}
+              onUpdate={() => {
+                supabase
+                  .from("businesses")
+                  .select("*")
+                  .eq("id", businessId)
+                  .single()
+                  .then(({ data, error }) => {
+                    if (!error && data) {
+                      setBusiness(data)
+                    }
+                  })
+              }}
+            />
+          </>
+        )}
 
         {/* Grid de Funcionalidades */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">

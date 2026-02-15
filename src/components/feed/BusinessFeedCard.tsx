@@ -1,6 +1,6 @@
 // src/components/feed/BusinessFeedCard.tsx - REDISEÑO MOBILE PREMIUM
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -11,11 +11,16 @@ import StarRating from "@/components/reviews/StarRating"
 import BusinessLocation from "@/components/BusinessLocation"
 import PremiumBadge, { PremiumBanner } from "@/components/ui/PremiumBadge"
 import DistanceBadge from "@/components/ui/DistanceBadge"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
+import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 import { 
   trackBusinessInteraction, 
   toggleBusinessSave, 
   checkBusinessSaved 
 } from "@/lib/analytics"
+import { supabase } from "@/lib/supabaseClient"
+import { Crown } from "lucide-react"
 
 interface BusinessFeedCardProps {
   business: Business
@@ -31,13 +36,18 @@ export default function BusinessFeedCard({
   onDelete 
 }: BusinessFeedCardProps) {
   const router = useRouter()
+  const { hasAccess } = useMembershipAccess()
   const [imageError, setImageError] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
-  
+  const [showUpgradeSuggestion, setShowUpgradeSuggestion] = useState(false)
+  const [showChatDisabledModal, setShowChatDisabledModal] = useState(false)
+  /** Healed tier when owner_id exists but join/profile data was missing (no-reason rule) */
+  const [healedTier, setHealedTier] = useState<number | null>(null)
+
   // Verificar si el negocio ya está guardado
   useEffect(() => {
     const checkSaved = async () => {
@@ -133,6 +143,23 @@ export default function BusinessFeedCard({
   }
   
   const handleMessage = () => {
+    if (!currentUser) {
+      router.push("/app/auth/login")
+      return
+    }
+
+    // Chat only for owner tier >= 1 (cumulative: Conecta, Destaca, Fundador)
+    if (ownerTier < 1) {
+      setShowChatDisabledModal(true)
+      return
+    }
+
+    // User must have Conecta (Tier 1+) to open chat
+    if (!hasAccess(SUBSCRIPTION_TIER_CONECTA)) {
+      setShowUpgradeSuggestion(true)
+      return
+    }
+
     if (business.id) {
       trackBusinessInteraction(business.id, 'message', currentUser?.id)
     }
@@ -151,12 +178,53 @@ export default function BusinessFeedCard({
                          business.premium_until && 
                          new Date(business.premium_until) > new Date()
 
+  // Safe-access: never read business.owner / business.profiles without fallback (avoids crash if null)
+  const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
+  const ownerTier = healedTier ?? businessTier
+  const ownerHasChat = ownerTier >= 1
+  const ownerHasFullContact = ownerTier >= 2
+  const isTier2 = ownerTier >= 2
+  const isTier3 = ownerTier >= 3
+
+  // Heal: if owner_id exists but tier was missing (slow join), fetch profile once per business
+  const healAttemptedForOwner = useRef<string | null>(null)
+  useEffect(() => {
+    if (!business.owner_id) return
+    const hasTierFromData = business.profiles?.subscription_tier != null || business.owner?.subscription_tier != null
+    if (hasTierFromData) return
+    if (healAttemptedForOwner.current === business.owner_id) return
+    healAttemptedForOwner.current = business.owner_id
+    let cancelled = false
+    supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", business.owner_id)
+      .single()
+      .then(({ data }) => {
+        if (!cancelled) setHealedTier(data?.subscription_tier ?? 0)
+      })
+    return () => { cancelled = true }
+  }, [business.owner_id, business.profiles?.subscription_tier, business.owner?.subscription_tier])
+
+  // Determinar clases de estilo basadas en tier
+  const getTierStyles = () => {
+    if (isTier3) {
+      // Tier 3: Gold border + custom gold glow class
+      return 'border-2 tier-gold-glow bg-gradient-to-br from-yellow-500/10 to-orange-500/5'
+    } else if (isTier2) {
+      // Tier 2: Silver border + custom silver glow class
+      return 'border-2 tier-silver-glow bg-gradient-to-br from-slate-400/5 to-slate-500/5'
+    } else if (isPremiumActive) {
+      // Premium legacy (business premium, not user subscription)
+      return 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5'
+    } else {
+      // Default
+      return 'border border-white/20 hover:border-white/30 bg-transparent'
+    }
+  }
+
   return (
-    <div className={`backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative ${
-      isPremiumActive 
-        ? 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5' 
-        : 'border border-white/20 hover:border-white/30 bg-transparent'
-    }`}>
+    <div className={`backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative ${getTierStyles()}`}>
       {/* Banner Premium */}
       {isPremiumActive && <PremiumBanner />}
       
@@ -196,6 +264,12 @@ export default function BusinessFeedCard({
                 <h3 className="text-lg font-bold text-white truncate hover:text-blue-400 transition-colors">
                   {business.name}
                 </h3>
+                {isTier3 && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 text-[10px] font-bold shadow-lg shadow-yellow-500/40">
+                    <Crown className="w-3 h-3" />
+                    <span>Verificado</span>
+                  </div>
+                )}
                 {isPremiumActive && <PremiumBadge variant="small" showText={false} />}
               </div>
             </Link>
@@ -342,7 +416,7 @@ export default function BusinessFeedCard({
           </div>
         )}
 
-        {(business.phone || business.whatsapp) && (
+        {ownerHasFullContact && (business.phone || business.whatsapp) && (
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -377,11 +451,24 @@ export default function BusinessFeedCard({
             </svg>
           </button>
 
-          {/* Mensaje */}
+          {/* Mensaje: disabled when owner tier < 1; enabled when owner tier >= 1 (cumulative) */}
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
-              className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-blue-400 transition-all"
+              className={`p-2 rounded-full transition-all ${
+                ownerTier < 1
+                  ? "text-gray-600 opacity-60 cursor-not-allowed"
+                  : hasAccess(SUBSCRIPTION_TIER_CONECTA)
+                    ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+                    : "text-gray-600 opacity-50 cursor-not-allowed"
+              }`}
+              title={
+                ownerTier < 1
+                  ? "Activa Conecta"
+                  : hasAccess(SUBSCRIPTION_TIER_CONECTA)
+                    ? "Enviar mensaje"
+                    : "Chat requiere plan Conecta"
+              }
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -420,9 +507,9 @@ export default function BusinessFeedCard({
         </button>
       </div>
 
-      {/* Botones de Acción Principales */}
+      {/* Botones de Acción Principales — WhatsApp/Call solo si dueño Tier 2+ */}
       <div className="p-4 pt-0 flex gap-2">
-        {business.whatsapp && (
+        {ownerHasFullContact && business.whatsapp && (
           <a
             href={`https://wa.me/${business.whatsapp}`}
             target="_blank"
@@ -436,7 +523,7 @@ export default function BusinessFeedCard({
             Contactar
           </a>
         )}
-        {business.phone && !business.whatsapp && (
+        {ownerHasFullContact && business.phone && (
           <a
             href={`tel:${business.phone}`}
             onClick={handlePhone}
@@ -459,17 +546,69 @@ export default function BusinessFeedCard({
         </Link>
       </div>
 
-      {/* Modal de enviar mensaje */}
-      {showMessageModal && currentUser && (
+      {/* Modal de enviar mensaje — solo si negocio tiene chat (Tier 1+) y usuario Conecta */}
+      {showMessageModal && currentUser && ownerHasChat && hasAccess(SUBSCRIPTION_TIER_CONECTA) && (
         <SendMessageModal
           business={business}
           currentUserId={currentUser.id}
           onClose={() => setShowMessageModal(false)}
           onSuccess={(businessId) => {
-            // Redirigir al chat con el negocio
             router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
           }}
         />
+      )}
+
+      {/* Modal: negocio Tier 0 — chat no activado */}
+      {showChatDisabledModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowChatDisabledModal(false)}
+        >
+          <div
+            className="max-w-md w-full bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">Chat no disponible</h3>
+                <p className="text-sm text-gray-300">
+                  Este negocio aún no ha activado su canal de chat. ¡Activa Conecta para habilitar la mensajería!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowChatDisabledModal(false)}
+              className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Suggestion Modal */}
+      {showUpgradeSuggestion && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowUpgradeSuggestion(false)}
+        >
+          <div
+            className="max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <UpgradeSuggestion
+              requiredTier={SUBSCRIPTION_TIER_CONECTA}
+              featureName="Chat con Clientes"
+              featureDescription="Comunícate directamente con los negocios a través de nuestro sistema de mensajería integrado."
+              variant="modal"
+            />
+          </div>
+        </div>
       )}
 
       {/* Modal de galería completa */}

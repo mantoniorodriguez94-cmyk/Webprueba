@@ -77,3 +77,6 @@ CREATE INDEX IF NOT EXISTS idx_businesses_location ON public.businesses(state_id
 
 COMMIT;
 
+
+
+

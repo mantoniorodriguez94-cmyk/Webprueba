@@ -4,10 +4,14 @@ import React, { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import Image from "next/image"
+import { ArrowLeft } from "lucide-react"
 import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
+import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
+import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 
 interface Conversation {
   conversation_id: string
@@ -34,6 +38,8 @@ export default function MisMensajesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
+  const { hasAccess, loading: accessLoading } = useMembershipAccess()
+  const [isAdmin, setIsAdmin] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -41,11 +47,33 @@ export default function MisMensajesPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [selectedBusinessOwnerTier, setSelectedBusinessOwnerTier] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const businessIdParam = searchParams.get('business')
   
   // 🔔 Hook para notificaciones completas (sonido + navegador)
   const { notifyNewMessage, enableNotifications } = useChatNotifications()
+  
+  // Acceso a mensajería: Tier Conecta (1) o superior, o admin
+  const canAccessMessaging = hasAccess(SUBSCRIPTION_TIER_CONECTA) || isAdmin
+  
+  // Admin check (admins always see chat)
+  useEffect(() => {
+    const loadAdminFlag = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
+      try {
+        const res = await fetch("/api/user/is-admin", { cache: "no-store" })
+        const data = await res.json()
+        setIsAdmin(data.isAdmin === true)
+      } catch {
+        setIsAdmin(false)
+      }
+    }
+    loadAdminFlag()
+  }, [user])
   
   // Calcular total de mensajes no leídos
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unread_count_user, 0)
@@ -121,6 +149,38 @@ export default function MisMensajesPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, businessIdParam])
+
+  // Fetch business owner's subscription_tier when a conversation is selected (Tier 0 = chat disabled)
+  useEffect(() => {
+    if (!selectedConversation?.business_id) {
+      setSelectedBusinessOwnerTier(null)
+      return
+    }
+    let mounted = true
+    const fetchOwnerTier = async () => {
+      try {
+        const { data: biz } = await supabase
+          .from("businesses")
+          .select("owner_id")
+          .eq("id", selectedConversation!.business_id)
+          .single()
+        if (!mounted || !biz?.owner_id) {
+          if (mounted) setSelectedBusinessOwnerTier(0)
+          return
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_tier")
+          .eq("id", biz.owner_id)
+          .single()
+        if (mounted) setSelectedBusinessOwnerTier(profile?.subscription_tier ?? 0)
+      } catch {
+        if (mounted) setSelectedBusinessOwnerTier(0)
+      }
+    }
+    fetchOwnerTier()
+    return () => { mounted = false }
+  }, [selectedConversation?.business_id])
 
   const loadMessages = async (conversation: Conversation) => {
     setSelectedConversation(conversation)
@@ -357,7 +417,7 @@ export default function MisMensajesPage() {
     }
   }
 
-  if (userLoading) {
+  if (userLoading || accessLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -385,47 +445,85 @@ export default function MisMensajesPage() {
     )
   }
 
+  // Paywall: Tier 0 (no membership) — show upgrade card only; admins always pass
+  if (!canAccessMessaging) {
+    return (
+      <div className="min-h-screen flex flex-col pb-24">
+        <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-xl border-b border-white/10 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
+            <Link
+              href="/app/dashboard"
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="text-xl font-bold text-white">Mensajes</h1>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <UpgradeSuggestion
+              requiredTier={SUBSCRIPTION_TIER_CONECTA}
+              featureName="Mensajería"
+              featureDescription="Enviar y recibir mensajes con negocios es una función exclusiva para miembros Conecta. Actualiza tu plan para desbloquear el chat."
+              variant="card"
+            />
+          </div>
+        </div>
+        <BottomNav isCompany={isCompany} unreadCount={0} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen w-full flex flex-col pb-0">
-      {/* Header */}
+      {/* Header: Back to dashboard + optional back to list + title */}
       <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-xl border-b border-white/10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/app/dashboard"
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white flex-shrink-0"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
             {selectedConversation && (
               <button
                 onClick={() => setSelectedConversation(null)}
-                className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300"
                 aria-label="Volver a lista de chats"
               >
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
             )}
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <h1 className="text-xl font-bold text-white flex items-center gap-2 truncate min-w-0">
+              <svg className="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              {selectedConversation ? selectedConversation.business_name : "Mensajes"}
+              <span className="truncate">{selectedConversation ? selectedConversation.business_name : "Mensajes"}</span>
             </h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Lista de Conversaciones */}
-        <div className={`${selectedConversation ? 'hidden lg:flex' : 'flex'} w-full lg:w-96 flex-col border-r border-white/10 bg-gray-900/50`}>
+        <div className={`${selectedConversation ? 'hidden lg:flex' : 'flex'} w-full lg:w-96 flex-col border-r border-white/10 bg-gray-900/50 min-h-0`}>
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center min-h-0 py-8">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="mt-4 text-white/50 text-sm">Cargando...</p>
               </div>
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center">
+            <div className="flex-1 flex items-center justify-center p-8 min-h-0">
+              <div className="text-center max-w-xs">
                 <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -509,8 +607,30 @@ export default function MisMensajesPage() {
         </div>
 
         {/* Área de Chat */}
-        <div className={`${selectedConversation ? 'flex' : 'hidden lg:flex'} flex-1 flex-col bg-gray-900/30`}>
-          {selectedConversation ? (
+        <div className={`${selectedConversation ? 'flex' : 'hidden lg:flex'} flex-1 flex-col bg-gray-900/30 min-h-0`}>
+          {selectedConversation && selectedBusinessOwnerTier !== null && selectedBusinessOwnerTier < 1 ? (
+            /* CUMULATIVE: Chat only for owner tier >= 1; show "no disponible" when tier 0 */
+            <div className="flex-1 flex items-center justify-center p-8 min-h-0">
+              <div className="text-center max-w-md bg-gray-800/50 rounded-2xl border border-white/10 p-6">
+                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Chat no disponible</h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  Este negocio no tiene chat activado. ¡Activa Conecta para habilitar la mensajería!
+                </p>
+                <button
+                  onClick={() => setSelectedConversation(null)}
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver a conversaciones
+                </button>
+              </div>
+            </div>
+          ) : selectedConversation ? (
             <>
               {/* Mensajes */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -583,7 +703,7 @@ export default function MisMensajesPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center p-8">
+            <div className="flex-1 flex items-center justify-center p-8 min-h-0">
               <div className="text-center max-w-md">
                 <div className="w-24 h-24 bg-transparent rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

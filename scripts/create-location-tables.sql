@@ -65,3 +65,6 @@ CREATE POLICY "Anyone can view municipalities"
 
 COMMIT;
 
+
+
+
