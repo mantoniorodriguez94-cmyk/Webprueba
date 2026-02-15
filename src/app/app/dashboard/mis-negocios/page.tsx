@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import { getMaxBusinessesForTier, SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
@@ -10,18 +12,26 @@ import BottomNav from "@/components/ui/BottomNav"
 
 export default function MisNegociosPage() {
   const { user, loading: userLoading } = useUser()
+  const { tier, loading: tierLoading } = useMembershipAccess()
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   
   const userRole = user?.user_metadata?.role ?? "person"
-  const isPremium = user?.user_metadata?.is_premium ?? false
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const isCompany = userRole === "company"
   
-  // Administradores tienen negocios ilimitados
-  const allowedBusinesses = isAdmin ? 999 : (user?.user_metadata?.allowed_businesses ?? 0)
-  const canCreateMore = isAdmin ? true : (negocios.length < allowedBusinesses)
+  const businessCount = negocios.length
+  const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier)
+  const isFundador = tier === SUBSCRIPTION_TIER_FUNDADOR
+  const atLimitNonFundador = !isAdmin && tier < 3 && businessCount >= 1
+  const atLimitFundador = !isAdmin && isFundador && businessCount >= 2
+  const canCreateMore = isAdmin ? true : (businessCount < allowedBusinesses)
+  const limitMessage = atLimitFundador
+    ? "Límite de 2 negocios alcanzado para el plan Fundador."
+    : atLimitNonFundador
+      ? "El plan Fundador permite hasta 2 negocios. ¡Mejora tu plan aquí!"
+      : null
   
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   
@@ -64,16 +74,8 @@ export default function MisNegociosPage() {
   }, [user, isCompany, negocios])
   
   const handleCreateBusiness = () => {
-    if (canCreateMore) {
-      window.location.href = "/app/dashboard/negocios/nuevo"
-    } else {
-      // Mostrar alerta premium
-      if (!isPremium) {
-        alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados o Patrocinados\n• Borde dorado especial para un negocio\n\nPrecio: $5 USD/mes")
-      } else {
-        alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
-      }
-    }
+    if (!canCreateMore) return
+    window.location.href = "/app/dashboard/negocios/nuevo"
   }
 
   const fetchNegocios = useCallback(async () => {
@@ -235,12 +237,14 @@ export default function MisNegociosPage() {
                 style={{ width: `${(negocios.length / allowedBusinesses) * 100}%` }}
               />
             </div>
-            {!canCreateMore && (
-              <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {!canCreateMore && !tierLoading && limitMessage && (
+              <p className="text-xs text-amber-400 mt-2 flex items-center gap-1 flex-wrap">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Has alcanzado el límite de negocios
+                {isFundador ? limitMessage : (
+                  <>El plan Fundador permite hasta 2 negocios. <Link href="/app/dashboard/membresia" className="underline font-semibold text-amber-300 hover:text-amber-200">¡Mejora tu plan aquí!</Link></>
+                )}
               </p>
             )}
           </div>
@@ -263,13 +267,18 @@ export default function MisNegociosPage() {
             <p className="text-gray-400 mb-6">Crea tu primer negocio y comienza a recibir clientes</p>
             <button 
               onClick={handleCreateBusiness}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold px-6 py-3 rounded-full transition-all hover:scale-105"
+              disabled={!canCreateMore}
+              title={limitMessage ?? undefined}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold px-6 py-3 rounded-full transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               Crear mi primer negocio
             </button>
+            {!canCreateMore && !tierLoading && limitMessage && (
+              <p className="text-sm text-amber-400 mt-3 max-w-sm">{limitMessage}</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -368,13 +377,15 @@ export default function MisNegociosPage() {
       {/* FAB - Botón Flotante para Crear Negocio */}
       <button 
         onClick={handleCreateBusiness}
-        className="fixed bottom-24 lg:bottom-8 right-6 z-40 w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
+        disabled={!canCreateMore}
+        title={limitMessage ?? undefined}
+        className="fixed bottom-24 lg:bottom-8 right-6 z-40 w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-blue-500/50"
       >
         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
         </svg>
-        <div className="absolute bottom-20 right-0 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-xl">
-          {canCreateMore ? "Crear negocio" : "⭐ Plan Premium"}
+        <div className="absolute bottom-20 right-0 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-xl pointer-events-none">
+          {canCreateMore ? "Crear negocio" : (limitMessage ?? "Límite alcanzado")}
         </div>
       </button>
 

@@ -12,13 +12,15 @@ export default function Home() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
 
-  // Función para scroll suave a sección
+  // Función para scroll suave a sección (cierra menú primero, luego scroll)
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    setMobileMenuOpen(false); // Cerrar menú móvil después de hacer click
+    setMobileMenuOpen(false);
+    requestAnimationFrame(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   };
 
   // Función para scroll al inicio
@@ -175,7 +177,7 @@ export default function Home() {
         </header>
 
         {/* BLOQUE 2 — HERO */}
-        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0 scroll-mt-32">
+        <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0">
           <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
               
@@ -193,10 +195,10 @@ export default function Home() {
                   Conecta con negocios reales, revisa reseñas auténticas y comunícate directamente sin intermediarios.
                 </p>
 
-                {/* Botones de Acción - Máximo 2 */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-slide-up animation-delay-600">
-                  <Link href="/app/dashboard">
-                    <button className="group relative px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/80">
+                {/* Botones de Acción - Máximo 2 (mobile: full width, min 48px tap target) */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-slide-up animation-delay-600 w-full sm:w-auto">
+                  <Link href="/app/dashboard" className="w-full sm:w-auto">
+                    <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/80">
                       <span className="flex items-center justify-center gap-2">
                         Buscar negocios
                         <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,8 +208,8 @@ export default function Home() {
                     </button>
                   </Link>
                   
-                  <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"}>
-                    <button className="px-8 py-4 bg-white hover:bg-gray-100 text-gray-900 font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl">
+                  <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white hover:bg-gray-100 text-gray-900 font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl">
                       Registrar mi negocio
                     </button>
                   </Link>
@@ -228,7 +230,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 3 — CÓMO FUNCIONA */}
-        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-32">
+        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -236,10 +238,10 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
               {/* Paso 1: Explora */}
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-blue-500/30">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-blue-500/30">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -251,8 +253,8 @@ export default function Home() {
               </div>
 
               {/* Paso 2: Conecta */}
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-purple-500/30">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-purple-500/30">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
@@ -264,8 +266,8 @@ export default function Home() {
               </div>
 
               {/* Paso 3: Confía */}
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-green-500/30">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-green-500/30">
                   <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
@@ -280,7 +282,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
-        <section id="para-personas" className="w-full py-20 scroll-mt-32">
+        <section id="para-personas" className="w-full py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -288,50 +290,50 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-8">
+              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white mb-1">Negocios reales</h3>
                   <p className="text-gray-300 text-sm">Verifica información de contacto y ubicación verificada.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white mb-1">Reseñas auténticas</h3>
                   <p className="text-gray-300 text-sm">Opiniones verificadas de clientes reales.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white mb-1">Contacto directo</h3>
                   <p className="text-gray-300 text-sm">Comunícate directamente sin intermediarios.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white mb-1">Experiencia simple y segura</h3>
                   <p className="text-gray-300 text-sm">Plataforma intuitiva y protegida para tus búsquedas.</p>
                 </div>
@@ -340,8 +342,8 @@ export default function Home() {
 
             {/* CTA Para Personas */}
             <div className="text-center mt-8">
-              <Link href="/app/dashboard">
-                <button className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
+              <Link href="/app/dashboard" className="inline-block w-full sm:w-auto">
+                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
                   Explorar negocios
                 </button>
               </Link>
@@ -350,7 +352,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm scroll-mt-32">
+        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -358,7 +360,7 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8">
               <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
                   <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,8 +405,8 @@ export default function Home() {
 
             {/* CTA Para Negocios */}
             <div className="text-center mt-8">
-              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"}>
-                <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
+              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="inline-block w-full sm:w-auto">
+                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
                   Registrar mi negocio
                 </button>
               </Link>
@@ -415,9 +417,9 @@ export default function Home() {
         {/* BLOQUE 6 — CONFIANZA / CREDIBILIDAD */}
         <section className="w-full py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div className="space-y-3">
-                <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-2xl flex items-center justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-16 h-16 flex-shrink-0 bg-green-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-8 h-8 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
@@ -426,8 +428,8 @@ export default function Home() {
                 <p className="text-gray-300 text-sm">Cada negocio pasa por un proceso de verificación.</p>
               </div>
 
-              <div className="space-y-3">
-                <div className="w-16 h-16 mx-auto bg-blue-500/20 rounded-2xl flex items-center justify-center">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-16 h-16 flex-shrink-0 bg-blue-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
@@ -436,8 +438,8 @@ export default function Home() {
                 <p className="text-gray-300 text-sm">Solo opiniones auténticas de clientes verificados.</p>
               </div>
 
-              <div className="space-y-3">
-                <div className="w-16 h-16 mx-auto bg-purple-500/20 rounded-2xl flex items-center justify-center">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-16 h-16 flex-shrink-0 bg-purple-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -456,14 +458,14 @@ export default function Home() {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6">
               Empieza hoy con Encuentra
             </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/app/dashboard">
-                <button className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md sm:max-w-none mx-auto">
+              <Link href="/app/dashboard" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-blue-500/50">
                   Buscar negocios
                 </button>
               </Link>
-              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"}>
-                <button className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20">
+              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20">
                   Registrar mi negocio
                 </button>
               </Link>

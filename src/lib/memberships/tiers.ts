@@ -100,6 +100,12 @@ export function getPlanByTier(
   }
 }
 
+/** Máximo de negocios por cuenta: tier 0–2 → 1, tier 3 (Fundador) → 2 */
+export function getMaxBusinessesForTier(tier: number | null | undefined): number {
+  if (tier == null || !Number.isFinite(tier)) return 1
+  return tier === SUBSCRIPTION_TIER_FUNDADOR ? 2 : 1
+}
+
 /**
  * Calcula el total a pagar para una suscripción dada.
  * 

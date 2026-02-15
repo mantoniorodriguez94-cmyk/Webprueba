@@ -26,6 +26,14 @@
     scroll-behavior: smooth;
   }
 
+  /* Anchor scroll offset for sticky header (~80px) */
+  #inicio,
+  #como-funciona,
+  #para-personas,
+  #para-negocios {
+    scroll-margin-top: 5rem;
+  }
+
   ::selection {
     @apply bg-blue-100 text-blue-900;
   }

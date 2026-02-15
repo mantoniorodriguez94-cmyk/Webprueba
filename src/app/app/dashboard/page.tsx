@@ -12,7 +12,6 @@ import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
 import PromotionsManager from "@/components/dashboard/PromotionsManager"
-import { Crown } from "lucide-react"
 
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
@@ -758,45 +757,23 @@ export default function DashboardPage() {
       {/* Header Móvil Moderno */}
       <header className="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
         <div className="px-4 py-4 lg:px-6">
-          {/* Top Row - Logo, Navegación y Acciones */}
+          {/* Top Row - Logo y Acciones (navegación simplificada) */}
           <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Logo clickable */}
-            <div className="flex items-center gap-6">
+            {/* Logo */}
+            <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
               <Link href="/" className="inline-block cursor-pointer">
                 <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
                   <span className="text-2xl">📍</span>
                   Encuentra
                 </h1>
               </Link>
-              <p className="hidden lg:block text-xs lg:text-sm text-gray-400 mt-1">
+              <p className="hidden lg:block text-xs lg:text-sm text-gray-400 mt-1 truncate">
                 {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
               </p>
             </div>
 
-            {/* Navegación de Dashboard (Desktop) */}
-            <nav className="hidden md:flex items-center gap-6 text-xs lg:text-sm text-gray-400">
-              <Link
-                href="/app/dashboard"
-                className="hover:text-white transition-colors"
-              >
-                Explorar
-              </Link>
-              <Link
-                href="/app/dashboard/negocios"
-                className="hover:text-white transition-colors"
-              >
-                Mis Negocios
-              </Link>
-              <Link
-                href="/app/dashboard/membresia"
-                className="flex items-center gap-1 hover:text-emerald-400 transition-colors"
-              >
-                <span className="text-[13px]">Membresía</span>
-              </Link>
-            </nav>
-            
             {/* Acciones (Buscar + Usuario) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               {/* Botón de Búsqueda - Solo visible en Desktop */}
               <button
                 onClick={() => setShowSearchModal(true)}
@@ -1188,26 +1165,6 @@ export default function DashboardPage() {
                 )}
               </Link>
 
-              {/* Mis Negocios - Solo para usuarios empresa */}
-              {isCompany && (
-                <Link
-                  href="/app/dashboard/mis-negocios"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-                >
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">Mis Negocios</p>
-                    <p className="text-xs text-gray-400">Gestionar negocios</p>
-                  </div>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              )}
-
               {/* Perfil - Para todos */}
               <Link
                 href="/app/dashboard/perfil"
@@ -1220,22 +1177,6 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-white">Mi Perfil</p>
                   <p className="text-xs text-gray-400">Configuración y más</p>
-                </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-
-              {/* Membresía / Patrocinador */}
-              <Link
-                href="/app/dashboard/membresia"
-                onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-              >
-                <Crown className="w-5 h-5 text-yellow-400" />
-                <div className="flex-1">
-                  <p className="font-semibold text-yellow-300">Membresía</p>
-                  <p className="text-xs text-yellow-200/80">Hazte patrocinador</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

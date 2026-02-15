@@ -242,6 +242,9 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 <p className="mt-1 text-[11px] text-yellow-100">
                   Incluye insignia de verificación, borde dorado y promociones destacadas.
                 </p>
+                <p className="mt-1 text-[11px] text-yellow-200 font-medium">
+                  Hasta 2 negocios incluidos.
+                </p>
               </div>
             </div>
 
