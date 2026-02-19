@@ -2,13 +2,18 @@
 import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
+import MembershipBadge from "@/components/memberships/MembershipBadge"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import BottomNav from "@/components/ui/BottomNav"
 import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
+import { toast } from "sonner"
 
 export default function PerfilPage() {
   const { user, loading: userLoading } = useUser()
+  const { tier: subscriptionTier } = useMembershipAccess()
   const [isAdmin, setIsAdmin] = useState(false)
 
   // ============================================================
@@ -90,6 +95,9 @@ export default function PerfilPage() {
   const fullName = user?.user_metadata?.full_name || "Usuario"
   const email = user?.email || ""
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+  const [invitedCount, setInvitedCount] = useState(0)
+  const [qualifiedInvitedCount, setQualifiedInvitedCount] = useState(0)
+  const currentBadgeType = getBadgeTypeForTier((subscriptionTier || 0) as MembershipTier)
 
   // ============================================================
   // Mensajes no leídos
@@ -196,6 +204,49 @@ export default function PerfilPage() {
     const interval = setInterval(fetchUnreadMessages, 30000)
     return () => clearInterval(interval)
   }, [user, isCompany])
+
+  // ============================================================
+  // Contador de referidos (registrados vs calificados)
+  // ============================================================
+  useEffect(() => {
+    const loadInvitedCounts = async () => {
+      if (!user) {
+        setInvitedCount(0)
+        setQualifiedInvitedCount(0)
+        return
+      }
+      try {
+        // Total registros con tu link
+        const { count: totalCount, error: totalError } = await supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("referred_by", user.id)
+
+        if (totalError) {
+          console.warn("Error cargando referidos totales:", totalError)
+        } else {
+          setInvitedCount(totalCount ?? 0)
+        }
+
+        // Referidos calificados: tienen algún plan de suscripción (tier >= 1)
+        const { count: qualifiedCount, error: qualifiedError } = await supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("referred_by", user.id)
+          .gt("subscription_tier", 0)
+
+        if (qualifiedError) {
+          console.warn("Error cargando referidos calificados:", qualifiedError)
+        } else {
+          setQualifiedInvitedCount(qualifiedCount ?? 0)
+        }
+      } catch (err) {
+        console.error("Error inesperado cargando referidos:", err)
+      }
+    }
+
+    loadInvitedCounts()
+  }, [user])
 
   // ============================================================
   // Logout
@@ -309,43 +360,46 @@ export default function PerfilPage() {
             <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white/30">
               {fullName[0]?.toUpperCase() || "U"}
             </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-1">{fullName}</h2>
-              <p className="text-blue-100 mb-2">{email}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-2xl font-bold mb-1 truncate">{fullName}</h2>
+                  <p className="text-blue-100 mb-2 break-all">{email}</p>
 
-              <div className="flex items-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  isCompany 
-                    ? "bg-purple-500/30 text-purple-100 border border-purple-300/30" 
-                    : "bg-green-500/30 text-green-100 border border-green-300/30"
-                }`}>
-                  {isCompany ? "👔 Cuenta Negocio" : "👤 Cuenta Personal"}
-                </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        isCompany
+                          ? "bg-purple-500/30 text-purple-100 border border-purple-300/30"
+                          : "bg-green-500/30 text-green-100 border border-green-300/30"
+                      }`}
+                    >
+                      {isCompany ? "👔 Cuenta Negocio" : "👤 Cuenta Personal"}
+                    </span>
 
-                {isPremium && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/30 text-yellow-100 border border-yellow-300/30">
-                    ⭐ Premium
-                  </span>
+                    {/* ============================================
+                        🔥 INSIGNIA ADMIN
+                      ============================================ */}
+                    {isAdmin && (
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/30 text-red-100 border border-red-300/30">
+                        🔥 Administrador
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {currentBadgeType && (
+                  <MembershipBadge type={currentBadgeType} className="shrink-0" />
                 )}
-
-                {/* ============================================
-                    🔥 INSIGNIA ADMIN
-                  ============================================ */}
-                {isAdmin && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/30 text-red-100 border border-red-300/30">
-                    🔥 Administrador
-                  </span>
-                )}
-
               </div>
             </div>
           </div>
         </div>
 
         {/* ============================================
-            SECCIÓN RECLAMAR NEGOCIO (PARA TODOS LOS USUARIOS)
+            SECCIÓN RECLAMAR NEGOCIO (SOLO ADMIN)
         ============================================ */}
-        <ClaimBusinessForm />
+        {isAdmin && <ClaimBusinessForm />}
 
         {/* ============================================
             OPCIONES PARA USUARIOS PERSONALES
@@ -458,9 +512,9 @@ export default function PerfilPage() {
               </div>
             </Link>
 
-            {/* Sección Invitaciones */}
+            {/* Sección Invitaciones / Referidos */}
             <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 mb-6">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-3">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-500/20">
                   <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -468,36 +522,70 @@ export default function PerfilPage() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-white">Invita a tus amigos</h4>
-                  <p className="text-sm text-gray-400">Comparte Encuentra y ayuda a crecer la comunidad</p>
+                  <p className="text-sm text-gray-400">
+                    Invita a 3 negocios y obtén <span className="font-semibold text-yellow-300">1 mes de Plan Fundador GRATIS.</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Fundador).
+                  </p>
                 </div>
               </div>
               
               <div className="space-y-3">
-                <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex flex-col sm:flex-row items-stretch gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
                   <input
                     type="text"
                     readOnly
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/app/auth/register?ref=${user?.id || ''}`}
+                    value={`https://portalencuentra.com/register?ref=${user?.id || ""}`}
                     className="flex-1 bg-transparent text-white text-sm outline-none"
                   />
-                  <button
-                    onClick={async () => {
-                      const link = `${window.location.origin}/app/auth/register?ref=${user?.id || ''}`
-                      try {
-                        await navigator.clipboard.writeText(link)
-                        alert('Enlace copiado al portapapeles')
-                      } catch (err) {
-                        console.error('Error copiando:', err)
-                      }
-                    }}
-                    className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors text-sm font-semibold"
-                  >
-                    Copiar
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const link = `https://portalencuentra.com/register?ref=${user?.id || ""}`
+                        try {
+                          await navigator.clipboard.writeText(link)
+                          toast.success("Enlace de invitación copiado al portapapeles")
+                        } catch (err) {
+                          console.error("Error copiando:", err)
+                          toast.error("No se pudo copiar el enlace. Intenta de nuevo.")
+                        }
+                      }}
+                      className="flex-1 px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors text-sm font-semibold"
+                    >
+                      Copiar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = `https://portalencuentra.com/register?ref=${user?.id || ""}`
+                        const message = `¡Hola! Únete a Portal Encuentra y haz crecer tu negocio. Si te registras con mi link y activas un plan, ¡ambos ganamos beneficios! ${link}`
+                        const url = `https://wa.me/?text=${encodeURIComponent(message)}`
+                        window.open(url, "_blank", "noopener,noreferrer")
+                      }}
+                      className="flex-1 px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-colors text-sm font-semibold"
+                    >
+                      WhatsApp
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 text-center">
-                  Comparte este enlace con tus amigos. Cuando se registren, quedará registrado en tu cuenta.
-                </p>
+                <div className="space-y-1 text-xs text-gray-300 text-center">
+                  <p>
+                    Registrados: <span className="font-semibold text-white">{invitedCount}</span>
+                  </p>
+                  <p>
+                    Invitados válidos:{" "}
+                    <span className="font-semibold text-white">{qualifiedInvitedCount}</span>
+                    <span className="text-gray-400"> / 3</span>
+                  </p>
+                  <div className="mt-2 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, (qualifiedInvitedCount / 3) * 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -529,7 +617,7 @@ export default function PerfilPage() {
                           ? premiumSubscription && getDaysRemaining(premiumSubscription.premium_until) !== null && getDaysRemaining(premiumSubscription.premium_until)! <= 7
                             ? "⚠️ Por vencer pronto"
                             : "✨ Activo"
-                          : "🆓 Plan Gratuito"}
+                          : "🆓 Plan Básico"}
                       </p>
                     </div>
                     {isPremium && (
@@ -653,21 +741,26 @@ export default function PerfilPage() {
             </Link>
           )}
 
-          {/* Tarjeta Preferencias */}
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-transparent rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          {/* Tarjeta Preferencias -> Redirige a gestión de negocios */}
+          <Link href="/app/dashboard/mis-negocios">
+            <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-transparent rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white">Preferencias</h4>
+                  <p className="text-sm text-gray-400">Ir a la gestión de negocios</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-white">Preferencias</h4>
-                <p className="text-sm text-gray-400">Configuración de la cuenta</p>
-              </div>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* CERRAR SESIÓN */}

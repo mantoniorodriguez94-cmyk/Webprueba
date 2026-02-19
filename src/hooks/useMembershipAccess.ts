@@ -100,7 +100,7 @@ export default function useMembershipAccess() {
    * @returns true si el usuario tiene el tier requerido y la suscripción está activa
    */
   const hasAccess = (requiredTier: SubscriptionTier): boolean => {
-    if (requiredTier === 0) return true // Gratis siempre accesible
+    if (requiredTier === 0) return true // Básico siempre accesible
     if (membership.loading) return false
     if (!membership.hasActiveSubscription) return false
     return membership.tier >= requiredTier

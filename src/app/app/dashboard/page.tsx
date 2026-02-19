@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import type { Business } from "@/types/business"
@@ -11,6 +12,8 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
+import MembershipBadge from "@/components/memberships/MembershipBadge"
+import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
 
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
@@ -61,6 +64,8 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParamsInitial = useSearchParams()
   const { user, loading: userLoading } = useUser()
+  const { tier: subscriptionTier } = useMembershipAccess()
+  const currentBadgeType = getBadgeTypeForTier((subscriptionTier || 0) as MembershipTier)
   
   // Leer parámetros de URL para filtros de ubicación
   const stateIdParam = searchParamsInitial.get("state_id") ? parseInt(searchParamsInitial.get("state_id")!) : null
@@ -1068,15 +1073,22 @@ export default function DashboardPage() {
                 <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
                   {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-bold text-lg leading-tight">
-                    {user?.user_metadata?.full_name || "Usuario"}
-                  </h3>
-                  {user?.email && (
-                    <p className="text-xs text-blue-100/90 break-all">
-                      {user.email}
-                    </p>
-                  )}
+                <div className="flex flex-col flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg leading-tight truncate">
+                        {user?.user_metadata?.full_name || "Usuario"}
+                      </h3>
+                      {user?.email && (
+                        <p className="text-xs text-blue-100/90 break-all">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                    {currentBadgeType && (
+                      <MembershipBadge type={currentBadgeType} className="shrink-0" />
+                    )}
+                  </div>
                   <p className="mt-1 text-xs text-white/80">
                     {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
                   </p>

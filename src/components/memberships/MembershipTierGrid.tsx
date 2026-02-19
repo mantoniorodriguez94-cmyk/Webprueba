@@ -37,7 +37,7 @@ const tiers = [
     tier: 2 as MembershipTier,
     title: "Destaca",
     label: "Más Visibilidad",
-    price: 3,
+    price: 2,
     badgeType: "bronze_shield" as const,
     highlight: false
   },
@@ -45,7 +45,7 @@ const tiers = [
     tier: 3 as MembershipTier,
     title: "Fundador",
     label: "Máximo Estatus",
-    price: 5,
+    price: 3,
     badgeType: "gold_crown" as const,
     highlight: true
   }
@@ -107,7 +107,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 key={t.tier}
                 type="button"
                 onClick={() => {
-                  // El plan Free es informativo; solo abrir modal para tiers de pago
+                  // El plan Básico es informativo; solo abrir modal para tiers de pago
                   if (t.tier > 0) {
                     onSelectTier(t.tier)
                   }
@@ -164,27 +164,29 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                   {t.tier === 0 && (
                     <>
                       <li>📍 Acceso a tu Localización en el Mapa con un click </li>
-                      <li>📷 1 Foto de Perfil y Galería de Fotos</li>
+                      <li>📷 Foto de Perfil más 1 Foto en la Galería</li>
                       <li>🔍 Búsqueda Básica</li>
+                      <li>🛡️ Sube tu horario de atención</li>
+                      <li>📞 Publica tus promociones</li>
                     </>
                   )}
                   {t.tier === 1 && (
                     <>
                       <li className="text-[11px] text-gray-400">
-                        ✅ <span className="italic">Todo lo del plan Gratis</span>
+                        ✅ <span className="italic">Todo lo del plan Básico más:</span>
                       </li>
-                      <li>💬 Sistema de Chat con Activo</li>
-                      <li>📲 Comunicacion Directa a WhatsApp y Llamadas con un solo click</li>
+                      <li>💬 Sistema de Chat en vivo</li>
+                      <li>📲 Comunicacion Directa a WhatsApp y Llamadas con un solo botón</li>
                       <li>📷 Galería de hasta 3 Fotos</li>
                     </>
                   )}
                   {t.tier === 2 && (
                     <>
                       <li className="text-[11px] text-gray-400">
-                        ✅ <span className="italic">Todo lo del plan Conecta</span>
+                        ✅ <span className="italic">Todo lo del plan Conecta más:</span>
                       </li>
-                      <li>🚀 Prioridad en Resultados (Arriba)</li>
-                      <li>🛡️ Badge Destaca</li>
+                      <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
+                      <li>🛡️ Tu negocio aparece en la seccion de "Más Destacados"</li>
                       <li>📷 Galería de hasta 5 Fotos</li>
                     </>
                   )}

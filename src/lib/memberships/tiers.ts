@@ -40,8 +40,8 @@ export interface ResolvedMembershipTier {
 export const SUBSCRIPTION_PRICES: Record<SubscriptionTier, number> = {
   [SUBSCRIPTION_TIER_FREE]: 0,
   [SUBSCRIPTION_TIER_CONECTA]: 1,
-  [SUBSCRIPTION_TIER_DESTACADO]: 3,
-  [SUBSCRIPTION_TIER_FUNDADOR]: 5
+  [SUBSCRIPTION_TIER_DESTACADO]: 2,
+  [SUBSCRIPTION_TIER_FUNDADOR]: 3
 }
 
 // Tolerancia para montos flotantes (por fees/conversiones menores)
