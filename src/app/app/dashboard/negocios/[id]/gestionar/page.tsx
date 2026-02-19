@@ -9,6 +9,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import PremiumMembershipSection from "@/components/business/PremiumMembershipSection"
+import { SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
 import { Sparkles, Star, Crown, User, Rocket, TrendingUp, Award, Heart } from "lucide-react"
 
 type Promotion = {
@@ -479,9 +480,22 @@ export default function GestionarNegocioPage() {
                 <p className="text-sm text-gray-300">{activePromotionsCount} activa{activePromotionsCount !== 1 ? 's' : ''}</p>
               </div>
             </div>
-            <p className="text-gray-300 text-sm mb-4">
+            <p className="text-gray-300 text-sm mb-3">
               Crea ofertas especiales y promociones para atraer más clientes.
             </p>
+            {!tierLoading && (
+              <div className="mb-4 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm">
+                {tier === SUBSCRIPTION_TIER_FUNDADOR ? (
+                  <p className="text-yellow-200/95">
+                    ¡Felicidades! Tu promoción aparecerá destacada en el inicio de la plataforma.
+                  </p>
+                ) : (
+                  <p className="text-gray-300">
+                    Tu promoción será visible en tu perfil. Sube a <strong className="text-yellow-300">Fundador</strong> para aparecer en el Spotlight principal del Dashboard.
+                  </p>
+                )}
+              </div>
+            )}
             <Link
               href={`/app/dashboard/negocios/${business.id}/promociones`}
               className="block w-full text-center bg-pink-50 text-pink-700 px-4 py-2 rounded-xl hover:bg-pink-100 transition-colors font-semibold text-sm"

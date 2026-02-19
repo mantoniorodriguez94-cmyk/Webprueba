@@ -11,7 +11,6 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
-import PromotionsManager from "@/components/dashboard/PromotionsManager"
 
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
@@ -1002,7 +1001,6 @@ export default function DashboardPage() {
           {/* Sidebar Derecho (Desktop Only) - Nuevo diseño modular */}
           <div className="hidden lg:block space-y-4">
             <RightSidebar />
-            <PromotionsManager />
           </div>
         </div>
       </div>
@@ -1177,6 +1175,24 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-white">Mi Perfil</p>
                   <p className="text-xs text-gray-400">Configuración y más</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              {/* Membresía - Conecta, Destaca, Fundador */}
+              <Link
+                href="/app/dashboard/membresia"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
+              >
+                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="font-semibold text-yellow-300">Membresía</p>
+                  <p className="text-xs text-gray-400">Conecta, Destaca, Fundador</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

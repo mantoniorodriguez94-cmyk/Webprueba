@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import Image from "next/image"
+import { toast } from "sonner"
 
 type Promotion = {
   id: string
@@ -28,6 +29,7 @@ export default function PromocionesPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [renewPromotion, setRenewPromotion] = useState<Promotion | null>(null)
   const businessId = params?.id as string
 
   // Verificar permisos
@@ -111,13 +113,32 @@ export default function PromocionesPage() {
 
       if (error) throw error
 
-      setPromotions(promotions.map(p => 
+      setPromotions(promotions.map(p =>
         p.id === id ? { ...p, is_active: !currentState } : p
       ))
     } catch (error: any) {
       console.error("Error actualizando promoción:", error)
       alert("❌ Error al actualizar la promoción")
     }
+  }
+
+  // Reactivar / Renovar: actualizar fecha fin y activar
+  const handleRenew = async (id: string, newEndDate: string) => {
+    const { error } = await supabase
+      .from("promotions")
+      .update({ end_date: newEndDate, is_active: true })
+      .eq("id", id)
+      .select()
+      .single()
+
+    if (error) {
+      toast.error("Error al reactivar la promoción. " + (error.message || ""))
+      throw error
+    }
+
+    setPromotions(promotions.map(p => (p.id === id ? { ...p, end_date: newEndDate, is_active: true } : p)))
+    setRenewPromotion(null)
+    toast.success("¡Promoción reactivada con éxito! Ahora es visible en el Spotlight.")
   }
 
   if (userLoading || loading) {
@@ -219,6 +240,7 @@ export default function PromocionesPage() {
                 promotion={promotion}
                 onDelete={handleDelete}
                 onToggleActive={toggleActive}
+                onRenew={() => setRenewPromotion(promotion)}
               />
             ))}
           </div>
@@ -236,22 +258,36 @@ export default function PromocionesPage() {
           }}
         />
       )}
+
+      {/* Modal Reactivar / Renovar Fecha */}
+      {renewPromotion && (
+        <RenewPromotionModal
+          promotion={renewPromotion}
+          onClose={() => setRenewPromotion(null)}
+          onSuccess={async (newEndDate) => {
+            await handleRenew(renewPromotion.id, newEndDate)
+          }}
+        />
+      )}
     </div>
   )
 }
 
 // Componente de Tarjeta de Promoción
-function PromotionCard({ 
-  promotion, 
-  onDelete, 
-  onToggleActive 
-}: { 
+function PromotionCard({
+  promotion,
+  onDelete,
+  onToggleActive,
+  onRenew,
+}: {
   promotion: Promotion
   onDelete: (id: string) => void
   onToggleActive: (id: string, currentState: boolean) => void
+  onRenew: () => void
 }) {
   const isExpired = new Date(promotion.end_date) < new Date()
   const isUpcoming = new Date(promotion.start_date) > new Date()
+  const canReactivate = !promotion.is_active || isExpired
 
   return (
     <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 overflow-hidden hover:shadow-2xl transition-all group">
@@ -316,26 +352,144 @@ function PromotionCard({
         </div>
 
         {/* Acciones */}
-        <div className="flex gap-2">
-          {!isExpired && (
+        <div className="flex flex-wrap gap-2">
+          {canReactivate && (
+            <button
+              onClick={onRenew}
+              className="flex-1 min-w-[100px] px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-green-600 text-white hover:bg-green-700"
+            >
+              Reactivar
+            </button>
+          )}
+          {!isExpired && !canReactivate && (
             <button
               onClick={() => onToggleActive(promotion.id, promotion.is_active)}
-              className={`flex-1 px-4 py-2 rounded-xl transition-colors font-semibold text-sm ${
+              className={`flex-1 min-w-[100px] px-4 py-2 rounded-xl transition-colors font-semibold text-sm ${
                 promotion.is_active
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-green-50 text-green-700 hover:bg-green-100"
               }`}
             >
-              {promotion.is_active ? 'Desactivar' : 'Activar'}
+              {promotion.is_active ? "Desactivar" : "Activar"}
             </button>
           )}
           <button
+            onClick={onRenew}
+            className="flex-1 min-w-[100px] px-4 py-2 bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 transition-colors font-semibold text-sm border border-amber-200"
+          >
+            Renovar
+          </button>
+          <button
             onClick={() => onDelete(promotion.id)}
-            className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-semibold text-sm"
+            className="flex-1 min-w-[100px] px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-semibold text-sm"
           >
             Eliminar
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// Modal Reactivar / Renovar: nueva fecha de finalización y activar
+function RenewPromotionModal({
+  promotion,
+  onClose,
+  onSuccess,
+}: {
+  promotion: Promotion
+  onClose: () => void
+  onSuccess: (newEndDate: string) => void | Promise<void>
+}) {
+  const today = new Date().toISOString().split("T")[0]
+  const [endDate, setEndDate] = useState(() => {
+    const end = new Date(promotion.end_date)
+    return end > new Date() ? promotion.end_date : today
+  })
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!endDate) {
+      toast.error("Selecciona la nueva fecha de finalización.")
+      return
+    }
+    if (new Date(endDate) < new Date(promotion.start_date)) {
+      toast.error("La fecha de fin debe ser posterior a la fecha de inicio.")
+      return
+    }
+    if (new Date(endDate) < new Date()) {
+      toast.error("La fecha de fin debe ser hoy o en el futuro.")
+      return
+    }
+    setSaving(true)
+    try {
+      await onSuccess(endDate)
+    } catch {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="bg-transparent backdrop-blur-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-white/20/40 w-full sm:max-w-md sm:m-4 flex flex-col animate-fadeIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white rounded-t-3xl flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Reactivar / Renovar promoción</h2>
+            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <p className="text-gray-300 text-sm">
+            <span className="font-semibold text-white">{promotion.name}</span>
+            — Elige la nueva fecha de finalización. La promoción se activará automáticamente.
+          </p>
+          <div>
+            <label className="block text-sm font-semibold text-white mb-2">Fecha de finalización *</label>
+            <input
+              type="date"
+              value={endDate}
+              min={today}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 text-white rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all [color-scheme:dark]"
+              required
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="flex-1 px-4 py-3 border-2 border-white/20 text-gray-300 rounded-2xl hover:bg-white/5 font-semibold disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl hover:bg-green-700 font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar y activar"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
