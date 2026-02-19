@@ -102,7 +102,7 @@ export default function LocationSelector({
     }
 
     loadMunicipalities()
-  }, [selectedStateId])
+  }, [selectedStateId, selectedMunicipalityId, onMunicipalityChange])
 
   // Si required es false, no mostrar el mensaje informativo (usado en filtros)
   return (

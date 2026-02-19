@@ -180,7 +180,7 @@ export default function MisMensajesPage() {
     }
     fetchOwnerTier()
     return () => { mounted = false }
-  }, [selectedConversation?.business_id])
+  }, [selectedConversation?.business_id, selectedConversation])
 
   const loadMessages = async (conversation: Conversation) => {
     setSelectedConversation(conversation)

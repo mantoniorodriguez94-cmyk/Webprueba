@@ -186,7 +186,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                         ✅ <span className="italic">Todo lo del plan Conecta más:</span>
                       </li>
                       <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
-                      <li>🛡️ Tu negocio aparece en la seccion de "Más Destacados"</li>
+                      <li>🛡️ Tu negocio aparece en la seccion de &quot;Más Destacados&quot;</li>
                       <li>📷 Galería de hasta 5 Fotos</li>
                     </>
                   )}
