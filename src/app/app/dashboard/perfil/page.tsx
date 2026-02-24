@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import BottomNav from "@/components/ui/BottomNav"
 import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
 import { toast } from "sonner"
+import { Star } from "lucide-react"
 
 export default function PerfilPage() {
   const { user, loading: userLoading } = useUser()
@@ -453,6 +454,22 @@ export default function PerfilPage() {
         {isCompany && (
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-white px-2">Gestión de Negocios</h3>
+
+            {/* Membresía (primera opción) */}
+            <Link href="/app/dashboard/membresia">
+              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-yellow-400/40 p-5 hover:border-yellow-300/70 transition-all cursor-pointer flex items-center gap-4">
+                <div className="w-12 h-12 bg-yellow-500/15 rounded-2xl flex items-center justify-center">
+                  <Star className="w-6 h-6 text-yellow-300" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-yellow-300">Membresía</h4>
+                  <p className="text-sm text-gray-300">Conecta, Destaca, Fundador</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
 
             {/* Mis Negocios */}
             <Link href="/app/dashboard/mis-negocios">

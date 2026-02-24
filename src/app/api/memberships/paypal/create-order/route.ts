@@ -4,19 +4,15 @@
  *
  * Crea una orden de PayPal (intent: CAPTURE) para el usuario autenticado,
  * usando un monto directo o un tier predefinido.
- *
  * NOTA: Esta ruta es independiente del sistema de pagos de negocios premium.
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { calculateSubscriptionTotal } from "@/lib/memberships/tiers"
-import { getPriceForTier } from "@/lib/memberships/tiers"
 
-const PAYPAL_API_BASE =
-  process.env.PAYPAL_MODE === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com"
+// For LIVE only: always hit PayPal production
+const PAYPAL_API_BASE = "https://api-m.paypal.com"
 
 interface CreateOrderBody {
   amount?: number
@@ -25,12 +21,19 @@ interface CreateOrderBody {
 }
 
 async function getPayPalAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  const clientSecret = process.env.PAYPAL_SECRET_KEY || process.env.PAYPAL_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
+    console.error("[membership/paypal] PayPal credentials not configured")
     throw new Error("PayPal credentials not configured")
   }
+
+  // Debug: verify that Client ID is being read (without exposing full value)
+  console.log(
+    "Attempting PayPal Auth with Client ID ending in:",
+    clientId.slice(-4)
+  )
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
 
@@ -38,9 +41,9 @@ async function getPayPalAccessToken(): Promise<string> {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: "grant_type=client_credentials"
+    body: "grant_type=client_credentials",
   })
 
   if (!response.ok) {
@@ -58,7 +61,7 @@ async function createPayPalOrder(accessToken: string, amount: number, currency: 
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       intent: "CAPTURE",
@@ -66,12 +69,12 @@ async function createPayPalOrder(accessToken: string, amount: number, currency: 
         {
           amount: {
             currency_code: currency,
-            value: amount.toFixed(2)
+            value: amount.toFixed(2),
           },
-          description: "Membresía - Portal Encuentra"
-        }
-      ]
-    })
+          description: "Membresía - Portal Encuentra",
+        },
+      ],
+    }),
   })
 
   if (!response.ok) {
@@ -85,18 +88,14 @@ async function createPayPalOrder(accessToken: string, amount: number, currency: 
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar usuario autenticado (via cookies)
     const supabase = await createClient()
     const {
       data: { user },
-      error: authError
+      error: authError,
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: "No autenticado" },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, error: "No autenticado" }, { status: 401 })
     }
 
     const body = (await request.json().catch(() => ({}))) as CreateOrderBody
@@ -132,21 +131,23 @@ export async function POST(request: NextRequest) {
     const accessToken = await getPayPalAccessToken()
     const order = await createPayPalOrder(accessToken, finalAmount)
 
-    return NextResponse.json({
-      success: true,
-      orderId: order.id,
-      amount: finalAmount
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        orderId: order.id,
+        amount: finalAmount,
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     console.error("[membership/paypal/create-order] Error:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error?.message || "Error interno del servidor"
+        error: error?.message || "Error interno del servidor",
       },
       { status: 500 }
     )
   }
 }
-
 

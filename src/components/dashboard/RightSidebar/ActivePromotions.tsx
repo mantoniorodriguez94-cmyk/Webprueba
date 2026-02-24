@@ -50,7 +50,7 @@ export default function ActivePromotions() {
       const businessIds = [...new Set(promotionsData.map((p) => p.business_id))]
       const { data: businessesData, error: businessesError } = await supabase
         .from("businesses")
-        .select("id, name, owner_id")
+        .select("id, name, owner_id, is_featured, featured_until")
         .in("id", businessIds)
 
       if (businessesError || !businessesData?.length) {
@@ -74,11 +74,18 @@ export default function ActivePromotions() {
 
       const founderOwnerIds = new Set((profilesData || []).map((p) => p.id))
       const businessesMap = new Map(businessesData.map((b) => [b.id, b]))
+      const now = new Date()
 
       const combined: Promotion[] = promotionsData
         .filter((p) => {
           const biz = businessesMap.get(p.business_id)
-          return biz && founderOwnerIds.has(biz.owner_id)
+          if (!biz) return false
+          const isFundador = biz.owner_id ? founderOwnerIds.has(biz.owner_id) : false
+          const isSpotlightOverride =
+            biz.is_featured &&
+            biz.featured_until &&
+            new Date(biz.featured_until) > now
+          return isFundador || isSpotlightOverride
         })
         .map((promo) => ({
           id: promo.id,

@@ -34,6 +34,10 @@ export type Business = {
   is_verified?: boolean;
   verified_at?: string | null;
   verified_by?: string | null;
+  extra_photo_limit?: number;
+  search_priority_boost?: boolean;
+  infraction_status?: boolean;
+  infraction_reason?: string | null;
   // Extended fields (from joins or calculations)
   total_reviews?: number;
   average_rating?: number;

@@ -102,7 +102,10 @@ export default function LocationSelector({
     }
 
     loadMunicipalities()
-  }, [selectedStateId, selectedMunicipalityId, onMunicipalityChange])
+    // Solo re-ejecutar cuando cambie el estado; incluir onMunicipalityChange/selectedMunicipalityId
+    // provocaría re-ejecuciones en cada render del padre (p. ej. FilterSidebar con callback inline).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStateId])
 
   // Si required es false, no mostrar el mensaje informativo (usado en filtros)
   return (

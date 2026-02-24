@@ -67,11 +67,6 @@ export default function AdminActionButton({
         throw new Error(data.error || "Error al procesar la acción")
       }
 
-      // Mostrar mensaje de éxito si existe
-      if (data.message) {
-        console.log("✅", data.message)
-      }
-
       // Recargar la página para ver los cambios
       window.location.reload()
     } catch (err: any) {

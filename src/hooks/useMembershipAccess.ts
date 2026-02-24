@@ -10,6 +10,7 @@ interface MembershipAccess {
   subscriptionEndDate: string | null
   hasActiveSubscription: boolean
   loading: boolean
+  extraBusinessLimit: number
 }
 
 /**
@@ -28,7 +29,8 @@ export default function useMembershipAccess() {
     tier: 0,
     subscriptionEndDate: null,
     hasActiveSubscription: false,
-    loading: true
+    loading: true,
+    extraBusinessLimit: 0
   })
 
   useEffect(() => {
@@ -43,7 +45,8 @@ export default function useMembershipAccess() {
           tier: 0,
           subscriptionEndDate: null,
           hasActiveSubscription: false,
-          loading: false
+          loading: false,
+          extraBusinessLimit: 0
         })
         return
       }
@@ -51,41 +54,62 @@ export default function useMembershipAccess() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("subscription_tier, subscription_end_date")
+          .select("subscription_tier, subscription_end_date, extra_business_limit")
           .eq("id", user.id)
-          .single()
+          .maybeSingle()
 
         if (error) {
-          console.error("[membership] Error cargando suscripción:", error)
           setMembership({
             tier: 0,
             subscriptionEndDate: null,
             hasActiveSubscription: false,
-            loading: false
+            loading: false,
+            extraBusinessLimit: 0
           })
           return
         }
 
-        const tier = (data?.subscription_tier ?? 0) as SubscriptionTier
-        const endDate = data?.subscription_end_date ?? null
-        const isActive =
-          tier > 0 &&
-          endDate !== null &&
-          new Date(endDate) > new Date()
+        try {
+          const rawTier = data?.subscription_tier
+          const tier = Math.min(3, Math.max(0, Number(rawTier) || 0)) as SubscriptionTier
+          const rawEndDate = data?.subscription_end_date
+          const endDate =
+            rawEndDate != null && String(rawEndDate).trim() !== ""
+              ? String(rawEndDate)
+              : null
+          const extraBusinessLimit = Math.max(
+            0,
+            Number((data as { extra_business_limit?: number })?.extra_business_limit) || 0
+          )
+          const isActive =
+            tier > 0 &&
+            endDate !== null &&
+            !Number.isNaN(new Date(endDate).getTime()) &&
+            new Date(endDate) > new Date()
 
-        setMembership({
-          tier,
-          subscriptionEndDate: endDate,
-          hasActiveSubscription: isActive,
-          loading: false
-        })
-      } catch (err) {
-        console.error("[membership] Error inesperado:", err)
+          setMembership({
+            tier,
+            subscriptionEndDate: endDate,
+            hasActiveSubscription: isActive,
+            loading: false,
+            extraBusinessLimit
+          })
+        } catch {
+          setMembership({
+            tier: 0,
+            subscriptionEndDate: null,
+            hasActiveSubscription: false,
+            loading: false,
+            extraBusinessLimit: 0
+          })
+        }
+      } catch (_err) {
         setMembership({
           tier: 0,
           subscriptionEndDate: null,
           hasActiveSubscription: false,
-          loading: false
+          loading: false,
+          extraBusinessLimit: 0
         })
       }
     }

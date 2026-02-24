@@ -62,8 +62,6 @@ export default async function AdminInvitacionesPage() {
         created_at: item.created_at,
       }))
     }
-
-    console.log(`✅ ${invitations.length} invitaciones cargadas`)
   } catch (err: any) {
     console.error("❌ Error cargando invitaciones:", err)
     error = err as Error

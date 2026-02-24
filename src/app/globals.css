@@ -7,7 +7,6 @@
     @apply text-white;
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background-color: #111827;
-    background-image: url('/assets/bg.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -55,6 +54,14 @@
 }
 
 @layer utilities {
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+
   .text-balance {
     text-wrap: balance;
   }

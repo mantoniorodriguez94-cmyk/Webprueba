@@ -28,10 +28,11 @@ export default function GaleriaPage() {
                          business?.premium_until && 
                          new Date(business.premium_until) > new Date()
   
-  // Límites de imágenes según plan
+  // Límites: base por plan + extra_photo_limit (admin)
   const MAX_IMAGES_FREE = 3
   const MAX_IMAGES_PREMIUM = 10
-  const maxImages = isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
+  const baseMax = business?.max_photos ?? (isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE)
+  const maxImages = baseMax + (business?.extra_photo_limit ?? 0)
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {

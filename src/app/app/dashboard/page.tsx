@@ -133,16 +133,8 @@ export default function DashboardPage() {
         })
         const data = await response.json()
         
-        console.log('🔍 Dashboard - Verificación admin:', {
-          isAdmin: data.isAdmin,
-          error: data.error,
-          userId: user.id,
-          debug: data.debug
-        })
-        
         if (data.isAdmin === true) {
           setIsAdmin(true)
-          console.log('✅ Usuario es administrador (dashboard)')
         } else {
           setIsAdmin(false)
           if (data.error) {
@@ -157,20 +149,6 @@ export default function DashboardPage() {
 
     loadAdminFlag()
   }, [user])
-  
-  // [MANTENER TODA LA LÓGICA ORIGINAL - NO CAMBIAR]
-  useEffect(() => {
-    if (user && process.env.NODE_ENV === 'development') {
-      console.log('Dashboard User Debug:', {
-        userId: user.id,
-        email: user.email,
-        userMetadata: user.user_metadata,
-        isAdmin,
-        isCompany,
-        userRole
-      })
-    }
-  }, [user, isAdmin, isCompany, userRole])
   
   const fetchNegocios = useCallback(async () => {
     if (!user) return
@@ -300,8 +278,6 @@ export default function DashboardPage() {
       } as Business
     })
 
-    console.log("[dashboard] Negocios normalizados:", normalizedBusinesses.length)
-
       try {
         // Obtener estadísticas de reviews
         const { data: stats, error: statsError } = await supabase
@@ -392,25 +368,20 @@ export default function DashboardPage() {
           shared_count: sharesMap.get(business.id) || 0
         }))
         
-        // Ordenar: Por tier de suscripción del dueño (descendente), luego premium activos, luego por fecha de creación
-        // Esto asegura que Tier 3 (Fundador) y Tier 2 (Destaca) aparezcan primero
+        // Ordenar: Prioridad búsqueda (admin) > tier dueño > premium > fecha
         const sortedBusinesses = businessesWithStats.sort((a, b) => {
           const now = new Date()
           const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
           const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
-          
-          // 1. Ordenar por tier del dueño (owner o profiles, null-safe)
+          const aBoost = a.search_priority_boost === true
+          const bBoost = b.search_priority_boost === true
+          if (aBoost && !bBoost) return -1
+          if (!aBoost && bBoost) return 1
           const tierA = (a.owner?.subscription_tier ?? a.profiles?.subscription_tier) ?? 0
           const tierB = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
-          if (tierA !== tierB) {
-            return tierB - tierA
-          }
-          
-          // 2. Si tienen el mismo tier, premium activos primero
+          if (tierA !== tierB) return tierB - tierA
           if (aIsPremium && !bIsPremium) return -1
           if (!aIsPremium && bIsPremium) return 1
-          
-          // 3. Si ambos tienen el mismo tier y mismo estado premium, ordenar por fecha (más reciente primero)
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
@@ -430,10 +401,12 @@ export default function DashboardPage() {
           const now = new Date()
           const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
           const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
-          
+          const aBoost = a.search_priority_boost === true
+          const bBoost = b.search_priority_boost === true
+          if (aBoost && !bBoost) return -1
+          if (!aBoost && bBoost) return 1
           if (aIsPremium && !bIsPremium) return -1
           if (!aIsPremium && bIsPremium) return 1
-          
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
@@ -707,34 +680,18 @@ export default function DashboardPage() {
   // RECIENTES: Negocios creados en los últimos 7 días
   const recentBusinesses = allBusinesses
     .filter((business) => {
-      if (!business.created_at) {
-        console.log('⚠️ Negocio sin created_at:', business.name)
-        return false
-      }
-      
+      if (!business.created_at) return false
       const created = new Date(business.created_at)
       const now = new Date()
       const diffTime = now.getTime() - created.getTime()
       const diffDays = diffTime / (1000 * 60 * 60 * 24)
-      
-      const isRecent = diffDays >= 0 && diffDays < 7
-      
-      // Debug: log SIEMPRE (no solo en development) para diagnosticar
-      console.log('🔍 Negocio:', business.name, '| created_at:', business.created_at, '| días:', diffDays.toFixed(2), '| es reciente:', isRecent)
-      
-      // Incluir negocios de hace menos de 7 días (no redondear para ser más preciso)
-      return isRecent
+      return diffDays >= 0 && diffDays < 7
     })
     .sort((a, b) => {
       // Ordenar por fecha de creación: más recientes primero
       return new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
     })
   
-  // Debug adicional - SIEMPRE visible
-  console.log('📊 Total negocios:', allBusinesses.length)
-  console.log('📅 Negocios recientes (últimos 7 días):', recentBusinesses.length)
-  console.log('🎯 Tab activo:', activeTab)
-
   const businessesByCategory = allBusinesses.reduce((acc, business) => {
     const category = business.category || "Otros"
     if (!acc[category]) acc[category] = []

@@ -26,6 +26,8 @@ export function MembershipPaymentModal({
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle")
   const [paypalError, setPaypalError] = useState<string | null>(null)
   const [paypalLoading, setPaypalLoading] = useState(false)
+  const [paypalProcessing, setPaypalProcessing] = useState(false)
+  const [paypalCompleted, setPaypalCompleted] = useState(false)
   const [cryptoTxId, setCryptoTxId] = useState("")
   const [cryptoLoading, setCryptoLoading] = useState(false)
   const [cryptoError, setCryptoError] = useState<string | null>(null)
@@ -36,6 +38,7 @@ export function MembershipPaymentModal({
   const depositAddress =
     process.env.NEXT_PUBLIC_CRYPTO_DEPOSIT_ADDRESS || "TRXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
+  // Read from env so it can be changed without touching code
   const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ""
 
   const months = billingPeriod === "yearly" ? 12 : 1
@@ -220,7 +223,7 @@ export function MembershipPaymentModal({
               <div className="rounded-2xl bg-black/20 p-3 border border-white/10">
                 <PayPalButtons
                   style={{ layout: "vertical", shape: "rect", color: "gold" }}
-                  disabled={paypalLoading || !paypalClientId}
+                  disabled={paypalLoading || paypalProcessing || paypalCompleted || !paypalClientId}
                   createOrder={async () => {
                     try {
                       setPaypalError(null)
@@ -255,6 +258,9 @@ export function MembershipPaymentModal({
                     }
                   }}
                   onApprove={async (data) => {
+                    if (paypalProcessing || paypalCompleted) {
+                      return
+                    }
                     if (!data.orderID) {
                       setPaypalError("No se recibió orderID de PayPal")
                       return
@@ -262,6 +268,8 @@ export function MembershipPaymentModal({
                     try {
                       setPaypalError(null)
                       setPaypalLoading(true)
+                      setPaypalProcessing(true)
+                      setPaypalCompleted(false)
 
                       const response = await fetch(
                         "/api/memberships/paypal/capture-order",
@@ -278,12 +286,17 @@ export function MembershipPaymentModal({
                         throw new Error(result.error || "Error capturando pago de PayPal")
                       }
 
+                      setPaypalCompleted(true)
                       toast.success("¡Pago Exitoso!", {
                         description: "Tu membresía ha sido actualizada correctamente.",
                         duration: 5000
                       })
-                      onClose()
-                      window.location.reload()
+
+                      // Esperar un momento para mostrar el estado de éxito antes de cerrar
+                      setTimeout(() => {
+                        onClose()
+                        window.location.reload()
+                      }, 2000)
                     } catch (error: any) {
                       console.error("[membership] PayPal onApprove error:", error)
                       const message = error?.message || "Error capturando pago de PayPal"
@@ -293,6 +306,7 @@ export function MembershipPaymentModal({
                       })
                     } finally {
                       setPaypalLoading(false)
+                      setPaypalProcessing(false)
                     }
                   }}
                   onError={(err) => {
@@ -311,6 +325,20 @@ export function MembershipPaymentModal({
               Serás redirigido a PayPal para completar tu contribución de forma segura por{" "}
               <span className="font-semibold text-white">${totalAmount.toFixed(2)}</span>.
             </p>
+
+            {/* Estado de procesamiento / éxito */}
+            {paypalProcessing && !paypalCompleted && (
+              <div className="flex items-center gap-2 text-xs text-blue-200">
+                <div className="h-3 w-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+                <span>Procesando pago...</span>
+              </div>
+            )}
+            {paypalCompleted && (
+              <div className="flex items-center gap-2 text-xs text-emerald-300">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Pago exitoso. Actualizando tu cuenta...</span>
+              </div>
+            )}
 
             {paypalError && (
               <p className="text-xs text-red-400 mt-1">

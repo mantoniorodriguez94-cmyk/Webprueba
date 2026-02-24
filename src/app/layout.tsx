@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import InstallPWA from "@/components/InstallPWA";
 import { Toaster } from "sonner";
+import AdminMessageModal from "@/components/AdminMessageModal";
 
 export const metadata: Metadata = {
   title: "Encuentra - Conecta negocios y personas",
@@ -71,7 +72,10 @@ export default function RootLayout({
 
         {/* Toast Notifications */}
         <Toaster theme="dark" richColors position="top-center" />
-        
+
+        {/* Admin direct message modal (when show_admin_modal is true) */}
+        <AdminMessageModal />
+
         {/* PWA Install Prompt */}
         <InstallPWA />
       </body>

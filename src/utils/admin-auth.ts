@@ -150,15 +150,6 @@ export async function checkAdminAuth(): Promise<AdminAuthResult> {
     const profileIsAdmin = profile.is_admin === true
     const isAdmin = profileIsAdmin || metadataIsAdmin
 
-    // Log para debugging (solo si es admin para no ensuciar logs)
-    if (isAdmin) {
-      console.log("✅ Usuario admin verificado:", {
-        userId: user.id,
-        email: profile.email || user.email,
-        source: profileIsAdmin ? "profile" : "metadata"
-      })
-    }
-
     return {
       user: {
         id: user.id,
@@ -192,13 +183,6 @@ export async function requireAdmin() {
 
   // Si falla la autenticación o no es admin, redirigir
   if (!result.user || !result.user.isAdmin) {
-    console.log('🔒 Acceso denegado al panel admin:', {
-      userId: result.user?.id,
-      email: result.user?.email,
-      isAdmin: result.user?.isAdmin,
-      error: result.error
-    })
-    // redirect() lanza una excepción especial que Next.js maneja automáticamente
     redirect("/app/dashboard")
   }
 

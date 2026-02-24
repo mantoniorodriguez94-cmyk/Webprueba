@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import LocationSelector from "@/components/LocationSelector"
+import { toast } from "sonner"
 
 // Simple ID generator (no need for uuid package)
 function generateId() {
@@ -429,50 +430,19 @@ export default function NuevoNegocioPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-semibold text-gray-400 mb-2">
-                  🗺️ Coordenadas GPS para ubicación precisa
-                </label>
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label htmlFor="latitude" className="block text-xs text-gray-400 mb-1">
-                      Latitud
-                    </label>
-                    <input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={latitude}
-                      onChange={e => setLatitude(e.target.value)}
-                      placeholder="Ej: 4.6097"
-                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-gray-500"
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="longitude" className="block text-xs text-gray-400 mb-1">
-                      Longitud
-                    </label>
-                    <input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={longitude}
-                      onChange={e => setLongitude(e.target.value)}
-                      placeholder="Ej: -74.0817"
-                      className="w-full px-3 py-2 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-gray-500"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-                
-                {latitude && longitude && (
-                  <p className="text-xs text-green-600 mb-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Coordenadas GPS completadas
-                  </p>
-                )}
+                {/* Coordenadas ocultas: siguen presentes para que el mapa y la lógica las actualicen */}
+                <input
+                  id="latitude"
+                  type="hidden"
+                  value={latitude}
+                  onChange={e => setLatitude(e.target.value)}
+                />
+                <input
+                  id="longitude"
+                  type="hidden"
+                  value={longitude}
+                  onChange={e => setLongitude(e.target.value)}
+                />
 
                 <button
                   type="button"
@@ -650,16 +620,15 @@ export default function NuevoNegocioPage() {
                       (position) => {
                         setLatitude(position.coords.latitude.toFixed(6))
                         setLongitude(position.coords.longitude.toFixed(6))
-                        alert("✅ Ubicación obtenida exitosamente!")
-                        setShowMapModal(false)
+                        toast.success("Ubicación sincronizada")
                       },
                       (error) => {
                         console.error("Error obteniendo ubicación:", error)
-                        alert("⚠️ No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
+                        toast.error("No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
                       }
                     )
                   } else {
-                    alert("⚠️ Tu navegador no soporta geolocalización")
+                    toast.error("Tu navegador no soporta geolocalización.")
                   }
                 }}
                 className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl"
@@ -670,21 +639,21 @@ export default function NuevoNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-600 mt-2 text-center">
-                Detectará automáticamente tu posición GPS
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                La precisión del GPS asegura que los clientes encuentren tu negocio más rápido.
               </p>
             </div>
 
-            {/* Divisor */}
-            <div className="flex items-center gap-3 mb-6">
+            {/* Divisor (oculto, ya no se muestra la opción manual) */}
+            <div className="hidden flex items-center gap-3 mb-6">
               <div className="flex-1 h-px bg-gray-300"></div>
               <span className="text-xs font-semibold text-gray-600">O ingresa manualmente</span>
               <div className="flex-1 h-px bg-gray-300"></div>
             </div>
 
-            {/* Opción 2: Ingresar coordenadas manualmente */}
+            {/* Opción 2: Ingresar coordenadas manualmente (oculta, pero mantiene el binding al estado) */}
             <div className="space-y-4">
-              <div>
+              <div className="hidden">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Latitud
                 </label>
@@ -697,7 +666,7 @@ export default function NuevoNegocioPage() {
                   className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
-              <div>
+              <div className="hidden">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Longitud
                 </label>
@@ -741,13 +710,10 @@ export default function NuevoNegocioPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setLatitude("")
-                    setLongitude("")
-                  }}
+                  onClick={() => setShowMapModal(false)}
                   className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-2xl transition-all"
                 >
-                  Limpiar
+                  Cancelar
                 </button>
               </div>
             </div>

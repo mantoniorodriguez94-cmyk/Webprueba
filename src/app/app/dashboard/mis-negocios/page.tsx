@@ -14,7 +14,7 @@ import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tier
 
 export default function MisNegociosPage() {
   const { user, loading: userLoading } = useUser()
-  const { tier, loading: tierLoading } = useMembershipAccess()
+  const { tier, loading: tierLoading, extraBusinessLimit = 0 } = useMembershipAccess()
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export default function MisNegociosPage() {
   const isCompany = userRole === "company"
   
   const businessCount = negocios.length
-  const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier)
+  const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier) + (extraBusinessLimit ?? 0)
   const isFundador = tier === SUBSCRIPTION_TIER_FUNDADOR
   const atLimitNonFundador = !isAdmin && tier < 3 && businessCount >= 1
   const atLimitFundador = !isAdmin && isFundador && businessCount >= 2

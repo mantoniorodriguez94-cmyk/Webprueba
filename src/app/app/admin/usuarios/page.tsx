@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
+import ManageLimitsButton from "../components/ManageLimitsButton"
 import { getAdminClient } from "@/lib/supabase/admin"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
@@ -50,7 +51,6 @@ export default async function AdminUsuariosPage() {
           created_at: user.created_at,
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
         }))
-        console.log(`✅ ${usuarios.length} usuarios cargados desde auth.admin.listUsers()`)
       } else {
         throw authError || new Error('No se obtuvieron usuarios')
       }
@@ -77,7 +77,6 @@ export default async function AdminUsuariosPage() {
           created_at: profile.created_at || new Date().toISOString(),
           avatar_url: profile.avatar_url || null,
         }))
-        console.log(`✅ ${usuarios.length} usuarios cargados desde profiles (admin client)`)
       }
     }
   } catch (err: any) {
@@ -192,11 +191,17 @@ export default async function AdminUsuariosPage() {
                       : "N/A"}
                   </td>
                   <td className="py-4 px-4">
-                    <DeleteUserButton 
-                      userId={usuario.id}
-                      userName={usuario.full_name || usuario.email || "Usuario"}
-                      userEmail={usuario.email || ""}
-                    />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <ManageLimitsButton
+                        profileId={usuario.id}
+                        profileName={usuario.full_name || usuario.email || "Usuario"}
+                      />
+                      <DeleteUserButton 
+                        userId={usuario.id}
+                        userName={usuario.full_name || usuario.email || "Usuario"}
+                        userEmail={usuario.email || ""}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}

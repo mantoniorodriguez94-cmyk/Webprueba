@@ -3,29 +3,36 @@
  * POST /api/memberships/paypal/capture-order
  *
  * Captura una orden de PayPal y aplica la membresía al usuario autenticado.
+ * Además, aplica beneficios premium a los negocios del usuario.
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { applyMembershipFromPayment } from "@/lib/memberships/service"
 import { resolveSubscriptionFromAmount } from "@/lib/memberships/tiers"
+import { getAdminClient } from "@/lib/supabase/admin"
 
-const PAYPAL_API_BASE =
-  process.env.PAYPAL_MODE === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com"
+// For LIVE only: always hit PayPal production
+const PAYPAL_API_BASE = "https://api-m.paypal.com"
 
 interface CaptureOrderBody {
   orderId?: string
 }
 
 async function getPayPalAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  const clientSecret = process.env.PAYPAL_SECRET_KEY || process.env.PAYPAL_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
+    console.error("[membership/paypal] PayPal credentials not configured")
     throw new Error("PayPal credentials not configured")
   }
+
+  // Debug: verify that Client ID is being read (without exposing full value)
+  console.log(
+    "Attempting PayPal Auth with Client ID ending in:",
+    clientId.slice(-4)
+  )
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
 
@@ -33,9 +40,9 @@ async function getPayPalAccessToken(): Promise<string> {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: "grant_type=client_credentials"
+    body: "grant_type=client_credentials",
   })
 
   if (!response.ok) {
@@ -53,8 +60,8 @@ async function capturePayPalOrder(accessToken: string, orderId: string) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    }
+      "Content-Type": "application/json",
+    },
   })
 
   if (!response.ok) {
@@ -94,7 +101,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const {
       data: { user },
-      error: authError
+      error: authError,
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -130,7 +137,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "No se pudo determinar el monto de la transacción"
+          error: "No se pudo determinar el monto de la transacción",
         },
         { status: 400 }
       )
@@ -151,13 +158,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "El monto capturado no coincide con ningún plan de suscripción válido"
+          error: "El monto capturado no coincide con ningún plan de suscripción válido",
         },
         { status: 400 }
       )
     }
 
-    // Aplicar suscripción en la base de datos
+    // Aplicar suscripción en la base de datos (perfiles)
     const result = await applyMembershipFromPayment({
       userId: user.id,
       amount,
@@ -165,35 +172,79 @@ export async function POST(request: NextRequest) {
       gateway: "paypal",
       transactionRef: orderId,
       targetTier: subInfo.tier,
-      monthsToAdd: subInfo.months
+      monthsToAdd: subInfo.months,
     })
 
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
-          error: result.error || "Error aplicando membresía"
+          error: result.error || "Error aplicando membresía",
         },
         { status: 500 }
       )
+    }
+
+    // Aplicar beneficios premium a los negocios del usuario
+    try {
+      const adminSupabase = getAdminClient()
+      const tier = result.tier ?? subInfo.tier
+
+      if (tier && tier > 0) {
+        const { data: businesses, error: bizError } = await adminSupabase
+          .from("businesses")
+          .select("id, premium_until, owner_id")
+          .eq("owner_id", user.id)
+
+        if (!bizError && businesses && businesses.length > 0) {
+          const addDays = 30
+          const now = new Date()
+
+          for (const biz of businesses as any[]) {
+            const current = biz.premium_until ? new Date(biz.premium_until) : now
+            const base = current > now ? current : now
+            const newDate = new Date(base)
+            newDate.setDate(newDate.getDate() + addDays)
+
+            const update: Record<string, unknown> = {
+              is_premium: true,
+              premium_until: newDate.toISOString(),
+            }
+
+            if (tier >= 2) {
+              update.search_priority_boost = true
+            }
+            if (tier >= 3) {
+              update.has_gold_border = true
+            }
+
+            await adminSupabase
+              .from("businesses")
+              .update(update)
+              .eq("id", biz.id)
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error("[membership/paypal] Error applying business premium benefits:", err)
+      // No romper la respuesta al usuario; solo loguear
     }
 
     return NextResponse.json({
       success: true,
       tier: result.tier,
       months: result.monthsAdded,
-      amount
+      amount,
     })
   } catch (error: any) {
     console.error("[membership/paypal/capture-order] Error:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error?.message || "Error interno del servidor"
+        error: error?.message || "Error interno del servidor",
       },
       { status: 500 }
     )
   }
 }
-
 

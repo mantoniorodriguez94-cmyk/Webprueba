@@ -201,6 +201,23 @@ export default function GestionarNegocioPage() {
         </div>
       </header>
 
+      {/* Banner de infracción (visible para el dueño) */}
+      {business.infraction_status && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="rounded-2xl border-2 border-red-500/60 bg-red-500/10 p-4 flex items-start gap-3">
+            <svg className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <h3 className="font-bold text-red-200">Aviso importante</h3>
+              <p className="text-sm text-red-100/90 mt-1">
+                {business.infraction_reason || "Tu negocio tiene una observación del equipo. Por favor corrige lo indicado o contacta soporte."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
@@ -257,78 +274,6 @@ export default function GestionarNegocioPage() {
               Editar Información
             </Link>
           </div>
-        </div>
-
-        {/* Nivel de Visibilidad del Negocio — visible para todos los dueños */}
-        <div className="mt-6 bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:border-white/30 transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Nivel de Visibilidad del Negocio</h3>
-              <p className="text-sm text-gray-400">Tu suscripción define qué canales de contacto ven los clientes</p>
-            </div>
-          </div>
-          {tierLoading ? (
-            <div className="flex items-center gap-2 text-gray-400 py-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-500 border-t-transparent" />
-              <span className="text-sm">Cargando nivel...</span>
-            </div>
-          ) : (
-            <>
-              {/* Plan actual — badge visible para mostrar progreso (Next-Step CRO) */}
-              <div className="mb-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Plan actual</p>
-                <span className={`
-                  inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border
-                  ${tier === 0 ? "bg-gray-600/30 text-gray-300 border-gray-500/50" : ""}
-                  ${tier === 1 ? "bg-orange-500/20 text-orange-200 border-orange-500/50" : ""}
-                  ${tier === 2 ? "bg-slate-500/20 text-slate-200 border-slate-400/50" : ""}
-                  ${tier === 3 ? "bg-gradient-to-r from-yellow-500/30 to-amber-500/30 text-yellow-100 border-yellow-500/50" : ""}
-                `}>
-                  {tier === 0 && <User className="w-4 h-4" />}
-                  {tier === 1 && <User className="w-4 h-4" />}
-                  {tier === 2 && <Star className="w-4 h-4 fill-slate-200" />}
-                  {tier === 3 && <Crown className="w-4 h-4 fill-yellow-200" />}
-                  {tier === 0 && "Básico"}
-                  {tier === 1 && "Conecta"}
-                  {tier === 2 && "Destaca"}
-                  {tier === 3 && "Fundador"}
-                </span>
-              </div>
-              {/* Next-Step: solo el beneficio que les falta (persuasión por tier) */}
-              <div className="flex gap-3 mb-4">
-                <span className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-lg">
-                  {tier === 0 && <Rocket className="w-5 h-5 text-indigo-400" />}
-                  {tier === 1 && <TrendingUp className="w-5 h-5 text-orange-400" />}
-                  {tier === 2 && <Award className="w-5 h-5 text-slate-300" />}
-                  {tier === 3 && <Heart className="w-5 h-5 text-amber-400" />}
-                </span>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {tier === 0 && (
-                    <>¡Tu negocio está listo! Activa el <strong className="text-white font-semibold">Chat en Vivo</strong> con el plan <strong className="text-white font-semibold">Conecta</strong> y no dejes que ningún cliente se vaya con dudas.</>
-                  )}
-                  {tier === 1 && (
-                    <>📈 ¿Buscas resultados más directos? Al subir a <strong className="text-white font-semibold">Destaca</strong>, tus botones de WhatsApp y Llamada aparecerán al instante.</>
-                  )}
-                  {tier === 2 && (
-                    <>👑 ¡Domina tu categoría! El plan <strong className="text-white font-semibold">Fundador</strong> te pone en la cima de todos los resultados de búsqueda con prioridad máxima.</>
-                  )}
-                  {tier === 3 && (
-                    <>✨ Eres un Miembro <strong className="text-white font-semibold">Fundador</strong>. Tu negocio cuenta con visibilidad total y prioridad máxima.</>
-                  )}
-                </p>
-              </div>
-              <Link
-                href="/app/dashboard/membresia"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all"
-              >
-                <Sparkles className="w-4 h-4" />
-                {tier === 3 ? "Ver Beneficios" : "Mejorar Visibilidad"}
-              </Link>
-            </>
-          )}
         </div>
 
         {/* Membresía Premium (legacy): solo visible para admins */}

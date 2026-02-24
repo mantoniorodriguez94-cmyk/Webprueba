@@ -203,6 +203,12 @@ export default function AdminPaymentsClient({
   const [processing, setProcessing] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
+  // Para seguimiento de ingresos: neto = monto total (manual), ajustar si se añaden comisiones
+  const getNetAmount = (gross: number) => {
+    // Para pagos manuales (Zelle/banco), asumimos que el monto registrado es lo que realmente se recibe.
+    return gross
+  }
+
   // Manejar tecla ESC para cerrar el modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -469,7 +475,12 @@ export default function AdminPaymentsClient({
                       </div>
                       <div>
                         <p className="text-gray-400">Monto</p>
-                        <p className="text-white font-semibold">${submission.amount_usd}</p>
+                        <p className="text-white font-semibold">
+                          Bruto: ${submission.amount_usd.toFixed(2)}
+                        </p>
+                        <p className="text-[11px] text-gray-400">
+                          Neto: ${getNetAmount(submission.amount_usd).toFixed(2)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-400">Método</p>
