@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const pinCookie = cookieStore.get("admin_master_ok")
     if (!pinCookie) {
       return NextResponse.json(
@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     const { error: updateErr } = await supabase
       .from("businesses")
+      // @ts-ignore - generated DB type may omit has_gold_border
       .update({ has_gold_border: next })
       .eq("id", businessId)
 
@@ -90,12 +91,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const name = (business as { name?: string }).name ?? "Negocio"
     return NextResponse.json(
       {
         success: true,
         message: next
-          ? `Borde dorado activado para "${business.name}".`
-          : `Borde dorado desactivado para "${business.name}".`,
+          ? `Borde dorado activado para "${name}".`
+          : `Borde dorado desactivado para "${name}".`,
         data: { has_gold_border: next },
       },
       { status: 200 }

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const pinCookie = cookieStore.get("admin_master_ok")
     if (!pinCookie) {
       return NextResponse.json(
@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
 
     const { error: updateErr } = await supabase
       .from("businesses")
+      // @ts-ignore - generated DB type may omit search_priority_boost
       .update({ search_priority_boost: next })
       .eq("id", businessId)
 
@@ -77,12 +78,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const name = (business as { name?: string }).name ?? "Negocio"
     return NextResponse.json(
       {
         success: true,
         message: next
-          ? `Negocio "${business.name}" priorizado en resultados de búsqueda.`
-          : `Prioridad de búsqueda desactivada para "${business.name}".`,
+          ? `Negocio "${name}" priorizado en resultados de búsqueda.`
+          : `Prioridad de búsqueda desactivada para "${name}".`,
         data: { search_priority_boost: next },
       },
       { status: 200 }

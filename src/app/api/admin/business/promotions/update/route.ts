@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const pinCookie = cookieStore.get("admin_master_ok")
     if (!pinCookie) {
       return NextResponse.json(
@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
     const supabase = getAdminClient()
     const { error: dbError } = await supabase
       .from("promotions")
+      // @ts-ignore - generated DB type may omit optional columns
       .update(updates)
       .eq("id", id)
 

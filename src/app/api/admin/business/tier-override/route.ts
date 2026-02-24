@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const pinCookie = cookieStore.get("admin_master_ok")
     if (!pinCookie) {
       return NextResponse.json(

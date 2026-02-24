@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const pinCookie = cookieStore.get("admin_master_ok")
     if (!pinCookie) {
       return NextResponse.json(
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     const { error: updateErr } = await supabase
       .from("businesses")
+      // @ts-ignore - generated DB type may omit chat_enabled
       .update({ chat_enabled: enabled })
       .eq("id", businessId)
 

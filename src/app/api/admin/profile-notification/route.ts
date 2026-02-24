@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const supabase = getAdminClient()
     const { error: updateErr } = await supabase
       .from("profiles")
+      // @ts-ignore - generated DB type may omit admin_message, show_admin_modal
       .update({
         admin_message: message || null,
         show_admin_modal: true,

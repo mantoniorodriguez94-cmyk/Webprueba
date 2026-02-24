@@ -29,12 +29,6 @@ async function getPayPalAccessToken(): Promise<string> {
     throw new Error("PayPal credentials not configured")
   }
 
-  // Debug: verify that Client ID is being read (without exposing full value)
-  console.log(
-    "Attempting PayPal Auth with Client ID ending in:",
-    clientId.slice(-4)
-  )
-
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
 
   const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
