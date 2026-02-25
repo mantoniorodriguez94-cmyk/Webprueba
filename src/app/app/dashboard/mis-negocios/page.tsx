@@ -11,6 +11,8 @@ import type { Business } from "@/types/business"
 import BottomNav from "@/components/ui/BottomNav"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { toast } from "sonner"
 
 export default function MisNegociosPage() {
   const { user, loading: userLoading } = useUser()
@@ -18,6 +20,7 @@ export default function MisNegociosPage() {
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Business | null>(null)
   
   const userRole = user?.user_metadata?.role ?? "person"
   const isAdmin = user?.user_metadata?.is_admin ?? false
@@ -108,7 +111,6 @@ export default function MisNegociosPage() {
   }, [user, isCompany, fetchNegocios])
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Seguro que quieres eliminar este negocio?")) return
     try {
       setDeletingId(id)
       
@@ -121,11 +123,14 @@ export default function MisNegociosPage() {
 
       setNegocios(prev => prev.filter(x => x.id !== id))
       setDeletingId(null)
-      alert("Negocio eliminado exitosamente")
+      setPendingDelete(null)
+      toast.success("Negocio eliminado con éxito")
     } catch (err: any) {
       setDeletingId(null)
       console.error("Error eliminando:", err)
-      alert("Error eliminando: " + (err.message ?? String(err)))
+      toast.error("Error eliminando el negocio", {
+        description: err?.message ?? String(err),
+      })
     }
   }
 
@@ -291,7 +296,11 @@ export default function MisNegociosPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {negocios.map((negocio) => (
-              <div key={negocio.id} className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-all">
+              <div
+                key={negocio.id}
+                className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-all"
+                style={{ contentVisibility: "auto", containIntrinsicSize: "320px" }}
+              >
                 {/* Logo/Header */}
                 <div className="p-5 border-b border-gray-700">
                   <div className="flex items-center gap-4">
@@ -303,7 +312,10 @@ export default function MisNegociosPage() {
                           width={64}
                           height={64}
                           className="w-full h-full object-cover"
-                          unoptimized
+                          placeholder="blur"
+                          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
+                          sizes="64px"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-blue-400 font-bold text-xl">
@@ -357,7 +369,7 @@ export default function MisNegociosPage() {
                 {/* Botón Eliminar */}
                 <div className="px-4 pb-4">
                   <button
-                    onClick={() => handleDelete(negocio.id)}
+                    onClick={() => setPendingDelete(negocio)}
                     disabled={deletingId === negocio.id}
                     className="w-full flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2.5 rounded-2xl transition-all border border-red-500/30 disabled:opacity-50"
                   >
@@ -381,6 +393,27 @@ export default function MisNegociosPage() {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        open={!!pendingDelete}
+        title="¿Estás seguro de eliminar este negocio?"
+        description={
+          pendingDelete
+            ? `Esta acción es permanente y eliminará toda la información, galería y estadísticas de "${pendingDelete.name}".`
+            : ""
+        }
+        loading={!!deletingId}
+        onClose={() => {
+          if (deletingId) return
+          setPendingDelete(null)
+        }}
+        onConfirm={() => {
+          if (!pendingDelete || deletingId) return
+          void handleDelete(pendingDelete.id)
+        }}
+        confirmLabel="Eliminar definitivamente"
+        cancelLabel="Cancelar"
+      />
 
       {/* FAB - Botón Flotante para Crear Negocio */}
       <button 

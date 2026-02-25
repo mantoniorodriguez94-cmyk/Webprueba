@@ -14,13 +14,16 @@ import DistanceBadge from "@/components/ui/DistanceBadge"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
-import { 
-  trackBusinessInteraction, 
-  toggleBusinessSave, 
-  checkBusinessSaved 
+import {
+  trackBusinessInteraction,
+  toggleBusinessSave,
+  checkBusinessSaved,
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
 import { Crown } from "lucide-react"
+
+const BLUR_DATA_URL =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
 
 interface BusinessFeedCardProps {
   business: Business
@@ -245,7 +248,10 @@ export default function BusinessFeedCard({
                   fill
                   className="object-cover"
                   onError={() => setImageError(true)}
-                  unoptimized
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                  sizes="56px"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -322,11 +328,7 @@ export default function BusinessFeedCard({
               </Link>
               {canDelete && onDelete && (
                 <button
-                  onClick={() => {
-                    if (confirm(`¿Eliminar "${business.name}"?`)) {
-                      onDelete(business.id)
-                    }
-                  }}
+                  onClick={() => onDelete(business.id)}
                   className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-full transition-all"
                   title="Eliminar"
                 >

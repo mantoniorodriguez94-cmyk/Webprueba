@@ -14,6 +14,8 @@ import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { toast } from "sonner"
 
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
@@ -76,6 +78,9 @@ export default function DashboardPage() {
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null)
+  const deleteTimeoutRef = useRef<number | null>(null)
+  const pendingUndoBusinessRef = useRef<Business | null>(null)
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: searchParamsInitial.get("search") || "",
     category: searchParamsInitial.get("category") || "Todos",
@@ -583,29 +588,87 @@ export default function DashboardPage() {
     setFilters(newFilters)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Seguro que quieres eliminar este negocio?")) return
-    try {
-      setDeletingId(id)
-      
-      const { error } = await supabase
-        .from("businesses")
-        .delete()
-        .eq("id", id)
-        
-      if (error) throw error
+  // Eliminación real en Supabase (se llama solo después de la ventana de deshacer)
+  const performDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("businesses")
+      .delete()
+      .eq("id", id)
 
-      setNegocios(prev => prev.filter(x => x.id !== id))
-      setAllBusinesses(prev => prev.filter(x => x.id !== id))
-      setFilteredBusinesses(prev => prev.filter(x => x.id !== id))
-      
-      setDeletingId(null)
-      alert("Negocio eliminado exitosamente")
-    } catch (err: any) {
-      setDeletingId(null)
-      console.error("Error eliminando:", err)
-      alert("Error eliminando: " + (err.message ?? String(err)))
+    if (error) throw error
+  }
+
+  const scheduleDeleteWithUndo = (businessId: string) => {
+    const business = allBusinesses.find((b) => b.id === businessId)
+    if (!business) {
+      return
     }
+
+    pendingUndoBusinessRef.current = business
+
+    // Eliminación optimista en la UI
+    setNegocios((prev) => prev.filter((x) => x.id !== businessId))
+    setAllBusinesses((prev) => prev.filter((x) => x.id !== businessId))
+    setFilteredBusinesses((prev) => prev.filter((x) => x.id !== businessId))
+
+    const UNDO_DURATION = 6000
+
+    const timeoutId = window.setTimeout(async () => {
+      deleteTimeoutRef.current = null
+      setDeletingId(businessId)
+      try {
+        await performDelete(businessId)
+        toast.success("Negocio eliminado definitivamente")
+      } catch (err: any) {
+        console.error("[Dashboard] Error eliminando negocio:", err)
+        // Restaurar el negocio si la eliminación final falla
+        if (pendingUndoBusinessRef.current) {
+          const restored = pendingUndoBusinessRef.current
+          setNegocios((prev) => [restored, ...prev])
+          setAllBusinesses((prev) => [restored, ...prev])
+          setFilteredBusinesses((prev) => [restored, ...prev])
+        }
+        toast.error("Error eliminando el negocio", {
+          description: err?.message ?? String(err),
+        })
+      } finally {
+        setDeletingId(null)
+        pendingUndoBusinessRef.current = null
+      }
+    }, UNDO_DURATION)
+
+    deleteTimeoutRef.current = timeoutId
+
+    toast("Negocio eliminado", {
+      description: "Tienes 6 segundos para deshacer esta acción antes de que sea permanente.",
+      duration: UNDO_DURATION,
+      action: {
+        label: "DESHACER",
+        onClick: () => {
+          if (deleteTimeoutRef.current !== null) {
+            window.clearTimeout(deleteTimeoutRef.current)
+            deleteTimeoutRef.current = null
+          }
+
+          if (pendingUndoBusinessRef.current) {
+            const restored = pendingUndoBusinessRef.current
+            setNegocios((prev) => [restored, ...prev])
+            setAllBusinesses((prev) => [restored, ...prev])
+            setFilteredBusinesses((prev) => [restored, ...prev])
+            pendingUndoBusinessRef.current = null
+          }
+
+          toast.success("Eliminación cancelada. El negocio se ha mantenido intacto.")
+        },
+      },
+    })
+  }
+
+  // Recibir petición de borrado desde la tarjeta: solo abre el modal de confirmación
+  const handleDelete = (id: string) => {
+    const business = allBusinesses.find((b) => b.id === id)
+    if (!business) return
+    setPendingDelete({ id: business.id, name: business.name || "Negocio" })
   }
 
   const handleLogout = async () => {
@@ -1132,6 +1195,24 @@ export default function DashboardPage() {
                 )}
               </Link>
 
+              {/* Membresía - Conecta, Destaca, Fundador (primera opción de configuración) */}
+              <Link
+                href="/app/dashboard/membresia"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
+              >
+                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="font-semibold text-yellow-300">Membresía</p>
+                  <p className="text-xs text-gray-400">Conecta, Destaca, Fundador</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
               {/* Perfil - Para todos */}
               <Link
                 href="/app/dashboard/perfil"
@@ -1144,24 +1225,6 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-white">Mi Perfil</p>
                   <p className="text-xs text-gray-400">Configuración y más</p>
-                </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-
-              {/* Membresía - Conecta, Destaca, Fundador */}
-              <Link
-                href="/app/dashboard/membresia"
-                onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-              >
-                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-semibold text-yellow-300">Membresía</p>
-                  <p className="text-xs text-gray-400">Conecta, Destaca, Fundador</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1187,6 +1250,29 @@ export default function DashboardPage() {
       )}
 
       {/* Bottom Navigation (Móvil) */}
+      {/* Modal de confirmación para eliminar negocio desde el feed */}
+      <ConfirmationModal
+        open={!!pendingDelete}
+        title="¿Eliminar este negocio permanentemente?"
+        description={
+          pendingDelete
+            ? `Esta acción es irreversible una vez pase el tiempo de recuperación. Se eliminará "${pendingDelete.name}" de Portal Encuentra.`
+            : ""
+        }
+        loading={!!deletingId}
+        onClose={() => {
+          if (deletingId) return
+          setPendingDelete(null)
+        }}
+        onConfirm={() => {
+          if (!pendingDelete || deletingId) return
+          scheduleDeleteWithUndo(pendingDelete.id)
+          setPendingDelete(null)
+        }}
+        confirmLabel="Sí, eliminar definitivamente"
+        cancelLabel="No, mantener negocio"
+      />
+
       <BottomNav 
         isCompany={isCompany} 
         unreadCount={isCompany 

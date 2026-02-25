@@ -20,6 +20,9 @@ import useMembershipAccess from "@/hooks/useMembershipAccess"
 import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 
+const BLUR_DATA_URL =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
+
 type Promotion = {
   id: string
   business_id: string
@@ -454,7 +457,9 @@ export default function BusinessDetailPage() {
                   width={96}
                   height={96}
                   className="w-full h-full object-cover"
-                  unoptimized
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                  sizes="96px"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-3xl">
@@ -626,6 +631,10 @@ export default function BusinessDetailPage() {
                       alt={`${business.name} - imagen ${idx + 1}`}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      placeholder="blur"
+                      blurDataURL={BLUR_DATA_URL}
+                      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                      loading="lazy"
                     />
                     {galleryUrls.length > 3 && idx === 2 && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl">
@@ -980,6 +989,9 @@ export default function BusinessDetailPage() {
                 className="object-contain"
                 quality={100}
                 priority
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+                sizes="100vw"
               />
             </div>
           </div>
@@ -1006,6 +1018,10 @@ export default function BusinessDetailPage() {
                       alt={`Miniatura ${idx + 1}`}
                       fill
                       className="object-cover"
+                      placeholder="blur"
+                      blurDataURL={BLUR_DATA_URL}
+                      sizes="64px"
+                      loading="lazy"
                     />
                   </button>
                 ))}

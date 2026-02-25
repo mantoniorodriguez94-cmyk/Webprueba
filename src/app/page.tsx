@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
 import PhoneMockup from "@/components/PhoneMockup";
 import useUser from "@/hooks/useUser";
+import PromotionsCarousel from "@/components/dashboard/PromotionsCarousel";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -221,6 +222,13 @@ export default function Home() {
                 <PhoneMockup />
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* BLOQUE 2.5 — PROMOCIONES DESTACADAS */}
+        <section className="w-full py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <PromotionsCarousel />
           </div>
         </section>
 
@@ -551,12 +559,12 @@ export default function Home() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/app/legal/terminos" className="hover:text-white transition">
+                    <Link href="/terminos" className="hover:text-white transition">
                       Términos y condiciones
                     </Link>
                   </li>
                   <li>
-                    <Link href="/app/legal/privacidad" className="hover:text-white transition">
+                    <Link href="/privacidad" className="hover:text-white transition">
                       Política de privacidad
                     </Link>
                   </li>

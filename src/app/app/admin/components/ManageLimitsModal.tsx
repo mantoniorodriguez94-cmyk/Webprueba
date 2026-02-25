@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 const TIER_LABELS: Record<number, string> = { 0: "Básico", 1: "Conecta", 2: "Destaca", 3: "Fundador" }
 
@@ -33,6 +34,8 @@ export default function ManageLimitsModal({
   const [infractionStatus, setInfractionStatus] = useState(false)
   const [infractionReason, setInfractionReason] = useState("")
   const [notificationMessage, setNotificationMessage] = useState("")
+  const [showResetModal, setShowResetModal] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   useEffect(() => {
     if (!isOpen || !profileId) return
@@ -132,120 +135,192 @@ export default function ManageLimitsModal({
     }
   }
 
+  const handleResetUser = async () => {
+    setResetLoading(true)
+    try {
+      const res = await fetch("/api/admin/profile-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        console.error("[ManageLimitsModal] Error en reset total:", data)
+        toast.error(data.error || "Error al resetear usuario a plan gratuito")
+        return
+      }
+      toast.success("Usuario reseteado a Plan Gratis con éxito")
+      onSuccess?.()
+      onClose()
+    } catch (e) {
+      console.error("[ManageLimitsModal] Error inesperado en reset total:", e)
+      toast.error((e as Error).message || "Error al resetear usuario")
+    } finally {
+      setResetLoading(false)
+      setShowResetModal(false)
+    }
+  }
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="bg-gray-900 border border-white/20 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-white mb-1">Gestionar límites y tier</h3>
-          <p className="text-sm text-gray-400 mb-4">{profileName}{businessName ? ` · ${businessName}` : ""}</p>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+        <div className="bg-gray-900 border border-white/20 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="p-6">
+            <h3 className="text-xl font-bold text-white mb-1">Gestionar límites y tier</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              {profileName}
+              {businessName ? ` · ${businessName}` : ""}
+            </p>
 
-          {loadingData ? (
-            <div className="py-8 text-center text-gray-400">Cargando...</div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Tier de suscripción</label>
-                <select
-                  value={tier}
-                  onChange={(e) => setTier(Number(e.target.value))}
-                  className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-                >
-                  {([0, 1, 2, 3] as const).map((t) => (
-                    <option key={t} value={t}>{TIER_LABELS[t]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Límite extra de negocios</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={extraBusinessLimit}
-                  onChange={(e) => setExtraBusinessLimit(Number(e.target.value) || 0)}
-                  className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-                />
-              </div>
+            {loadingData ? (
+              <div className="py-8 text-center text-gray-400">Cargando...</div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Tier de suscripción</label>
+                  <select
+                    value={tier}
+                    onChange={(e) => setTier(Number(e.target.value))}
+                    className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  >
+                    {([0, 1, 2, 3] as const).map((t) => (
+                      <option key={t} value={t}>
+                        {TIER_LABELS[t]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Límite extra de negocios</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={extraBusinessLimit}
+                    onChange={(e) => setExtraBusinessLimit(Number(e.target.value) || 0)}
+                    className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  />
+                </div>
 
-              {businessId && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Fotos extra permitidas</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={extraPhotoLimit}
-                      onChange={(e) => setExtraPhotoLimit(Number(e.target.value) || 0)}
-                      className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="searchBoost"
-                      checked={searchPriorityBoost}
-                      onChange={(e) => setSearchPriorityBoost(e.target.checked)}
-                      className="rounded border-white/20"
-                    />
-                    <label htmlFor="searchBoost" className="text-sm text-gray-300">Prioridad en búsqueda (arriba)</label>
-                  </div>
-                  <div className="border-t border-white/10 pt-4">
-                    <div className="flex items-center gap-2 mb-2">
+                {businessId && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Fotos extra permitidas</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={extraPhotoLimit}
+                        onChange={(e) => setExtraPhotoLimit(Number(e.target.value) || 0)}
+                        className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        id="infraction"
-                        checked={infractionStatus}
-                        onChange={(e) => setInfractionStatus(e.target.checked)}
+                        id="searchBoost"
+                        checked={searchPriorityBoost}
+                        onChange={(e) => setSearchPriorityBoost(e.target.checked)}
                         className="rounded border-white/20"
                       />
-                      <label htmlFor="infraction" className="text-sm font-medium text-amber-300">Marcar infracción</label>
+                      <label htmlFor="searchBoost" className="text-sm text-gray-300">
+                        Prioridad en búsqueda (arriba)
+                      </label>
                     </div>
-                    {infractionStatus && (
-                      <textarea
-                        placeholder="Motivo (visible para el dueño)"
-                        value={infractionReason}
-                        onChange={(e) => setInfractionReason(e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
-                      />
-                    )}
+                    <div className="border-t border-white/10 pt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          type="checkbox"
+                          id="infraction"
+                          checked={infractionStatus}
+                          onChange={(e) => setInfractionStatus(e.target.checked)}
+                          className="rounded border-white/20"
+                        />
+                        <label htmlFor="infraction" className="text-sm font-medium text-amber-300">
+                          Marcar infracción
+                        </label>
+                      </div>
+                      {infractionStatus && (
+                        <textarea
+                          placeholder="Motivo (visible para el dueño)"
+                          value={infractionReason}
+                          onChange={(e) => setInfractionReason(e.target.value)}
+                          rows={2}
+                          className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <div className="border-t border-white/10 pt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Notificación directa al usuario</label>
+                    <textarea
+                      placeholder="Mensaje que verá en un modal al iniciar sesión (opcional)"
+                      value={notificationMessage}
+                      onChange={(e) => setNotificationMessage(e.target.value)}
+                      rows={3}
+                      className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
+                    />
                   </div>
-                </>
-              )}
-
-              <div className="border-t border-white/10 pt-4">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Notificación directa al usuario</label>
-                <textarea
-                  placeholder="Mensaje que verá en un modal al iniciar sesión (opcional)"
-                  value={notificationMessage}
-                  onChange={(e) => setNotificationMessage(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
-                />
+                  <div className="mt-3 p-3 rounded-xl border border-red-500/40 bg-red-500/10">
+                    <p className="text-xs text-red-200 font-semibold mb-2">Reset Total de Usuario</p>
+                    <p className="text-xs text-red-100 mb-3">
+                      Esta acción elimina TODOS los beneficios y vuelve al usuario al plan gratuito (Tier 0) para todos sus negocios.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowResetModal(true)}
+                      className="w-full px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors"
+                    >
+                      Resetear Usuario a Plan Gratis
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex gap-2 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={saveLimits}
-              disabled={loading || loadingData}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? "Guardando..." : "Guardar"}
-            </button>
+            <div className="flex gap-2 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={saveLimits}
+                disabled={loading || loadingData}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        open={showResetModal}
+        title="¡Cuidado! Esto eliminará TODOS los beneficios"
+        description={
+          profileName
+            ? `Esta acción reseteará a "${profileName}" al plan gratuito (Tier 0) y quitará todos los beneficios premium de sus negocios.`
+            : "Esta acción reseteará al usuario al plan gratuito (Tier 0) y quitará todos los beneficios premium de sus negocios."
+        }
+        loading={resetLoading}
+        onClose={() => {
+          if (!resetLoading) setShowResetModal(false)
+        }}
+        onConfirm={() => {
+          if (!resetLoading) void handleResetUser()
+        }}
+        confirmLabel="Resetear Usuario"
+        cancelLabel="Cancelar"
+      />
+    </>
   )
 }
+

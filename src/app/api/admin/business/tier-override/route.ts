@@ -1,13 +1,14 @@
 /**
  * API Route: Manual tier override (ADMIN)
  * POST /api/admin/business/tier-override
- * Updates the business owner's subscription_tier in profiles (Básico, Conecta, Destaca, Fundador).
+ * Updates the business owner's subscription_tier in profiles (Básico, Conecta, Destaca, Fundador)
+ * and syncs main benefits package on the target business.
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/utils/supabase/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
 import { cookies } from "next/headers"
+import { getAdminClient } from "@/lib/supabase/admin"
 
 const VALID_TIERS = [0, 1, 2, 3] as const // Básico, Conecta, Destaca, Fundador
 
@@ -46,24 +47,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = getAdminClient()
     const { data: business, error: fetchErr } = await supabase
       .from("businesses")
       .select("id, name, owner_id")
       .eq("id", businessId)
       .single()
 
-    if (fetchErr || !business?.owner_id) {
+    if (fetchErr || !business || !(business as any).owner_id) {
       return NextResponse.json(
         { success: false, error: "Negocio no encontrado o sin propietario" },
         { status: 404 }
       )
     }
 
+    const businessRow = business as { id: string; name?: string | null; owner_id?: string | null }
+
     const { error: updateErr } = await supabase
       .from("profiles")
+      // @ts-ignore - tipos generados pueden no incluir subscription_tier
       .update({ subscription_tier: tierNum })
-      .eq("id", business.owner_id)
+      // @ts-ignore - tipos generados pueden no reflejar correctamente el tipo de owner_id
+      .eq("id", businessRow.owner_id)
 
     if (updateErr) {
       console.error("Error tier override:", updateErr)
@@ -73,20 +78,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Manual tier change: extend business premium_until by 30 days from today
-    const now = new Date()
-    const premiumUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-    const { error: businessUpdateErr } = await supabase
-      .from("businesses")
-      .update({
+    // Sincronizar paquete de beneficios en el negocio objetivo
+    let businessUpdates: Record<string, unknown> | null = null
+    if (tierNum === 3) {
+      // Fundador: paquete completo
+      const now = new Date()
+      const premiumUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+      businessUpdates = {
         is_premium: true,
         premium_until: premiumUntil.toISOString(),
-      })
-      .eq("id", businessId)
+        has_gold_border: true,
+        search_priority_boost: true,
+        is_featured: true,
+        chat_enabled: true,
+      }
+    } else if (tierNum === 0) {
+      // Básico: sin beneficios
+      businessUpdates = {
+        is_premium: false,
+        premium_until: null,
+        has_gold_border: false,
+        search_priority_boost: false,
+        is_featured: false,
+        chat_enabled: false,
+      }
+    }
 
-    if (businessUpdateErr) {
-      console.error("Error extending premium_until on business:", businessUpdateErr)
-      // Don't fail the request - tier was updated; only log
+    if (businessUpdates) {
+      const { error: businessUpdateErr } = await supabase
+        .from("businesses")
+        // @ts-ignore - algunas columnas pueden no estar en los tipos generados
+        .update(businessUpdates)
+        .eq("id", businessId)
+
+      if (businessUpdateErr) {
+        console.error("Error sincronizando paquete de tier en negocio:", businessUpdateErr)
+        // No fallar la petición si el perfil ya se actualizó
+      }
     }
 
     const labels: Record<number, string> = {
@@ -97,8 +125,10 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({
       success: true,
-      message: `Tier del propietario de "${business.name}" actualizado a ${labels[tierNum]}.`,
-      data: { owner_id: business.owner_id, subscription_tier: tierNum },
+      message: `Tier del propietario de "${(businessRow as { name?: string }).name ?? "Negocio"}" actualizado a ${
+        labels[tierNum]
+      }.`,
+      data: { owner_id: businessRow.owner_id, subscription_tier: tierNum },
     })
   } catch (err: unknown) {
     console.error("Error en tier-override:", err)

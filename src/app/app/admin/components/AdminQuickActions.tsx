@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Info, Loader2, Shield } from "lucide-react"
 import { toast } from "sonner"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import VerifyPremiumModal from "./VerifyPremiumModal"
 import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
 import ManageLimitsModal from "./ManageLimitsModal"
@@ -51,7 +52,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [showPhotosModal, setShowPhotosModal] = useState(false)
   const [showFeaturedModal, setShowFeaturedModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleteConfirmStep, setDeleteConfirmStep] = useState(1)
   const [showResetPhotosModal, setShowResetPhotosModal] = useState(false)
   const [resetPhotosConfirmStep, setResetPhotosConfirmStep] = useState(1)
   const [resetLogoChoice, setResetLogoChoice] = useState(false)
@@ -69,6 +69,9 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [pin, setPin] = useState("")
   const [pinLoading, setPinLoading] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [softDeleted, setSoftDeleted] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (openTooltipId === null) return
@@ -109,14 +112,24 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Error")
-      const label = actionLabel ?? ACTION_LABELS[action] ?? "Acción"
-      toast.success(`¡Acción exitosa!: ${label}`)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        console.error("[AdminQuickActions] Error en acción", action, "→", endpoint, {
+          status: res.status,
+          body: data,
+        })
+        const message = (data && (data.error as string)) || `Error (${res.status}) al ejecutar la acción`
+        throw new Error(message)
+      }
+      if (action !== "delete") {
+        const label = actionLabel ?? ACTION_LABELS[action] ?? "Acción"
+        toast.success(`¡Acción exitosa!: ${label}`)
+      }
       refresh()
-    } catch (_e: unknown) {
-      setError("No se pudo completar la acción.")
-      toast.error("Error: No se pudo completar la acción. Inténtalo de nuevo.")
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Error desconocido al ejecutar acción de administrador"
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(null)
     }
@@ -219,6 +232,59 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
             </div>
           )}
         </div>
+      </div>
+    )
+  }
+
+  const scheduleDeleteWithUndo = () => {
+    // Marcar como eliminado a nivel de UI (optimista)
+    setSoftDeleted(true)
+    setDeletePending(true)
+
+    const UNDO_DURATION = 7000
+
+    // Programar eliminación real después de la ventana de deshacer
+    const timeoutId = setTimeout(async () => {
+      deleteTimeoutRef.current = null
+      try {
+        await deleteBusiness()
+        toast.success("Eliminación confirmada")
+      } catch (e) {
+        console.error("[AdminQuickActions] Error al ejecutar eliminación final:", e)
+        setSoftDeleted(false)
+        toast.error(
+          e instanceof Error ? e.message : "Error al completar la eliminación. El negocio sigue activo."
+        )
+      } finally {
+        setDeletePending(false)
+      }
+    }, UNDO_DURATION)
+
+    deleteTimeoutRef.current = timeoutId
+
+    toast("Negocio eliminado", {
+      description: `Tienes ${UNDO_DURATION / 1000} segundos para deshacer esta acción antes de que sea permanente.`,
+      duration: UNDO_DURATION,
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          if (deleteTimeoutRef.current) {
+            clearTimeout(deleteTimeoutRef.current)
+            deleteTimeoutRef.current = null
+          }
+          setSoftDeleted(false)
+          setDeletePending(false)
+          toast.success("Eliminación cancelada. El negocio se ha mantenido intacto.")
+        },
+      },
+    })
+  }
+
+  if (softDeleted) {
+    // Mantener el componente montado para permitir "Deshacer" pero ocultar la tarjeta
+    return (
+      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-xs text-red-200">
+        Negocio marcado para eliminación. Puedes deshacer desde la notificación durante unos segundos.
       </div>
     )
   }
@@ -521,62 +587,23 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
           onSuccess={() => { setShowPhotosModal(false); refresh() }}
         />
       )}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => { setShowDeleteModal(false); setDeleteConfirmStep(1) }}>
-          <div className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h4 className="text-lg font-bold text-white mb-2">
-              {deleteConfirmStep === 1 ? "Eliminar negocio" : "Última confirmación"}
-            </h4>
-            {deleteConfirmStep === 1 ? (
-              <>
-                <p className="text-sm text-gray-400 mb-4">¿Eliminar &quot;{businessName}&quot;? Esta acción no se puede deshacer.</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setShowDeleteModal(false); setDeleteConfirmStep(1) }}
-                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteConfirmStep(2)}
-                    className="flex-1 py-2 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700"
-                  >
-                    Continuar
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-gray-400 mb-4">¿Estás seguro? El negocio se borrará permanentemente.</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setShowDeleteModal(false); setDeleteConfirmStep(1) }}
-                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDeleteModal(false)
-                      setDeleteConfirmStep(1)
-                      deleteBusiness()
-                    }}
-                    disabled={!!loading}
-                    className="flex-1 py-2 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {loading === "delete" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                    Sí, eliminar
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        open={showDeleteModal}
+        title="¿Eliminar este negocio permanentemente?"
+        description={`Esta acción no se puede deshacer una vez pase el tiempo de recuperación. Se borrarán todas las fotos, estadísticas, promociones y la configuración de "${businessName}". El dueño perderá el acceso inmediatamente.`}
+        confirmLabel="Sí, eliminar definitivamente"
+        cancelLabel="No, mantener negocio"
+        loading={deletePending || loading === "delete"}
+        onClose={() => {
+          if (deletePending || loading === "delete") return
+          setShowDeleteModal(false)
+        }}
+        onConfirm={() => {
+          if (deletePending || loading === "delete") return
+          setShowDeleteModal(false)
+          scheduleDeleteWithUndo()
+        }}
+      />
 
       {business.owner_id && showLimitsModal && (
         <ManageLimitsModal

@@ -546,7 +546,7 @@ export default function RegisterPage() {
                 <span className="text-sm text-white/90 group-hover:text-white transition-colors">
                   Acepto los{" "}
                   <Link
-                    href="/app/legal/terminos"
+                    href="/terminos"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#0288D1] hover:text-[#0277BD] underline font-medium"
@@ -556,7 +556,7 @@ export default function RegisterPage() {
                   </Link>
                   {" "}y la{" "}
                   <Link
-                    href="/app/legal/privacidad"
+                    href="/privacidad"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#0288D1] hover:text-[#0277BD] underline font-medium"

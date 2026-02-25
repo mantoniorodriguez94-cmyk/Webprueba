@@ -16,6 +16,8 @@ type AnalyticsSummary = {
   total_interactions: number
   messages_received: number
   last_viewed_at: string | null
+  // Impresiones en resultados de búsqueda (puede venir de la vista de resumen)
+  search_impressions?: number
 }
 
 type ViewsByDay = {
@@ -81,7 +83,8 @@ export default function EstadisticasPage() {
             total_saves: analyticsData.total_saves || 0,
             total_interactions: analyticsData.total_interactions || 0,
             messages_received: analyticsData.messages_received || 0,
-            last_viewed_at: analyticsData.last_viewed_at
+            last_viewed_at: analyticsData.last_viewed_at,
+            search_impressions: (analyticsData as any).search_impressions || 0,
           })
         } else {
           setAnalytics({
@@ -92,7 +95,8 @@ export default function EstadisticasPage() {
             total_saves: 0,
             total_interactions: 0,
             messages_received: 0,
-            last_viewed_at: null
+            last_viewed_at: null,
+            search_impressions: 0,
           })
         }
 
@@ -169,6 +173,20 @@ export default function EstadisticasPage() {
 
   const totalInteractions = interactions.reduce((sum, i) => sum + i.interaction_count, 0)
 
+  // Derivados principales para las 4 tarjetas destacadas
+  const whatsappClicks =
+    interactions
+      .filter((i) => i.interaction_type === "whatsapp")
+      .reduce((sum, i) => sum + i.interaction_count, 0)
+
+  const favoritesCount = analytics.total_saves
+
+  const searchImpressions =
+    analytics.search_impressions ??
+    interactions
+      .filter((i) => i.interaction_type === "search_impression")
+      .reduce((sum, i) => sum + i.interaction_count, 0)
+
   return (
     <div className="min-h-screen pb-12">
       {/* Header Premium */}
@@ -209,7 +227,21 @@ export default function EstadisticasPage() {
         {/* Métricas Principales - Cards Premium */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           
-          {/* Total de Visitas */}
+          {/* Card 1: Contactos directos (WhatsApp) */}
+          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-xl rounded-3xl border border-green-500/30 p-6 hover:border-green-400/50 transition-all shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-green-500/30 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-4xl font-extrabold text-white mb-1">{whatsappClicks.toLocaleString()}</h3>
+            <p className="text-sm text-green-300 font-semibold">Contactos directos</p>
+            <p className="text-xs text-gray-400 mt-2">Clics en el botón de WhatsApp</p>
+          </div>
+
+          {/* Card 2: Visitas al perfil */}
           <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 backdrop-blur-xl rounded-3xl border border-blue-500/30 p-6 hover:border-blue-400/50 transition-all shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="w-14 h-14 bg-blue-500/30 rounded-2xl flex items-center justify-center backdrop-blur-sm">
@@ -225,44 +257,32 @@ export default function EstadisticasPage() {
               )}
             </div>
             <h3 className="text-4xl font-extrabold text-white mb-1">{analytics.total_views.toLocaleString()}</h3>
-            <p className="text-sm text-blue-300 font-semibold">Visitas Totales</p>
+            <p className="text-sm text-blue-300 font-semibold">Visitas al perfil</p>
             <p className="text-xs text-gray-400 mt-2">{analytics.unique_viewers.toLocaleString()} visitantes únicos</p>
           </div>
 
-          {/* Visitas Últimos 7 Días */}
-          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-xl rounded-3xl border border-green-500/30 p-6 hover:border-green-400/50 transition-all shadow-xl">
-            <div className="w-14 h-14 bg-green-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-              <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <h3 className="text-4xl font-extrabold text-white mb-1">{analytics.views_last_7_days.toLocaleString()}</h3>
-            <p className="text-sm text-green-300 font-semibold">Últimos 7 Días</p>
-            <p className="text-xs text-gray-400 mt-2">~{Math.round(analytics.views_last_7_days / 7)} visitas/día</p>
-          </div>
-
-          {/* Veces Guardado */}
+          {/* Card 3: Guardados */}
           <div className="bg-gradient-to-br from-pink-500/20 to-pink-600/10 backdrop-blur-xl rounded-3xl border border-pink-500/30 p-6 hover:border-pink-400/50 transition-all shadow-xl">
             <div className="w-14 h-14 bg-pink-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-              <svg className="w-7 h-7 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              <svg className="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364 4.318 12.682a4.5 4.5 0 010-6.364z" />
               </svg>
             </div>
-            <h3 className="text-4xl font-extrabold text-white mb-1">{analytics.total_saves.toLocaleString()}</h3>
-            <p className="text-sm text-pink-300 font-semibold">Veces Guardado</p>
-            <p className="text-xs text-gray-400 mt-2">Favoritos de usuarios</p>
+            <h3 className="text-4xl font-extrabold text-white mb-1">{favoritesCount.toLocaleString()}</h3>
+            <p className="text-sm text-pink-300 font-semibold">Guardados</p>
+            <p className="text-xs text-gray-400 mt-2">Usuarios que guardaron tu negocio</p>
           </div>
 
-          {/* Mensajes Recibidos */}
-          <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 backdrop-blur-xl rounded-3xl border border-purple-500/30 p-6 hover:border-purple-400/50 transition-all shadow-xl">
-            <div className="w-14 h-14 bg-purple-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-              <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          {/* Card 4: Visto en búsquedas */}
+          <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/30 p-6 hover:border-cyan-400/50 transition-all shadow-xl">
+            <div className="w-14 h-14 bg-cyan-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+              <svg className="w-7 h-7 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
               </svg>
             </div>
-            <h3 className="text-4xl font-extrabold text-white mb-1">{analytics.messages_received.toLocaleString()}</h3>
-            <p className="text-sm text-purple-300 font-semibold">Mensajes Recibidos</p>
-            <p className="text-xs text-gray-400 mt-2">Conversaciones activas</p>
+            <h3 className="text-4xl font-extrabold text-white mb-1">{searchImpressions.toLocaleString()}</h3>
+            <p className="text-sm text-cyan-200 font-semibold">Visto en búsquedas</p>
+            <p className="text-xs text-gray-400 mt-2">Veces que apareciste en resultados</p>
           </div>
         </div>
 

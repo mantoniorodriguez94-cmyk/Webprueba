@@ -8,6 +8,9 @@ import Link from "next/link"
 import type { Business } from "@/types/business"
 import Image from "next/image"
 
+const BLUR_DATA_URL =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
+
 export default function GaleriaPage() {
   const params = useParams()
   const router = useRouter()
@@ -358,6 +361,10 @@ export default function GaleriaPage() {
                     alt={`Imagen ${idx + 1}`}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                    sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                     <svg className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,6 +410,9 @@ export default function GaleriaPage() {
                 alt="Imagen ampliada"
                 fill
                 className="object-contain"
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+                sizes="100vw"
               />
             </div>
           </div>
