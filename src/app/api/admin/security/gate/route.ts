@@ -29,17 +29,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const res = NextResponse.json(
-      { success: true },
-      { status: 200 }
-    )
+    const res = NextResponse.json({ success: true }, { status: 200 })
 
-    // Cookie de sesión: válido durante la sesión del navegador (sin maxAge)
+    // Cookie de sesión estricta: 2 horas máximo para el acceso al panel
     res.cookies.set("admin_gate_ok", "1", {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/app/admin",
+      maxAge: 60 * 60 * 2, // 2 horas en segundos
     })
 
     return res

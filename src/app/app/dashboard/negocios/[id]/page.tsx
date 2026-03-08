@@ -65,8 +65,10 @@ export default function BusinessDetailPage() {
 
   // Safe-access: never read business.owner / business.profiles without fallback (avoids crash if null)
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
-  const ownerHasChat = Boolean(business) && businessTier >= 1
-  const ownerHasFullContact = Boolean(business) && businessTier >= 2
+  // Chat/contacto habilitados para Conecta+ o cuando el admin activa chat_enabled manualmente
+  const ownerHasChat =
+    Boolean(business) && (businessTier >= 1 || (business as any)?.chat_enabled === true)
+  const ownerHasFullContact = ownerHasChat
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {

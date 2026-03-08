@@ -203,6 +203,8 @@ export async function POST(request: NextRequest) {
             const update: Record<string, unknown> = {
               is_premium: true,
               premium_until: newDate.toISOString(),
+              // Tier 1+ (Conecta) habilita el canal de chat
+              chat_enabled: tier >= 1,
             }
 
             if (tier >= 2) {

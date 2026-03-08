@@ -97,12 +97,33 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
             </div>
           </div>
 
-          {/* Derecha: botón volver al dashboard usuario + estado admin */}
+          {/* Derecha: estado admin + acciones rápidas */}
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
               Admin activo
             </span>
+
+            {/* Botón para bloquear manualmente el panel (cierra sesión de Gatekeeper + PIN maestro) */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetch("/api/admin/security/logout", { method: "POST" })
+                } catch {
+                  // Si falla el logout, igualmente forzamos recarga: el Gatekeeper reforzará acceso
+                } finally {
+                  if (typeof window !== "undefined") {
+                    window.location.reload()
+                  }
+                }
+              }}
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-200 transition"
+            >
+              <span className="text-sm leading-none">🔒</span>
+              <span className="hidden sm:inline">Bloquear Panel</span>
+              <span className="sm:hidden">Lock</span>
+            </button>
 
             <Link
               href="/app/dashboard"
@@ -187,6 +208,25 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
                   )
                 })}
               </nav>
+
+              {/* Acción de bloqueo rápido también disponible en móvil */}
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await fetch("/api/admin/security/logout", { method: "POST" })
+                  } catch {
+                  } finally {
+                    if (typeof window !== "undefined") {
+                      window.location.reload()
+                    }
+                  }
+                }}
+                className="mt-4 inline-flex items-center justify-center gap-2 text-xs px-3 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 transition"
+              >
+                <span className="text-sm leading-none">🔒</span>
+                <span>Bloquear Panel</span>
+              </button>
             </div>
           </div>
         )}

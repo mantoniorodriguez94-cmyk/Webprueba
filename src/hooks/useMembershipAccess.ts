@@ -81,11 +81,14 @@ export default function useMembershipAccess() {
             0,
             Number((data as { extra_business_limit?: number })?.extra_business_limit) || 0
           )
+
+          // isActive: tier > 0 AND either:
+          //   a) no end date (admin-granted, lifetime, or manually set without expiry) → active indefinitely
+          //   b) end date exists and is in the future
           const isActive =
             tier > 0 &&
-            endDate !== null &&
-            !Number.isNaN(new Date(endDate).getTime()) &&
-            new Date(endDate) > new Date()
+            (endDate === null ||
+              (!Number.isNaN(new Date(endDate).getTime()) && new Date(endDate) > new Date()))
 
           setMembership({
             tier,
@@ -126,8 +129,15 @@ export default function useMembershipAccess() {
   const hasAccess = (requiredTier: SubscriptionTier): boolean => {
     if (requiredTier === 0) return true // Básico siempre accesible
     if (membership.loading) return false
-    if (!membership.hasActiveSubscription) return false
-    return membership.tier >= requiredTier
+    // Tier check: must have the required tier
+    if (membership.tier < requiredTier) return false
+    // If there's an explicit end date, it must not have passed
+    if (membership.subscriptionEndDate !== null) {
+      const end = new Date(membership.subscriptionEndDate)
+      if (Number.isNaN(end.getTime()) || end <= new Date()) return false
+    }
+    // No end date = admin-granted or indefinite → access allowed
+    return true
   }
 
   return {

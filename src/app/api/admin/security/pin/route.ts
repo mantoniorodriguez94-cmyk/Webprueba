@@ -35,12 +35,13 @@ export async function POST(request: NextRequest) {
     )
 
     // Cookie de 5 minutos: ventana de autorización corta
+    // Path "/" para que esté disponible tanto en /app/admin como en /api/admin/**
     res.cookies.set("admin_master_ok", "1", {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 5 * 60,
-      path: "/app/admin",
+      path: "/",
     })
 
     return res

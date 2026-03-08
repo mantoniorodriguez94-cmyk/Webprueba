@@ -21,6 +21,7 @@ import {
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
 import { Crown } from "lucide-react"
+import { toast } from "sonner"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -94,7 +95,7 @@ export default function BusinessFeedCard({
   
   const handleSave = async () => {
     if (!currentUser) {
-      alert("Debes iniciar sesión para guardar negocios")
+      toast.error("Debes iniciar sesión para guardar negocios")
       return
     }
     
@@ -126,9 +127,10 @@ export default function BusinessFeedCard({
       // Fallback: copiar al portapapeles
       try {
         await navigator.clipboard.writeText(url)
-        alert("Enlace copiado al portapapeles")
+        toast.success("Enlace copiado al portapapeles")
       } catch (err) {
         console.error("Error copiando enlace:", err)
+        toast.error("No se pudo copiar el enlace")
       }
     }
   }
@@ -151,8 +153,8 @@ export default function BusinessFeedCard({
       return
     }
 
-    // Chat only for owner tier >= 1 (cumulative: Conecta, Destaca, Fundador)
-    if (ownerTier < 1) {
+    // Chat solo cuando el dueño tiene Conecta+ o chat_enabled activado manualmente
+    if (!ownerHasChat) {
       setShowChatDisabledModal(true)
       return
     }
@@ -184,8 +186,9 @@ export default function BusinessFeedCard({
   // Safe-access: never read business.owner / business.profiles without fallback (avoids crash if null)
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
   const ownerTier = healedTier ?? businessTier
-  const ownerHasChat = ownerTier >= 1
-  const ownerHasFullContact = ownerTier >= 2
+  // Chat y contacto completo disponibles para Conecta+ o cuando el admin habilita chat_enabled manualmente
+  const ownerHasChat = ownerTier >= 1 || (business as any)?.chat_enabled === true
+  const ownerHasFullContact = ownerHasChat
   const isTier2 = ownerTier >= 2
   const isTier3 = ownerTier >= 3
 
@@ -453,20 +456,20 @@ export default function BusinessFeedCard({
             </svg>
           </button>
 
-          {/* Mensaje: disabled when owner tier < 1; enabled when owner tier >= 1 (cumulative) */}
+          {/* Mensaje: disabled cuando el dueño no tiene Conecta+ ni chat_enabled */}
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
               className={`p-2 rounded-full transition-all ${
-                ownerTier < 1
+                !ownerHasChat
                   ? "text-gray-600 opacity-60 cursor-not-allowed"
                   : hasAccess(SUBSCRIPTION_TIER_CONECTA)
                     ? "text-gray-400 hover:bg-gray-700 hover:text-blue-400"
                     : "text-gray-600 opacity-50 cursor-not-allowed"
               }`}
               title={
-                ownerTier < 1
-                  ? "Activa Conecta"
+                !ownerHasChat
+                  ? "Este negocio no tiene chat activo"
                   : hasAccess(SUBSCRIPTION_TIER_CONECTA)
                     ? "Enviar mensaje"
                     : "Chat requiere plan Conecta"
