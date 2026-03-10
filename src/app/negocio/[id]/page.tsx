@@ -5,7 +5,6 @@ import Link from "next/link"
 import type { Business } from "@/types/business"
 import StarRating from "@/components/reviews/StarRating"
 import { notFound } from "next/navigation"
-
 // Forzar renderizado dinámico para SEO
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidar cada hora
@@ -75,7 +74,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
   const { id } = await params
   const supabase = await createClient()
 
-  // Cargar datos del negocio (incl. owner_id para tier)
+  // Cargar datos del negocio (incl. owner_id para tier y flags de chat)
   const { data: business, error: businessError } = await supabase
     .from("businesses")
     .select(`
@@ -101,7 +100,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
     notFound()
   }
 
-  // CUMULATIVE: WhatsApp/Call when owner tier >= 2 (Destaca, Fundador)
+  // Fetch owner profile for tier (used for badge/contact rendering)
   let ownerTier = 0
   if (business.owner_id) {
     const { data: profile } = await supabase
@@ -109,8 +108,10 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
       .select("subscription_tier")
       .eq("id", business.owner_id)
       .single()
-    ownerTier = profile?.subscription_tier ?? 0
+    ownerTier = (profile as any)?.subscription_tier ?? 0
   }
+
+  // WhatsApp/phone contact: Tier 2+ (Destaca, Fundador)
   const ownerHasFullContact = ownerTier >= 2
 
   // Cargar estadísticas de reviews
@@ -301,17 +302,20 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
               </div>
             )}
 
-            {/* Botones de Acción — WhatsApp solo si dueño Tier 2+ */}
+            {/* Botones de Acción */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/20">
+              {/* Primary CTA */}
               <Link
                 href={`/app/dashboard/negocios/${business.id}`}
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                Abrir en la app
+                Enviar Mensaje
               </Link>
+
+              {/* WhatsApp — only for Tier 2+ (Destaca / Fundador) */}
               {ownerHasFullContact && business.whatsapp && (
                 <a
                   href={`https://wa.me/${business.whatsapp}`}
@@ -325,6 +329,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
                   Chatear por WhatsApp
                 </a>
               )}
+
             </div>
           </div>
 

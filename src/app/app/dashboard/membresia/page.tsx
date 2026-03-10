@@ -93,22 +93,37 @@ export default function MembresiaPage() {
   }
 
   const currentTier = profileMembership?.subscription_tier ?? 0
-  const currentEnd = profileMembership?.subscription_end_date
+  const currentEnd = profileMembership?.subscription_end_date ?? null
   const currentBadgeType = getBadgeTypeForTier(currentTier as MembershipTier)
 
+  // ── Single Source of Truth for "is this subscription active?" ────────────
+  // Mirrors the identical rule in useMembershipAccess so the UI can NEVER
+  // show conflicting signals:
+  //   • tier > 0  AND
+  //   • end date is null (admin-granted / indefinite)  OR  end date is future
+  const endDateIsValid =
+    currentEnd !== null &&
+    !Number.isNaN(new Date(currentEnd).getTime()) &&
+    new Date(currentEnd) > new Date()
+
   const hasActiveSubscription =
-    currentTier > 0 && currentEnd && new Date(currentEnd) > new Date()
+    currentTier > 0 && (currentEnd === null || endDateIsValid)
 
   const currentPlanLabel = getLabelForTier((currentTier as MembershipTier) ?? 0)
 
-  const formattedEndDate =
-    currentEnd && hasActiveSubscription
-      ? new Date(currentEnd).toLocaleDateString("es-ES", {
+  // Expiry display:
+  //  • future date  → localized date string
+  //  • null         → "Acceso permanente" (admin-granted / no expiry set)
+  //  • inactive     → null (no label shown)
+  const formattedEndDate: string | null = hasActiveSubscription
+    ? currentEnd === null
+      ? "Acceso permanente"
+      : new Date(currentEnd).toLocaleDateString("es-ES", {
           year: "numeric",
           month: "short",
-          day: "2-digit"
+          day: "2-digit",
         })
-      : null
+    : null
 
   if (userLoading || loadingProfile) {
     return (
@@ -197,7 +212,14 @@ export default function MembresiaPage() {
               </p>
               {hasActiveSubscription && formattedEndDate && (
                 <p className="mt-1 text-xs text-blue-200">
-                  Vence el <span className="font-semibold">{formattedEndDate}</span>
+                  {formattedEndDate === "Acceso permanente" ? (
+                    <span className="font-semibold text-emerald-300">✓ {formattedEndDate}</span>
+                  ) : (
+                    <>
+                      Vence el{" "}
+                      <span className="font-semibold">{formattedEndDate}</span>
+                    </>
+                  )}
                 </p>
               )}
             </div>

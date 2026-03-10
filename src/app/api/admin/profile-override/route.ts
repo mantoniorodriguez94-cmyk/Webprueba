@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
-import { getAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 const VALID_TIERS = [0, 1, 2, 3]
 
@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = getAdminClient()
+    // Fresh admin client per request — bypasses RLS via service role key
+    const supabase = createAdminClient()
     const { error: updateErr } = await supabase
       .from("profiles")
       // @ts-ignore - tipos generados pueden no incluir estos campos opcionales
@@ -56,9 +57,21 @@ export async function POST(request: NextRequest) {
       .eq("id", profileId)
 
     if (updateErr) {
-      console.error("Error profile-override:", updateErr)
+      const errCode = (updateErr as any).code as string | undefined
+      const errMsg = (updateErr as any).message as string | undefined
+      console.error("[profile-override] Error actualizando perfil:", {
+        code: errCode,
+        message: errMsg,
+        details: (updateErr as any).details,
+        hint: (updateErr as any).hint,
+        profileId,
+        updates,
+      })
       return NextResponse.json(
-        { success: false, error: "Error al actualizar el perfil" },
+        {
+          success: false,
+          error: `Error al actualizar el perfil (DB ${errCode ?? "?"}): ${errMsg ?? "error desconocido"}`,
+        },
         { status: 500 }
       )
     }

@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import type { Business } from "@/types/business"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import BottomNav from "@/components/ui/BottomNav"
+import Link from "next/link"
 
 interface Conversation {
   conversation_id: string

@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { cookies } from 'next/headers'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -19,6 +20,16 @@ export async function DELETE(request: NextRequest) {
     if (authError || !user || !user.isAdmin) {
       return NextResponse.json(
         { success: false, error: 'No autorizado - Se requieren permisos de administrador' },
+        { status: 403 }
+      )
+    }
+
+    // Requiere PIN maestro activo
+    const cookieStore = await cookies()
+    const pinCookie = cookieStore.get('admin_master_ok')
+    if (!pinCookie) {
+      return NextResponse.json(
+        { success: false, error: 'PIN maestro requerido para esta acción.' },
         { status: 403 }
       )
     }

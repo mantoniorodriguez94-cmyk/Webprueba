@@ -13,18 +13,34 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}))
     const { pin } = body as { pin?: string }
-    const expected = process.env.ADMIN_MASTER_PIN
+
+    // Support both variable names: ADMIN_SETUP_KEY (Vercel/production) and
+    // ADMIN_MASTER_PIN (legacy / local dev fallback)
+    const expected = process.env.ADMIN_SETUP_KEY ?? process.env.ADMIN_MASTER_PIN
 
     if (!expected) {
+      console.error(
+        "[admin/security/pin] Ninguna variable de PIN está definida. " +
+        "Configura ADMIN_SETUP_KEY (producción) o ADMIN_MASTER_PIN (desarrollo)."
+      )
       return NextResponse.json(
-        { success: false, error: "ADMIN_MASTER_PIN no está configurado en el entorno." },
+        {
+          success: false,
+          error:
+            "Error de configuración: PIN del servidor no encontrado. " +
+            "Configura ADMIN_SETUP_KEY en las variables de entorno.",
+        },
         { status: 500 }
       )
     }
 
-    if (!pin || pin !== expected) {
+    // Trim both sides before comparing to avoid hidden whitespace in env values
+    const pinInput = String(pin ?? "").trim()
+    const pinExpected = String(expected).trim()
+
+    if (!pinInput || pinInput !== pinExpected) {
       return NextResponse.json(
-        { success: false, error: "PIN maestro inválido." },
+        { success: false, error: "PIN incorrecto. Acceso denegado." },
         { status: 401 }
       )
     }

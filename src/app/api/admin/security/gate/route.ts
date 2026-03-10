@@ -16,15 +16,20 @@ export async function POST(request: NextRequest) {
     const expected = process.env.ADMIN_PANEL_PASSWORD
 
     if (!expected) {
+      console.error("[admin/security/gate] ADMIN_PANEL_PASSWORD no está definido en las variables de entorno.")
       return NextResponse.json(
-        { success: false, error: "ADMIN_PANEL_PASSWORD no está configurado en el entorno." },
+        { success: false, error: "Error de configuración: contraseña del servidor no encontrada. Contacta al administrador del sistema." },
         { status: 500 }
       )
     }
 
-    if (!password || password !== expected) {
+    // Trim both sides before comparing to avoid hidden whitespace in env values
+    const passwordInput = String(password ?? "").trim()
+    const passwordExpected = String(expected).trim()
+
+    if (!passwordInput || passwordInput !== passwordExpected) {
       return NextResponse.json(
-        { success: false, error: "Clave de acceso inválida." },
+        { success: false, error: "Clave de acceso inválida. Acceso denegado." },
         { status: 401 }
       )
     }

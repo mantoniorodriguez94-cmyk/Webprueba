@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
-import { getAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { cookies } from "next/headers"
 
 export async function POST(request: NextRequest) {
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = getAdminClient()
+    const supabase = createAdminClient()
 
     // Asegurar que el perfil existe
     const { data: profile, error: profileFetchErr } = await supabase

@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, subscription_tier, extra_business_limit")
+      .select(
+        "id, subscription_tier, extra_business_limit, subscription_end_date, " +
+        "golden_border_expires_at, spotlight_expires_at, promotions_expires_at, chat_expires_at"
+      )
       .eq("id", profileId)
       .single()
     if (error || !data) {
@@ -35,13 +38,26 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       )
     }
-    return NextResponse.json({
-      success: true,
-      data: {
-        subscription_tier: data.subscription_tier ?? 0,
-        extra_business_limit: data.extra_business_limit ?? 0,
+    const d = data as any
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          subscription_tier: d.subscription_tier ?? 0,
+          extra_business_limit: d.extra_business_limit ?? 0,
+          subscription_end_date: d.subscription_end_date ?? null,
+          golden_border_expires_at: d.golden_border_expires_at ?? null,
+          spotlight_expires_at: d.spotlight_expires_at ?? null,
+          promotions_expires_at: d.promotions_expires_at ?? null,
+          chat_expires_at: d.chat_expires_at ?? null,
+        },
       },
-    })
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    )
   } catch (err: unknown) {
     return NextResponse.json(
       { success: false, error: (err as Error).message },

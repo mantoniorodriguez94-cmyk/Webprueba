@@ -63,37 +63,59 @@ export async function POST(request: NextRequest) {
 
     const businessRow = business as { id: string; name?: string | null; owner_id?: string | null }
 
+    // Update subscription_tier AND clear any stale subscription_end_date.
+    // Admin-granted tiers via this quick-select are indefinite (null end date).
+    // An old expired end date would make useMembershipAccess think the tier is inactive
+    // even though we just granted it, so we must always null it out here.
     const { error: updateErr } = await supabase
       .from("profiles")
-      // @ts-ignore - tipos generados pueden no incluir subscription_tier
-      .update({ subscription_tier: tierNum })
-      // @ts-ignore - tipos generados pueden no reflejar correctamente el tipo de owner_id
+      // @ts-ignore - tipos generados pueden no incluir subscription_tier / subscription_end_date
+      .update({ subscription_tier: tierNum, subscription_end_date: null })
+      // @ts-ignore
       .eq("id", businessRow.owner_id)
 
     if (updateErr) {
-      console.error("Error tier override:", updateErr)
+      console.error("[tier-override] Error updating profiles:", updateErr)
       return NextResponse.json(
         { success: false, error: "Error al actualizar el tier del propietario" },
         { status: 500 }
       )
     }
 
-    // Sincronizar paquete de beneficios en el negocio objetivo
+    // Sincronizar paquete de beneficios en el negocio objetivo según tier
     let businessUpdates: Record<string, unknown> | null = null
     if (tierNum === 3) {
       // Fundador: paquete completo
-      const now = new Date()
-      const premiumUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
       businessUpdates = {
         is_premium: true,
-        premium_until: premiumUntil.toISOString(),
+        premium_until: null,   // indefinite admin grant
         has_gold_border: true,
         search_priority_boost: true,
         is_featured: true,
         chat_enabled: true,
       }
-    } else if (tierNum === 0) {
-      // Básico: sin beneficios
+    } else if (tierNum === 2) {
+      // Destaca: premium + chat + spotlight, sin borde dorado
+      businessUpdates = {
+        is_premium: true,
+        premium_until: null,
+        has_gold_border: false,
+        search_priority_boost: true,
+        is_featured: true,
+        chat_enabled: true,
+      }
+    } else if (tierNum === 1) {
+      // Conecta: premium + chat básico, sin borde ni spotlight
+      businessUpdates = {
+        is_premium: true,
+        premium_until: null,
+        has_gold_border: false,
+        search_priority_boost: false,
+        is_featured: false,
+        chat_enabled: true,
+      }
+    } else {
+      // Básico (0): sin beneficios
       businessUpdates = {
         is_premium: false,
         premium_until: null,
@@ -104,17 +126,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (businessUpdates) {
-      const { error: businessUpdateErr } = await supabase
-        .from("businesses")
-        // @ts-ignore - algunas columnas pueden no estar en los tipos generados
-        .update(businessUpdates)
-        .eq("id", businessId)
+    // businessUpdates is always set for every tier, apply unconditionally
+    const { error: businessUpdateErr } = await supabase
+      .from("businesses")
+      // @ts-ignore - algunas columnas pueden no estar en los tipos generados
+      .update(businessUpdates)
+      .eq("id", businessId)
 
-      if (businessUpdateErr) {
-        console.error("Error sincronizando paquete de tier en negocio:", businessUpdateErr)
-        // No fallar la petición si el perfil ya se actualizó
-      }
+    if (businessUpdateErr) {
+      console.error("[tier-override] Error sincronizando beneficios en negocio:", businessUpdateErr)
+      // Non-fatal: profiles was already updated; log and continue
     }
 
     const labels: Record<number, string> = {

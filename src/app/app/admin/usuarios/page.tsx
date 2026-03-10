@@ -2,10 +2,11 @@ import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
 import ManageLimitsButton from "../components/ManageLimitsButton"
-import { getAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient } from "@/lib/supabase/admin"
 
-// Forzar renderizado dinámico porque usa cookies para autenticación
+// Force fresh server render on every request — no data-layer caching at all
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 interface UserData {
   id: string
@@ -30,8 +31,8 @@ export default async function AdminUsuariosPage() {
   let error: Error | null = null
 
   try {
-    // Usar cliente admin (Service Role Key)
-    const adminSupabase = getAdminClient()
+    // Fresh admin client per render (avoids singleton stale-data issues)
+    const adminSupabase = createAdminClient()
 
     // Método 1: Intentar auth.admin.listUsers() primero (más confiable)
     try {

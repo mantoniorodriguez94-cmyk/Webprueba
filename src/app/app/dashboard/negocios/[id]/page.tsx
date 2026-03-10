@@ -16,9 +16,6 @@ import BusinessLocation from "@/components/BusinessLocation"
 import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
-import useMembershipAccess from "@/hooks/useMembershipAccess"
-import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
-import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -53,22 +50,15 @@ export default function BusinessDetailPage() {
   const [reviewsLoading, setReviewsLoading] = useState(true)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [showReportBusinessModal, setShowReportBusinessModal] = useState(false)
-  const [showUpgradeSuggestion, setShowUpgradeSuggestion] = useState(false)
-  const [showChatDisabledModal, setShowChatDisabledModal] = useState(false)
-
-  const { hasAccess } = useMembershipAccess()
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canManage = isOwner || isAdmin
 
-  // Safe-access: never read business.owner / business.profiles without fallback (avoids crash if null)
-  const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
-  // Chat/contacto habilitados para Conecta+ o cuando el admin activa chat_enabled manualmente
-  const ownerHasChat =
-    Boolean(business) && (businessTier >= 1 || (business as any)?.chat_enabled === true)
-  const ownerHasFullContact = ownerHasChat
+  // Chat and contact are open to all registered businesses
+  const ownerHasChat = Boolean(business)
+  const ownerHasFullContact = Boolean(business)
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -296,7 +286,7 @@ export default function BusinessDetailPage() {
         
         loadedRow = plainData as Record<string, unknown> & { owner_id?: string | null }
         
-        // Fetch owner tier si tiene owner_id
+        // Fetch owner profile tier (for badge rendering) if owner_id is present
         if (loadedRow?.owner_id) {
           const { data: profile } = await supabase
             .from("profiles")
@@ -310,7 +300,11 @@ export default function BusinessDetailPage() {
 
         const owner = loadedRow.owner_id ? { subscription_tier: tier } : null
         const profiles = loadedRow.owner_id ? { subscription_tier: tier } : null
-        setBusiness({ ...loadedRow, owner, profiles } as Business)
+        setBusiness({
+          ...loadedRow,
+          owner,
+          profiles,
+        } as unknown as Business)
 
         if (user && user.id !== loadedRow.owner_id) {
           registerView().catch(() => {})
@@ -350,7 +344,7 @@ export default function BusinessDetailPage() {
     fetchBusiness()
   }, [businessId, user, userLoading, router, registerView])
 
-  // Heal: if business has owner_id but tier is missing, fetch profile in background (no-reason rule)
+  // Heal: if business has owner_id but tier is missing, fetch profile in background (for badge rendering)
   const healAttemptedFor = useRef<string | null>(null)
   useEffect(() => {
     if (!business?.owner_id || !business?.id) return
@@ -363,8 +357,16 @@ export default function BusinessDetailPage() {
       .eq("id", business.owner_id)
       .single()
       .then(({ data }) => {
-        const tier = data?.subscription_tier ?? 0
-        setBusiness(prev => prev ? { ...prev, owner: { subscription_tier: tier }, profiles: { subscription_tier: tier } } : null)
+        const tier = (data as any)?.subscription_tier ?? 0
+        setBusiness(prev =>
+          prev
+            ? {
+                ...prev,
+                owner: { subscription_tier: tier },
+                profiles: { subscription_tier: tier },
+              }
+            : null
+        )
       })
   }, [business?.id, business?.owner_id, business?.profiles?.subscription_tier, business?.owner?.subscription_tier])
 
@@ -538,41 +540,23 @@ export default function BusinessDetailPage() {
                 </a>
               )}
 
-              {/* Enviar Mensaje: Tier 0 = disabled + tooltip; Tier 1+ = normal (user Conecta para abrir modal) */}
+              {/* Enviar Mensaje */}
               {!isOwner && (
-                businessTier < 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowChatDisabledModal(true)}
-                    title="Activa Conecta"
-                    className="flex items-center justify-center gap-2 bg-gray-600/50 text-gray-400 px-6 py-3 rounded-full cursor-not-allowed opacity-60 font-semibold flex-1 border border-white/10"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    Enviar Mensaje
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        router.push("/app/auth/login")
-                        return
-                      }
-                      if (!hasAccess(SUBSCRIPTION_TIER_CONECTA)) {
-                        setShowUpgradeSuggestion(true)
-                        return
-                      }
-                      setShowMessageModal(true)
-                    }}
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    Enviar Mensaje
-                  </button>
-                )
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      router.push("/app/auth/login")
+                      return
+                    }
+                    setShowMessageModal(true)
+                  }}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  Enviar Mensaje
+                </button>
               )}
 
               {/* Botón Reportar (solo para usuarios no dueños) */}
@@ -1040,8 +1024,8 @@ export default function BusinessDetailPage() {
         </div>
       )}
 
-      {/* Modal de Mensajes — solo si negocio tiene chat (Tier 1+) y usuario Conecta */}
-      {showMessageModal && business && user && ownerHasChat && hasAccess(SUBSCRIPTION_TIER_CONECTA) && (
+      {/* Modal de Mensajes */}
+      {showMessageModal && business && user && (
         <SendMessageModal
           business={business}
           currentUserId={user.id}
@@ -1050,56 +1034,6 @@ export default function BusinessDetailPage() {
             router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
           }}
         />
-      )}
-
-      {/* Modal: Chat no activado por el negocio (Tier 0) — mismo estilo que BusinessFeedCard */}
-      {showChatDisabledModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowChatDisabledModal(false)}
-        >
-          <div
-            className="max-w-md w-full bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Chat no disponible</h3>
-                <p className="text-sm text-gray-300">
-                  Este negocio aún no ha activado su canal de chat. ¡Activa Conecta para habilitar la mensajería!
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowChatDisabledModal(false)}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition-colors"
-            >
-              Entendido
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: usuario sin plan Conecta */}
-      {showUpgradeSuggestion && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowUpgradeSuggestion(false)}
-        >
-          <div className="max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <UpgradeSuggestion
-              requiredTier={SUBSCRIPTION_TIER_CONECTA}
-              featureName="Chat con negocios"
-              featureDescription="Envía mensajes directamente a los negocios desde la app."
-              variant="modal"
-            />
-          </div>
-        </div>
       )}
 
       {/* Modal de Reportar Negocio */}

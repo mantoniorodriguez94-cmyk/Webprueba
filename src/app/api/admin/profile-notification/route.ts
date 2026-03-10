@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
-import { getAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
           ? admin_message.trim()
           : ""
 
-    const supabase = getAdminClient()
+    const supabase = createAdminClient()
     const { error: updateErr } = await supabase
       .from("profiles")
       // @ts-ignore - generated DB type may omit admin_message, show_admin_modal

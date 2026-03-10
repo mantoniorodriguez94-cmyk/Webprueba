@@ -9,7 +9,7 @@ import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import VerifyPremiumModal from "./VerifyPremiumModal"
 import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
-import ManageLimitsModal from "./ManageLimitsModal"
+import AdminUserManagementModal from "./AdminUserManagementModal"
 
 export type AdminBusinessRow = {
   id: string
@@ -69,6 +69,8 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [pin, setPin] = useState("")
   const [pinLoading, setPinLoading] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  // Controlled value for tier select — resetting to "" allows re-selecting the same tier
+  const [selectedTier, setSelectedTier] = useState("")
   const [softDeleted, setSoftDeleted] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -114,12 +116,25 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
+        const errorMsg = (data && (data.error as string)) || `Error (${res.status}) al ejecutar la acción`
         console.error("[AdminQuickActions] Error en acción", action, "→", endpoint, {
           status: res.status,
           body: data,
         })
-        const message = (data && (data.error as string)) || `Error (${res.status}) al ejecutar la acción`
-        throw new Error(message)
+        // If the server says the master PIN is missing/expired, clear the unlock flag
+        // and re-show the PIN modal so the admin can re-authenticate without confusion.
+        if (res.status === 403 && errorMsg.toLowerCase().includes("pin maestro")) {
+          setIsActionUnlocked(false)
+          setError(null)
+          toast.error("Sesión de PIN expirada", {
+            description: "Vuelve a ingresar el PIN maestro para autorizar esta acción.",
+          })
+          // Re-queue the action so the PIN modal immediately re-triggers it on success
+          setPendingAction(() => () => call(action, body, endpoint, actionLabel))
+          setShowPinModal(true)
+          return
+        }
+        throw new Error(errorMsg)
       }
       if (action !== "delete") {
         const label = actionLabel ?? ACTION_LABELS[action] ?? "Acción"
@@ -352,17 +367,18 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               button={
                 <select
                   className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  defaultValue=""
+                  value={selectedTier}
                   onChange={(e) => {
                     const v = e.target.value
-                    if (v !== "") {
-                      const tier = Number(v)
-                      ensureUnlocked(() => tierOverride(tier))
-                    }
+                    if (v === "") return
+                    const tier = Number(v)
+                    // Reset immediately so re-selecting the same tier fires onChange again
+                    setSelectedTier("")
+                    ensureUnlocked(() => tierOverride(tier))
                   }}
                   disabled={!!loading}
                 >
-                  <option value="">Tier</option>
+                  <option value="">Cambiar Tier…</option>
                   {([0, 1, 2, 3] as const).map((t) => (
                     <option key={t} value={t}>{TIER_LABELS[t]}</option>
                   ))}
@@ -509,28 +525,13 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     disabled={!!loading}
                     className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 disabled:opacity-50"
                   >
-                    Límites y tier
+                    Gestionar Usuario
                   </button>
                 }
-                description="Ajusta el cupo máximo de negocios y el nivel de membresía global del usuario."
+                description="Panel modular: plan, borde dorado, destacado, promociones, chat, alertas, fotos y eliminación de cuenta."
               />
             )}
-            {business.owner_id && (
-              <ActionRow
-                id="alerta"
-                button={
-                  <button
-                    type="button"
-                    onClick={() => setShowAlertModal(true)}
-                    disabled={!!loading}
-                    className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 disabled:opacity-50"
-                  >
-                    Enviar Alerta
-                  </button>
-                }
-                description="Envía un mensaje emergente directo a la pantalla del usuario para notificaciones críticas."
-              />
-            )}
+            {/* Enviar Alerta está integrado dentro de Gestionar Usuario (AdminUserManagementModal) */}
             <ActionRow
               id="badges"
               button={
@@ -606,7 +607,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       />
 
       {business.owner_id && showLimitsModal && (
-        <ManageLimitsModal
+        <AdminUserManagementModal
           isOpen={showLimitsModal}
           onClose={() => setShowLimitsModal(false)}
           onSuccess={refresh}
@@ -614,6 +615,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
           profileName="Propietario"
           businessId={business.id}
           businessName={businessName}
+          onEnsureUnlocked={ensureUnlocked}
         />
       )}
 
