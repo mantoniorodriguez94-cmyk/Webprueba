@@ -4,11 +4,14 @@ import React, { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
 import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
+import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
+import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 
 interface Conversation {
   conversation_id: string
@@ -35,6 +38,7 @@ export default function MisMensajesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
+  const { hasAccess, loading: accessLoading } = useMembershipAccess()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -47,6 +51,9 @@ export default function MisMensajesPage() {
   
   // 🔔 Hook para notificaciones completas (sonido + navegador)
   const { notifyNewMessage, enableNotifications } = useChatNotifications()
+
+  // Mensajería requiere al menos Plan Conecta (Tier 1)
+  const canAccessMessaging = hasAccess(SUBSCRIPTION_TIER_CONECTA)
   
   // Calcular total de mensajes no leídos
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unread_count_user, 0)
@@ -359,7 +366,7 @@ export default function MisMensajesPage() {
     }
   }
 
-  if (userLoading) {
+  if (userLoading || accessLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -387,6 +394,36 @@ export default function MisMensajesPage() {
     )
   }
 
+  // Paywall: Tier 0 (Básico) — no pueden enviar ni recibir mensajes
+  if (!canAccessMessaging) {
+    return (
+      <div className="min-h-screen flex flex-col pb-24">
+        <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-xl border-b border-white/10 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
+            <Link
+              href="/app/dashboard"
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="text-xl font-bold text-white">Mensajes</h1>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <UpgradeSuggestion
+              requiredTier={SUBSCRIPTION_TIER_CONECTA}
+              featureName="Mensajería Directa"
+              featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
+              variant="card"
+            />
+          </div>
+        </div>
+        <BottomNav isCompany={isCompany} unreadCount={0} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col pb-0">

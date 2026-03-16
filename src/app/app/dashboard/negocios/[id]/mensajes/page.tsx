@@ -7,8 +7,6 @@ import useUser from "@/hooks/useUser"
 import type { Business } from "@/types/business"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import BottomNav from "@/components/ui/BottomNav"
-import Link from "next/link"
-
 interface Conversation {
   conversation_id: string
   user_id: string
@@ -34,6 +32,7 @@ export default function MensajesNegocioPage() {
   const params = useParams()
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
+
   const [business, setBusiness] = useState<Business | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)

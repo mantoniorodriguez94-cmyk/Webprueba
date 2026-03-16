@@ -13,7 +13,7 @@ import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import BottomNav from "@/components/ui/BottomNav"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
-import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
+import { getBadgeTypeForTier, getLabelForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { toast } from "sonner"
 
@@ -66,8 +66,8 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParamsInitial = useSearchParams()
   const { user, loading: userLoading } = useUser()
-  const { tier: subscriptionTier } = useMembershipAccess()
-  const currentBadgeType = getBadgeTypeForTier((subscriptionTier || 0) as MembershipTier)
+  const { effectiveTier, loading: tierLoading } = useMembershipAccess()
+  const currentBadgeType = getBadgeTypeForTier(effectiveTier as MembershipTier)
   
   // Leer parámetros de URL para filtros de ubicación
   const stateIdParam = searchParamsInitial.get("state_id") ? parseInt(searchParamsInitial.get("state_id")!) : null
@@ -246,11 +246,21 @@ export default function DashboardPage() {
 
   const fetchAllBusinesses = useCallback(async (stateId?: number | null, municipalityId?: number | null) => {
     setLoading(true)
-    type Row = Record<string, unknown> & { owner_id?: string | null; owner?: { subscription_tier?: number | null } | null; profiles?: { subscription_tier?: number | null } | null }
+    type OwnerProfile = {
+      subscription_tier: number | null
+      golden_border_expires_at: string | null
+      chat_expires_at: string | null
+      spotlight_expires_at: string | null
+    }
+    type Row = Record<string, unknown> & {
+      owner_id?: string | null
+      owner?: { subscription_tier?: number | null } | null
+      profiles?: Partial<OwnerProfile> | null
+    }
     let rawRows: Row[] | null = null
 
     try {
-      // Fetch negocios directamente sin join (más confiable)
+      // Fetch businesses directly (no join — more reliable)
       let query = supabase.from("businesses").select("*")
       if (stateId) query = query.eq("state_id", stateId)
       if (municipalityId) query = query.eq("municipality_id", municipalityId)
@@ -265,21 +275,39 @@ export default function DashboardPage() {
       }
 
     const rows = rawRows ?? []
-    // Fetch profiles for all owners in one query (más eficiente)
+    // Batch-fetch owner profiles — profiles table is the SINGLE SOURCE OF TRUTH
+    // for tier, golden border, chat, and spotlight perk expiry dates.
     const ownerIds = [...new Set(rows.map(b => b.owner_id).filter(Boolean) as string[])]
-    const profilesMap = new Map<string, number | null>()
+    const profilesMap = new Map<string, OwnerProfile>()
     if (ownerIds.length > 0) {
-      const { data: profiles } = await supabase.from("profiles").select("id, subscription_tier").in("id", ownerIds)
-      profiles?.forEach(p => profilesMap.set(p.id, p.subscription_tier))
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, subscription_tier, golden_border_expires_at, chat_expires_at, spotlight_expires_at")
+        .in("id", ownerIds)
+      profiles?.forEach(p => profilesMap.set(p.id, {
+        subscription_tier: (p as any).subscription_tier ?? null,
+        golden_border_expires_at: (p as any).golden_border_expires_at ?? null,
+        chat_expires_at: (p as any).chat_expires_at ?? null,
+        spotlight_expires_at: (p as any).spotlight_expires_at ?? null,
+      }))
+    }
+
+    const defaultProfile: OwnerProfile = {
+      subscription_tier: 0,
+      golden_border_expires_at: null,
+      chat_expires_at: null,
+      spotlight_expires_at: null,
     }
 
     const normalizedBusinesses: Business[] = rows.map(business => {
       const hasOwner = Boolean(business.owner_id)
-      const subscription_tier = hasOwner ? (profilesMap.get(business.owner_id!) ?? 0) : 0
+      const ownerProfile = hasOwner ? (profilesMap.get(business.owner_id!) ?? defaultProfile) : null
       return {
         ...business,
-        owner: hasOwner ? { subscription_tier } : null,
-        profiles: hasOwner ? { subscription_tier } : null
+        // `profiles` carries the full perk payload — components should read from here
+        profiles: ownerProfile,
+        // `owner` is a lighter alias kept for backward compat
+        owner: ownerProfile ? { subscription_tier: ownerProfile.subscription_tier } : null,
       } as Business
     })
 
@@ -1105,12 +1133,20 @@ export default function DashboardPage() {
                         </p>
                       )}
                     </div>
-                    {currentBadgeType && (
+                    {!tierLoading && effectiveTier > 0 && (
                       <MembershipBadge type={currentBadgeType} className="shrink-0" />
                     )}
                   </div>
                   <p className="mt-1 text-xs text-white/80">
                     {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
+                    {" · "}
+                    {tierLoading ? (
+                      <span className="opacity-40">…</span>
+                    ) : (
+                      <span className={effectiveTier > 0 ? "font-semibold text-yellow-200" : "opacity-70"}>
+                        {getLabelForTier(effectiveTier as MembershipTier)}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>

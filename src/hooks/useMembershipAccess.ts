@@ -6,7 +6,22 @@ import useUser from "./useUser"
 import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 interface MembershipAccess {
+  /**
+   * Raw tier value from the database (0–3).
+   * NOTE: this can be > 0 even when the subscription has expired.
+   * Use `effectiveTier` for access-control decisions, or call `hasAccess()`.
+   */
   tier: SubscriptionTier
+  /**
+   * The tier the user is *actually operating at right now*.
+   *
+   * Equals `tier` when hasActiveSubscription is true.
+   * Equals 0 (Básico) when the subscription has expired or is absent.
+   *
+   * This is the value to use anywhere you need "what can this user do?".
+   * It makes it architecturally impossible to gate access on a stale/expired tier.
+   */
+  effectiveTier: SubscriptionTier
   subscriptionEndDate: string | null
   hasActiveSubscription: boolean
   loading: boolean
@@ -27,6 +42,7 @@ export default function useMembershipAccess() {
   const { user, loading: userLoading } = useUser()
   const [membership, setMembership] = useState<MembershipAccess>({
     tier: 0,
+    effectiveTier: 0,
     subscriptionEndDate: null,
     hasActiveSubscription: false,
     loading: true,
@@ -43,6 +59,7 @@ export default function useMembershipAccess() {
       if (!user) {
         setMembership({
           tier: 0,
+          effectiveTier: 0,
           subscriptionEndDate: null,
           hasActiveSubscription: false,
           loading: false,
@@ -61,6 +78,7 @@ export default function useMembershipAccess() {
         if (error) {
           setMembership({
             tier: 0,
+            effectiveTier: 0,
             subscriptionEndDate: null,
             hasActiveSubscription: false,
             loading: false,
@@ -90,8 +108,14 @@ export default function useMembershipAccess() {
             (endDate === null ||
               (!Number.isNaN(new Date(endDate).getTime()) && new Date(endDate) > new Date()))
 
+          // effectiveTier: the tier the user can ACTUALLY USE right now.
+          // When the subscription is expired, this collapses to 0 (Básico) so
+          // no consumer can accidentally grant access based on a stale tier value.
+          const effectiveTier = (isActive ? tier : 0) as SubscriptionTier
+
           setMembership({
             tier,
+            effectiveTier,
             subscriptionEndDate: endDate,
             hasActiveSubscription: isActive,
             loading: false,
@@ -100,6 +124,7 @@ export default function useMembershipAccess() {
         } catch {
           setMembership({
             tier: 0,
+            effectiveTier: 0,
             subscriptionEndDate: null,
             hasActiveSubscription: false,
             loading: false,
@@ -109,6 +134,7 @@ export default function useMembershipAccess() {
       } catch (_err) {
         setMembership({
           tier: 0,
+          effectiveTier: 0,
           subscriptionEndDate: null,
           hasActiveSubscription: false,
           loading: false,

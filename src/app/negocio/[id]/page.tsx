@@ -100,19 +100,30 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
     notFound()
   }
 
-  // Fetch owner profile for tier (used for badge/contact rendering)
-  let ownerTier = 0
+  // Fetch owner profile for tier (used for contact visibility only)
+  let effectiveOwnerTier = 0
   if (business.owner_id) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("subscription_tier")
+      .select("subscription_tier, subscription_end_date")
       .eq("id", business.owner_id)
       .single()
-    ownerTier = (profile as any)?.subscription_tier ?? 0
+
+    const rawTier = (profile as any)?.subscription_tier ?? 0
+    const endRaw: string | null = (profile as any)?.subscription_end_date ?? null
+    const endValid =
+      endRaw !== null &&
+      !Number.isNaN(new Date(endRaw).getTime()) &&
+      new Date(endRaw) > new Date()
+    const isActive = rawTier > 0 && (endRaw === null || endValid)
+    effectiveOwnerTier = isActive ? rawTier : 0
   }
 
   // WhatsApp/phone contact: Tier 2+ (Destaca, Fundador)
-  const ownerHasFullContact = ownerTier >= 2
+  const ownerHasFullContact = effectiveOwnerTier >= 2
+
+  // Chat abierto para todos — el botón siempre muestra "Enviar Mensaje"
+  const ownerHasInAppChat = true
 
   // Cargar estadísticas de reviews
   const { data: reviewStats } = await supabase
@@ -304,16 +315,34 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
 
             {/* Botones de Acción */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/20">
-              {/* Primary CTA */}
+              {/* Primary CTA — shows chat icon when in-app chat is available */}
               <Link
                 href={`/app/dashboard/negocios/${business.id}`}
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Enviar Mensaje
+                {ownerHasInAppChat ? (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Enviar Mensaje
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Ver perfil en la app
+                  </>
+                )}
               </Link>
+
+              {/* Hint when neither chat nor contact is available */}
+              {!ownerHasInAppChat && !ownerHasFullContact && (
+                <p className="text-center text-xs text-gray-500 self-center">
+                  Este negocio no tiene el chat activo por el momento.
+                </p>
+              )}
 
               {/* WhatsApp — only for Tier 2+ (Destaca / Fundador) */}
               {ownerHasFullContact && business.whatsapp && (

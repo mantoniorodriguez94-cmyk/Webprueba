@@ -151,6 +151,16 @@ export default function RegisterPage() {
       } else if (profile) {
         console.log("✅ Perfil creado correctamente:", profile);
       }
+
+      // Send welcome email — fire-and-forget, never blocks the registration flow.
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, userName: fullName }),
+      }).catch((err) => {
+        // Silent: a failed email must never prevent account creation.
+        console.warn('[register] Welcome email request failed (non-blocking):', err);
+      });
   
       // 2. Si hay sesión activa, redirigir inmediatamente
       if (data.session) {

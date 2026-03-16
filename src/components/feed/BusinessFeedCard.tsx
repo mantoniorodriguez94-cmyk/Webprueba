@@ -45,6 +45,9 @@ export default function BusinessFeedCard({
   const [showMessageModal, setShowMessageModal] = useState(false)
   /** Healed tier when owner_id exists but join/profile data was missing */
   const [healedTier, setHealedTier] = useState<number | null>(null)
+  /** Healed perk expiry dates fetched alongside tier (fallback if join data missing) */
+  const [healedChatExpiresAt, setHealedChatExpiresAt] = useState<string | null>(null)
+  const [healedGoldenBorderExpiresAt, setHealedGoldenBorderExpiresAt] = useState<string | null>(null)
 
   // Verificar si el negocio ya está guardado
   useEffect(() => {
@@ -146,6 +149,7 @@ export default function BusinessFeedCard({
       router.push("/app/auth/login")
       return
     }
+
     if (business.id) {
       trackBusinessInteraction(business.id, 'message', currentUser?.id)
     }
@@ -164,50 +168,78 @@ export default function BusinessFeedCard({
                          business.premium_until && 
                          new Date(business.premium_until) > new Date()
 
-  // Safe-access: never read business.owner / business.profiles without fallback (avoids crash if null)
-  const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
+  // ── Owner tier: profiles table is the SINGLE SOURCE OF TRUTH ────────────────
+  // Prefer the batch-fetched `profiles` join; fall back to `owner` alias; then healed value.
+  const businessTier =
+    business?.profiles?.subscription_tier ??
+    business?.owner?.subscription_tier ??
+    0
   const ownerTier = healedTier ?? businessTier
-  // Chat and contact are open to all registered businesses
-  const ownerHasChat = true
-  const ownerHasFullContact = true
-  const isTier2 = ownerTier >= 2
-  const isTier3 = ownerTier >= 3
 
-  // Heal: if owner_id exists but tier was missing (slow join), fetch profile once per business
+  // ── Perk expiry dates from profiles (preferred) or healed fallback ────────
+  const ownerChatExpiresAt =
+    healedChatExpiresAt ??
+    business.profiles?.chat_expires_at ??
+    (business as any)?.owner_chat_expires_at ?? // compat: some pages inject this manually
+    null
+
+  const ownerGoldenBorderExpiresAt =
+    healedGoldenBorderExpiresAt ??
+    business.profiles?.golden_border_expires_at ??
+    null
+
+  // ── Golden border: Tier 3 (Fundador) OR active admin perk ─────────────────
+  const ownerHasGoldenBorder =
+    ownerTier >= 3 ||
+    (ownerGoldenBorderExpiresAt != null &&
+      !Number.isNaN(new Date(ownerGoldenBorderExpiresAt).getTime()) &&
+      new Date(ownerGoldenBorderExpiresAt) > new Date())
+
+  // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Fundador) ─────
+  const ownerHasFullContact = ownerTier >= 2
+
+  const isTier2 = ownerTier >= 2
+  const isTier3 = ownerTier >= 3 // used for Crown badge only
+
+  // ── Heal: lazy profile fetch when join data was absent ────────────────────
+  // This covers edge cases where the batch join hadn't populated yet (e.g., new card).
   const healAttemptedForOwner = useRef<string | null>(null)
   useEffect(() => {
     if (!business.owner_id) return
-    const hasTierFromData = business.profiles?.subscription_tier != null || business.owner?.subscription_tier != null
+    const hasTierFromData =
+      business.profiles?.subscription_tier != null ||
+      business.owner?.subscription_tier != null
     if (hasTierFromData) return
     if (healAttemptedForOwner.current === business.owner_id) return
     healAttemptedForOwner.current = business.owner_id
     let cancelled = false
     supabase
       .from("profiles")
-      .select("subscription_tier")
+      .select("subscription_tier, chat_expires_at, golden_border_expires_at")
       .eq("id", business.owner_id)
       .single()
       .then(({ data }) => {
         if (!cancelled) {
           setHealedTier((data as any)?.subscription_tier ?? 0)
+          setHealedChatExpiresAt((data as any)?.chat_expires_at ?? null)
+          setHealedGoldenBorderExpiresAt((data as any)?.golden_border_expires_at ?? null)
         }
       })
     return () => { cancelled = true }
   }, [business.owner_id, business.profiles?.subscription_tier, business.owner?.subscription_tier])
 
-  // Determinar clases de estilo basadas en tier
+  // ── Card border / glow style derived from authoritative profiles data ───────
   const getTierStyles = () => {
-    if (isTier3) {
-      // Tier 3: Gold border + custom gold glow class
+    if (ownerHasGoldenBorder) {
+      // Tier 3 or active golden-border perk
       return 'border-2 tier-gold-glow bg-gradient-to-br from-yellow-500/10 to-orange-500/5'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
       return 'border-2 tier-silver-glow bg-gradient-to-br from-slate-400/5 to-slate-500/5'
     } else if (isPremiumActive) {
-      // Premium legacy (business premium, not user subscription)
+      // Legacy is_premium flag on the business row (may lag the profile)
       return 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5'
     } else {
-      // Default
       return 'border border-white/20 hover:border-white/30 bg-transparent'
     }
   }
@@ -439,7 +471,7 @@ export default function BusinessFeedCard({
             </svg>
           </button>
 
-          {/* Mensaje */}
+          {/* Mensaje: disabled cuando el dueño no tiene Conecta+ ni chat_enabled */}
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
@@ -522,7 +554,7 @@ export default function BusinessFeedCard({
         </Link>
       </div>
 
-      {/* Modal de enviar mensaje */}
+      {/* Modal de enviar mensaje — solo si negocio tiene chat activo y visitante Conecta+ */}
       {showMessageModal && currentUser && (
         <SendMessageModal
           business={business}

@@ -34,6 +34,7 @@ export default function EditarNegocioPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const [galleryError, setGalleryError] = useState("")
 
   // Verificar permisos
@@ -89,7 +90,7 @@ export default function EditarNegocioPage() {
         // Verificar permisos
         const hasPermission = data.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para editar este negocio")
+          toast.error("No tienes permiso para editar este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -105,7 +106,7 @@ export default function EditarNegocioPage() {
         setLongitude(data.longitude ? String(data.longitude) : "")
       } catch (err: any) {
         console.error("Error cargando negocio:", err)
-        alert("Error cargando el negocio")
+        toast.error("No se pudo cargar el negocio. Intenta de nuevo.")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)
@@ -206,12 +207,24 @@ export default function EditarNegocioPage() {
         .eq('id', negocio.id)
 
       if (updateError) throw updateError
-      
-      alert("✅ Negocio actualizado correctamente")
-      router.push(`/app/dashboard/negocios/${negocio.id}`)
+
+      // Show success overlay, refresh server cache, then navigate
+      setSaveSuccess(true)
+      toast.success("¡Negocio actualizado con éxito!", {
+        description: "Los cambios ya son visibles para todos.",
+        duration: 4000,
+      })
+      router.refresh()
+      setTimeout(() => {
+        router.push(`/app/dashboard/negocios/${negocio.id}`)
+      }, 1600)
     } catch (err: any) {
-      setError(err.message || "Error al guardar")
-      console.error("Error:", err)
+      const msg = err?.message || "Error al guardar los cambios"
+      setError(msg)
+      toast.error("Hubo un problema al actualizar los datos.", {
+        description: "Inténtalo de nuevo.",
+      })
+      console.error("[editar negocio] Error:", err)
     } finally {
       setSaving(false)
     }
@@ -542,6 +555,58 @@ export default function EditarNegocioPage() {
           </form>
         </div>
       </div>
+
+      {/* ── Success Overlay ──────────────────────────────────────────────── */}
+      {saveSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="flex flex-col items-center gap-5 bg-gray-900/95 border border-white/10 rounded-3xl px-10 py-10 shadow-2xl mx-4 max-w-sm w-full">
+            {/* Animated checkmark circle */}
+            <div className="relative flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center animate-in zoom-in duration-300">
+                <svg
+                  className="w-10 h-10 text-emerald-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              {/* Outer pulse ring */}
+              <span className="absolute w-20 h-20 rounded-full border-2 border-emerald-500/30 animate-ping opacity-40" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-white mb-1">
+                ¡Cambios guardados!
+              </h3>
+              <p className="text-sm text-gray-400">
+                Tu negocio ha sido actualizado con éxito.
+              </p>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ animation: "progress-bar 1.5s linear forwards" }}
+              />
+            </div>
+          </div>
+
+          <style>{`
+            @keyframes progress-bar {
+              from { width: 0% }
+              to   { width: 100% }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Modal de Mapa */}
       {showMapModal && (

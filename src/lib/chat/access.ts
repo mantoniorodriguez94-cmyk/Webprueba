@@ -1,8 +1,8 @@
 /**
- * Unified chat access logic — single source of truth for the entire app.
+ * Chat access — abierto a todos los usuarios registrados.
  *
- * Chat is open to ALL registered users and businesses.
- * Any authenticated profile (non-null) has full access.
+ * Regla: cualquier perfil autenticado (no nulo) tiene acceso al chat.
+ * No se requiere plan de suscripción ni perk modular.
  */
 
 export interface ChatAccessProfile {
@@ -11,12 +11,9 @@ export interface ChatAccessProfile {
   chat_enabled?: boolean | null
 }
 
-/**
- * Returns true for any non-null profile.
- * Tier restrictions and modular-perk dates are intentionally not checked.
- */
 export function hasChatAccess(
-  profile: ChatAccessProfile | null | undefined
+  profile: ChatAccessProfile | Record<string, unknown> | null | undefined
 ): boolean {
+  // Si existe un perfil (usuario autenticado) → acceso permitido
   return !!profile
 }

@@ -5,6 +5,9 @@ import { createPortal } from "react-dom"
 import Image from "next/image"
 import { toast } from "sonner"
 import type { Business } from "@/types/business"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
+import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 
 interface SendMessageModalProps {
   business: Business
@@ -19,10 +22,15 @@ export default function SendMessageModal({
   onClose,
   onSuccess,
 }: SendMessageModalProps) {
+  const { hasAccess, loading: accessLoading } = useMembershipAccess()
   const [message, setMessage] = useState("")
   const [sending, setSending] = useState(false)
 
+  // Visitor must have Conecta+ to send direct messages
+  const canAccessChat = hasAccess(SUBSCRIPTION_TIER_CONECTA)
+
   const handleSendMessage = async () => {
+    if (!canAccessChat) return
     if (!message.trim()) {
       toast.error("Por favor escribe un mensaje antes de enviar.")
       return
@@ -42,11 +50,32 @@ export default function SendMessageModal({
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
+        const code = (data as any).code as string | undefined
         const errMsg = (data as any).error as string | undefined
+
+        if (code === "SENDER_UPGRADE_REQUIRED") {
+          toast.error("Plan requerido", {
+            description:
+              "Necesitas el Plan Conecta o superior para enviar mensajes directos.",
+          })
+          return
+        }
+
+        if (code === "BUSINESS_CHAT_DISABLED") {
+          toast.error("Chat no disponible", {
+            description:
+              errMsg ??
+              "Este negocio no cuenta con el sistema de chat activo por el momento.",
+          })
+          onClose()
+          return
+        }
+
         throw new Error(errMsg ?? `Error ${res.status}`)
       }
 
       const { conversationId } = data as { conversationId: string }
+      void conversationId
       toast.success("Mensaje enviado", {
         description: `Tu mensaje a ${business.name} ha sido enviado.`,
       })
@@ -125,21 +154,32 @@ export default function SendMessageModal({
 
           {/* Body */}
           <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Tu mensaje
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={`Escribe tu mensaje para ${business.name}...`}
-              rows={6}
-              disabled={sending}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-500"
-              maxLength={500}
-            />
-            <p className="text-xs text-gray-500 mt-2">
-              {message.length}/500 caracteres
-            </p>
+            {!accessLoading && !canAccessChat ? (
+              <UpgradeSuggestion
+                requiredTier={SUBSCRIPTION_TIER_CONECTA}
+                featureName="Chat con Clientes"
+                featureDescription="Comunícate directamente con los negocios a través de nuestro sistema de mensajería integrado. Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat."
+                variant="modal"
+              />
+            ) : (
+              <>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tu mensaje
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={`Escribe tu mensaje para ${business.name}...`}
+                  rows={6}
+                  disabled={sending || !canAccessChat}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-500"
+                  maxLength={500}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  {message.length}/500 caracteres
+                </p>
+              </>
+            )}
           </div>
 
           {/* Footer */}
@@ -153,7 +193,7 @@ export default function SendMessageModal({
             </button>
             <button
               onClick={handleSendMessage}
-              disabled={sending || !message.trim()}
+              disabled={sending || !message.trim() || !canAccessChat}
               className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white rounded-2xl hover:shadow-xl transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               {sending ? (

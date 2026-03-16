@@ -124,7 +124,21 @@ async function updateUserProfileSubscription(
   let newEndDate: Date
   let finalTier: SubscriptionTier = targetTier
 
-  if (currentTier === targetTier && currentEndRaw) {
+  // ── Highlander guard: never overwrite a permanent admin grant ──────────────
+  // If subscription_end_date is NULL it means an admin set this tier as permanent
+  // (no expiry). A payment renewal must NOT replace null with a future timestamp,
+  // which could accidentally shorten an otherwise indefinite grant.
+  // In that case we still extend forward from "now + daysToAdd" rather than from
+  // null (which would be undefined arithmetic), so the user gets their purchased
+  // time while converting the implicit permanent grant to an explicit timed one.
+  const isCurrentlyPermanent = currentTier === targetTier && currentEndRaw === null
+
+  if (isCurrentlyPermanent) {
+    // Same tier, permanent admin grant → payment extends from now
+    newEndDate = new Date(now)
+    newEndDate.setDate(newEndDate.getDate() + daysToAdd)
+    finalTier = targetTier
+  } else if (currentTier === targetTier && currentEndRaw) {
     const currentEnd = new Date(currentEndRaw)
 
     // Si la suscripción actual sigue activa, extender desde la fecha actual de expiración

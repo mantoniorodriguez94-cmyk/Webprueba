@@ -1,9 +1,12 @@
 /**
  * POST /api/chat/create-conversation
  *
- * Creates or finds an existing conversation and inserts the first message.
- * Only requirement: the sender must be authenticated and the business must exist.
- * No subscription-tier or perk checks are applied.
+ * Server-side gate for creating/finding a conversation and sending the
+ * first message.  Two-layer access check:
+ *
+ *  Layer 1 — Sender (visitor)  : must have subscription_tier >= 1 OR be admin
+ *  Layer 2 — Business owner    : must pass hasChatAccess()
+ *                                (tier >= 1 OR chat_expires_at in future OR chat_enabled)
  *
  * Returns { conversationId: string }
  */
@@ -11,6 +14,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { hasChatAccess } from "@/lib/chat/access"
+import { sendChatNotificationEmail } from "@/lib/emails"
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,12 +53,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── 2. Fetch business (existence check only) ─────────────────────────────
+    // ── 2. Fetch business ────────────────────────────────────────────────────
+    // Chat está abierto para todos los usuarios autenticados; no se requiere plan.
     const supabase = createAdminClient()
 
     const { data: business, error: bizErr } = await supabase
       .from("businesses")
-      .select("id, owner_id")
+      .select("id, owner_id, name")
       .eq("id", businessId)
       .single()
 
@@ -102,7 +108,7 @@ export async function POST(req: NextRequest) {
       conversationId = created.id
     }
 
-    // ── 4. Insert first message ───────────────────────────────────────────────
+    // ── 5. Insert first message ───────────────────────────────────────────────
     const { error: msgErr } = await supabase.from("messages").insert({
       conversation_id: conversationId,
       sender_id: sender.id,
@@ -115,6 +121,47 @@ export async function POST(req: NextRequest) {
         { error: "No se pudo enviar el mensaje." },
         { status: 500 }
       )
+    }
+
+    // ── 4. Fire-and-forget: notify business owner by email ───────────────────
+    // Runs after the response is prepared so it never delays the sender's UX.
+    // Only fires when the sender is NOT the business owner (no self-notifications).
+    if (business.owner_id && business.owner_id !== sender.id) {
+      ;(async () => {
+        try {
+          // Fetch owner email + sender display name in parallel
+          const [ownerResult, senderResult] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("email")
+              .eq("id", business.owner_id)
+              .single(),
+            supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", sender.id)
+              .single(),
+          ])
+
+          const ownerEmail: string | null = (ownerResult.data as any)?.email ?? null
+          const senderName: string =
+            (senderResult.data as any)?.full_name ||
+            sender.user_metadata?.full_name ||
+            "Un usuario"
+
+          if (ownerEmail) {
+            await sendChatNotificationEmail({
+              to: ownerEmail,
+              businessName: (business as any).name ?? "tu negocio",
+              senderName,
+              messagePreview: initialMessage.trim(),
+            })
+          }
+        } catch (notifyErr) {
+          // Never let a notification failure surface to the client
+          console.warn("[chat/create-conversation] Email notification failed (non-blocking):", notifyErr)
+        }
+      })()
     }
 
     return NextResponse.json({ conversationId })

@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
     const updates: Record<string, unknown> = {}
     if (typeof subscription_tier === "number" && VALID_TIERS.includes(subscription_tier)) {
       updates.subscription_tier = subscription_tier
+      // ── Highlander Rule ─────────────────────────────────────────────────────
+      // Whenever we change the tier we MUST also overwrite subscription_end_date.
+      // Leaving the old date in place creates a split-brain state where the UI
+      // shows the new tier badge but hasActiveSubscription evaluates to false
+      // because the previous expiry date has already passed.
+      //
+      // Admin grants are treated as permanent (null = no expiry).
+      // This covers both upgrades (0→3) and downgrades/resets (3→0).
+      updates.subscription_end_date = null
     }
     if (typeof extra_business_limit === "number" && extra_business_limit >= 0) {
       updates.extra_business_limit = extra_business_limit
@@ -76,21 +85,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Sincronizar beneficios de tier con TODOS los negocios del usuario
+    // Sync tier benefits to ALL businesses owned by this user.
+    // profiles table is the source of truth; businesses carry convenience mirror flags.
     if (typeof subscription_tier === "number" && VALID_TIERS.includes(subscription_tier)) {
-      let businessUpdates: Record<string, unknown> | null = null
+      let businessUpdates: Record<string, unknown>
 
       if (subscription_tier === 3) {
-        // Fundador: paquete completo
+        // Fundador: full package — golden border, spotlight, search boost, chat
         businessUpdates = {
           is_premium: true,
           has_gold_border: true,
           search_priority_boost: true,
-          is_featured: true, // Spotlight
+          is_featured: true,
           chat_enabled: true,
         }
-      } else if (subscription_tier === 0) {
-        // Básico: sin beneficios
+      } else if (subscription_tier === 2) {
+        // Destaca: premium + search boost + spotlight + chat; no golden border
+        businessUpdates = {
+          is_premium: true,
+          has_gold_border: false,
+          search_priority_boost: true,
+          is_featured: true,
+          chat_enabled: true,
+        }
+      } else if (subscription_tier === 1) {
+        // Conecta: premium + chat; no search boost, no spotlight, no golden border
+        businessUpdates = {
+          is_premium: true,
+          has_gold_border: false,
+          search_priority_boost: false,
+          is_featured: false,
+          chat_enabled: true,
+        }
+      } else {
+        // Básico (0): all benefits revoked
         businessUpdates = {
           is_premium: false,
           has_gold_border: false,
@@ -100,16 +128,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      if (businessUpdates) {
-        const { error: bizErr } = await supabase
-          .from("businesses")
-          // @ts-ignore - algunas columnas pueden no estar en los tipos generados
-          .update(businessUpdates)
-          .eq("owner_id", profileId)
+      const { error: bizErr } = await supabase
+        .from("businesses")
+        // @ts-ignore - some columns may not appear in generated types
+        .update(businessUpdates)
+        .eq("owner_id", profileId)
 
-        if (bizErr) {
-          console.error("Error sincronizando beneficios de tier en negocios:", bizErr)
-        }
+      if (bizErr) {
+        console.error("[profile-override] Error syncing tier benefits to businesses:", bizErr)
       }
     }
 

@@ -188,7 +188,8 @@ export default function MembresiaPage() {
             </p>
           </div>
           <div className="w-[100px] text-right">
-            {currentTier > 0 && <MembershipBadge type={currentBadgeType} />}
+            {/* Show badge only when the subscription is genuinely active — not on a stale/expired tier */}
+            {hasActiveSubscription && <MembershipBadge type={currentBadgeType} />}
           </div>
         </div>
       </header>
@@ -224,7 +225,10 @@ export default function MembresiaPage() {
               )}
             </div>
             <div className="flex flex-col items-end gap-1">
-              {currentTier > 0 ? (
+              {/* Gate BOTH the badge and the level label on hasActiveSubscription.
+                  Using currentTier > 0 alone creates a split-brain UI when the tier
+                  is set but subscription_end_date has already expired. */}
+              {hasActiveSubscription ? (
                 <>
                   <MembershipBadge type={currentBadgeType} />
                   <p className="text-[11px] text-blue-100">

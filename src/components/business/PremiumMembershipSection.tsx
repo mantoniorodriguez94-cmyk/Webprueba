@@ -21,7 +21,7 @@ export default function PremiumMembershipSection({
   const [subscription, setSubscription] = useState<BusinessSubscriptionWithPlan | null>(null)
   const [loading, setLoading] = useState(true)
   const [updatingBorder, setUpdatingBorder] = useState(false)
-  const [hasGoldenBorder, setHasGoldenBorder] = useState(business.has_golden_border ?? true)
+  const [hasGoldenBorder, setHasGoldenBorder] = useState(business.has_gold_border ?? true)
   const [monthlyPlan, setMonthlyPlan] = useState<{ price_usd: number } | null>(null)
   const [yearlyPlan, setYearlyPlan] = useState<{ price_usd: number } | null>(null)
 
@@ -69,10 +69,10 @@ export default function PremiumMembershipSection({
     loadSubscription()
   }, [businessId])
 
-  // Actualizar has_golden_border cuando cambia en el prop
+  // Actualizar has_gold_border cuando cambia en el prop
   useEffect(() => {
-    setHasGoldenBorder(business.has_golden_border ?? true)
-  }, [business.has_golden_border])
+    setHasGoldenBorder(business.has_gold_border ?? true)
+  }, [business.has_gold_border])
 
   // Calcular días restantes
   const calculateDaysRemaining = (): number | null => {
@@ -105,7 +105,7 @@ export default function PremiumMembershipSection({
     try {
       const { error } = await supabase
         .from("businesses")
-        .update({ has_golden_border: checked })
+        .update({ has_gold_border: checked })
         .eq("id", businessId)
 
       if (error) throw error
