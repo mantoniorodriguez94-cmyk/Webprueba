@@ -1,22 +1,40 @@
 "use server"
 
 /**
- * Server Action: Enviar pago manual para verificación
- * 
+ * Server Action: Enviar pago manual de MEMBRESÍA para verificación
+ *
  * Maneja la subida de archivos y creación del registro de pago manual
- * usando Supabase Storage y la tabla manual_payment_submissions
+ * usando Supabase Storage y la tabla manual_payment_submissions.
+ *
+ * El producto es la MEMBRESÍA DE CUENTA (tier 1..3 por N meses). `business_id`
+ * es opcional porque la membresía pertenece al usuario, no a un negocio.
  */
 
 import { createClient } from '@/utils/supabase/server'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import {
+  SUBSCRIPTION_TIER_CONECTA,
+  SUBSCRIPTION_TIER_DESTACADO,
+  SUBSCRIPTION_TIER_PATROCINA,
+  calculateSubscriptionTotal,
+} from '@/lib/memberships/tiers'
+import type { SubscriptionTier } from '@/lib/memberships/tiers'
 
 export interface SubmitManualPaymentResult {
   success: boolean
   error?: string
   submissionId?: string
   message?: string
+  /** Monto calculado en servidor para el tier + meses enviados */
+  amountUsd?: number
 }
+
+const PAYABLE_TIERS: SubscriptionTier[] = [
+  SUBSCRIPTION_TIER_CONECTA,
+  SUBSCRIPTION_TIER_DESTACADO,
+  SUBSCRIPTION_TIER_PATROCINA,
+]
 
 export async function submitManualPayment(
   formData: FormData
@@ -34,23 +52,43 @@ export async function submitManualPayment(
     }
 
     // 2️⃣ Extraer datos del FormData
-    const plan_id = formData.get('plan_id') as string
-    const business_id = formData.get('business_id') as string
+    const targetTierRaw = formData.get('target_tier')
+    const monthsRaw = formData.get('months')
+    // business_id es OPCIONAL: la membresía es de cuenta, no de negocio
+    const business_id = (formData.get('business_id') as string | null) || null
     const payment_method = formData.get('payment_method') as string
     const reference = formData.get('reference') as string | null
     const screenshot = formData.get('screenshot') as File
 
     // Validar campos requeridos
-    if (!plan_id || !business_id || !payment_method || !screenshot) {
+    if (!targetTierRaw || !monthsRaw || !payment_method || !screenshot) {
       const missingFields: string[] = []
-      if (!plan_id) missingFields.push('Plan')
-      if (!business_id) missingFields.push('Negocio')
+      if (!targetTierRaw) missingFields.push('Nivel de membresía')
+      if (!monthsRaw) missingFields.push('Duración (meses)')
       if (!payment_method) missingFields.push('Método de pago')
       if (!screenshot) missingFields.push('Captura de pantalla')
-      
+
       return {
         success: false,
         error: `Faltan campos requeridos: ${missingFields.join(', ')}. Por favor, completa todos los campos del formulario.`
+      }
+    }
+
+    // Validar tier objetivo (1 = Conecta, 2 = Destaca, 3 = Patrocina)
+    const target_tier = parseInt(String(targetTierRaw), 10)
+    if (!Number.isFinite(target_tier) || !PAYABLE_TIERS.includes(target_tier as SubscriptionTier)) {
+      return {
+        success: false,
+        error: 'El nivel de membresía seleccionado no es válido.'
+      }
+    }
+
+    // Validar meses
+    const months = parseInt(String(monthsRaw), 10)
+    if (!Number.isFinite(months) || months < 1) {
+      return {
+        success: false,
+        error: 'La duración debe ser de al menos 1 mes.'
       }
     }
 
@@ -78,44 +116,41 @@ export async function submitManualPayment(
       mappedPaymentMethod = 'bank_transfer' // Pago móvil es una forma de transferencia bancaria
     }
 
-    // 3️⃣ Verificar que el negocio pertenece al usuario
-    const { data: business, error: businessError } = await supabase
-      .from('businesses')
-      .select('id, owner_id, name')
-      .eq('id', business_id)
-      .eq('owner_id', user.id)
-      .single()
+    // 3️⃣ Si se envió un negocio, verificar que pertenece al usuario.
+    //    (Opcional: sirve solo como referencia; la membresía se aplica a la cuenta.)
+    if (business_id) {
+      const { data: business, error: businessError } = await supabase
+        .from('businesses')
+        .select('id, owner_id, name')
+        .eq('id', business_id)
+        .eq('owner_id', user.id)
+        .single()
 
-    if (businessError || !business) {
-      console.error('Error verificando negocio:', businessError)
-      return {
-        success: false,
-        error: 'Negocio no encontrado o no autorizado'
+      if (businessError || !business) {
+        console.error('Error verificando negocio:', businessError)
+        return {
+          success: false,
+          error: 'Negocio no encontrado o no autorizado'
+        }
       }
     }
 
-    // 4️⃣ Obtener información del plan
-    const { data: plan, error: planError } = await supabase
-      .from('premium_plans')
-      .select('*')
-      .eq('id', plan_id)
-      .eq('is_active', true)
-      .single()
-
-    if (planError || !plan) {
-      console.error('Error obteniendo plan:', planError)
+    // 4️⃣ Calcular el monto en SERVIDOR (nunca confiar en el cliente).
+    //    calculateSubscriptionTotal aplica el descuento "paga 10, recibe 12".
+    const amount_usd = calculateSubscriptionTotal(target_tier, months)
+    if (!Number.isFinite(amount_usd) || amount_usd <= 0) {
       return {
         success: false,
-        error: 'Plan premium no encontrado o no está disponible'
+        error: 'No se pudo calcular el monto de la membresía seleccionada.'
       }
     }
 
     // 5️⃣ Subir imagen a Supabase Storage
-    // Generar nombre único de archivo: userId/businessId/timestamp-random.ext
+    // Generar nombre único de archivo: userId/membership/timestamp-random.ext
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 15)
     const fileExt = screenshot.name.split('.').pop() || 'jpg'
-    const fileName = `${user.id}/${business_id}/${timestamp}-${randomStr}.${fileExt}`
+    const fileName = `${user.id}/membership/${timestamp}-${randomStr}.${fileExt}`
 
     // Usar Admin Client para subir archivo (bypassa políticas de Storage)
     // Esto evita problemas de permisos con archivos grandes
@@ -178,9 +213,10 @@ export async function submitManualPayment(
       .from('manual_payment_submissions')
       .insert({
         user_id: user.id,
-        business_id,
-        plan_id,
-        amount_usd: plan.price_usd,
+        business_id: business_id || null,
+        target_tier,
+        months,
+        amount_usd,
         payment_method: mappedPaymentMethod,
         reference: reference || null,
         screenshot_url: receipt_url,
@@ -204,7 +240,7 @@ export async function submitManualPayment(
       let userFriendlyError = 'Error al procesar tu solicitud de pago'
       
       if (errorMsg.includes('duplicate') || errorMsg.includes('unique')) {
-        userFriendlyError = 'Ya existe una solicitud de pago pendiente para este plan. Por favor, espera a que sea procesada.'
+        userFriendlyError = 'Ya existe una solicitud de pago pendiente para esta membresía. Por favor, espera a que sea procesada.'
       } else if (errorMsg.includes('foreign key') || errorMsg.includes('constraint')) {
         userFriendlyError = 'Error en los datos del pago. Por favor, recarga la página e intenta nuevamente.'
       } else if (errorMsg.includes('permission') || errorMsg.includes('unauthorized')) {
@@ -219,32 +255,18 @@ export async function submitManualPayment(
       }
     }
 
-    // 8️⃣ (Opcional) Crear registro en tabla payments también usando Admin Client
-    try {
-      await (adminSupabase as any)
-        .from('payments')
-        .insert({
-          business_id,
-          user_id: user.id,
-          plan_id,
-          method: 'manual',
-          amount_usd: plan.price_usd,
-          currency: 'USD',
-          status: 'pending',
-          external_id: submission.id,
-        })
-    } catch (paymentErr) {
-      // No bloqueamos el flujo si esto falla, solo lo registramos
-      console.warn('Error creando registro en tabla payments (no crítico):', paymentErr)
-    }
+    // 8️⃣ NOTA: ya NO se inserta en la tabla `payments`. Esa tabla quedó reservada
+    //    exclusivamente para el sistema de referidos/comisiones
+    //    (commissions.source_payment_id) y perdió la columna plan_id.
 
     // 9️⃣ Revalidar rutas relacionadas
-    revalidatePath(`/app/dashboard/negocios/${business_id}/premium`)
+    revalidatePath('/app/dashboard/membresia')
     revalidatePath('/app/admin/pagos')
 
     return {
       success: true,
       submissionId: submission.id,
+      amountUsd: amount_usd,
       message: 'Tu pago ha sido enviado para verificación. Te notificaremos cuando sea aprobado.'
     }
 

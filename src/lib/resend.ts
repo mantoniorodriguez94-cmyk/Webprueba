@@ -13,5 +13,5 @@ if (!process.env.RESEND_API_KEY) {
   console.warn('⚠️ RESEND_API_KEY no está configurada. El envío de correos no funcionará.')
 }
 
-export const FROM_EMAIL = 'Encuentra <onboarding@resend.dev>'
+export const FROM_EMAIL = 'App Encuentra <onboarding@resend.dev>'
 

@@ -115,7 +115,7 @@ export async function sendChatNotificationEmail({
       from: FROM,
       to: [to],
       replyTo: REPLY_TO,
-      subject: `💬 Nuevo mensaje de ${senderName} en Portal Encuentra`,
+      subject: `💬 Nuevo mensaje de ${senderName} en App Encuentra`,
       html: ChatNotificationEmailTemplate({ businessName, senderName, messagePreview, appUrl: APP_URL }),
     })
 
@@ -161,7 +161,7 @@ function ChatNotificationEmailTemplate({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nuevo mensaje en Portal Encuentra</title>
+  <title>Nuevo mensaje en App Encuentra</title>
 </head>
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f3f4f6;">
   <table role="presentation" style="width:100%;border-collapse:collapse;background-color:#f3f4f6;padding:20px;">
@@ -187,7 +187,7 @@ function ChatNotificationEmailTemplate({
             <td style="padding:36px 32px;">
               <p style="margin:0 0 16px 0;color:#1f2937;font-size:16px;line-height:1.7;">
                 ¡Hola! El usuario <strong>${senderName}</strong> te ha enviado un nuevo mensaje a través de
-                <strong>Portal Encuentra</strong>.
+                <strong>App Encuentra</strong>.
               </p>
 
               ${previewHtml}
@@ -214,7 +214,7 @@ function ChatNotificationEmailTemplate({
           <tr>
             <td style="background-color:#f9fafb;padding:24px 32px;text-align:center;border-top:1px solid #e5e7eb;">
               <p style="margin:0 0 6px 0;color:#6b7280;font-size:13px;">
-                Notificación automática de <strong>Portal Encuentra</strong>.
+                Notificación automática de <strong>App Encuentra</strong>.
               </p>
               <p style="margin:0;color:#9ca3af;font-size:12px;">
                 © ${new Date().getFullYear()} App Encuentra — Todos los derechos reservados

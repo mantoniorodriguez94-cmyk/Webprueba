@@ -88,7 +88,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
               </div>
               <div className="flex flex-col leading-tight">
                 <span className="text-sm font-semibold text-gray-200">
-                  Encuentra
+                  App Encuentra
                 </span>
                 <span className="text-xs text-blue-400 font-medium tracking-wide">
                   Panel Administrativo
@@ -162,7 +162,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
           {/* Footer sidebar */}
           <div className="mt-auto pt-4 text-[10px] text-gray-500 border-t border-white/10">
-            © {new Date().getFullYear()} Encuentra  
+            © {new Date().getFullYear()} App Encuentra
             <br />
             <span className="text-gray-400">Panel interno de administración</span>
           </div>

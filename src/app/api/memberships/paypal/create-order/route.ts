@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
+import { getAdminClient } from "@/lib/supabase/admin"
 import { calculateSubscriptionTotal } from "@/lib/memberships/tiers"
 
 // For LIVE only: always hit PayPal production
@@ -65,7 +66,7 @@ async function createPayPalOrder(accessToken: string, amount: number, currency: 
             currency_code: currency,
             value: amount.toFixed(2),
           },
-          description: "Membresía - Portal Encuentra",
+          description: "Membresía - App Encuentra",
         },
       ],
     }),
@@ -96,9 +97,10 @@ export async function POST(request: NextRequest) {
     const { amount, tier, months } = body
 
     let finalAmount: number | null = null
+    let monthsToUse: number | null = null
 
     if (typeof tier === "number") {
-      const monthsToUse = months && months > 0 ? months : 1
+      monthsToUse = months && months > 0 ? months : 1
       const total = calculateSubscriptionTotal(tier, monthsToUse)
       if (!Number.isFinite(total) || total <= 0) {
         return NextResponse.json(
@@ -124,6 +126,31 @@ export async function POST(request: NextRequest) {
 
     const accessToken = await getPayPalAccessToken()
     const order = await createPayPalOrder(accessToken, finalAmount)
+
+    // Registrar el tier/meses EXACTOS elegidos antes de capturar el pago.
+    // Sin esto, capture-order tendría que adivinar los meses a partir del
+    // monto, lo cual es AMBIGUO para compras anuales (el monto con descuento
+    // de 12 meses es idéntico al de pagar 10 meses sin descuento) — mismo
+    // patrón que ya usan Binance Pay y el pago manual.
+    if (typeof tier === "number" && monthsToUse) {
+      const adminSupabase = getAdminClient()
+      const { error: insertError } = await (adminSupabase as any).from("membership_payments").insert({
+        user_id: user.id,
+        amount: finalAmount,
+        currency: "USD",
+        gateway: "paypal",
+        transaction_ref: order.id,
+        status: "pending",
+        target_tier: tier,
+        months: monthsToUse,
+      })
+
+      if (insertError) {
+        // No bloqueamos la orden de PayPal por esto — capture-order cae de
+        // vuelta a resolver por monto si no encuentra el registro pendiente.
+        console.error("[membership/paypal] Error registrando orden pendiente:", insertError)
+      }
+    }
 
     return NextResponse.json(
       {

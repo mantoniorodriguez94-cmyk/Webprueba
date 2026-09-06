@@ -65,11 +65,9 @@ export default function InstallPWA() {
       const { outcome } = await deferredPrompt.userChoice
       
       if (outcome === 'accepted') {
-        console.log('PWA instalada')
         setShowInstallPrompt(false)
         setIsInstalled(true)
       } else {
-        console.log('Instalación rechazada')
         localStorage.setItem('pwa-install-dismissed', new Date().toISOString())
       }
       
@@ -96,7 +94,7 @@ export default function InstallPWA() {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-white font-bold text-sm mb-1">¡Instala Encuentra!</h3>
+              <h3 className="text-white font-bold text-sm mb-1">¡Instala App Encuentra!</h3>
               <p className="text-blue-100 text-xs mb-2">
                 Para instalar esta app en tu iPhone: toca <strong>Compartir</strong> 
                 <svg className="inline w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 20 20">

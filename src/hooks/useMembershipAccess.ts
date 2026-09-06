@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "./useUser"
-import type { SubscriptionTier } from "@/lib/memberships/tiers"
+import { isTierActive, type SubscriptionTier } from "@/lib/memberships/tiers"
 
 interface MembershipAccess {
   /**
@@ -100,13 +100,7 @@ export default function useMembershipAccess() {
             Number((data as { extra_business_limit?: number })?.extra_business_limit) || 0
           )
 
-          // isActive: tier > 0 AND either:
-          //   a) no end date (admin-granted, lifetime, or manually set without expiry) → active indefinitely
-          //   b) end date exists and is in the future
-          const isActive =
-            tier > 0 &&
-            (endDate === null ||
-              (!Number.isNaN(new Date(endDate).getTime()) && new Date(endDate) > new Date()))
+          const isActive = isTierActive(tier, endDate)
 
           // effectiveTier: the tier the user can ACTUALLY USE right now.
           // When the subscription is expired, this collapses to 0 (Básico) so
@@ -149,21 +143,14 @@ export default function useMembershipAccess() {
   /**
    * Verifica si el usuario tiene acceso a una característica que requiere un tier mínimo.
    * 
-   * @param requiredTier - Tier mínimo requerido (1 = Conecta, 2 = Destaca, 3 = Fundador)
+   * @param requiredTier - Tier mínimo requerido (1 = Conecta, 2 = Destaca, 3 = Patrocina)
    * @returns true si el usuario tiene el tier requerido y la suscripción está activa
    */
   const hasAccess = (requiredTier: SubscriptionTier): boolean => {
     if (requiredTier === 0) return true // Básico siempre accesible
     if (membership.loading) return false
-    // Tier check: must have the required tier
-    if (membership.tier < requiredTier) return false
-    // If there's an explicit end date, it must not have passed
-    if (membership.subscriptionEndDate !== null) {
-      const end = new Date(membership.subscriptionEndDate)
-      if (Number.isNaN(end.getTime()) || end <= new Date()) return false
-    }
-    // No end date = admin-granted or indefinite → access allowed
-    return true
+    // effectiveTier already collapses to 0 when the subscription expired
+    return membership.effectiveTier >= requiredTier
   }
 
   return {

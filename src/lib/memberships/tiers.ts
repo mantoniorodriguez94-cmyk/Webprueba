@@ -10,13 +10,15 @@
 export const SUBSCRIPTION_TIER_FREE = 0 as const
 export const SUBSCRIPTION_TIER_CONECTA = 1 as const
 export const SUBSCRIPTION_TIER_DESTACADO = 2 as const
-export const SUBSCRIPTION_TIER_FUNDADOR = 3 as const
+export const SUBSCRIPTION_TIER_PATROCINA = 3 as const
+/** @deprecated use SUBSCRIPTION_TIER_PATROCINA */
+export const SUBSCRIPTION_TIER_FUNDADOR = SUBSCRIPTION_TIER_PATROCINA
 
 export type SubscriptionTier =
   | typeof SUBSCRIPTION_TIER_FREE
   | typeof SUBSCRIPTION_TIER_CONECTA
   | typeof SUBSCRIPTION_TIER_DESTACADO
-  | typeof SUBSCRIPTION_TIER_FUNDADOR
+  | typeof SUBSCRIPTION_TIER_PATROCINA
 
 // Alias para compatibilidad con código existente
 export type MembershipTier = SubscriptionTier
@@ -41,7 +43,7 @@ export const SUBSCRIPTION_PRICES: Record<SubscriptionTier, number> = {
   [SUBSCRIPTION_TIER_FREE]: 0,
   [SUBSCRIPTION_TIER_CONECTA]: 1,
   [SUBSCRIPTION_TIER_DESTACADO]: 2,
-  [SUBSCRIPTION_TIER_FUNDADOR]: 3
+  [SUBSCRIPTION_TIER_PATROCINA]: 3
 }
 
 // Tolerancia para montos flotantes (por fees/conversiones menores)
@@ -61,7 +63,7 @@ export function getBadgeTypeForTier(tier: MembershipTier): BadgeType {
       return "member"
     case SUBSCRIPTION_TIER_DESTACADO:
       return "bronze_shield"
-    case SUBSCRIPTION_TIER_FUNDADOR:
+    case SUBSCRIPTION_TIER_PATROCINA:
       return "gold_crown"
     default:
       return "none"
@@ -74,8 +76,8 @@ export function getLabelForTier(tier: SubscriptionTier): string {
       return "Conecta"
     case SUBSCRIPTION_TIER_DESTACADO:
       return "Destaca"
-    case SUBSCRIPTION_TIER_FUNDADOR:
-      return "Fundador"
+    case SUBSCRIPTION_TIER_PATROCINA:
+      return "Patrocina"
     default:
       return "Básico"
   }
@@ -100,10 +102,27 @@ export function getPlanByTier(
   }
 }
 
-/** Máximo de negocios por cuenta: tier 0–2 → 1, tier 3 (Fundador) → 2 */
+/** Máximo de negocios por cuenta: tier 0–2 → 1, tier 3 (Patrocina) → 2 */
 export function getMaxBusinessesForTier(tier: number | null | undefined): number {
   if (tier == null || !Number.isFinite(tier)) return 1
-  return tier === SUBSCRIPTION_TIER_FUNDADOR ? 2 : 1
+  return tier === SUBSCRIPTION_TIER_PATROCINA ? 2 : 1
+}
+
+/**
+ * Single source of truth for "is this subscription tier actually usable right now".
+ * tier > 0 AND (no end date = admin-granted/indefinite, OR end date still in the future).
+ * Used for both the current user (useMembershipAccess) and other profiles (e.g. a
+ * business owner's tier, checked from a different user's session).
+ */
+export function isTierActive(
+  tier: number | null | undefined,
+  endDate: string | null | undefined
+): boolean {
+  const t = Number(tier) || 0
+  if (t <= 0) return false
+  if (endDate == null || String(endDate).trim() === "") return true
+  const end = new Date(endDate)
+  return !Number.isNaN(end.getTime()) && end > new Date()
 }
 
 /**
@@ -140,7 +159,7 @@ export function resolveSubscriptionFromAmount(
   const candidateTiers: SubscriptionTier[] = [
     SUBSCRIPTION_TIER_CONECTA,
     SUBSCRIPTION_TIER_DESTACADO,
-    SUBSCRIPTION_TIER_FUNDADOR
+    SUBSCRIPTION_TIER_PATROCINA
   ]
 
   for (const tier of candidateTiers) {

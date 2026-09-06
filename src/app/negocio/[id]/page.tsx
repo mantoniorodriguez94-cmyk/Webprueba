@@ -24,17 +24,17 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
 
   if (!business) {
     return {
-      title: "Negocio no encontrado | Encuentra",
+      title: "Negocio no encontrado | App Encuentra",
       description: "El negocio que buscas no existe o ha sido eliminado."
     }
   }
 
-  const title = `${business.name}${business.category ? ` - ${business.category}` : ''} | Encuentra`
+  const title = `${business.name}${business.category ? ` - ${business.category}` : ''} | App Encuentra`
   const description = business.description || `Conoce más sobre ${business.name}${business.address ? ` ubicado en ${business.address}` : ''}.${business.average_rating ? ` Calificación: ${business.average_rating.toFixed(1)}/5.0` : ''}`
 
   // URL canónica
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://encuentra.app'}/negocio/${id}`
-  const imageUrl = business.logo_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://encuentra.app'}/og-default.png`
+  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/negocio/${id}`
+  const imageUrl = business.logo_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/og-default.png`
 
   return {
     title,
@@ -43,7 +43,7 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
       title,
       description,
       url,
-      siteName: "Encuentra",
+      siteName: "App Encuentra",
       images: [
         {
           url: imageUrl,
@@ -107,7 +107,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
       .from("profiles")
       .select("subscription_tier, subscription_end_date")
       .eq("id", business.owner_id)
-      .single()
+      .maybeSingle()
 
     const rawTier = (profile as any)?.subscription_tier ?? 0
     const endRaw: string | null = (profile as any)?.subscription_end_date ?? null
@@ -119,7 +119,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
     effectiveOwnerTier = isActive ? rawTier : 0
   }
 
-  // WhatsApp/phone contact: Tier 2+ (Destaca, Fundador)
+  // WhatsApp/phone contact: Tier 2+ (Destaca, Patrocina)
   const ownerHasFullContact = effectiveOwnerTier >= 2
 
   // Chat abierto para todos — el botón siempre muestra "Enviar Mensaje"
@@ -344,7 +344,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
                 </p>
               )}
 
-              {/* WhatsApp — only for Tier 2+ (Destaca / Fundador) */}
+              {/* WhatsApp — only for Tier 2+ (Destaca / Patrocina) */}
               {ownerHasFullContact && business.whatsapp && (
                 <a
                   href={`https://wa.me/${business.whatsapp}`}
@@ -365,7 +365,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
           {/* CTA para unirse */}
           <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-md rounded-3xl border border-white/20 p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">¿Tienes un negocio?</h3>
-            <p className="text-gray-300 mb-6">Únete a Encuentra y conecta con más clientes</p>
+            <p className="text-gray-300 mb-6">Únete a App Encuentra y conecta con más clientes</p>
             <Link
               href="/app/auth/register"
               className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-3 rounded-full hover:shadow-xl transition-all font-semibold"

@@ -18,8 +18,7 @@ import SendMessageModal from "@/components/messages/SendMessageModal"
 import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
-import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
-import { hasChatAccess } from "@/lib/chat/access"
+import { SUBSCRIPTION_TIER_CONECTA, isTierActive } from "@/lib/memberships/tiers"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -66,14 +65,10 @@ export default function BusinessDetailPage() {
 
   // Safe-access: never read business.owner / business.profiles without fallback
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
-  // Chat access: tier-based OR modular expiry perk OR admin-enabled flag
-  const ownerHasChat =
-    Boolean(business) &&
-    hasChatAccess({
-      subscription_tier: businessTier,
-      chat_expires_at: (business as any)?.owner_chat_expires_at ?? null,
-      chat_enabled: (business as any)?.chat_enabled ?? false,
-    })
+  const businessSubscriptionEndDate =
+    business?.profiles?.subscription_end_date ?? business?.owner?.subscription_end_date ?? null
+  // Chat access: the business owner needs an active paid membership, same rule as the sender
+  const ownerHasChat = Boolean(business) && isTierActive(businessTier, businessSubscriptionEndDate)
   const ownerHasFullContact = ownerHasChat
 
   // Parsear gallery_urls de manera segura
@@ -240,7 +235,7 @@ export default function BusinessDetailPage() {
         }
       } else {
         // Crear nueva review
-        const { data: insertedData, error } = await supabase
+        const { error } = await supabase
           .from('reviews')
           .insert({
             business_id: businessId,
@@ -258,8 +253,6 @@ export default function BusinessDetailPage() {
           }
           throw new Error(`Error al crear la reseña: ${error.message}`)
         }
-        
-        console.log('Review created successfully:', insertedData)
       }
 
       // Recargar reviews
@@ -302,26 +295,25 @@ export default function BusinessDetailPage() {
         
         loadedRow = plainData as Record<string, unknown> & { owner_id?: string | null }
         
-        // Fetch owner profile (tier + chat modular perk) if owner_id is present
-        let ownerChatExpiresAt: string | null = null
+        // Fetch owner profile (tier + expiry) if owner_id is present
+        let subscriptionEndDate: string | null = null
         if (loadedRow?.owner_id) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("subscription_tier, chat_expires_at")
+            .select("subscription_tier, subscription_end_date")
             .eq("id", loadedRow.owner_id)
             .single()
           tier = (profile as any)?.subscription_tier ?? 0
-          ownerChatExpiresAt = (profile as any)?.chat_expires_at ?? null
+          subscriptionEndDate = (profile as any)?.subscription_end_date ?? null
         }
 
         if (!loadedRow) throw new Error("No business data")
 
-        const owner = loadedRow.owner_id ? { subscription_tier: tier } : null
-        const profiles = loadedRow.owner_id ? { subscription_tier: tier } : null
+        const owner = loadedRow.owner_id ? { subscription_tier: tier, subscription_end_date: subscriptionEndDate } : null
+        const profiles = loadedRow.owner_id ? { subscription_tier: tier, subscription_end_date: subscriptionEndDate } : null
         setBusiness({
           ...loadedRow,
           owner,
-          owner_chat_expires_at: ownerChatExpiresAt,
           profiles,
         } as unknown as Business)
 
@@ -372,19 +364,18 @@ export default function BusinessDetailPage() {
     healAttemptedFor.current = business.id
     supabase
       .from("profiles")
-      .select("subscription_tier, chat_expires_at")
+      .select("subscription_tier, subscription_end_date")
       .eq("id", business.owner_id)
       .single()
       .then(({ data }) => {
         const tier = (data as any)?.subscription_tier ?? 0
-        const chatExp = (data as any)?.chat_expires_at ?? null
+        const subscriptionEndDate = (data as any)?.subscription_end_date ?? null
         setBusiness(prev =>
           prev
             ? {
                 ...prev,
-                owner: { subscription_tier: tier },
-                profiles: { subscription_tier: tier },
-                owner_chat_expires_at: chatExp,
+                owner: { subscription_tier: tier, subscription_end_date: subscriptionEndDate },
+                profiles: { subscription_tier: tier, subscription_end_date: subscriptionEndDate },
               }
             : null
         )

@@ -89,7 +89,6 @@ export async function getUsersFromAuth(): Promise<{
     }))
 
     debugInfo.push(`✓ ${mappedUsers.length} usuarios cargados desde auth.admin.listUsers()`)
-    console.log(`✅ Usuarios cargados desde auth.users: ${mappedUsers.length}`)
 
     return { users: mappedUsers, error: null, debugInfo }
   } catch (err: any) {
@@ -131,7 +130,6 @@ export async function countUsersFromAuth(): Promise<{
     }
 
     const count = authData?.users?.length || 0
-    console.log(`✅ Usuarios contados desde auth.users: ${count}`)
 
     return { count, error: null }
   } catch (err: any) {

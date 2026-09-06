@@ -21,7 +21,6 @@ export async function trackBusinessView(
     if (error) {
       // Si el error es por constraint unique (ya vio hoy), no es un error crítico
       if (error.code === '23505') {
-        console.log('Vista ya registrada hoy para este usuario')
         return true
       }
       console.error("Error registrando vista:", error)

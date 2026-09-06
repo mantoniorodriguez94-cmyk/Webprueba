@@ -91,13 +91,12 @@ export async function POST(request: NextRequest) {
       let businessUpdates: Record<string, unknown>
 
       if (subscription_tier === 3) {
-        // Fundador: full package — golden border, spotlight, search boost, chat
+        // Patrocina: full package — golden border, spotlight, search boost, chat
         businessUpdates = {
           is_premium: true,
           has_gold_border: true,
           search_priority_boost: true,
           is_featured: true,
-          chat_enabled: true,
         }
       } else if (subscription_tier === 2) {
         // Destaca: premium + search boost + spotlight + chat; no golden border
@@ -106,7 +105,6 @@ export async function POST(request: NextRequest) {
           has_gold_border: false,
           search_priority_boost: true,
           is_featured: true,
-          chat_enabled: true,
         }
       } else if (subscription_tier === 1) {
         // Conecta: premium + chat; no search boost, no spotlight, no golden border
@@ -115,7 +113,6 @@ export async function POST(request: NextRequest) {
           has_gold_border: false,
           search_priority_boost: false,
           is_featured: false,
-          chat_enabled: true,
         }
       } else {
         // Básico (0): all benefits revoked
@@ -124,7 +121,6 @@ export async function POST(request: NextRequest) {
           has_gold_border: false,
           search_priority_boost: false,
           is_featured: false,
-          chat_enabled: false,
         }
       }
 

@@ -30,10 +30,6 @@ export function useChatNotifications() {
       audioRef.current.volume = 0.8
       audioRef.current.preload = "auto"
       
-      audioRef.current.addEventListener('canplaythrough', () => {
-        console.log('🔊 Audio de notificación cargado')
-      })
-      
       audioRef.current.addEventListener('error', (e) => {
         console.error('❌ Error cargando audio:', e)
       })
@@ -64,7 +60,6 @@ export function useChatNotifications() {
     try {
       audioRef.current.currentTime = 0
       await audioRef.current.play()
-      console.log('🔊 Sonido reproducido')
     } catch (error: any) {
       console.warn('⚠️ No se pudo reproducir sonido:', error.message)
     }
@@ -89,8 +84,6 @@ export function useChatNotifications() {
         
         // Auto-cerrar después de 5 segundos
         setTimeout(() => notification.close(), 5000)
-        
-        console.log('📱 Notificación del navegador mostrada')
       } catch (error) {
         console.warn('⚠️ Error mostrando notificación:', error)
       }
@@ -113,7 +106,6 @@ export function useChatNotifications() {
           audioRef.current.currentTime = 0
           audioRef.current.volume = 0.8
           setIsAudioEnabled(true)
-          console.log('✅ Audio desbloqueado')
         }
       } catch (error) {
         console.warn('⚠️ Error desbloqueando audio:', error)
@@ -128,8 +120,6 @@ export function useChatNotifications() {
           setNotificationPermission(permission)
           
           if (permission === 'granted') {
-            console.log('✅ Permisos de notificación concedidos')
-            
             // Mostrar notificación de prueba
             new Notification('Notificaciones activadas', {
               body: 'Recibirás notificaciones de nuevos mensajes',
@@ -149,8 +139,6 @@ export function useChatNotifications() {
    * Reproduce sonido Y muestra notificación del navegador
    */
   const notifyNewMessage = useCallback((senderName: string, messagePreview: string) => {
-    console.log('🔔 Notificando nuevo mensaje de:', senderName)
-    
     // 1. Reproducir sonido
     playSound()
     

@@ -1,7 +1,7 @@
 /**
  * API Route: Manual tier override (ADMIN)
  * POST /api/admin/business/tier-override
- * Updates the business owner's subscription_tier in profiles (Básico, Conecta, Destaca, Fundador)
+ * Updates the business owner's subscription_tier in profiles (Básico, Conecta, Destaca, Patrocina)
  * and syncs main benefits package on the target business.
  */
 
@@ -10,7 +10,7 @@ import { checkAdminAuth } from "@/utils/admin-auth"
 import { cookies } from "next/headers"
 import { getAdminClient } from "@/lib/supabase/admin"
 
-const VALID_TIERS = [0, 1, 2, 3] as const // Básico, Conecta, Destaca, Fundador
+const VALID_TIERS = [0, 1, 2, 3] as const // Básico, Conecta, Destaca, Patrocina
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const tierNum = typeof tier === "number" ? tier : parseInt(tier, 10)
     if (!Number.isFinite(tierNum) || !VALID_TIERS.includes(tierNum as 0 | 1 | 2 | 3)) {
       return NextResponse.json(
-        { success: false, error: "tier debe ser 0 (Básico), 1 (Conecta), 2 (Destaca) o 3 (Fundador)" },
+        { success: false, error: "tier debe ser 0 (Básico), 1 (Conecta), 2 (Destaca) o 3 (Patrocina)" },
         { status: 400 }
       )
     }
@@ -85,14 +85,13 @@ export async function POST(request: NextRequest) {
     // Sincronizar paquete de beneficios en el negocio objetivo según tier
     let businessUpdates: Record<string, unknown> | null = null
     if (tierNum === 3) {
-      // Fundador: paquete completo
+      // Patrocina: paquete completo
       businessUpdates = {
         is_premium: true,
         premium_until: null,   // indefinite admin grant
         has_gold_border: true,
         search_priority_boost: true,
         is_featured: true,
-        chat_enabled: true,
       }
     } else if (tierNum === 2) {
       // Destaca: premium + chat + spotlight, sin borde dorado
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
         has_gold_border: false,
         search_priority_boost: true,
         is_featured: true,
-        chat_enabled: true,
       }
     } else if (tierNum === 1) {
       // Conecta: premium + chat básico, sin borde ni spotlight
@@ -112,7 +110,6 @@ export async function POST(request: NextRequest) {
         has_gold_border: false,
         search_priority_boost: false,
         is_featured: false,
-        chat_enabled: true,
       }
     } else {
       // Básico (0): sin beneficios
@@ -122,7 +119,6 @@ export async function POST(request: NextRequest) {
         has_gold_border: false,
         search_priority_boost: false,
         is_featured: false,
-        chat_enabled: false,
       }
     }
 
@@ -142,7 +138,7 @@ export async function POST(request: NextRequest) {
       0: "Básico",
       1: "Conecta",
       2: "Destaca",
-      3: "Fundador",
+      3: "Patrocina",
     }
     return NextResponse.json({
       success: true,

@@ -47,11 +47,6 @@ export function useChatNotificationSound() {
       audioRef.current.volume = 0.8
       audioRef.current.preload = "auto"
       
-      // Detectar si el audio se carga correctamente
-      audioRef.current.addEventListener('canplaythrough', () => {
-        console.log('🔊 Audio de notificación cargado correctamente')
-      })
-      
       audioRef.current.addEventListener('error', (e) => {
         console.error('❌ Error cargando audio de notificación:', e)
         setHasError(true)
@@ -90,12 +85,8 @@ export function useChatNotificationSound() {
       // Reiniciar el audio para permitir reproducción consecutiva
       audioRef.current.currentTime = 0
       
-      console.log('🔊 Intentando reproducir sonido de notificación...')
-      
       // Reproducir el audio
       await audioRef.current.play()
-      
-      console.log('✅ Sonido reproducido exitosamente')
     } catch (error: any) {
       console.warn('⚠️ Error reproduciendo sonido:', error.message)
       
@@ -128,7 +119,6 @@ export function useChatNotificationSound() {
         audioRef.current.currentTime = 0
         audioRef.current.volume = 0.8
         setIsEnabled(true)
-        console.log('✅ Audio desbloqueado para Safari/iOS')
       }
     } catch (error: any) {
       console.warn('⚠️ Error desbloqueando audio:', error.message)

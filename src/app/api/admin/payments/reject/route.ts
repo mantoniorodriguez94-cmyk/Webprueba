@@ -10,6 +10,8 @@ import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { resend, FROM_EMAIL } from '@/lib/resend'
 import { PaymentRejectedTemplate } from '@/lib/emails/templates'
+import { getLabelForTier } from '@/lib/memberships/tiers'
+import type { SubscriptionTier } from '@/lib/memberships/tiers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,8 +37,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[REJECT] Buscando pago con ID:', submission_id_final)
-
     // Usar cliente admin (bypass RLS)
     const adminSupabase = getAdminClient()
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // IMPORTANTE: Usamos el cliente admin que bypasea RLS
     const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
-      .select('id, status, created_at, user_id, business_id')
+      .select('id, status, created_at, user_id, business_id, target_tier, months')
       .eq('id', submission_id_final)
       .single()
 
@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
     }
 
     const submissionData = submission as any
-    console.log('[REJECT] Submission encontrado:', submissionData.id, 'Status:', submissionData.status)
 
     // Verificar que está pendiente
     if (submissionData.status !== 'pending') {
@@ -110,44 +109,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[REJECT] Submission actualizado exitosamente')
+    // NOTA: ya no se toca la tabla `payments`. Los pagos manuales dejaron de
+    // escribirse ahí (esa tabla es exclusiva de referidos/comisiones).
 
-    // Actualizar payment a 'failed'
-    const { error: updatePaymentError } = await (adminSupabase as any)
-      .from('payments')
-      .update({ status: 'failed' })
-      .eq('external_id', submission_id_final)
-      .eq('method', 'manual')
-
-    if (updatePaymentError) {
-      console.warn('[REJECT] Advertencia al actualizar payments:', updatePaymentError)
-    }
+    // Etiqueta legible del nivel + duración solicitados (para el correo)
+    const rejectedTier = Number(submissionData.target_tier)
+    const rejectedMonths = Number(submissionData.months)
+    const planLabel =
+      Number.isFinite(rejectedTier) && rejectedTier > 0 && Number.isFinite(rejectedMonths) && rejectedMonths > 0
+        ? `${getLabelForTier(rejectedTier as SubscriptionTier)} · ${rejectedMonths} ${rejectedMonths === 1 ? 'mes' : 'meses'}`
+        : 'que enviaste'
 
     // Enviar correo de rechazo (no bloqueante)
     if (resend) {
       try {
         // Obtener email del usuario
         const { data: userData, error: userError } = await adminSupabase.auth.admin.getUserById(submissionData.user_id)
-        
+
         if (!userError && userData?.user?.email) {
-          // Obtener nombre del negocio
-          const { data: businessData } = await (adminSupabase as any)
-            .from('businesses')
-            .select('name')
-            .eq('id', submissionData.business_id)
-            .single()
-          
-          const businessName = businessData?.name || 'tu negocio'
-          
           // Enviar correo
           await resend.emails.send({
             from: FROM_EMAIL,
             to: userData.user.email,
             subject: `Pago No Verificado - Acción Requerida`,
-            html: PaymentRejectedTemplate(businessName),
+            html: PaymentRejectedTemplate(planLabel),
           })
-          
-          console.log('[REJECT] Correo de rechazo enviado a:', userData.user.email)
         } else {
           console.warn('[REJECT] No se pudo obtener el email del usuario:', userError?.message || 'Usuario no encontrado')
         }

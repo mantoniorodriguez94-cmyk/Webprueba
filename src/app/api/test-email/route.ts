@@ -13,7 +13,7 @@ export async function GET() {
 
   try {
     const data = await resend.emails.send({
-      from: 'Portal Encuentra <contacto@appencuentra.com>',
+      from: 'App Encuentra <contacto@appencuentra.com>',
       to: ['mantoniorodriguez@gmail.com'],
       subject: 'Prueba de Integración Resend 🚀',
       html: `

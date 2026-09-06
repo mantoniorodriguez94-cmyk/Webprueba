@@ -1,3 +1,19 @@
+/**
+ * API Route: Desactivar premium de un NEGOCIO (ADMIN)
+ * POST  { businessId }
+ *
+ * Antes esta ruta operaba sobre business_subscriptions (producto "Negocio
+ * Premium", eliminado). Ahora actúa directamente sobre los flags espejo del
+ * negocio: businesses.is_premium / premium_until.
+ *
+ * NOTA: esto NO cambia el nivel de la CUENTA (profiles.subscription_tier). Para
+ * quitar un nivel de membresía usa /api/admin/profile-perks (reset_plan).
+ *
+ * ⚠️ El nombre de archivo es `rroute.ts` (typo histórico), por lo que Next.js NO
+ * registra esta ruta. Se mantiene tal cual porque renombrarlo está fuera de
+ * alcance; ninguna parte de la app la invoca actualmente.
+ */
+
 import { NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
@@ -15,44 +31,41 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createClient()
-    const { subscriptionId } = await req.json()
+    const { businessId } = await req.json()
 
-    if (!subscriptionId) {
-      return NextResponse.json({ error: "subscriptionId requerido" }, { status: 400 })
+    if (!businessId) {
+      return NextResponse.json({ error: "businessId requerido" }, { status: 400 })
     }
 
-  // Obtener suscripción
-  const { data: sub } = await supabase
-    .from("business_subscriptions")
-    .select("business_id")
-    .eq("id", subscriptionId)
-    .single()
+    // Verificar que el negocio existe
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("id", businessId)
+      .single()
 
-  if (!sub) return NextResponse.json({ error: "Suscripción no encontrada" }, { status: 404 })
+    if (!business) {
+      return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 })
+    }
 
-  const now = new Date()
+    const now = new Date()
 
-  // Actualizar suscripción
-  await supabase
-    .from("business_subscriptions")
-    .update({
-      status: "expired",
-      end_date: now.toISOString()
-    })
-    .eq("id", subscriptionId)
+    const { error: updateErr } = await supabase
+      .from("businesses")
+      // @ts-ignore - algunas columnas pueden no estar en los tipos generados
+      .update({
+        is_premium: false,
+        premium_until: null
+      })
+      .eq("id", businessId)
 
-  // Actualizar negocio
-  await supabase
-    .from("businesses")
-    .update({
-      is_premium: false,
-      premium_until: null,
-      premium_plan_id: null
-    })
-    .eq("id", sub.business_id)
+    if (updateErr) {
+      console.error("Error desactivando premium del negocio:", updateErr)
+      return NextResponse.json({ error: "Error desactivando premium del negocio" }, { status: 500 })
+    }
 
     return NextResponse.json({
-      message: "Suscripción desactivada correctamente",
+      message: "Premium desactivado correctamente",
       deactivated_at: now.toISOString()
     })
   } catch (error: any) {

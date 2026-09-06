@@ -248,9 +248,8 @@ export default function DashboardPage() {
     setLoading(true)
     type OwnerProfile = {
       subscription_tier: number | null
-      golden_border_expires_at: string | null
-      chat_expires_at: string | null
-      spotlight_expires_at: string | null
+      /** null = concesión indefinida de admin; si no, debe estar en el futuro */
+      subscription_end_date: string | null
     }
     type Row = Record<string, unknown> & {
       owner_id?: string | null
@@ -276,27 +275,23 @@ export default function DashboardPage() {
 
     const rows = rawRows ?? []
     // Batch-fetch owner profiles — profiles table is the SINGLE SOURCE OF TRUTH
-    // for tier, golden border, chat, and spotlight perk expiry dates.
+    // for the account subscription tier and its expiry.
     const ownerIds = [...new Set(rows.map(b => b.owner_id).filter(Boolean) as string[])]
     const profilesMap = new Map<string, OwnerProfile>()
     if (ownerIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, subscription_tier, golden_border_expires_at, chat_expires_at, spotlight_expires_at")
+        .select("id, subscription_tier, subscription_end_date")
         .in("id", ownerIds)
       profiles?.forEach(p => profilesMap.set(p.id, {
         subscription_tier: (p as any).subscription_tier ?? null,
-        golden_border_expires_at: (p as any).golden_border_expires_at ?? null,
-        chat_expires_at: (p as any).chat_expires_at ?? null,
-        spotlight_expires_at: (p as any).spotlight_expires_at ?? null,
+        subscription_end_date: (p as any).subscription_end_date ?? null,
       }))
     }
 
     const defaultProfile: OwnerProfile = {
       subscription_tier: 0,
-      golden_border_expires_at: null,
-      chat_expires_at: null,
-      spotlight_expires_at: null,
+      subscription_end_date: null,
     }
 
     const normalizedBusinesses: Business[] = rows.map(business => {
@@ -304,10 +299,15 @@ export default function DashboardPage() {
       const ownerProfile = hasOwner ? (profilesMap.get(business.owner_id!) ?? defaultProfile) : null
       return {
         ...business,
-        // `profiles` carries the full perk payload — components should read from here
+        // `profiles` carries the authoritative tier — components should read from here
         profiles: ownerProfile,
         // `owner` is a lighter alias kept for backward compat
-        owner: ownerProfile ? { subscription_tier: ownerProfile.subscription_tier } : null,
+        owner: ownerProfile
+          ? {
+              subscription_tier: ownerProfile.subscription_tier,
+              subscription_end_date: ownerProfile.subscription_end_date,
+            }
+          : null,
       } as Business
     })
 
@@ -816,7 +816,7 @@ export default function DashboardPage() {
               <Link href="/" className="inline-block cursor-pointer">
                 <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
                   <span className="text-2xl">📍</span>
-                  Encuentra
+                  App Encuentra
                 </h1>
               </Link>
               <p className="hidden lg:block text-xs lg:text-sm text-gray-400 mt-1 truncate">
@@ -1154,84 +1154,39 @@ export default function DashboardPage() {
 
             {/* Opciones */}
             <div className="p-4 space-y-2">
-              {/* Mensajes del Negocio - Solo para usuarios empresa */}
-              {isCompany && negocios.length === 1 ? (
-                // Usuario negocio con 1 solo negocio: ir directo a mensajes del negocio
-                <Link
-                  href={`/app/dashboard/negocios/${negocios[0].id}/mensajes`}
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-                >
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">Mensajes del Negocio</p>
-                    <p className="text-xs text-gray-400">
-                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0
-                        ? `${Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)} sin leer`
-                        : "Clientes que te escriben"}
-                    </p>
-                  </div>
-                  {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0 && (
-                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
-                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)}
+              {/* Mensajes — Unified inbox for all users */}
+              {(() => {
+                const totalUnread =
+                  unreadMessagesPersonCount +
+                  Object.values(unreadMessagesByBusiness).reduce(
+                    (sum, count) => sum + count,
+                    0
+                  )
+                return (
+                  <Link
+                    href="/app/dashboard/chat"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
+                  >
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="font-semibold text-white">Mensajes</p>
+                      <p className="text-xs text-gray-400">
+                        {totalUnread > 0 ? `${totalUnread} sin leer` : "Consultas y mensajes directos"}
+                      </p>
                     </div>
-                  )}
-                </Link>
-              ) : isCompany && negocios.length > 1 ? (
-                // Usuario negocio con múltiples negocios: ir a mis-negocios para elegir
-                <Link
-                  href="/app/dashboard/mis-negocios"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-                >
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">Mensajes del Negocio</p>
-                    <p className="text-xs text-gray-400">
-                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0
-                        ? `${Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)} sin leer`
-                        : "Selecciona un negocio"}
-                    </p>
-                  </div>
-                  {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0) > 0 && (
-                    <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
-                      {Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)}
-                    </div>
-                  )}
-                </Link>
-              ) : null}
+                    {totalUnread > 0 && (
+                      <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
+                        {totalUnread}
+                      </div>
+                    )}
+                  </Link>
+                )
+              })()}
 
-              {/* Mis Mensajes como Cliente - Para TODOS los usuarios */}
-              <Link
-                href="/app/dashboard/mis-mensajes"
-                onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-              >
-                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-semibold text-white">
-                    {isCompany ? "Mensajes como Cliente" : "Mis Mensajes"}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {unreadMessagesPersonCount > 0 
-                      ? `${unreadMessagesPersonCount} sin leer` 
-                      : isCompany ? "Negocios que contactaste" : "Ver conversaciones"}
-                  </p>
-                </div>
-                {unreadMessagesPersonCount > 0 && (
-                  <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
-                    {unreadMessagesPersonCount}
-                  </div>
-                )}
-              </Link>
-
-              {/* Membresía - Conecta, Destaca, Fundador (primera opción de configuración) */}
+              {/* Membresía - Conecta, Destaca, Patrocina (primera opción de configuración) */}
               <Link
                 href="/app/dashboard/membresia"
                 onClick={() => setShowUserMenu(false)}
@@ -1242,7 +1197,7 @@ export default function DashboardPage() {
                 </svg>
                 <div className="flex-1">
                   <p className="font-semibold text-yellow-300">Membresía</p>
-                  <p className="text-xs text-gray-400">Conecta, Destaca, Fundador</p>
+                  <p className="text-xs text-gray-400">Conecta, Destaca, Patrocina</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1292,7 +1247,7 @@ export default function DashboardPage() {
         title="¿Eliminar este negocio permanentemente?"
         description={
           pendingDelete
-            ? `Esta acción es irreversible una vez pase el tiempo de recuperación. Se eliminará "${pendingDelete.name}" de Portal Encuentra.`
+            ? `Esta acción es irreversible una vez pase el tiempo de recuperación. Se eliminará "${pendingDelete.name}" de App Encuentra.`
             : ""
         }
         loading={!!deletingId}
@@ -1316,11 +1271,9 @@ export default function DashboardPage() {
           : unreadMessagesPersonCount
         }
         messagesHref={
-          isCompany 
-            ? negocios.length === 1 
-              ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
-              : "/app/dashboard/mis-negocios"
-            : "/app/dashboard/mis-mensajes"
+          isCompany
+            ? "/app/dashboard/chat?tab=negocio"
+            : "/app/dashboard/chat"
         }
       />
     </div>

@@ -9,18 +9,27 @@ import { useState, useEffect } from "react"
 import type { ManualPaymentSubmission } from "@/types/subscriptions"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
+import { getLabelForTier } from "@/lib/memberships/tiers"
+import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 interface SubmissionWithDetails extends ManualPaymentSubmission {
-  business: {
+  /** Opcional: la membresía es de la CUENTA, no de un negocio */
+  business?: {
     name: string
-  }
-  plan: {
-    name: string
-    price_usd: number
-  }
+  } | null
   user: {
     full_name?: string
   } | null
+}
+
+/** "Conecta · 3 meses" a partir de target_tier + months */
+function formatMembership(submission: SubmissionWithDetails): string {
+  const tier = Number(submission.target_tier ?? 0)
+  if (!Number.isFinite(tier) || tier <= 0) return 'N/A'
+  const label = getLabelForTier(tier as SubscriptionTier)
+  const months = Number(submission.months ?? 0)
+  if (!Number.isFinite(months) || months <= 0) return label
+  return `${label} · ${months} ${months === 1 ? 'mes' : 'meses'}`
 }
 
 // Componente para mostrar la imagen del comprobante usando signed URLs
@@ -155,7 +164,7 @@ function ReceiptImage({
             e.stopPropagation()
             const url = imageUrl || submission.screenshot_url
             if (url) {
-              const fileName = `comprobante-${(submission.business?.name || submission.id).replace(/[^a-z0-9]/gi, '_')}-${submission.id}.jpg`
+              const fileName = `comprobante-${(submission.business?.name || submission.user?.full_name || submission.id).replace(/[^a-z0-9]/gi, '_')}-${submission.id}.jpg`
               onDownload(url, fileName)
             }
           }}
@@ -271,7 +280,7 @@ export default function AdminPaymentsClient({
   }
 
   const handleApprove = async (submissionId: string) => {
-    if (!confirm('¿Estás seguro de que deseas aprobar este pago? Esto activará el plan premium.')) {
+    if (!confirm('¿Estás seguro de que deseas aprobar este pago? Esto activará la membresía del usuario.')) {
       return
     }
 
@@ -295,7 +304,7 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error aprobando pago')
       }
 
-      alert('✅ Pago aprobado exitosamente. El premium ha sido activado.')
+      alert('✅ Pago aprobado exitosamente. La membresía ha sido activada.')
       
       // Si estamos viendo pendientes, recargar para que desaparezca de la lista
       if (filter === 'pending') {
@@ -464,14 +473,16 @@ export default function AdminPaymentsClient({
                   {/* Información */}
                   <div className="space-y-3">
                     <div>
-                      <h3 className="text-lg font-bold text-white">{submission.business?.name || 'N/A'}</h3>
-                      <p className="text-gray-400 text-sm">{submission.user?.full_name || 'Usuario'}</p>
+                      <h3 className="text-lg font-bold text-white">{submission.user?.full_name || 'Usuario'}</h3>
+                      {submission.business?.name && (
+                        <p className="text-gray-400 text-sm">Negocio: {submission.business.name}</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-gray-400">Plan</p>
-                        <p className="text-white font-semibold">{submission.plan?.name || 'N/A'}</p>
+                        <p className="text-gray-400">Membresía</p>
+                        <p className="text-white font-semibold">{formatMembership(submission)}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Monto</p>

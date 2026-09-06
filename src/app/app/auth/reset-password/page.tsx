@@ -28,13 +28,9 @@ export default function ResetPasswordPage() {
         const type = hashParams.get('type') || queryParams.get('type');
         
         if (accessToken && type === 'recovery') {
-          console.log('Token de recuperación detectado, esperando procesamiento...');
-          
           // Escuchar cambios en el estado de autenticación
           const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-              console.log('✅ Sesión establecida después de recuperación:', event);
-              
               if (mounted && session) {
                 // Limpiar la URL para ocultar el token
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -58,7 +54,6 @@ export default function ResetPasswordPage() {
             }
             
             if (session) {
-              console.log('✅ Sesión establecida correctamente');
               if (mounted) {
                 window.history.replaceState({}, document.title, window.location.pathname);
                 setError("");
@@ -191,13 +186,13 @@ export default function ResetPasswordPage() {
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform group-hover:scale-105">
               <Image 
                 src="/assets/logotipo.png" 
-                alt="Logo Encuentra" 
+                alt="Logo App Encuentra"
                 fill
                 className="object-contain"
               />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#0288D1] transition-colors group-hover:text-[#0277BD]">
-              Encuentra
+              App Encuentra
             </h1>
           </Link>
           <p className="text-gray-300 mt-3 text-sm sm:text-base">

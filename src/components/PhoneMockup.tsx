@@ -67,13 +67,13 @@ export default function PhoneMockup() {
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/logotipo.png"
-                    alt="Encuentra"
+                    alt="App Encuentra"
                     width={32}
                     height={32}
                     className="w-8 h-8"
                     unoptimized
                   />
-                  <span className="text-white font-bold text-lg">Encuentra</span>
+                  <span className="text-white font-bold text-lg">App Encuentra</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
                   U

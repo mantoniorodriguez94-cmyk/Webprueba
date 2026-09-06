@@ -8,7 +8,7 @@ export default function PrivacyPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-3">1. Responsable de los Datos</h2>
           <p>
-            Sus datos son controlados por <strong>Encuentra Tech LLC</strong>, con domicilio legal en Texas, Estados Unidos.
+            Sus datos son controlados por <strong>Portal Encuentra LLC</strong>, operando bajo el nombre comercial &quot;App Encuentra&quot;, con domicilio legal en Texas, Estados Unidos.
           </p>
         </div>
 

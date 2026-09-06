@@ -93,8 +93,6 @@ export async function GET(request: NextRequest) {
           console.warn('⚠️ No se pudo crear perfil manualmente:', insertError)
           // No bloquear el flujo, puede que el perfil ya exista o haya un problema de permisos
           // El trigger debería haberlo manejado, así que continuamos
-        } else {
-          console.log('✅ Perfil creado manualmente como fallback')
         }
       }
     }
@@ -103,8 +101,6 @@ export async function GET(request: NextRequest) {
     // Extraer el origen de la request para construir la URL correcta
     const origin = requestUrl.origin
     const dashboardUrl = `${origin}/app/dashboard`
-    
-    console.log('✅ OAuth exitoso, redirigiendo a:', dashboardUrl)
     
     return NextResponse.redirect(dashboardUrl)
 

@@ -71,15 +71,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Opcional: Marcar suscripción como cancelada (no eliminarla)
-    await supabase
-      .from('business_subscriptions')
-      .update({ 
-        status: 'canceled',
-        updated_at: new Date().toISOString()
-      })
-      .eq('business_id', businessId)
-      .eq('status', 'active')
+    // NOTA: antes también se marcaba la suscripción como 'canceled' en
+    // business_subscriptions. Esa tabla fue eliminada: el único estado premium
+    // del negocio es businesses.is_premium / premium_until.
 
     return NextResponse.json({
       success: true,

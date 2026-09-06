@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
-import { getMaxBusinessesForTier, SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
+import { getMaxBusinessesForTier, SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
@@ -28,14 +28,14 @@ export default function MisNegociosPage() {
   
   const businessCount = negocios.length
   const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier) + (extraBusinessLimit ?? 0)
-  const isFundador = tier === SUBSCRIPTION_TIER_FUNDADOR
-  const atLimitNonFundador = !isAdmin && tier < 3 && businessCount >= 1
-  const atLimitFundador = !isAdmin && isFundador && businessCount >= 2
+  const isPatrocina = tier === SUBSCRIPTION_TIER_PATROCINA
+  const atLimitNonPatrocina = !isAdmin && tier < 3 && businessCount >= 1
+  const atLimitPatrocina = !isAdmin && isPatrocina && businessCount >= 2
   const canCreateMore = isAdmin ? true : (businessCount < allowedBusinesses)
-  const limitMessage = atLimitFundador
-    ? "Límite de 2 negocios alcanzado para el plan Fundador."
-    : atLimitNonFundador
-      ? "El plan Fundador permite hasta 2 negocios. ¡Mejora tu plan aquí!"
+  const limitMessage = atLimitPatrocina
+    ? "Límite de 2 negocios alcanzado para el plan Patrocina."
+    : atLimitNonPatrocina
+      ? "El plan Patrocina permite hasta 2 negocios. ¡Mejora tu plan aquí!"
       : null
   
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
@@ -188,7 +188,7 @@ export default function MisNegociosPage() {
         <BottomNav 
           isCompany={isCompany} 
           unreadCount={unreadMessagesCount}
-          messagesHref="/app/dashboard/mis-mensajes"
+          messagesHref="/app/dashboard/chat"
         />
       </div>
     )
@@ -255,8 +255,8 @@ export default function MisNegociosPage() {
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {isFundador ? limitMessage : (
-                  <>El plan Fundador permite hasta 2 negocios. <Link href="/app/dashboard/membresia" className="underline font-semibold text-amber-300 hover:text-amber-200">¡Mejora tu plan aquí!</Link></>
+                {isPatrocina ? limitMessage : (
+                  <>El plan Patrocina permite hasta 2 negocios. <Link href="/app/dashboard/membresia" className="underline font-semibold text-amber-300 hover:text-amber-200">¡Mejora tu plan aquí!</Link></>
                 )}
               </p>
             )}

@@ -42,11 +42,14 @@ export async function GET() {
         .from("manual_payment_submissions")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending"),
+      // Membresías de cuenta que vencen en los próximos 7 días.
+      // (business_subscriptions fue eliminada; la fuente de verdad es profiles)
       supabase
-        .from("business_subscriptions")
+        .from("profiles")
         .select("*", { count: "exact", head: true })
-        .lte("end_date", new Date(Date.now() + 7 * 86400000).toISOString())
-        .eq("status", "active"),
+        .gt("subscription_tier", 0)
+        .gte("subscription_end_date", new Date().toISOString())
+        .lte("subscription_end_date", new Date(Date.now() + 7 * 86400000).toISOString()),
       supabase
         .from("businesses")
         .select("*", { count: "exact", head: true })

@@ -14,7 +14,7 @@ import { Star } from "lucide-react"
 
 export default function PerfilPage() {
   const { user, loading: userLoading } = useUser()
-  const { tier: subscriptionTier } = useMembershipAccess()
+  const { effectiveTier, loading: membershipLoading } = useMembershipAccess()
   const [isAdmin, setIsAdmin] = useState(false)
 
   // ============================================================
@@ -36,22 +36,13 @@ export default function PerfilPage() {
           cache: 'no-store' // Evitar cache
         })
         const data = await response.json()
-        
-        console.log('🔍 Verificación admin:', {
-          isAdmin: data.isAdmin,
-          error: data.error,
-          userId: user.id
-        })
-        
+
         if (data.isAdmin === true) {
           setIsAdmin(true)
-          console.log('✅ Usuario es administrador')
         } else {
           setIsAdmin(false)
           if (data.error) {
             console.warn('⚠️ Error verificando admin:', data.error)
-          } else {
-            console.log('ℹ️ Usuario no es administrador')
           }
         }
       } catch (error) {
@@ -67,12 +58,6 @@ export default function PerfilPage() {
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [converting, setConverting] = useState(false)
   const [negocios, setNegocios] = useState<{id: string, name?: string, is_premium?: boolean, premium_until?: string}[]>([])
-  const [premiumSubscription, setPremiumSubscription] = useState<{
-    business_id: string
-    business_name?: string
-    premium_until?: string
-    plan?: { name?: string, max_photos?: number }
-  } | null>(null)
 
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
@@ -98,7 +83,7 @@ export default function PerfilPage() {
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [invitedCount, setInvitedCount] = useState(0)
   const [qualifiedInvitedCount, setQualifiedInvitedCount] = useState(0)
-  const currentBadgeType = getBadgeTypeForTier((subscriptionTier || 0) as MembershipTier)
+  const currentBadgeType = getBadgeTypeForTier(effectiveTier as MembershipTier)
 
   // ============================================================
   // Mensajes no leídos
@@ -116,41 +101,15 @@ export default function PerfilPage() {
 
           if (!businesses || businesses.length === 0) {
             setNegocios([])
-            setPremiumSubscription(null)
             setUnreadMessagesCount(0)
             return
           }
 
           setNegocios(businesses)
 
-          // Encontrar el negocio premium activo con suscripción
-          const activePremiumBusiness = businesses.find(b =>
-            b.is_premium === true &&
-            b.premium_until &&
-            new Date(b.premium_until) > new Date()
-          )
-
-          if (activePremiumBusiness) {
-            // Cargar suscripción con plan
-            const { data: subscription } = await supabase
-              .from("business_subscriptions")
-              .select(`
-                business_id,
-                premium_plans(name, max_photos)
-              `)
-              .eq("business_id", activePremiumBusiness.id)
-              .eq("status", "active")
-              .single()
-
-            setPremiumSubscription({
-              business_id: activePremiumBusiness.id,
-              business_name: activePremiumBusiness.name,
-              premium_until: activePremiumBusiness.premium_until || undefined,
-              plan: subscription?.premium_plans as { name?: string, max_photos?: number } | undefined
-            })
-          } else {
-            setPremiumSubscription(null)
-          }
+          // NOTA: aquí se cargaba la suscripción del producto "Negocio Premium"
+          // (business_subscriptions + premium_plans). Ese producto fue eliminado;
+          // el estado de membresía vive en /app/dashboard/membresia.
           const businessIds = businesses.map(b => b.id)
 
           const { data: conversations } = await supabase
@@ -389,7 +348,9 @@ export default function PerfilPage() {
                   </div>
                 </div>
 
-                {currentBadgeType && (
+                {membershipLoading ? (
+                  <span className="inline-flex h-6 w-16 animate-pulse rounded-full bg-white/10 shrink-0" />
+                ) : (
                   <MembershipBadge type={currentBadgeType} className="shrink-0" />
                 )}
               </div>
@@ -409,8 +370,8 @@ export default function PerfilPage() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-white px-2">Opciones de Cuenta</h3>
 
-            {/* Mis Mensajes */}
-            <Link href="/app/dashboard/mis-mensajes">
+            {/* Mensajes */}
+            <Link href="/app/dashboard/chat">
               <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
                 <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,7 +379,7 @@ export default function PerfilPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mis Mensajes</h4>
+                  <h4 className="font-semibold text-white">Mensajes</h4>
                   <p className="text-sm text-gray-400">Ver tus conversaciones</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -463,7 +424,7 @@ export default function PerfilPage() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-yellow-300">Membresía</h4>
-                  <p className="text-sm text-gray-300">Conecta, Destaca, Fundador</p>
+                  <p className="text-sm text-gray-300">Conecta, Destaca, Patrocina</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -489,12 +450,8 @@ export default function PerfilPage() {
               </div>
             </Link>
 
-            {/* Mensajes del Negocio */}
-            <Link href={
-              negocios.length === 1
-                ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
-                : "/app/dashboard/mis-negocios"
-            }>
+            {/* Mensajes — Unified inbox */}
+            <Link href="/app/dashboard/chat">
               <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
                 <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -502,26 +459,8 @@ export default function PerfilPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mensajes del Negocio</h4>
-                  <p className="text-sm text-gray-400">Consultas de clientes</p>
-                </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Mensajes como Cliente */}
-            <Link href="/app/dashboard/mis-mensajes">
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mensajes como Cliente</h4>
-                  <p className="text-sm text-gray-400">Conversaciones iniciadas por ti</p>
+                  <h4 className="font-semibold text-white">Mensajes</h4>
+                  <p className="text-sm text-gray-400">Consultas y conversaciones</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -540,10 +479,10 @@ export default function PerfilPage() {
                 <div className="flex-1">
                   <h4 className="font-semibold text-white">Invita a tus amigos</h4>
                   <p className="text-sm text-gray-400">
-                    Invita a 3 negocios y obtén <span className="font-semibold text-yellow-300">1 mes de Plan Fundador GRATIS.</span>
+                    Invita a 3 negocios y obtén <span className="font-semibold text-yellow-300">1 mes de Plan Patrocina GRATIS.</span>
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
-                    Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Fundador).
+                    Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Patrocina).
                   </p>
                 </div>
             </div>
@@ -553,14 +492,14 @@ export default function PerfilPage() {
                 <input
                   type="text"
                   readOnly
-                  value={`https://portalencuentra.com/register?ref=${user?.id || ""}`}
+                  value={`https://appencuentra.com/register?ref=${user?.id || ""}`}
                   className="flex-1 bg-transparent text-white text-sm outline-none"
                 />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={async () => {
-                      const link = `https://portalencuentra.com/register?ref=${user?.id || ""}`
+                      const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
                       try {
                         await navigator.clipboard.writeText(link)
                         toast.success("Enlace de invitación copiado al portapapeles")
@@ -576,8 +515,8 @@ export default function PerfilPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const link = `https://portalencuentra.com/register?ref=${user?.id || ""}`
-                      const message = `¡Hola! Únete a Portal Encuentra y haz crecer tu negocio. Si te registras con mi link y activas un plan, ¡ambos ganamos beneficios! ${link}`
+                      const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
+                      const message = `¡Hola! Únete a App Encuentra y haz crecer tu negocio. Si te registras con mi link y activas un plan, ¡ambos ganamos beneficios! ${link}`
                       const url = `https://wa.me/?text=${encodeURIComponent(message)}`
                       window.open(url, "_blank", "noopener,noreferrer")
                     }}
@@ -721,13 +660,7 @@ export default function PerfilPage() {
       <BottomNav
         isCompany={isCompany}
         unreadCount={unreadMessagesCount}
-        messagesHref={
-          isCompany 
-            ? negocios.length === 1 
-              ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
-              : "/app/dashboard/mis-negocios"
-            : "/app/dashboard/mis-mensajes"
-        }
+        messagesHref="/app/dashboard/chat"
       />
     </div>
   )

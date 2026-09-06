@@ -17,7 +17,6 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      console.log('❌ API is-admin: Usuario no autenticado')
       return NextResponse.json({ isAdmin: false, error: 'No autenticado' }, { status: 401 })
     }
 
@@ -38,7 +37,6 @@ export async function GET() {
 
       if (!adminError && adminProfile) {
         profile = adminProfile
-        console.log('✅ Perfil leído con cliente admin')
       } else {
         dbError = adminError
         console.warn('⚠️ Error con cliente admin, intentando fallback:', adminError?.message)
@@ -58,7 +56,6 @@ export async function GET() {
 
       if (!normalError && normalProfile) {
         profile = normalProfile
-        console.log('✅ Perfil leído con cliente normal (anónimo)')
       } else {
         dbError = normalError
         console.error('❌ Error leyendo perfil con cliente normal:', normalError?.message)

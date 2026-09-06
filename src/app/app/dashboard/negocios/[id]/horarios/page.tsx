@@ -78,8 +78,8 @@ export default function HorariosPage() {
             if (Array.isArray(parsedSchedules)) {
               setSchedules(parsedSchedules)
             }
-          } catch (e) {
-            console.log("No se pudieron parsear los horarios existentes")
+          } catch {
+            // Horarios existentes no parseables; se usan los defaults
           }
         }
       } catch (error) {

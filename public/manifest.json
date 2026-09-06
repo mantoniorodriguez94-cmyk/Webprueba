@@ -1,6 +1,6 @@
 {
-  "name": "Encuentra - Negocios Cerca de Ti",
-  "short_name": "Encuentra",
+  "name": "App Encuentra - Negocios Cerca de Ti",
+  "short_name": "App Encuentra",
   "description": "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
   "start_url": "/",
   "display": "standalone",

@@ -43,13 +43,13 @@ export default function Home() {
               >
                 <Image 
                   src="/assets/logotipo.png" 
-                  alt="Logo Encuentra" 
-                  width={50} 
-                  height={50} 
+                  alt="Logo App Encuentra"
+                  width={50}
+                  height={50}
                   className="w-12 h-12 sm:w-16 sm:h-16"
                   unoptimized
                 />
-                <h1 className="text-xl sm:text-2xl font-bold text-white">Encuentra</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">App Encuentra</h1>
               </button>
 
               {/* Desktop Navigation - Máximo 5 opciones */}
@@ -364,7 +364,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-                Haz crecer tu negocio con Encuentra
+                Haz crecer tu negocio con App Encuentra
               </h2>
             </div>
 
@@ -464,7 +464,7 @@ export default function Home() {
         <section className="w-full py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6">
-              Empieza hoy con Encuentra
+              Empieza hoy con App Encuentra
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md sm:max-w-none mx-auto">
               <Link href="/app/dashboard" className="w-full sm:w-auto">
@@ -488,11 +488,11 @@ export default function Home() {
               {/* Columna 1 — Marca */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Image src="/assets/logotipo.png" alt="Encuentra logo" width={40} height={40} className="w-10 h-10" unoptimized />
-                  <h3 className="text-xl font-semibold text-white">Encuentra</h3>
+                  <Image src="/assets/logotipo.png" alt="App Encuentra logo" width={40} height={40} className="w-10 h-10" unoptimized />
+                  <h3 className="text-xl font-semibold text-white">App Encuentra</h3>
                 </div>
                 <p className="text-sm leading-relaxed">
-                  Encuentra conecta personas con negocios locales de confianza, facilitando contacto directo y decisiones informadas.
+                  App Encuentra conecta personas con negocios locales de confianza, facilitando contacto directo y decisiones informadas.
                 </p>
               </div>
 
@@ -574,7 +574,7 @@ export default function Home() {
 
             {/* Línea inferior */}
             <div className="bg-gray-800/50 mt-8 pt-8 border-t border-gray-700/50 text-center text-sm text-gray-400">
-              © {new Date().getFullYear()} Encuentra.app — Todos los derechos reservados
+              © {new Date().getFullYear()} App Encuentra — Todos los derechos reservados
             </div>
           </div>
         </footer>

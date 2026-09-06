@@ -40,7 +40,7 @@ const TIER_INFO: Record<SubscriptionTier, { name: string; price: number; bgClass
     buttonClass: "bg-slate-400 text-slate-950 hover:bg-slate-300"
   },
   3: { 
-    name: "Fundador", 
+    name: "Patrocina", 
     price: 5, 
     bgClass: "bg-yellow-500/20", 
     textClass: "text-yellow-300", 

@@ -8,9 +8,7 @@ import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
-import PremiumMembershipSection from "@/components/business/PremiumMembershipSection"
-import { SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
-import { Sparkles, Star, Crown, User, Rocket, TrendingUp, Award, Heart } from "lucide-react"
+import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 
 type Promotion = {
   id: string
@@ -27,28 +25,9 @@ export default function GestionarNegocioPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
   const businessId = params?.id as string
 
   const { tier, loading: tierLoading } = useMembershipAccess()
-
-  // Admin check: legacy "Membresía Premium" section only visible to admins
-  useEffect(() => {
-    const loadAdminFlag = async () => {
-      if (!user) {
-        setIsAdmin(false)
-        return
-      }
-      try {
-        const res = await fetch("/api/user/is-admin", { cache: "no-store" })
-        const data = await res.json()
-        setIsAdmin(data.isAdmin === true)
-      } catch {
-        setIsAdmin(false)
-      }
-    }
-    loadAdminFlag()
-  }, [user])
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -276,31 +255,6 @@ export default function GestionarNegocioPage() {
           </div>
         </div>
 
-        {/* Membresía Premium (legacy): solo visible para admins */}
-        {isAdmin && (
-          <>
-            <div className="mb-2 px-2 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold uppercase tracking-wide">
-              ADMIN: Legacy Management
-            </div>
-            <PremiumMembershipSection
-              businessId={business.id}
-              business={business}
-              onUpdate={() => {
-                supabase
-                  .from("businesses")
-                  .select("*")
-                  .eq("id", businessId)
-                  .single()
-                  .then(({ data, error }) => {
-                    if (!error && data) {
-                      setBusiness(data)
-                    }
-                  })
-              }}
-            />
-          </>
-        )}
-
         {/* Grid de Funcionalidades */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           
@@ -430,13 +384,13 @@ export default function GestionarNegocioPage() {
             </p>
             {!tierLoading && (
               <div className="mb-4 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm">
-                {tier === SUBSCRIPTION_TIER_FUNDADOR ? (
+                {tier === SUBSCRIPTION_TIER_PATROCINA ? (
                   <p className="text-yellow-200/95">
                     ¡Felicidades! Tu promoción aparecerá destacada en el inicio de la plataforma.
                   </p>
                 ) : (
                   <p className="text-gray-300">
-                    Tu promoción será visible en tu perfil. Sube a <strong className="text-yellow-300">Fundador</strong> para aparecer en el Spotlight principal del Dashboard.
+                    Tu promoción será visible en tu perfil. Sube a <strong className="text-yellow-300">Patrocina</strong> para aparecer en el Spotlight principal del Dashboard.
                   </p>
                 )}
               </div>

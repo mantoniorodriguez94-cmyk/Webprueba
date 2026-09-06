@@ -8,6 +8,8 @@ import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
 import BusinessClaimCodeSection from "@/components/admin/BusinessClaimCodeSection"
+import { getLabelForTier } from "@/lib/memberships/tiers"
+import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 // Forzar renderizado dinámico
 export const dynamic = 'force-dynamic'
@@ -91,7 +93,8 @@ export default async function AdminBusinessDetailPage({
       amount_usd,
       payment_method,
       created_at,
-      premium_plans(name, billing_period)
+      target_tier,
+      months
     `)
     .eq("business_id", id)
     .eq("status", "pending")
@@ -261,15 +264,18 @@ export default async function AdminBusinessDetailPage({
                 ⚠️ {pendingPayments.length} {pendingPayments.length === 1 ? 'pago pendiente' : 'pagos pendientes'}
               </p>
               {pendingPayments.map((payment: any) => {
-                const plan = Array.isArray(payment.premium_plans) ? payment.premium_plans[0] : payment.premium_plans
+                const tierNum = Number(payment.target_tier ?? 0)
+                const tierLabel = tierNum > 0 ? getLabelForTier(tierNum as SubscriptionTier) : "N/A"
+                const months = Number(payment.months ?? 0)
                 return (
                   <div key={payment.id} className="text-xs text-yellow-300">
-                    ${payment.amount_usd} - {plan?.name || "N/A"} ({payment.payment_method})
+                    ${payment.amount_usd} - Membresía {tierLabel}
+                    {months > 0 ? ` · ${months} ${months === 1 ? "mes" : "meses"}` : ""} ({payment.payment_method})
                   </div>
                 )
               })}
               <p className="text-xs text-yellow-200 mt-2">
-                Usa el botón &ldquo;Activar Premium&rdquo; arriba para aprobar
+                Revísalos en el panel de Pagos Manuales para aprobarlos
               </p>
             </div>
           )}

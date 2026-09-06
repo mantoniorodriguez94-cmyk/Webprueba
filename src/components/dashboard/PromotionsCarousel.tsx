@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
-import { SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -173,7 +173,7 @@ export default function PromotionsCarousel() {
   }
 
   const current = items[activeIndex]
-  const isFounder = current.tier >= SUBSCRIPTION_TIER_FUNDADOR
+  const isPatrocina = current.tier >= SUBSCRIPTION_TIER_PATROCINA
 
   return (
     <section
@@ -187,7 +187,7 @@ export default function PromotionsCarousel() {
             Promociones destacadas
           </h2>
           <p className="text-xs md:text-sm text-yellow-100/80">
-            Ofertas activas de negocios Conecta, Destaca y Fundador
+            Ofertas activas de negocios Conecta, Destaca y Patrocina
           </p>
         </div>
         <div className="flex gap-1">
@@ -216,7 +216,7 @@ export default function PromotionsCarousel() {
             exit={{ opacity: 0, x: -32 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
             className={`absolute inset-0 flex flex-col md:flex-row gap-4 md:gap-6 rounded-2xl border-2 p-4 md:p-5 bg-black/40 overflow-hidden ${
-              isFounder
+              isPatrocina
                 ? "border-yellow-400/80 shadow-[0_0_35px_rgba(250,204,21,0.45)]"
                 : "border-yellow-500/40 shadow-yellow-500/20"
             }`}
@@ -243,7 +243,7 @@ export default function PromotionsCarousel() {
             <div className="flex-1 flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/15 border border-yellow-400/40 text-xs font-semibold text-yellow-200">
-                  {isFounder ? "Fundador" : "Promoción activa"}
+                  {isPatrocina ? "Patrocina" : "Promoción activa"}
                 </div>
                 <h3 className="text-xl sm:text-2xl font-extrabold text-white line-clamp-2">
                   {current.name}

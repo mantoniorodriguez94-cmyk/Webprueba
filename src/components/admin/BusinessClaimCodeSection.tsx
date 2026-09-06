@@ -114,7 +114,7 @@ export default function BusinessClaimCodeSection({
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-xl font-bold text-white mb-1">
-              Acceso de Fundador & Invitación
+              Acceso de Patrocina & Invitación
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed">
               Genera un código único para que el dueño real reclame este negocio cuando se registre

@@ -45,9 +45,6 @@ export default function BusinessFeedCard({
   const [showMessageModal, setShowMessageModal] = useState(false)
   /** Healed tier when owner_id exists but join/profile data was missing */
   const [healedTier, setHealedTier] = useState<number | null>(null)
-  /** Healed perk expiry dates fetched alongside tier (fallback if join data missing) */
-  const [healedChatExpiresAt, setHealedChatExpiresAt] = useState<string | null>(null)
-  const [healedGoldenBorderExpiresAt, setHealedGoldenBorderExpiresAt] = useState<string | null>(null)
 
   // Verificar si el negocio ya está guardado
   useEffect(() => {
@@ -114,11 +111,11 @@ export default function BusinessFeedCard({
       try {
         await navigator.share({
           title: business.name,
-          text: business.description || `Mira ${business.name} en Encuentra`,
+          text: business.description || `Mira ${business.name} en App Encuentra`,
           url: url
         })
-      } catch (err) {
-        console.log("Error compartiendo:", err)
+      } catch {
+        // Usuario canceló o share no disponible
       }
     } else {
       // Fallback: copiar al portapapeles
@@ -176,26 +173,12 @@ export default function BusinessFeedCard({
     0
   const ownerTier = healedTier ?? businessTier
 
-  // ── Perk expiry dates from profiles (preferred) or healed fallback ────────
-  const ownerChatExpiresAt =
-    healedChatExpiresAt ??
-    business.profiles?.chat_expires_at ??
-    (business as any)?.owner_chat_expires_at ?? // compat: some pages inject this manually
-    null
+  // ── Golden border: exclusivo del Tier 3 (Patrocina) ───────────────────────
+  // Los antiguos perks à-la-carte (golden_border_expires_at / chat_expires_at)
+  // fueron eliminados: todo beneficio deriva ahora del tier de la cuenta.
+  const ownerHasGoldenBorder = ownerTier >= 3
 
-  const ownerGoldenBorderExpiresAt =
-    healedGoldenBorderExpiresAt ??
-    business.profiles?.golden_border_expires_at ??
-    null
-
-  // ── Golden border: Tier 3 (Fundador) OR active admin perk ─────────────────
-  const ownerHasGoldenBorder =
-    ownerTier >= 3 ||
-    (ownerGoldenBorderExpiresAt != null &&
-      !Number.isNaN(new Date(ownerGoldenBorderExpiresAt).getTime()) &&
-      new Date(ownerGoldenBorderExpiresAt) > new Date())
-
-  // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Fundador) ─────
+  // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Patrocina) ─────
   const ownerHasFullContact = ownerTier >= 2
 
   const isTier2 = ownerTier >= 2
@@ -215,14 +198,12 @@ export default function BusinessFeedCard({
     let cancelled = false
     supabase
       .from("profiles")
-      .select("subscription_tier, chat_expires_at, golden_border_expires_at")
+      .select("subscription_tier, subscription_end_date")
       .eq("id", business.owner_id)
       .single()
       .then(({ data }) => {
         if (!cancelled) {
           setHealedTier((data as any)?.subscription_tier ?? 0)
-          setHealedChatExpiresAt((data as any)?.chat_expires_at ?? null)
-          setHealedGoldenBorderExpiresAt((data as any)?.golden_border_expires_at ?? null)
         }
       })
     return () => { cancelled = true }
@@ -231,7 +212,7 @@ export default function BusinessFeedCard({
   // ── Card border / glow style derived from authoritative profiles data ───────
   const getTierStyles = () => {
     if (ownerHasGoldenBorder) {
-      // Tier 3 or active golden-border perk
+      // Tier 3 (Patrocina)
       return 'border-2 tier-gold-glow bg-gradient-to-br from-yellow-500/10 to-orange-500/5'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
@@ -471,7 +452,7 @@ export default function BusinessFeedCard({
             </svg>
           </button>
 
-          {/* Mensaje: disabled cuando el dueño no tiene Conecta+ ni chat_enabled */}
+          {/* Mensaje */}
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
@@ -561,7 +542,7 @@ export default function BusinessFeedCard({
           currentUserId={currentUser.id}
           onClose={() => setShowMessageModal(false)}
           onSuccess={(businessId) => {
-            router.push(`/app/dashboard/mis-mensajes?business=${businessId}`)
+            router.push(`/app/dashboard/chat`)
           }}
         />
       )}

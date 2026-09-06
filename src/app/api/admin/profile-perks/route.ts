@@ -1,24 +1,18 @@
 /**
- * API Route: Manage modular user perks (ADMIN)
+ * API Route: Manage a user's subscription tier (ADMIN)
  * POST /api/admin/profile-perks
  *
  * Supported actions:
- *   reset_plan      – Set subscription_tier=0, subscription_end_date=null (perks unaffected)
- *   assign_plan     – Set subscription_tier + subscription_end_date = now + X days
- *   set_golden_border – Set golden_border_expires_at (null to disable) + sync has_gold_border on businesses
- *   set_spotlight   – Set spotlight_expires_at (null to disable) + sync search_priority_boost/is_featured
- *   set_promotions  – Set promotions_expires_at (null to disable)
- *   set_chat        – Set chat_expires_at (null to disable) + sync chat_enabled on businesses
+ *   reset_plan  – Set subscription_tier=0, subscription_end_date=null
+ *   assign_plan – Set subscription_tier + subscription_end_date = now + X days
  *
  * ─────────────────────────────────────────────
- * REQUIRED SUPABASE MIGRATION (run once in SQL Editor):
- *
- *   ALTER TABLE profiles
- *     ADD COLUMN IF NOT EXISTS golden_border_expires_at  timestamptz,
- *     ADD COLUMN IF NOT EXISTS spotlight_expires_at       timestamptz,
- *     ADD COLUMN IF NOT EXISTS promotions_expires_at      timestamptz,
- *     ADD COLUMN IF NOT EXISTS chat_expires_at            timestamptz;
- *
+ * HISTORICAL NOTE: this route also offered à-la-carte perks
+ * (set_golden_border / set_spotlight / set_promotions / set_chat) backed by
+ * profiles.golden_border_expires_at, spotlight_expires_at,
+ * promotions_expires_at, chat_expires_at and businesses.chat_enabled.
+ * Those columns were DROPPED and the product decision is that every benefit
+ * now derives from the account tier alone — no individual grants.
  * ─────────────────────────────────────────────
  * Security: requires checkAdminAuth() AND admin_master_ok cookie.
  */
@@ -28,23 +22,18 @@ import { checkAdminAuth } from "@/utils/admin-auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { applyTierBenefitsToBusinesses } from "@/lib/memberships/service"
 
 const VALID_TIERS = [0, 1, 2, 3] as const
 type ValidTier = (typeof VALID_TIERS)[number]
 
-type PerkAction =
-  | "reset_plan"
-  | "assign_plan"
-  | "set_golden_border"
-  | "set_spotlight"
-  | "set_promotions"
-  | "set_chat"
+type PerkAction = "reset_plan" | "assign_plan"
 
 const TIER_LABELS: Record<number, string> = {
   0: "Básico",
   1: "Conecta",
   2: "Destaca",
-  3: "Fundador",
+  3: "Patrocina",
 }
 
 function addDaysToNow(days: number): string {
@@ -81,12 +70,11 @@ export async function POST(request: NextRequest) {
 
     // ── Parse body ────────────────────────────────────────────────────────
     const body = await request.json().catch(() => ({}))
-    const { profileId, action, days, tier, disable } = body as {
+    const { profileId, action, days, tier } = body as {
       profileId?: string
       action?: PerkAction
       days?: unknown
       tier?: unknown
-      disable?: boolean
     }
 
     if (!profileId) {
@@ -99,20 +87,20 @@ export async function POST(request: NextRequest) {
     // Fresh client per request — avoids singleton stale-state issues
     const supabase = createAdminClient()
     const profileUpdates: Record<string, unknown> = {}
-    const businessUpdates: Record<string, unknown> = {}
+    // Tier a sincronizar en los negocios del usuario tras actualizar el perfil,
+    // usando la función compartida applyTierBenefitsToBusinesses().
+    let benefitsTier: number | null = null
+    let benefitsUntil: string | undefined
     let successMessage = "Acción completada"
 
     // ── Build updates per action ──────────────────────────────────────────
     switch (action) {
-      // ── 1. Reset plan only (individual perk expiry dates untouched) ───
+      // ── 1. Reset plan to Básico ───────────────────────────────────────
       case "reset_plan": {
         profileUpdates.subscription_tier = 0
         profileUpdates.subscription_end_date = null
-        // Reset base plan benefits on businesses; individual perks (golden border,
-        // spotlight, chat) are left intact since they have their own expiry columns.
-        businessUpdates.is_premium = false
-        businessUpdates.premium_until = null
-        successMessage = "Plan reseteado a Básico. Los beneficios individuales (borde, chat, etc.) no fueron afectados."
+        benefitsTier = 0
+        successMessage = "Plan reseteado a Básico. Se retiraron los beneficios de nivel."
         break
       }
 
@@ -137,122 +125,13 @@ export async function POST(request: NextRequest) {
         profileUpdates.subscription_tier = tierNum
         profileUpdates.subscription_end_date = tierNum > 0 ? expiryDate : null
 
-        // Sync complete benefits package per tier (mirrors tier-override logic)
-        if (tierNum === 3) {
-          businessUpdates.is_premium = true
-          businessUpdates.premium_until = expiryDate
-          businessUpdates.has_gold_border = true
-          businessUpdates.search_priority_boost = true
-          businessUpdates.is_featured = true
-          businessUpdates.chat_enabled = true
-        } else if (tierNum === 2) {
-          businessUpdates.is_premium = true
-          businessUpdates.premium_until = expiryDate
-          businessUpdates.has_gold_border = false
-          businessUpdates.search_priority_boost = true
-          businessUpdates.is_featured = true
-          businessUpdates.chat_enabled = true
-        } else if (tierNum === 1) {
-          businessUpdates.is_premium = true
-          businessUpdates.premium_until = expiryDate
-          businessUpdates.has_gold_border = false
-          businessUpdates.search_priority_boost = false
-          businessUpdates.is_featured = false
-          businessUpdates.chat_enabled = true
-        } else {
-          businessUpdates.is_premium = false
-          businessUpdates.premium_until = null
-          businessUpdates.has_gold_border = false
-          businessUpdates.search_priority_boost = false
-          businessUpdates.is_featured = false
-          businessUpdates.chat_enabled = false
-        }
+        // Los flags de negocio se sincronizan con la MISMA función que usan la
+        // compra por PayPal y la aprobación de pago manual (una sola fuente de
+        // verdad del mapa tier → beneficios).
+        benefitsTier = tierNum
+        benefitsUntil = tierNum > 0 ? expiryDate : undefined
 
         successMessage = `Plan ${TIER_LABELS[tierNum]} asignado por ${daysNum} días.`
-        break
-      }
-
-      // ── 3. Golden border perk (independent of tier) ───────────────────
-      case "set_golden_border": {
-        if (disable) {
-          profileUpdates.golden_border_expires_at = null
-          businessUpdates.has_gold_border = false
-          successMessage = "Borde Dorado desactivado."
-        } else {
-          const daysNum = parseDays(days)
-          if (!daysNum) {
-            return NextResponse.json(
-              { success: false, error: "days debe ser un número entero >= 1" },
-              { status: 400 }
-            )
-          }
-          profileUpdates.golden_border_expires_at = addDaysToNow(daysNum)
-          businessUpdates.has_gold_border = true
-          successMessage = `Borde Dorado activado por ${daysNum} días.`
-        }
-        break
-      }
-
-      // ── 4. Spotlight / search priority perk ───────────────────────────
-      case "set_spotlight": {
-        if (disable) {
-          profileUpdates.spotlight_expires_at = null
-          businessUpdates.search_priority_boost = false
-          businessUpdates.is_featured = false
-          successMessage = "Destacado desactivado."
-        } else {
-          const daysNum = parseDays(days)
-          if (!daysNum) {
-            return NextResponse.json(
-              { success: false, error: "days debe ser un número entero >= 1" },
-              { status: 400 }
-            )
-          }
-          profileUpdates.spotlight_expires_at = addDaysToNow(daysNum)
-          businessUpdates.search_priority_boost = true
-          businessUpdates.is_featured = true
-          successMessage = `Destacado activado por ${daysNum} días.`
-        }
-        break
-      }
-
-      // ── 5. Promotions perk ────────────────────────────────────────────
-      case "set_promotions": {
-        if (disable) {
-          profileUpdates.promotions_expires_at = null
-          successMessage = "Beneficio de Promociones desactivado."
-        } else {
-          const daysNum = parseDays(days)
-          if (!daysNum) {
-            return NextResponse.json(
-              { success: false, error: "days debe ser un número entero >= 1" },
-              { status: 400 }
-            )
-          }
-          profileUpdates.promotions_expires_at = addDaysToNow(daysNum)
-          successMessage = `Beneficio de Promociones activado por ${daysNum} días.`
-        }
-        break
-      }
-
-      // ── 6. Chat perk ──────────────────────────────────────────────────
-      case "set_chat": {
-        if (disable) {
-          profileUpdates.chat_expires_at = null
-          businessUpdates.chat_enabled = false
-          successMessage = "Chat desactivado."
-        } else {
-          const daysNum = parseDays(days)
-          if (!daysNum) {
-            return NextResponse.json(
-              { success: false, error: "days debe ser un número entero >= 1" },
-              { status: 400 }
-            )
-          }
-          profileUpdates.chat_expires_at = addDaysToNow(daysNum)
-          businessUpdates.chat_enabled = true
-          successMessage = `Chat activado por ${daysNum} días.`
-        }
         break
       }
 
@@ -287,7 +166,7 @@ export async function POST(request: NextRequest) {
             {
               success: false,
               error:
-                "Columna no encontrada en profiles. Ejecuta la migración SQL indicada en el archivo de ruta primero.",
+                "Columna no encontrada en profiles (subscription_tier / subscription_end_date). Revisa el esquema de la base de datos.",
             },
             { status: 500 }
           )
@@ -302,18 +181,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Sync boolean flags to all businesses of this profile ──────────────
-    if (Object.keys(businessUpdates).length > 0) {
-      const { error: bizErr } = await supabase
-        .from("businesses")
-        // @ts-ignore — some flags may not be in generated types
-        .update(businessUpdates)
-        .eq("owner_id", profileId)
-
-      if (bizErr) {
-        // Non-fatal: profile was already updated; log and continue
-        console.error("[profile-perks] Error sincronizando negocios:", bizErr)
-      }
+    // ── Sync tier benefits to all businesses of this profile ──────────────
+    // `authoritative: true` → es un override de admin: los flags que el tier NO
+    // otorga se limpian explícitamente (a diferencia de un pago, que solo suma).
+    if (benefitsTier !== null) {
+      await applyTierBenefitsToBusinesses(profileId, benefitsTier, {
+        untilISO: benefitsUntil,
+        authoritative: true,
+      })
     }
 
     // Invalidate the admin usuarios page so the next RSC render shows fresh data

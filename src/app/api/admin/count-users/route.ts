@@ -30,7 +30,6 @@ export async function GET() {
       // Intentar auth.admin.listUsers() primero (más confiable)
       const { data: authData } = await adminSupabase.auth.admin.listUsers()
       usersCount = authData?.users?.length || 0
-      console.log(`✅ ${usersCount} usuarios contados desde auth.admin.listUsers()`)
     } catch {
       // Fallback: contar desde profiles
       const { count, error } = await adminSupabase
@@ -39,7 +38,6 @@ export async function GET() {
       
       if (!error && count !== null) {
         usersCount = count
-        console.log(`✅ ${usersCount} usuarios contados desde profiles (admin client)`)
       }
     }
 

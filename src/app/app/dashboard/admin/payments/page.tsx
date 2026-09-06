@@ -17,10 +17,11 @@ async function loadSubmissions(status: 'pending' | 'approved' | 'rejected' = 'pe
   
   const { data, error } = await supabase
     .from('manual_payment_submissions')
+    // premium_plans ya no existe: el nivel comprado vive en la propia fila
+    // (target_tier + months + amount_usd). business_id es NULLABLE.
     .select(`
       *,
-      business:businesses(name),
-      plan:premium_plans(name, price_usd)
+      business:businesses(name)
     `)
     .eq('status', status)
     .order('created_at', { ascending: false })

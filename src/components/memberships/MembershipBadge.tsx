@@ -48,14 +48,14 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
     )
   }
 
-  // Tier 3 – Fundador
+  // Tier 3 – Patrocina
   if (type === "gold_crown") {
     return (
       <span
         className={`${baseClasses} bg-gradient-to-r from-yellow-400 via-amber-300 to-orange-400 text-yellow-950 border border-yellow-300/90 shadow-[0_0_15px_rgba(250,204,21,0.6)] animate-pulse ${className}`}
       >
         <Crown className="w-3 h-3" />
-        <span className="font-bold">Fundador</span>
+        <span className="font-bold">Patrocina</span>
       </span>
     )
   }

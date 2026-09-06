@@ -1,12 +1,9 @@
 /**
  * POST /api/chat/create-conversation
  *
- * Server-side gate for creating/finding a conversation and sending the
- * first message.  Two-layer access check:
- *
- *  Layer 1 — Sender (visitor)  : must have subscription_tier >= 1 OR be admin
- *  Layer 2 — Business owner    : must pass hasChatAccess()
- *                                (tier >= 1 OR chat_expires_at in future OR chat_enabled)
+ * Creates or finds an existing conversation between the authenticated sender
+ * and the target business, then inserts the first message.
+ * Chat is open to all authenticated users — no tier check required.
  *
  * Returns { conversationId: string }
  */
@@ -14,7 +11,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { hasChatAccess } from "@/lib/chat/access"
 import { sendChatNotificationEmail } from "@/lib/emails"
 
 export async function POST(req: NextRequest) {

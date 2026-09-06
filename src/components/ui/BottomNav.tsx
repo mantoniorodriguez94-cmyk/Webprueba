@@ -19,8 +19,8 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
 
   if (!mounted) return null
 
-  // Usar messagesHref si se proporciona, sino usar la ruta por defecto
-  const defaultMessagesHref = isCompany ? "/app/dashboard/mis-negocios" : "/app/dashboard/mis-mensajes"
+  // Unified inbox for all users; override still accepted if provided externally
+  const defaultMessagesHref = "/app/dashboard/chat"
   const finalMessagesHref = messagesHref || defaultMessagesHref
 
   const navItems = isCompany
@@ -43,7 +43,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
             </svg>
           ),
           label: "Mensajes",
-          active: pathname?.includes("/mensajes"),
+          active: pathname?.includes("/chat") || pathname?.includes("/mensajes"),
           badge: unreadCount,
         },
         {
@@ -76,7 +76,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
             </svg>
           ),
           label: "Mensajes",
-          active: pathname?.includes("/mensajes"),
+          active: pathname?.includes("/chat") || pathname?.includes("/mensajes"),
           badge: unreadCount,
         },
         {

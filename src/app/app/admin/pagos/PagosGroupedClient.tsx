@@ -3,15 +3,11 @@
 import { useState } from "react"
 import PaymentActionButton from "../components/PaymentActionButton"
 import PaymentReceiptImage from "../components/PaymentReceiptImage"
+import { getLabelForTier } from "@/lib/memberships/tiers"
+import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 interface Business {
   name: string
-}
-
-interface Plan {
-  name: string
-  billing_period?: string
-  max_photos?: number
 }
 
 interface Profile {
@@ -23,8 +19,12 @@ interface Profile {
 interface Pago {
   id: string
   user_id: string
-  business_id: string
-  plan_id: string
+  /** Opcional: la membresía es de la CUENTA, no de un negocio */
+  business_id?: string | null
+  /** Nivel de membresía comprado: 1 Conecta, 2 Destaca, 3 Patrocina */
+  target_tier?: number | null
+  /** Meses comprados */
+  months?: number | null
   amount_usd: number
   payment_method: string
   reference?: string
@@ -32,8 +32,7 @@ interface Pago {
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
   admin_notes?: string
-  businesses?: Business | Business[]
-  premium_plans?: Plan | Plan[]
+  businesses?: Business | Business[] | null
 }
 
 interface PagosGroupedClientProps {
@@ -157,8 +156,12 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
                   {grupo.pagos.map((pago) => {
                     const business = Array.isArray(pago.businesses) ? pago.businesses[0] : pago.businesses
-                    const plan = Array.isArray(pago.premium_plans) ? pago.premium_plans[0] : pago.premium_plans
                     const profile = profilesMap.get(pago.user_id)
+                    const tierNum = Number(pago.target_tier ?? 0)
+                    const tierLabel = tierNum > 0 ? getLabelForTier(tierNum as SubscriptionTier) : null
+                    const months = Number(pago.months ?? 0)
+                    // Título: la membresía es de la cuenta; el negocio es solo contexto opcional
+                    const heading = profile?.full_name || profile?.email || `Usuario ${pago.user_id.substring(0, 8)}`
 
                     return (
                       <div
@@ -169,14 +172,17 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
                               <h3 className="text-xl font-bold mb-1">
-                                {business?.name || "Negocio desconocido"}
+                                {heading}
                               </h3>
                               <p className="text-gray-300 text-sm mb-1">
-                                Plan: {plan?.name || "N/A"} {plan?.max_photos && `(${plan.max_photos} fotos máx.)`}
+                                Membresía: {tierLabel ?? "N/A"}
+                                {months > 0 && ` · ${months} ${months === 1 ? "mes" : "meses"}`}
                               </p>
-                              <p className="text-xs text-gray-400 mb-2">
-                                Usuario: {profile?.full_name || profile?.email || pago.user_id.substring(0, 8)}
-                              </p>
+                              {business?.name && (
+                                <p className="text-xs text-gray-400 mb-2">
+                                  Negocio: {business.name}
+                                </p>
+                              )}
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                               pago.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
@@ -218,7 +224,7 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                           <div className="mt-4 mb-4">
                             <PaymentReceiptImage
                               screenshotUrl={pago.screenshot_url}
-                              businessName={business?.name}
+                              businessName={business?.name ?? heading}
                               paymentId={pago.id}
                             />
                           </div>

@@ -28,7 +28,7 @@ export default async function AdminNegociosPage({
     "id, name, logo_url, is_premium, premium_until, created_at, is_verified, max_photos, owner_id, is_featured, featured_until"
   const extendedSelect =
     baseSelect +
-    ", has_gold_border, search_priority_boost, chat_enabled, badges"
+    ", has_gold_border, search_priority_boost, badges"
 
   const buildQuery = (select: string) => {
     let q = supabase.from("businesses").select(select)
@@ -118,7 +118,6 @@ export default async function AdminNegociosPage({
             featured_until: b.featured_until,
             has_gold_border: (b as any).has_gold_border ?? false,
             search_priority_boost: (b as any).search_priority_boost ?? false,
-            chat_enabled: (b as any).chat_enabled ?? false,
             badges: (b as any).badges ?? [],
           }))}
         />

@@ -6,8 +6,8 @@ import Image from "next/image"
 import { toast } from "sonner"
 import type { Business } from "@/types/business"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
-import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
+import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 
 interface SendMessageModalProps {
   business: Business
@@ -22,15 +22,17 @@ export default function SendMessageModal({
   onClose,
   onSuccess,
 }: SendMessageModalProps) {
-  const { hasAccess, loading: accessLoading } = useMembershipAccess()
   const [message, setMessage] = useState("")
   const [sending, setSending] = useState(false)
-
-  // Visitor must have Conecta+ to send direct messages
-  const canAccessChat = hasAccess(SUBSCRIPTION_TIER_CONECTA)
+  const { hasAccess, loading: membershipLoading } = useMembershipAccess()
+  const senderHasChatAccess = hasAccess(SUBSCRIPTION_TIER_CONECTA)
 
   const handleSendMessage = async () => {
-    if (!canAccessChat) return
+    if (!senderHasChatAccess) {
+      toast.error("Necesitas una membresía activa para enviar mensajes.")
+      return
+    }
+
     if (!message.trim()) {
       toast.error("Por favor escribe un mensaje antes de enviar.")
       return
@@ -50,27 +52,7 @@ export default function SendMessageModal({
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        const code = (data as any).code as string | undefined
         const errMsg = (data as any).error as string | undefined
-
-        if (code === "SENDER_UPGRADE_REQUIRED") {
-          toast.error("Plan requerido", {
-            description:
-              "Necesitas el Plan Conecta o superior para enviar mensajes directos.",
-          })
-          return
-        }
-
-        if (code === "BUSINESS_CHAT_DISABLED") {
-          toast.error("Chat no disponible", {
-            description:
-              errMsg ??
-              "Este negocio no cuenta con el sistema de chat activo por el momento.",
-          })
-          onClose()
-          return
-        }
-
         throw new Error(errMsg ?? `Error ${res.status}`)
       }
 
@@ -153,16 +135,22 @@ export default function SendMessageModal({
           </div>
 
           {/* Body */}
-          <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
-            {!accessLoading && !canAccessChat ? (
+          {membershipLoading ? (
+            <div className="p-8 sm:p-10 flex-1 min-h-0 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0288D1]" />
+            </div>
+          ) : !senderHasChatAccess ? (
+            <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
               <UpgradeSuggestion
                 requiredTier={SUBSCRIPTION_TIER_CONECTA}
-                featureName="Chat con Clientes"
-                featureDescription="Comunícate directamente con los negocios a través de nuestro sistema de mensajería integrado. Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat."
+                featureName="Chat con negocios"
+                featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
                 variant="modal"
               />
-            ) : (
-              <>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Tu mensaje
                 </label>
@@ -171,57 +159,57 @@ export default function SendMessageModal({
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={`Escribe tu mensaje para ${business.name}...`}
                   rows={6}
-                  disabled={sending || !canAccessChat}
+                  disabled={sending}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl focus:border-[#0288D1] focus:ring-2 focus:ring-[#0288D1]/20 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-500"
                   maxLength={500}
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   {message.length}/500 caracteres
                 </p>
-              </>
-            )}
-          </div>
+              </div>
 
-          {/* Footer */}
-          <div className="p-4 sm:p-6 bg-gray-50 rounded-b-3xl flex gap-2 sm:gap-3 flex-shrink-0 border-t border-gray-200">
-            <button
-              onClick={onClose}
-              disabled={sending}
-              className="flex-1 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSendMessage}
-              disabled={sending || !message.trim() || !canAccessChat}
-              className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white rounded-2xl hover:shadow-xl transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
-            >
-              {sending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white" />
-                  <span className="hidden sm:inline">Enviando...</span>
-                  <span className="sm:hidden">...</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                  Enviar
-                </>
-              )}
-            </button>
-          </div>
+              {/* Footer */}
+              <div className="p-4 sm:p-6 bg-gray-50 rounded-b-3xl flex gap-2 sm:gap-3 flex-shrink-0 border-t border-gray-200">
+                <button
+                  onClick={onClose}
+                  disabled={sending}
+                  className="flex-1 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={sending || !message.trim()}
+                  className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white rounded-2xl hover:shadow-xl transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+                >
+                  {sending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white" />
+                      <span className="hidden sm:inline">Enviando...</span>
+                      <span className="sm:hidden">...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                        />
+                      </svg>
+                      Enviar
+                    </>
+                  )}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

@@ -1,18 +1,20 @@
 /**
- * Plantillas de correo electrónico para Encuentra
+ * Plantillas de correo electrónico para App Encuentra
  */
 
 /**
- * Plantilla de correo cuando un pago es aprobado
+ * Plantilla de correo cuando un pago manual de MEMBRESÍA es aprobado.
+ *
+ * @param planLabel Descripción de lo aprobado, p.ej. "Conecta · 3 meses".
  */
-export function PaymentApprovedTemplate(businessName: string): string {
+export function PaymentApprovedTemplate(planLabel: string): string {
   return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pago Aprobado - Encuentra</title>
+  <title>Pago Aprobado - App Encuentra</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6; padding: 20px;">
@@ -34,21 +36,21 @@ export function PaymentApprovedTemplate(businessName: string): string {
               </p>
               
               <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                Tu pago para <strong style="color: #0288D1;">${businessName}</strong> fue aprobado exitosamente.
+                Tu pago de la membresía <strong style="color: #0288D1;">${planLabel}</strong> fue aprobado exitosamente.
               </p>
-              
+
               <p style="margin: 0 0 30px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                <strong style="color: #10b981;">Tu plan Premium está ahora activo.</strong> Puedes acceder a todas las funcionalidades premium de inmediato.
+                <strong style="color: #10b981;">Tu membresía ya está activa.</strong> Los beneficios de tu nivel se aplicaron a tu cuenta de inmediato.
               </p>
-              
+
               <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-bottom: 30px;">
                 <p style="margin: 0; color: #065f46; font-size: 14px; line-height: 1.6;">
-                  💡 <strong>Próximos pasos:</strong> Visita tu panel de control para gestionar tu negocio premium y aprovechar todas las ventajas.
+                  💡 <strong>Próximos pasos:</strong> Visita tu panel de control para ver tu nivel, tu fecha de vencimiento y aprovechar todas las ventajas.
                 </p>
               </div>
               
               <div style="text-align: center; margin-top: 32px;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://encuentra.app'}/app/dashboard" 
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/app/dashboard" 
                    style="display: inline-block; background: linear-gradient(135deg, #0288D1 0%, #0277BD 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Ir a mi Panel
                 </a>
@@ -63,7 +65,7 @@ export function PaymentApprovedTemplate(businessName: string): string {
                 Si tienes alguna pregunta, no dudes en contactarnos.
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} Encuentra.app - Todos los derechos reservados
+                © ${new Date().getFullYear()} App Encuentra - Todos los derechos reservados
               </p>
             </td>
           </tr>
@@ -77,16 +79,18 @@ export function PaymentApprovedTemplate(businessName: string): string {
 }
 
 /**
- * Plantilla de correo cuando un pago es rechazado
+ * Plantilla de correo cuando un pago manual de MEMBRESÍA es rechazado.
+ *
+ * @param planLabel Descripción de lo rechazado, p.ej. "Conecta · 3 meses".
  */
-export function PaymentRejectedTemplate(businessName: string): string {
+export function PaymentRejectedTemplate(planLabel: string): string {
   return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pago No Verificado - Encuentra</title>
+  <title>Pago No Verificado - App Encuentra</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6; padding: 20px;">
@@ -108,7 +112,7 @@ export function PaymentRejectedTemplate(businessName: string): string {
               </p>
               
               <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                Lamentablemente, no pudimos verificar tu pago para <strong style="color: #0288D1;">${businessName}</strong>.
+                Lamentablemente, no pudimos verificar tu pago de la membresía <strong style="color: #0288D1;">${planLabel}</strong>.
               </p>
               
               <p style="margin: 0 0 30px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
@@ -122,7 +126,7 @@ export function PaymentRejectedTemplate(businessName: string): string {
               </div>
               
               <div style="text-align: center; margin-top: 32px;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://encuentra.app'}/app/dashboard" 
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/app/dashboard" 
                    style="display: inline-block; background: linear-gradient(135deg, #0288D1 0%, #0277BD 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Volver a Intentar
                 </a>
@@ -141,7 +145,7 @@ export function PaymentRejectedTemplate(businessName: string): string {
                 Estamos aquí para ayudarte.
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} Encuentra.app - Todos los derechos reservados
+                © ${new Date().getFullYear()} App Encuentra - Todos los derechos reservados
               </p>
             </td>
           </tr>

@@ -8,8 +8,8 @@ export default function TermsPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-3">1. Introducción y Aceptación</h2>
           <p>
-            Bienvenido a <strong>Encuentra</strong>. Estos Términos y Condiciones rigen el uso de nuestra plataforma. 
-            El servicio es operado por <strong>Encuentra Tech LLC</strong>, una compañía de responsabilidad limitada 
+            Bienvenido a <strong>App Encuentra</strong>. Estos Términos y Condiciones rigen el uso de nuestra plataforma.
+            El servicio es operado por <strong>Portal Encuentra LLC</strong>, operando bajo el nombre comercial &quot;App Encuentra&quot;, una compañía de responsabilidad limitada
             registrada en el Estado de Texas, Estados Unidos. Al registrarse, usted acepta vincularse legalmente a estos términos.
           </p>
         </div>
@@ -17,7 +17,7 @@ export default function TermsPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-3">2. Descripción del Servicio e Intermediación</h2>
           <p>
-            Encuentra actúa únicamente como una plataforma tecnológica de conexión. 
+            App Encuentra actúa únicamente como una plataforma tecnológica de conexión.
             <strong> No somos propietarios, proveedores ni responsables</strong> de los productos o servicios ofrecidos 
             por los negocios listados. Cualquier transacción es estrictamente entre el Usuario y el Negocio.
           </p>
@@ -47,7 +47,7 @@ export default function TermsPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-3">5. Propiedad Intelectual</h2>
           <p>
-            El código fuente, marca &quot;Encuentra&quot;, y la base de datos son propiedad exclusiva de <strong>Encuentra Tech LLC</strong>. 
+            El código fuente, marca &quot;App Encuentra&quot;, y la base de datos son propiedad exclusiva de <strong>Portal Encuentra LLC</strong>.
             Usted conserva los derechos sobre las fotos que suba, pero nos otorga una licencia para mostrarlas en la plataforma.
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function TermsPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-3">6. Limitación de Responsabilidad</h2>
           <p>
-            En la medida máxima permitida por la ley de Texas, Encuentra Tech LLC no será responsable por daños indirectos, 
+            En la medida máxima permitida por la ley de Texas, Portal Encuentra LLC no será responsable por daños indirectos,
             incidentales o disputas entre usuarios y negocios.
           </p>
         </div>

@@ -25,7 +25,6 @@ export type AdminBusinessRow = {
   featured_until?: string | null
   has_gold_border?: boolean
   search_priority_boost?: boolean
-  chat_enabled?: boolean
   badges?: string[]
 }
 
@@ -33,7 +32,7 @@ const TIER_LABELS: Record<number, string> = {
   0: "Básico",
   1: "Conecta",
   2: "Destaca",
-  3: "Fundador",
+  3: "Patrocina",
 }
 
 function getDaysUntilExpiry(premiumUntil: string | null): number | null {
@@ -60,7 +59,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [alertMessage, setAlertMessage] = useState("")
   const [sendingAlert, setSendingAlert] = useState(false)
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null)
-  const [chatEnabled, setChatEnabled] = useState(business.chat_enabled === true)
   const [showBadgesModal, setShowBadgesModal] = useState(false)
   const [badgesLoading, setBadgesLoading] = useState(false)
   const [selectedBadges, setSelectedBadges] = useState<string[]>([])
@@ -102,7 +100,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     reset: "Reset de fotos",
     golden: "Borde dorado",
     searchBoost: "Destacar negocio",
-    chat: "Sistema de chat",
   }
 
   const call = async (action: string, body: Record<string, unknown>, endpoint: string, actionLabel?: string) => {
@@ -176,12 +173,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       "/api/admin/business/toggle-search-priority",
       "Destacar negocio"
     )
-
-  const toggleChat = () => {
-    const next = !chatEnabled
-    setChatEnabled(next)
-    return call("chat", { businessId: business.id, enabled: next }, "/api/admin/business/toggle-chat", "Sistema de chat")
-  }
 
   const inSpotlight = business.is_featured && business.featured_until && new Date(business.featured_until) > new Date()
   const hasGoldenBorder = business.has_gold_border === true
@@ -399,7 +390,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   {loading === "golden" ? "..." : hasGoldenBorder ? "Quitar Borde Dorado" : "Borde Dorado"}
                 </button>
               }
-              description="Activa el aura visual de Plan Fundador independientemente del pago."
+              description="Activa el aura visual de Plan Patrocina independientemente del pago."
             />
             <ActionRow
               id="spotlight"
@@ -475,21 +466,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               description="Prioriza este negocio en los algoritmos de búsqueda."
             />
             <ActionRow
-              id="chat"
-              button={
-                <button
-                  type="button"
-                  onClick={() => ensureUnlocked(toggleChat)}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-teal-500/20 text-teal-200 border border-teal-500/40 hover:bg-teal-500/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {loading === "chat" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "chat" ? "..." : chatEnabled ? "Chat activo" : "Habilitar chat"}
-                </button>
-              }
-              description="Controla si el dueño puede recibir mensajes directos de usuarios."
-            />
-            <ActionRow
               id="promos"
               button={
                 <Link
@@ -528,7 +504,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     Gestionar Usuario
                   </button>
                 }
-                description="Panel modular: plan, borde dorado, destacado, promociones, chat, alertas, fotos y eliminación de cuenta."
+                description="Panel modular: plan de membresía, alertas, fotos y eliminación de cuenta."
               />
             )}
             {/* Enviar Alerta está integrado dentro de Gestionar Usuario (AdminUserManagementModal) */}

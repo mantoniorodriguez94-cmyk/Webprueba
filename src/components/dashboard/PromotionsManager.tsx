@@ -147,7 +147,7 @@ export default function PromotionsManager() {
     }
   }
 
-  // Estado bloqueado para usuarios que no son Fundador activo
+  // Estado bloqueado para usuarios que no son Patrocina activo
   if (!hasActiveSubscription) {
     return (
       <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-5 md:p-6 shadow-lg shadow-black/40 animate-fade-in">
@@ -160,19 +160,19 @@ export default function PromotionsManager() {
               Módulo de Promociones
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/20 text-yellow-300 text-[10px] font-semibold px-2 py-0.5">
                 <Sparkles className="w-3 h-3" />
-                Exclusivo Fundadores
+                Exclusivo Patrocinadores
               </span>
             </h3>
             <p className="mt-1 text-xs text-gray-300">
               🔒 Esta función es exclusiva para el plan{" "}
-              <span className="font-semibold text-yellow-300">Fundador</span>.
+              <span className="font-semibold text-yellow-300">Patrocina</span>.
             </p>
             <button
               type="button"
               onClick={() => router.push("/app/dashboard/membresia")}
               className="mt-3 inline-flex items-center gap-2 rounded-full bg-yellow-500 px-4 py-2 text-xs font-semibold text-yellow-950 hover:bg-yellow-400 transition-colors"
             >
-              Mejorar a Fundador
+              Mejorar a Patrocina
             </button>
           </div>
         </div>

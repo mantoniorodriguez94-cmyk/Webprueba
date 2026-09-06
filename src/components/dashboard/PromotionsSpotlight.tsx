@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import { Crown } from "lucide-react"
-import { SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 
 export interface SpotlightPromotion {
   id: string
@@ -57,7 +57,7 @@ export default function PromotionsSpotlight() {
           .from("profiles")
           .select("id")
           .in("id", ownerIds)
-          .eq("subscription_tier", SUBSCRIPTION_TIER_FUNDADOR)
+          .eq("subscription_tier", SUBSCRIPTION_TIER_PATROCINA)
 
         if (profilesError) {
           setPromotions([])
@@ -125,7 +125,7 @@ export default function PromotionsSpotlight() {
         Promociones Exclusivas en Grand Prairie
       </h2>
       <p className="text-sm text-yellow-200/90 mb-4">
-        Ofertas de negocios Fundador — visibilidad prioritaria en la plataforma
+        Ofertas de negocios Patrocina — visibilidad prioritaria en la plataforma
       </p>
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none -mx-1">
         {promotions.map((promo) => (
@@ -137,7 +137,7 @@ export default function PromotionsSpotlight() {
             <div className="h-full rounded-2xl border-2 border-yellow-500/40 bg-white/5 hover:border-yellow-400/60 hover:bg-white/10 transition-all duration-300 p-5 flex flex-col">
               <span className="inline-flex items-center gap-1 self-start px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-xs font-semibold border border-yellow-500/40 mb-3">
                 <Crown className="w-3 h-3" />
-                Fundador
+                Patrocina
               </span>
               <h3 className="font-bold text-white text-lg mb-2 line-clamp-2 group-hover:text-yellow-100">
                 {promo.name}

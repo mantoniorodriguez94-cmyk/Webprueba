@@ -11,7 +11,7 @@ import { getAdminClient } from "@/lib/supabase/admin"
 import type { SubscriptionTier } from "./tiers"
 import { resolveSubscriptionFromAmount } from "./tiers"
 
-export type MembershipGateway = "paypal" | "crypto_trc20"
+export type MembershipGateway = "paypal" | "crypto_trc20" | "manual" | "binance_pay"
 
 export interface ApplyMembershipFromPaymentInput {
   userId: string
@@ -104,17 +104,22 @@ async function updateUserProfileSubscription(
   const daysToAdd = Math.max(1, monthsToAdd) * 30
   const now = new Date()
 
-  // Obtener suscripción actual
+  // Obtener suscripción actual.
+  // Use maybeSingle() so that a missing profiles row (PGRST116) does NOT throw —
+  // new users whose trigger hasn't fired yet will get profile=null and be treated
+  // as a fresh subscription (tier 0, no end date).
   const { data: profile, error: profileError } = await adminSupabase
     .from("profiles")
     .select("subscription_tier, subscription_end_date")
     .eq("id", userId)
-    .single()
+    .maybeSingle()
 
   if (profileError) {
+    // maybeSingle() only sets error for real DB/network failures, not for 0 rows
     throw profileError
   }
 
+  // profile === null means no row exists yet → treat as brand-new subscription
   const tierValue = (profile as any)?.subscription_tier ?? 0
   const currentTier: SubscriptionTier = tierValue as SubscriptionTier
   const endDateValue = (profile as any)?.subscription_end_date ?? null
@@ -158,20 +163,154 @@ async function updateUserProfileSubscription(
     finalTier = targetTier
   }
 
-  const profileUpdate = {
-    subscription_tier: finalTier,
-    subscription_end_date: newEndDate.toISOString()
-  }
+  // Use upsert so the write succeeds even if the profiles row doesn't exist yet.
+  // onConflict:'id' → UPDATE matching columns when the row already exists,
+  // INSERT a minimal row (id + subscription fields) when it doesn't.
   const { error: updateError } = await adminSupabase
     .from("profiles")
-    .update(profileUpdate as never)
-    .eq("id", userId)
+    .upsert(
+      {
+        id: userId,
+        subscription_tier: finalTier,
+        subscription_end_date: newEndDate.toISOString(),
+      } as never,
+      { onConflict: "id" }
+    )
 
   if (updateError) {
     throw updateError
   }
 
   return { tier: finalTier, monthsAdded: monthsToAdd }
+}
+
+export interface TierBenefitsOptions {
+  /**
+   * Fecha de expiración explícita a escribir en businesses.premium_until.
+   * Si se omite, se EXTIENDE el premium_until actual de cada negocio
+   * en `extendDays` días (comportamiento de compra/renovación).
+   */
+  untilISO?: string
+  /** Días a sumar cuando no se pasa untilISO. Por defecto 30. */
+  extendDays?: number
+  /**
+   * false (por defecto, semántica de PAGO): los beneficios solo se AGREGAN,
+   * nunca se quitan — un pago jamás debe revocar un beneficio existente.
+   * true (semántica de OVERRIDE de admin): los flags que el tier NO otorga se
+   * limpian explícitamente, y se gestiona además `is_featured`.
+   */
+  authoritative?: boolean
+}
+
+/**
+ * ÚNICA fuente de verdad para "qué flags visuales de negocio otorga un tier".
+ *
+ * Sincroniza los beneficios del tier de la CUENTA sobre TODOS los negocios del
+ * usuario. Debe ser llamada por los tres caminos que otorgan tier:
+ *   1) Compra automática por PayPal  (/api/memberships/paypal/capture-order)
+ *   2) Aprobación de pago manual     (/api/admin/payments/approve)
+ *   3) Asignación directa por admin  (/api/admin/profile-perks → assign_plan)
+ *
+ * Mantener esta lógica en UN solo lugar evita el drift entre caminos que ya
+ * causó un bug real en este proyecto.
+ *
+ * Mapa de beneficios por tier:
+ *   tier >= 1 (Conecta)   → is_premium + premium_until
+ *   tier >= 2 (Destaca)   → search_priority_boost (+ is_featured si authoritative)
+ *   tier >= 3 (Patrocina) → has_gold_border
+ *
+ * Nunca lanza: los beneficios visuales son secundarios frente al pago ya
+ * aplicado en `profiles`, así que los errores solo se loguean.
+ */
+export async function applyTierBenefitsToBusinesses(
+  userId: string,
+  tier: number,
+  options: TierBenefitsOptions = {}
+): Promise<void> {
+  const { untilISO, extendDays = 30, authoritative = false } = options
+
+  try {
+    if (!userId) return
+
+    const adminSupabase = getAdminClient()
+    const tierNum = Number(tier) || 0
+
+    // Tier 0 sin modo authoritative: no hay nada que otorgar y un pago nunca
+    // debe revocar beneficios existentes.
+    if (tierNum <= 0 && !authoritative) return
+
+    const { data: businesses, error: bizError } = await adminSupabase
+      .from("businesses")
+      .select("id, premium_until, owner_id")
+      .eq("owner_id", userId)
+
+    if (bizError) {
+      console.error("[membership] applyTierBenefitsToBusinesses fetch error:", bizError)
+      return
+    }
+    if (!businesses || businesses.length === 0) return
+
+    const now = new Date()
+
+    for (const biz of businesses as any[]) {
+      const update: Record<string, unknown> = {}
+
+      if (tierNum <= 0) {
+        // Solo alcanzable en modo authoritative (admin bajando a Básico)
+        update.is_premium = false
+        update.premium_until = null
+        update.has_gold_border = false
+        update.search_priority_boost = false
+        update.is_featured = false
+      } else {
+        let premiumUntil: string
+        if (untilISO) {
+          premiumUntil = untilISO
+        } else {
+          // Extender desde la fecha vigente si aún es futura; si no, desde hoy
+          const current = biz.premium_until ? new Date(biz.premium_until) : now
+          const base = current > now ? current : now
+          const newDate = new Date(base)
+          newDate.setDate(newDate.getDate() + extendDays)
+          premiumUntil = newDate.toISOString()
+        }
+
+        update.is_premium = true
+        update.premium_until = premiumUntil
+
+        if (tierNum >= 2) {
+          update.search_priority_boost = true
+          if (authoritative) update.is_featured = true
+        } else if (authoritative) {
+          update.search_priority_boost = false
+          update.is_featured = false
+        }
+
+        if (tierNum >= 3) {
+          update.has_gold_border = true
+        } else if (authoritative) {
+          update.has_gold_border = false
+        }
+      }
+
+      const { error: updateError } = await adminSupabase
+        .from("businesses")
+        // @ts-ignore - generated DB type may omit premium/boost columns
+        .update(update)
+        .eq("id", biz.id)
+
+      if (updateError) {
+        console.error(
+          "[membership] applyTierBenefitsToBusinesses update error:",
+          biz.id,
+          updateError
+        )
+      }
+    }
+  } catch (err) {
+    // No romper el flujo de pago: el tier de la cuenta ya fue aplicado.
+    console.error("[membership] applyTierBenefitsToBusinesses error:", err)
+  }
 }
 
 /**

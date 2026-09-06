@@ -1,8 +1,14 @@
 /**
- * API Route: Aprobar pago manual (ADMIN)
+ * API Route: Aprobar pago manual de MEMBRESÍA (ADMIN)
  * POST /api/admin/payments/approve
- * 
- * Aprueba un pago manual y activa la suscripción premium
+ *
+ * Aprobar un pago manual debe tener EXACTAMENTE el mismo efecto que una compra
+ * automática por PayPal del mismo tier:
+ *   1. applyMembershipFromPayment()      → profiles.subscription_tier / end_date
+ *                                          + log idempotente en membership_payments
+ *   2. applyTierBenefitsToBusinesses()   → flags visuales en los negocios del usuario
+ *
+ * Ambos pasos son los MISMOS que usa /api/memberships/paypal/capture-order.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -10,59 +16,18 @@ import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { resend, FROM_EMAIL } from '@/lib/resend'
 import { PaymentApprovedTemplate } from '@/lib/emails/templates'
-
-/**
- * Obtener días según el período de facturación
- * Solo soporta planes Mensual (30 días) y Anual (365 días)
- */
-function getDaysFromBillingPeriod(billingPeriod: string): number {
-  switch (billingPeriod) {
-    case 'monthly':
-      return 30
-    case 'yearly':
-      return 365
-    default:
-      // Fallback por seguridad (no debería ocurrir)
-      console.warn(`⚠️ Período de facturación no reconocido: ${billingPeriod}, usando 30 días por defecto`)
-      return 30
-  }
-}
-
-/**
- * Calcular fecha de fin sumando días restantes si existe membresía activa
- * @param billingPeriod - Período del nuevo plan
- * @param currentPremiumUntil - Fecha de expiración actual (si existe)
- * @returns Nueva fecha de expiración
- */
-function calculateEndDate(billingPeriod: string, currentPremiumUntil?: string | null): Date {
-  const now = new Date()
-  const daysToAdd = getDaysFromBillingPeriod(billingPeriod)
-  
-  // Si existe una membresía activa (fecha futura), sumar días a esa fecha
-  if (currentPremiumUntil) {
-    const existingExpiry = new Date(currentPremiumUntil)
-    
-    // Solo sumar si la fecha es futura (membresía aún activa)
-    if (existingExpiry > now) {
-      const newDate = new Date(existingExpiry)
-      newDate.setDate(newDate.getDate() + daysToAdd)
-      console.log(`✅ Sumando ${daysToAdd} días a membresía existente. Antes: ${existingExpiry.toISOString()}, Después: ${newDate.toISOString()}`)
-      return newDate
-    }
-  }
-  
-  // Si no hay membresía activa o ya expiró, empezar desde hoy
-  const newDate = new Date(now)
-  newDate.setDate(newDate.getDate() + daysToAdd)
-  console.log(`✅ Creando nueva membresía de ${daysToAdd} días desde hoy: ${newDate.toISOString()}`)
-  return newDate
-}
+import {
+  applyMembershipFromPayment,
+  applyTierBenefitsToBusinesses,
+} from '@/lib/memberships/service'
+import { getLabelForTier } from '@/lib/memberships/tiers'
+import type { SubscriptionTier } from '@/lib/memberships/tiers'
 
 export async function POST(request: NextRequest) {
   try {
     // Verificar que el usuario es admin
     const { user, error: authError } = await checkAdminAuth()
-    
+
     if (authError || !user || !user.isAdmin) {
       return NextResponse.json(
         { success: false, error: 'No autorizado - Se requieren permisos de administrador' },
@@ -85,10 +50,10 @@ export async function POST(request: NextRequest) {
     // Usar cliente admin (bypass RLS)
     const adminSupabase = getAdminClient()
 
-    // Obtener información del pago manual - FIX: Usar alias correcto y query separada
+    // Obtener información del pago manual
     const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
-      .select('*')
+      .select('id, user_id, business_id, target_tier, months, amount_usd, status')
       .eq('id', submission_id_final)
       .single()
 
@@ -102,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     const submissionData = submission as any
 
-    // Verificar que está pendiente
+    // Verificar que está pendiente (evita doble aplicación)
     if (submissionData.status !== 'pending') {
       return NextResponse.json(
         { success: false, error: 'El pago ya fue procesado' },
@@ -110,23 +75,63 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Obtener el plan por separado para evitar problemas con relaciones
-    const { data: plan, error: planError } = await (adminSupabase as any)
-      .from('premium_plans')
-      .select('*')
-      .eq('id', submissionData.plan_id)
-      .single()
+    // ── Validar los datos de membresía del envío ──────────────────────────────
+    const targetTier = Number(submissionData.target_tier)
+    const months = Number(submissionData.months)
+    const amount = Number(submissionData.amount_usd)
 
-    if (planError || !plan) {
-      console.error('[APPROVE] Error buscando plan:', planError)
+    if (!Number.isFinite(targetTier) || targetTier < 1 || targetTier > 3) {
       return NextResponse.json(
-        { success: false, error: 'Error al obtener información del plan' },
+        {
+          success: false,
+          error:
+            'El pago no tiene un nivel de membresía válido (target_tier). Probablemente fue creado con el sistema anterior; recházalo y pide al usuario que lo envíe de nuevo.',
+        },
+        { status: 400 }
+      )
+    }
+
+    if (!Number.isFinite(months) || months < 1) {
+      return NextResponse.json(
+        { success: false, error: 'El pago no tiene una duración válida (months).' },
+        { status: 400 }
+      )
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'El pago no tiene un monto válido (amount_usd).' },
+        { status: 400 }
+      )
+    }
+
+    // ── 1) Aplicar la membresía a la CUENTA (mismo camino que PayPal) ────────
+    // transactionRef = id del submission → idempotente en membership_payments.
+    const membershipResult = await applyMembershipFromPayment({
+      userId: submissionData.user_id,
+      amount,
+      currency: 'USD',
+      gateway: 'manual',
+      transactionRef: submissionData.id,
+      targetTier: targetTier as SubscriptionTier,
+      monthsToAdd: months,
+    })
+
+    if (!membershipResult.success) {
+      console.error('[APPROVE] Error aplicando membresía:', membershipResult.error)
+      return NextResponse.json(
+        { success: false, error: `Error al activar la membresía: ${membershipResult.error}` },
         { status: 500 }
       )
     }
 
-    // Actualizar submission a 'approved'
-    // TypeScript no reconoce manual_payment_submissions en tipos generados, usar cast
+    const appliedTier = membershipResult.tier ?? (targetTier as SubscriptionTier)
+
+    // ── 2) Sincronizar beneficios visuales en los negocios del usuario ───────
+    // Misma función que usa la captura automática de PayPal.
+    await applyTierBenefitsToBusinesses(submissionData.user_id, appliedTier)
+
+    // ── 3) Marcar el envío como aprobado ─────────────────────────────────────
     const { error: updateSubmissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .update({
@@ -138,118 +143,39 @@ export async function POST(request: NextRequest) {
       .eq('id', submission_id_final)
 
     if (updateSubmissionError) {
-      console.error('[APPROVE] Error actualizando submission:', updateSubmissionError)
+      // La membresía YA fue aplicada. No revertimos (applyMembershipFromPayment es
+      // idempotente por transaction_ref), pero avisamos para revisión manual.
+      console.error('[APPROVE] Membresía aplicada pero falló marcar el submission como aprobado:', updateSubmissionError)
       return NextResponse.json(
-        { success: false, error: `Error al actualizar el pago: ${updateSubmissionError.message}` },
+        {
+          success: false,
+          error: `La membresía se activó, pero no se pudo marcar el pago como aprobado: ${updateSubmissionError.message}. Revísalo manualmente.`,
+        },
         { status: 500 }
       )
     }
 
-    // Actualizar payment a 'completed'
-    await (adminSupabase as any)
-      .from('payments')
-      .update({ status: 'completed' })
-      .eq('external_id', submission_id_final)
-      .eq('method', 'manual')
+    const tierLabel = getLabelForTier(appliedTier)
+    const planLabel = `${tierLabel} · ${months} ${months === 1 ? 'mes' : 'meses'}`
 
-    // Obtener el negocio para verificar si tiene membresía activa
-    const { data: business } = await (adminSupabase as any)
-      .from('businesses')
-      .select('premium_until, is_premium')
-      .eq('id', submissionData.business_id)
-      .single()
-
-    // Calcular fechas de la suscripción según el plan pagado
-    // Si existe premium_until y es futuro, se sumarán los días a esa fecha
-    const startDate = new Date()
-    const planData = plan as any
-    const businessData = business as any
-    const billingPeriod = planData.billing_period || 'monthly'
-    const endDate = calculateEndDate(billingPeriod, businessData?.premium_until)
-
-    // Crear o actualizar suscripción
-    const { data: existingSubscription } = await (adminSupabase as any)
-      .from('business_subscriptions')
-      .select('id')
-      .eq('business_id', submissionData.business_id)
-      .eq('user_id', submissionData.user_id)
-      .eq('status', 'active')
-      .maybeSingle()
-
-    if (existingSubscription) {
-      const subscription = existingSubscription as any
-      // Extender suscripción existente
-      await (adminSupabase as any)
-        .from('business_subscriptions')
-        .update({
-          end_date: endDate.toISOString(),
-          plan_id: submissionData.plan_id,
-        })
-        .eq('id', subscription.id)
-    } else {
-      // Crear nueva suscripción
-      await (adminSupabase as any)
-        .from('business_subscriptions')
-        .insert({
-          business_id: submissionData.business_id,
-          user_id: submissionData.user_id,
-          plan_id: submissionData.plan_id,
-          status: 'active',
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
-        })
-    }
-
-    // Activar premium en el negocio
-    const { error: updateBusinessError } = await (adminSupabase as any)
-      .from('businesses')
-      .update({
-        is_premium: true,
-        premium_until: endDate.toISOString(),
-        premium_plan_id: submissionData.plan_id,
-      })
-      .eq('id', submissionData.business_id)
-
-    if (updateBusinessError) {
-      console.error('[APPROVE] Error activando premium:', updateBusinessError)
-      return NextResponse.json(
-        { success: false, error: `Error al activar premium: ${updateBusinessError.message}` },
-        { status: 500 }
-      )
-    }
-
-    // Enviar correo de aprobación (no bloqueante)
+    // ── 4) Enviar correo de aprobación (no bloqueante) ───────────────────────
     if (resend) {
       try {
-        // Obtener email del usuario
         const { data: userData, error: userError } = await adminSupabase.auth.admin.getUserById(submissionData.user_id)
-        
+
         if (!userError && userData?.user?.email) {
-          // Obtener nombre del negocio
-          const { data: businessData } = await (adminSupabase as any)
-            .from('businesses')
-            .select('name')
-            .eq('id', submissionData.business_id)
-            .single()
-          
-          const businessName = businessData?.name || 'tu negocio'
-          
-          // Enviar correo
           await resend.emails.send({
             from: FROM_EMAIL,
             to: userData.user.email,
-            subject: `🎉 Pago Aprobado - Tu plan Premium está activo`,
-            html: PaymentApprovedTemplate(businessName),
+            subject: `🎉 Pago Aprobado - Tu membresía ${tierLabel} está activa`,
+            html: PaymentApprovedTemplate(planLabel),
           })
-          
-          console.log('[APPROVE] Correo de aprobación enviado a:', userData.user.email)
         } else {
           console.warn('[APPROVE] No se pudo obtener el email del usuario:', userError?.message || 'Usuario no encontrado')
         }
       } catch (emailError: any) {
         // NO hacer rollback de la aprobación si el email falla
         console.error('[APPROVE] Error enviando correo de aprobación (no crítico):', emailError?.message || emailError)
-        // El pago ya fue aprobado, solo logueamos el error
       }
     } else {
       console.warn('[APPROVE] Resend no está configurado. Correo no enviado.')
@@ -257,7 +183,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Pago aprobado y premium activado exitosamente',
+      message: `Pago aprobado. Membresía ${planLabel} activada exitosamente.`,
+      tier: appliedTier,
+      months: membershipResult.monthsAdded ?? months,
     })
 
   } catch (error: any) {

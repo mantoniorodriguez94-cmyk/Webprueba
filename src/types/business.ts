@@ -8,12 +8,8 @@
  */
 export type OwnerProfileJoin = {
   subscription_tier: number | null
-  /** Modular admin perk: golden border active until this ISO date */
-  golden_border_expires_at?: string | null
-  /** Modular admin perk: chat active until this ISO date */
-  chat_expires_at?: string | null
-  /** Modular admin perk: spotlight/featured active until this ISO date */
-  spotlight_expires_at?: string | null
+  /** Subscription expiry — null means indefinite/admin-granted, otherwise must be in the future */
+  subscription_end_date?: string | null
 }
 
 export type Business = {
@@ -38,7 +34,6 @@ export type Business = {
   // ── Business-level flags (admin-synced mirrors, can lag profiles) ──────────
   is_premium?: boolean;
   premium_until?: string | null;
-  premium_plan_id?: string | null;
   /** DB column: has_gold_border (not has_golden_border) */
   has_gold_border?: boolean;
   is_founder?: boolean;
@@ -52,8 +47,6 @@ export type Business = {
   search_priority_boost?: boolean;
   infraction_status?: boolean;
   infraction_reason?: string | null;
-  /** Admin-toggled chat flag synced from profile perk */
-  chat_enabled?: boolean | null;
   // ── Extended / calculated fields ──────────────────────────────────────────
   total_reviews?: number;
   average_rating?: number;
@@ -62,15 +55,14 @@ export type Business = {
   shared_count?: number;
   /**
    * Owner profile data joined at fetch time.
-   * This is the SINGLE SOURCE OF TRUTH for tier, golden border, chat, spotlight.
+   * This is the SINGLE SOURCE OF TRUTH for the account subscription tier.
    * Always prefer these fields over the stale boolean mirrors above.
    */
   profiles?: OwnerProfileJoin | null;
   /**
    * Alias for `profiles` — some queries join via profiles!owner_id.
-   * Contains subscription_tier only; full perk data lives in `profiles`.
    */
-  owner?: Pick<OwnerProfileJoin, 'subscription_tier'> | null;
+  owner?: Pick<OwnerProfileJoin, 'subscription_tier' | 'subscription_end_date'> | null;
 };
 
 export type BusinessInsert = Omit<Business, 'id' | 'created_at' | 'updated_at'>;

@@ -3,16 +3,16 @@
 /**
  * AdminUserManagementModal
  * ─────────────────────────────────────────────────────────────────────────────
- * Modular user-management panel with 7 independent, PIN-gated actions:
+ * Modular user-management panel with independent, PIN-gated actions:
  *  1. Resetear Plan a Básico
  *  2. Asignar Plan Específico (tier + days)
- *  3. Borde Dorado (independent expiry)
- *  4. Destacado / Spotlight (independent expiry)
- *  5. Beneficio Promociones (independent expiry)
- *  6. Sistema de Chat (independent expiry)
- *  7. Enviar Alerta (existing admin_message system)
- *  8. Límite de fotos (per-business)
- *  9. Eliminar Usuario
+ *  3. Enviar Alerta (existing admin_message system)
+ *  4. Límite de fotos (per-business)
+ *  5. Eliminar Usuario
+ *
+ * NOTA: los beneficios individuales à-la-carte (Borde Dorado, Destacado,
+ * Promociones, Chat) fueron eliminados junto con sus columnas en la base de
+ * datos. Todo beneficio deriva ahora del nivel de membresía de la cuenta.
  * ─────────────────────────────────────────────────────────────────────────────
  * Each action is wrapped in `onEnsureUnlocked` supplied by AdminQuickActions
  * so the Master PIN modal fires before any mutation reaches the server.
@@ -20,10 +20,6 @@
 
 import { useCallback, useEffect, useState } from "react"
 import {
-  Crown,
-  Star,
-  Megaphone,
-  MessageCircle,
   Bell,
   Image as ImageIcon,
   Trash2,
@@ -40,10 +36,6 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal"
 type ProfilePerks = {
   subscription_tier: number
   subscription_end_date: string | null
-  golden_border_expires_at: string | null
-  spotlight_expires_at: string | null
-  promotions_expires_at: string | null
-  chat_expires_at: string | null
 }
 
 type Props = {
@@ -64,33 +56,13 @@ const TIER_LABELS: Record<number, string> = {
   0: "Básico",
   1: "Conecta",
   2: "Destaca",
-  3: "Fundador",
+  3: "Patrocina",
 }
 
 function daysLeft(iso: string | null): number | null {
   if (!iso) return null
   const diff = new Date(iso).getTime() - Date.now()
   return diff > 0 ? Math.ceil(diff / 86_400_000) : 0
-}
-
-function isPerkActive(iso: string | null): boolean {
-  if (!iso) return false
-  return new Date(iso).getTime() > Date.now()
-}
-
-function StatusPill({ active, days }: { active: boolean; days: number | null }) {
-  if (!active) {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-700 text-gray-400">
-        Inactivo
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-      Activo{days !== null ? ` · ${days} día${days !== 1 ? "s" : ""}` : ""}
-    </span>
-  )
 }
 
 // ─── Section divider ─────────────────────────────────────────────────────────
@@ -128,10 +100,6 @@ export default function AdminUserManagementModal({
   const [assignDays, setAssignDays] = useState(30)
   const [showAssignForm, setShowAssignForm] = useState(false)
 
-  const [goldenDays, setGoldenDays] = useState(30)
-  const [spotlightDays, setSpotlightDays] = useState(30)
-  const [promosDays, setPromosDays] = useState(30)
-  const [chatDays, setChatDays] = useState(30)
   const [photosLimit, setPhotosLimit] = useState(10)
   const [alertMessage, setAlertMessage] = useState("")
 
@@ -218,17 +186,6 @@ export default function AdminUserManagementModal({
   const handleAssignPlan = () =>
     callPerks("assign_plan", { tier: assignTier, days: assignDays }, "assign_plan")
 
-  const handleGoldenBorder = (disable: boolean) =>
-    callPerks("set_golden_border", { disable, days: goldenDays }, "golden_border")
-
-  const handleSpotlight = (disable: boolean) =>
-    callPerks("set_spotlight", { disable, days: spotlightDays }, "spotlight")
-
-  const handlePromotions = (disable: boolean) =>
-    callPerks("set_promotions", { disable, days: promosDays }, "promotions")
-
-  const handleChat = (disable: boolean) =>
-    callPerks("set_chat", { disable, days: chatDays }, "chat")
 
   const handleSendAlert = async () => {
     if (!alertMessage.trim()) return
@@ -427,73 +384,6 @@ export default function AdminUserManagementModal({
                   </div>
                 )}
 
-                {/* ── BENEFICIOS INDIVIDUALES ────────────────────────── */}
-                <SectionTitle label="Beneficios Individuales" />
-
-                <PerkRow
-                  icon={<Crown className="w-4 h-4 text-yellow-400" />}
-                  label="Borde Dorado"
-                  active={isPerkActive(perks?.golden_border_expires_at ?? null)}
-                  days={daysLeft(perks?.golden_border_expires_at ?? null)}
-                  daysInput={goldenDays}
-                  onDaysChange={setGoldenDays}
-                  loading={!!busy.golden_border}
-                  onActivate={() =>
-                    onEnsureUnlocked(() => handleGoldenBorder(false))
-                  }
-                  onDeactivate={() =>
-                    onEnsureUnlocked(() => handleGoldenBorder(true))
-                  }
-                />
-
-                <PerkRow
-                  icon={<Star className="w-4 h-4 text-amber-400" />}
-                  label="Destacado"
-                  active={isPerkActive(perks?.spotlight_expires_at ?? null)}
-                  days={daysLeft(perks?.spotlight_expires_at ?? null)}
-                  daysInput={spotlightDays}
-                  onDaysChange={setSpotlightDays}
-                  loading={!!busy.spotlight}
-                  onActivate={() =>
-                    onEnsureUnlocked(() => handleSpotlight(false))
-                  }
-                  onDeactivate={() =>
-                    onEnsureUnlocked(() => handleSpotlight(true))
-                  }
-                />
-
-                <PerkRow
-                  icon={<Megaphone className="w-4 h-4 text-pink-400" />}
-                  label="Promociones"
-                  active={isPerkActive(perks?.promotions_expires_at ?? null)}
-                  days={daysLeft(perks?.promotions_expires_at ?? null)}
-                  daysInput={promosDays}
-                  onDaysChange={setPromosDays}
-                  loading={!!busy.promotions}
-                  onActivate={() =>
-                    onEnsureUnlocked(() => handlePromotions(false))
-                  }
-                  onDeactivate={() =>
-                    onEnsureUnlocked(() => handlePromotions(true))
-                  }
-                />
-
-                <PerkRow
-                  icon={<MessageCircle className="w-4 h-4 text-teal-400" />}
-                  label="Chat"
-                  active={isPerkActive(perks?.chat_expires_at ?? null)}
-                  days={daysLeft(perks?.chat_expires_at ?? null)}
-                  daysInput={chatDays}
-                  onDaysChange={setChatDays}
-                  loading={!!busy.chat}
-                  onActivate={() =>
-                    onEnsureUnlocked(() => handleChat(false))
-                  }
-                  onDeactivate={() =>
-                    onEnsureUnlocked(() => handleChat(true))
-                  }
-                />
-
                 {/* ── ENVIAR ALERTA ──────────────────────────────────── */}
                 <SectionTitle label="Comunicación" />
 
@@ -616,73 +506,5 @@ export default function AdminUserManagementModal({
         }}
       />
     </>
-  )
-}
-
-// ─── PerkRow sub-component ────────────────────────────────────────────────────
-
-function PerkRow({
-  icon,
-  label,
-  active,
-  days,
-  daysInput,
-  onDaysChange,
-  loading,
-  onActivate,
-  onDeactivate,
-}: {
-  icon: React.ReactNode
-  label: string
-  active: boolean
-  days: number | null
-  daysInput: number
-  onDaysChange: (v: number) => void
-  loading: boolean
-  onActivate: () => void
-  onDeactivate: () => void
-}) {
-  return (
-    <div className="flex items-center gap-2 py-2.5 border-b border-white/5 last:border-b-0">
-      <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">{icon}</div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-white">{label}</span>
-          <StatusPill active={active} days={days} />
-        </div>
-      </div>
-
-      {/* Days input + activate */}
-      <input
-        type="number"
-        min={1}
-        value={daysInput}
-        onChange={(e) => onDaysChange(Math.max(1, Number(e.target.value)))}
-        className="w-14 px-2 py-1 rounded-lg bg-white/10 border border-white/15 text-white text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
-        title="Días de activación"
-      />
-
-      <button
-        type="button"
-        disabled={loading}
-        onClick={onActivate}
-        className="px-2.5 py-1 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white text-[10px] font-semibold disabled:opacity-50 transition-colors flex items-center gap-1"
-        title={active ? "Renovar" : "Activar"}
-      >
-        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : active ? "Renovar" : "Activar"}
-      </button>
-
-      {active && (
-        <button
-          type="button"
-          disabled={loading}
-          onClick={onDeactivate}
-          className="px-2 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[10px] font-semibold disabled:opacity-50 transition-colors"
-          title="Desactivar ahora"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-    </div>
   )
 }

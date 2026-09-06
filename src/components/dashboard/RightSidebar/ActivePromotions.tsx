@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
-import { SUBSCRIPTION_TIER_FUNDADOR } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 
 interface Promotion {
   id: string
@@ -64,7 +64,7 @@ export default function ActivePromotions() {
         .from("profiles")
         .select("id")
         .in("id", ownerIds)
-        .eq("subscription_tier", SUBSCRIPTION_TIER_FUNDADOR)
+        .eq("subscription_tier", SUBSCRIPTION_TIER_PATROCINA)
 
       if (profilesError) {
         setPromotions([])
@@ -80,12 +80,12 @@ export default function ActivePromotions() {
         .filter((p) => {
           const biz = businessesMap.get(p.business_id)
           if (!biz) return false
-          const isFundador = biz.owner_id ? founderOwnerIds.has(biz.owner_id) : false
+          const isPatrocina = biz.owner_id ? founderOwnerIds.has(biz.owner_id) : false
           const isSpotlightOverride =
             biz.is_featured &&
             biz.featured_until &&
             new Date(biz.featured_until) > now
-          return isFundador || isSpotlightOverride
+          return isPatrocina || isSpotlightOverride
         })
         .map((promo) => ({
           id: promo.id,
@@ -149,8 +149,8 @@ export default function ActivePromotions() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-sm text-gray-400">No hay promociones de Fundador activas</p>
-          <p className="text-xs text-gray-500 mt-2">Solo negocios Fundador aparecen aquí.</p>
+          <p className="text-sm text-gray-400">No hay promociones de Patrocina activas</p>
+          <p className="text-xs text-gray-500 mt-2">Solo negocios Patrocina aparecen aquí.</p>
         </div>
       </div>
     )
@@ -220,7 +220,7 @@ export default function ActivePromotions() {
       )}
 
       <p className="mt-3 text-center text-xs text-gray-500">
-        Ofertas exclusivas Fundador
+        Ofertas exclusivas Patrocina
       </p>
     </div>
   )

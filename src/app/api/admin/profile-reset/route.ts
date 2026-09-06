@@ -9,7 +9,6 @@
  *   - has_gold_border = false
  *   - is_featured = false (spotlight)
  *   - search_priority_boost = false
- *   - chat_enabled = false
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -82,7 +81,6 @@ export async function POST(request: NextRequest) {
       has_gold_border: false,
       is_featured: false,
       search_priority_boost: false,
-      chat_enabled: false,
     }
 
     const { error: businessErr } = await supabase

@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { getLabelForTier } from '@/lib/memberships/tiers'
+import type { SubscriptionTier } from '@/lib/memberships/tiers'
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,13 +38,16 @@ export async function GET(request: NextRequest) {
     // Usar cliente admin (bypass RLS)
     const adminSupabase = getAdminClient()
 
-    // Consultar pagos manuales
+    // Consultar pagos manuales.
+    // Ya no existe premium_plans: el nivel comprado viene en la propia fila
+    // (target_tier + months + amount_usd).
+    // `business` sigue disponible pero business_id es NULLABLE (la membresía es
+    // de la cuenta, no de un negocio), así que puede venir null.
     const { data, error } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .select(`
         *,
-        business:businesses(name),
-        plan:premium_plans(name, price_usd)
+        business:businesses(name)
       `)
       .eq('status', status)
       .order('created_at', { ascending: false })
@@ -53,6 +58,13 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Error al consultar pagos' },
         { status: 500 }
       )
+    }
+
+    // Etiqueta legible del nivel comprado (Conecta / Destaca / Patrocina)
+    if (data && data.length > 0) {
+      data.forEach((s: any) => {
+        s.tier_label = getLabelForTier(Number(s.target_tier ?? 0) as SubscriptionTier)
+      })
     }
 
     // Obtener información de usuarios desde profiles

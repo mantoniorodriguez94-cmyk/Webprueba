@@ -60,13 +60,13 @@ export default function ForgotPasswordPage() {
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform group-hover:scale-105">
               <Image 
                 src="/assets/logotipo.png" 
-                alt="Logo Encuentra" 
+                alt="Logo App Encuentra"
                 fill
                 className="object-contain"
               />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#0288D1] transition-colors group-hover:text-[#0277BD]">
-              Encuentra
+              App Encuentra
             </h1>
           </Link>
           <p className="text-gray-300 mt-3 text-sm sm:text-base">

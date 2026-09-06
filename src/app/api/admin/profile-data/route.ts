@@ -26,10 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("profiles")
-      .select(
-        "id, subscription_tier, extra_business_limit, subscription_end_date, " +
-        "golden_border_expires_at, spotlight_expires_at, promotions_expires_at, chat_expires_at"
-      )
+      .select("id, subscription_tier, extra_business_limit, subscription_end_date")
       .eq("id", profileId)
       .single()
     if (error || !data) {
@@ -46,10 +43,6 @@ export async function GET(request: NextRequest) {
           subscription_tier: d.subscription_tier ?? 0,
           extra_business_limit: d.extra_business_limit ?? 0,
           subscription_end_date: d.subscription_end_date ?? null,
-          golden_border_expires_at: d.golden_border_expires_at ?? null,
-          spotlight_expires_at: d.spotlight_expires_at ?? null,
-          promotions_expires_at: d.promotions_expires_at ?? null,
-          chat_expires_at: d.chat_expires_at ?? null,
         },
       },
       {

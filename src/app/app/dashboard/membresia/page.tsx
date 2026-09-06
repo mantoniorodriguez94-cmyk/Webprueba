@@ -25,7 +25,6 @@ export default function MembresiaPage() {
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedTier, setSelectedTier] = useState<ResolvedMembershipTier | null>(null)
-  const [isTestMode, setIsTestMode] = useState(false)
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -41,10 +40,10 @@ export default function MembresiaPage() {
           .from("profiles")
           .select("subscription_tier, subscription_end_date")
           .eq("id", user.id)
-          .single()
+          .maybeSingle()
 
         if (error || !data) {
-          console.warn("[membresia] No se pudo cargar subscription_tier desde profiles:", error)
+          if (error) console.warn("[membresia] Error cargando subscription_tier desde profiles:", error)
           setProfileMembership({
             subscription_tier: 0,
             subscription_end_date: null
@@ -161,8 +160,6 @@ export default function MembresiaPage() {
     )
   }
 
-  const isDev = process.env.NODE_ENV === "development"
-
   return (
     <div className="min-h-screen pb-24 lg:pb-10">
       {/* Header sticky */}
@@ -180,7 +177,7 @@ export default function MembresiaPage() {
             <div className="inline-flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-yellow-400" />
               <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Membresía Portal Encuentra
+                Membresía App Encuentra
               </h1>
             </div>
             <p className="text-[11px] text-gray-400">
@@ -247,37 +244,27 @@ export default function MembresiaPage() {
           </div>
         </div>
 
-        {/* Test mode toggle (solo desarrollo) */}
-        {isDev && (
-          <div className="flex items-center justify-end gap-2 text-[11px] text-gray-300">
-            <label className="flex items-center gap-2">
-              <span className="text-gray-400">Modo test (crypto mock)</span>
-              <button
-                type="button"
-                onClick={() => setIsTestMode((v) => !v)}
-                className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                  isTestMode ? "bg-emerald-500" : "bg-gray-600"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    isTestMode ? "translate-x-4" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </label>
-          </div>
-        )}
-
         {/* Grid de tiers */}
         <MembershipTierGrid currentTier={currentTier} onSelectTier={handleSelectTier} />
+
+        {/* Métodos de pago disponibles para cualquier nivel */}
+        <div className="rounded-3xl border border-white/10 bg-transparent p-4 text-center backdrop-blur-sm">
+          <p className="text-xs text-gray-300">
+            Elige un nivel y paga con{" "}
+            <span className="font-semibold text-white">PayPal</span>,{" "}
+            <span className="font-semibold text-white">Binance Pay</span> o por{" "}
+            <span className="font-semibold text-white">transferencia / pago móvil</span>.
+          </p>
+          <p className="mt-1 text-[11px] text-gray-400">
+            Con transferencia subes el comprobante y un administrador lo verifica (hasta 24 horas).
+          </p>
+        </div>
       </main>
 
       <MembershipPaymentModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         selectedTier={selectedTier}
-        isTestMode={isTestMode}
       />
     </div>
   )

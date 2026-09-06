@@ -43,7 +43,7 @@ const tiers = [
   },
   {
     tier: 3 as MembershipTier,
-    title: "Fundador",
+    title: "Patrocina",
     label: "Máximo Estatus",
     price: 3,
     badgeType: "gold_crown" as const,
@@ -197,16 +197,16 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
         </div>
       </section>
 
-      {/* Sección B: Círculo de Fundadores */}
+      {/* Sección B: Círculo de Patrocinadores */}
       {founderTier && (
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold text-yellow-300 uppercase tracking-wide flex items-center gap-2">
             <Crown className="w-4 h-4 text-yellow-300" />
-            Círculo de Fundadores
+            Círculo de Patrocinadores
           </h2>
           <p className="text-xs text-gray-300 leading-relaxed max-w-xl">
             ¿Quieres apoyar nuestra causa? Conviértete en{" "}
-            <span className="font-semibold text-yellow-300">Patrocinador Fundador</span>. Tu negocio
+            <span className="font-semibold text-yellow-300">Patrocinador</span>. Tu negocio
             portará la insignia de verificación oficial y destacará sobre el resto.
           </p>
 
@@ -223,7 +223,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-white">Fundador</h3>
+                    <h3 className="text-lg font-bold text-white">Patrocina</h3>
                     <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500 text-yellow-950 text-[10px] font-semibold px-2 py-0.5 shadow-sm shadow-yellow-500/40">
                       <HeartHandshake className="w-3 h-3" />
                       Special

@@ -15,8 +15,8 @@ export default function PublicPrivacyPage() {
               <h2 className="text-2xl font-semibold mb-3">1. Responsable del Tratamiento</h2>
               <p>
                 El responsable del tratamiento de los datos personales recogidos a través de
-                la Plataforma <strong>Portal Encuentra</strong> es{" "}
-                <strong>Portal Encuentra LLC</strong>, con domicilio legal en el Estado de
+                la Plataforma <strong>App Encuentra</strong> es{" "}
+                <strong>Portal Encuentra LLC</strong>, operando bajo el nombre comercial &quot;App Encuentra&quot;, con domicilio legal en el Estado de
                 Texas, Estados Unidos de América.
               </p>
             </div>

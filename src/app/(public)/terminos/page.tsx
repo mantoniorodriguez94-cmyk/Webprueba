@@ -15,8 +15,8 @@ export default function PublicTermsPage() {
               <h2 className="text-2xl font-semibold mb-3">1. Introducción y Aceptación</h2>
               <p>
                 Estos Términos y Condiciones regulan el acceso y uso de la plataforma{" "}
-                <strong>Portal Encuentra</strong> (en adelante, la &quot;Plataforma&quot;), 
-                operada por <strong>Portal Encuentra LLC</strong>, una compañía de 
+                <strong>App Encuentra</strong> (en adelante, la &quot;Plataforma&quot;),
+                operada por <strong>Portal Encuentra LLC</strong>, operando bajo el nombre comercial &quot;App Encuentra&quot;, una compañía de
                 responsabilidad limitada registrada en el Estado de Texas, Estados Unidos.
               </p>
               <p>
@@ -29,7 +29,7 @@ export default function PublicTermsPage() {
             <div>
               <h2 className="text-2xl font-semibold mb-3">2. Descripción del Servicio</h2>
               <p>
-                <strong>Portal Encuentra</strong> es un directorio digital que permite a negocios,
+                <strong>App Encuentra</strong> es un directorio digital que permite a negocios,
                 profesionales y emprendedores crear perfiles públicos para aumentar su visibilidad.
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
@@ -90,7 +90,7 @@ export default function PublicTermsPage() {
                   búsqueda y beneficios adicionales de exposición.
                 </li>
                 <li>
-                  <strong>Fundador:</strong> Plan premium con la máxima prioridad de visibilidad,
+                  <strong>Patrocina:</strong> Plan premium con la máxima prioridad de visibilidad,
                   insignias especiales y beneficios exclusivos de la comunidad.
                 </li>
               </ul>
@@ -132,7 +132,7 @@ export default function PublicTermsPage() {
               <h2 className="text-2xl font-semibold mb-3">6. Propiedad Intelectual</h2>
               <p>
                 El diseño de la Plataforma, el código fuente, la arquitectura de información,
-                la marca denominativa y gráfica <strong>&quot;Portal Encuentra&quot;</strong>, 
+                la marca denominativa y gráfica <strong>&quot;App Encuentra&quot;</strong>,
                 así como toda documentación asociada, son propiedad exclusiva de{" "}
                 <strong>Portal Encuentra LLC</strong> o se utilizan bajo licencia.
               </p>

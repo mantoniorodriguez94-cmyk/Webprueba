@@ -5,13 +5,13 @@ import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 
 export const metadata: Metadata = {
-  title: "Encuentra - Conecta negocios y personas",
+  title: "App Encuentra - Conecta negocios y personas",
   description: "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
-  applicationName: "Encuentra",
+  applicationName: "App Encuentra",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Encuentra",
+    title: "App Encuentra",
   },
   formatDetection: {
     telephone: false,
@@ -47,7 +47,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Encuentra" />
+        <meta name="apple-mobile-web-app-title" content="App Encuentra" />
         <link rel="apple-touch-icon" href="/icons/icon-512-maskable.png" />
       </head>
       <body className="antialiased relative min-h-screen bg-gray-900">

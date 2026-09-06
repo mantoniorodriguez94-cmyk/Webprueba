@@ -1,6 +1,21 @@
+/**
+ * API Route: Activar premium de un NEGOCIO (ADMIN)
+ * POST /api/admin/activate  { businessId, days? }
+ *
+ * Antes esta ruta operaba sobre business_subscriptions (producto "Negocio
+ * Premium", eliminado). Ahora actúa directamente sobre los flags espejo del
+ * negocio: businesses.is_premium / premium_until.
+ *
+ * NOTA: esto NO cambia el nivel de la CUENTA (profiles.subscription_tier). Para
+ * otorgar o quitar un nivel de membresía usa /api/admin/profile-perks
+ * (assign_plan / reset_plan), que además sincroniza los beneficios del tier.
+ */
+
 import { NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { checkAdminAuth } from "@/utils/admin-auth"
+
+const DEFAULT_PREMIUM_DAYS = 30
 
 export async function POST(req: Request) {
   try {
@@ -15,47 +30,50 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createClient()
-    const { subscriptionId } = await req.json()
+    const { businessId, days } = await req.json()
 
-    if (!subscriptionId) {
-      return NextResponse.json({ error: "subscriptionId requerido" }, { status: 400 })
+    if (!businessId) {
+      return NextResponse.json({ error: "businessId requerido" }, { status: 400 })
     }
 
-  // Obtener suscripción + plan
-  const { data: sub } = await supabase
-    .from("business_subscriptions")
-    .select("business_id, plan_id, premium_plans(duration_days)")
-    .eq("id", subscriptionId)
-    .single()
+    const daysNum = Number(days)
+    const duration = Number.isFinite(daysNum) && daysNum >= 1 ? Math.floor(daysNum) : DEFAULT_PREMIUM_DAYS
 
-  if (!sub) return NextResponse.json({ error: "Suscripción no encontrada" }, { status: 404 })
+    // Verificar que el negocio existe
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id, premium_until")
+      .eq("id", businessId)
+      .single()
 
-  const duration = sub.premium_plans?.[0]?.duration_days ?? 30
-  const now = new Date()
-  const newEnd = new Date(now.getTime() + duration * 86400000)
+    if (!business) {
+      return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 })
+    }
 
-  // Actualizar suscripción
-  await supabase
-    .from("business_subscriptions")
-    .update({
-      status: "active",
-      start_date: now.toISOString(),
-      end_date: newEnd.toISOString()
-    })
-    .eq("id", subscriptionId)
+    // Extender desde la fecha vigente si aún es futura; si no, desde ahora
+    const now = new Date()
+    const currentEnd = (business as any).premium_until
+      ? new Date((business as any).premium_until)
+      : now
+    const base = currentEnd > now ? currentEnd : now
+    const newEnd = new Date(base.getTime() + duration * 86400000)
 
-  // Actualizar negocio
-  await supabase
-    .from("businesses")
-    .update({
-      is_premium: true,
-      premium_until: newEnd.toISOString(),
-      premium_plan_id: sub.plan_id
-    })
-    .eq("id", sub.business_id)
+    const { error: updateErr } = await supabase
+      .from("businesses")
+      // @ts-ignore - algunas columnas pueden no estar en los tipos generados
+      .update({
+        is_premium: true,
+        premium_until: newEnd.toISOString(),
+      })
+      .eq("id", businessId)
+
+    if (updateErr) {
+      console.error("Error activando premium del negocio:", updateErr)
+      return NextResponse.json({ error: "Error activando premium del negocio" }, { status: 500 })
+    }
 
     return NextResponse.json({
-      message: "Suscripción activada correctamente",
+      message: `Premium activado por ${duration} días`,
       end_date: newEnd.toISOString()
     })
   } catch (error: any) {

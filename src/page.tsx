@@ -33,15 +33,15 @@ export default function Home() {
                 <div className="relative">
                   <Image 
                     src="/assets/logotipo.png" 
-                    alt="Logo Encuentra" 
-                    width={50} 
-                    height={50} 
+                    alt="Logo App Encuentra"
+                    width={50}
+                    height={50}
                     className="w-12 h-12 sm:w-16 sm:h-16 drop-shadow-neon transition-transform group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-neon-pink/20 blur-xl rounded-full animate-pulse-glow" />
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold bg-gradient-neon bg-clip-text text-transparent">
-                  Encuentra
+                  App Encuentra
                 </h1>
               </div>
 
@@ -135,7 +135,7 @@ export default function Home() {
                 </span>
               </h2>
               <p className="text-lg sm:text-xl text-gray-300 max-w-lg leading-relaxed">
-                Crea tu perfil en Encuentra y haz visible tu negocio, servicio o emprendimiento.
+                Crea tu perfil en App Encuentra y haz visible tu negocio, servicio o emprendimiento.
                 Conecta con <span className="text-cyber-blue font-semibold">cientos de clientes</span> en tu zona.
               </p>
 
@@ -287,10 +287,10 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Image src="/assets/logotipo.png" alt="Encuentra logo" width={40} height={40} className="w-10 h-10 drop-shadow-neon" />
+                  <Image src="/assets/logotipo.png" alt="App Encuentra logo" width={40} height={40} className="w-10 h-10 drop-shadow-neon" />
                   <div className="absolute inset-0 bg-neon-pink/20 blur-lg rounded-full animate-glow" />
                 </div>
-                <h3 className="text-xl font-semibold bg-gradient-neon bg-clip-text text-transparent">Encuentra</h3>
+                <h3 className="text-xl font-semibold bg-gradient-neon bg-clip-text text-transparent">App Encuentra</h3>
               </div>
               <p className="text-sm leading-relaxed text-gray-400">
                 Hagamos a todos encontrables. Tu portal para conectar negocios, servicios,
@@ -348,7 +348,7 @@ export default function Home() {
 
           {/* Línea inferior con gradiente */}
           <div className="border-t border-white/10 bg-gradient-dark py-4 text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} Encuentra / Encuentrapp. Todos los derechos reservados.
+            © {new Date().getFullYear()} App Encuentra. Todos los derechos reservados.
           </div>
         </footer>
       </main>

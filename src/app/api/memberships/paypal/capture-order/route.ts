@@ -8,9 +8,13 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
-import { applyMembershipFromPayment } from "@/lib/memberships/service"
-import { resolveSubscriptionFromAmount } from "@/lib/memberships/tiers"
 import { getAdminClient } from "@/lib/supabase/admin"
+import {
+  applyMembershipFromPayment,
+  applyTierBenefitsToBusinesses,
+} from "@/lib/memberships/service"
+import { resolveSubscriptionFromAmount } from "@/lib/memberships/tiers"
+import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 // For LIVE only: always hit PayPal production
 const PAYPAL_API_BASE = "https://api-m.paypal.com"
@@ -146,16 +150,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Resolver tier + meses desde el monto
-    const subInfo = resolveSubscriptionFromAmount(amount)
-    if (!subInfo) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "El monto capturado no coincide con ningún plan de suscripción válido",
-        },
-        { status: 400 }
-      )
+    // Preferir el tier/meses EXACTOS guardados por create-order — resolver por
+    // monto es AMBIGUO para compras anuales (el monto con descuento de 12
+    // meses es idéntico al de pagar 10 meses sin descuento).
+    const adminSupabase = getAdminClient()
+    const { data: pendingOrder } = await (adminSupabase as any)
+      .from("membership_payments")
+      .select("target_tier, months")
+      .eq("gateway", "paypal")
+      .eq("transaction_ref", orderId)
+      .maybeSingle()
+
+    let targetTier = pendingOrder?.target_tier ? Number(pendingOrder.target_tier) : null
+    let monthsToAdd = pendingOrder?.months ? Number(pendingOrder.months) : null
+
+    // Fallback: órdenes creadas antes de este fix, o el flujo legacy de "amount" sin tier
+    if (!targetTier || !monthsToAdd) {
+      const subInfo = resolveSubscriptionFromAmount(amount)
+      if (!subInfo) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "El monto capturado no coincide con ningún plan de suscripción válido",
+          },
+          { status: 400 }
+        )
+      }
+      targetTier = subInfo.tier
+      monthsToAdd = subInfo.months
     }
 
     // Aplicar suscripción en la base de datos (perfiles)
@@ -165,8 +187,8 @@ export async function POST(request: NextRequest) {
       currency: "USD",
       gateway: "paypal",
       transactionRef: orderId,
-      targetTier: subInfo.tier,
-      monthsToAdd: subInfo.months,
+      targetTier: targetTier as SubscriptionTier,
+      monthsToAdd,
     })
 
     if (!result.success) {
@@ -179,53 +201,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Aplicar beneficios premium a los negocios del usuario
-    try {
-      const adminSupabase = getAdminClient()
-      const tier = result.tier ?? subInfo.tier
-
-      if (tier && tier > 0) {
-        const { data: businesses, error: bizError } = await adminSupabase
-          .from("businesses")
-          .select("id, premium_until, owner_id")
-          .eq("owner_id", user.id)
-
-        if (!bizError && businesses && businesses.length > 0) {
-          const addDays = 30
-          const now = new Date()
-
-          for (const biz of businesses as any[]) {
-            const current = biz.premium_until ? new Date(biz.premium_until) : now
-            const base = current > now ? current : now
-            const newDate = new Date(base)
-            newDate.setDate(newDate.getDate() + addDays)
-
-            const update: Record<string, unknown> = {
-              is_premium: true,
-              premium_until: newDate.toISOString(),
-              // Tier 1+ (Conecta) habilita el canal de chat
-              chat_enabled: tier >= 1,
-            }
-
-            if (tier >= 2) {
-              update.search_priority_boost = true
-            }
-            if (tier >= 3) {
-              update.has_gold_border = true
-            }
-
-            await adminSupabase
-              .from("businesses")
-              // @ts-ignore - generated DB type may omit premium/boost columns
-              .update(update)
-              .eq("id", biz.id)
-          }
-        }
-      }
-    } catch (err: any) {
-      console.error("[membership/paypal] Error applying business premium benefits:", err)
-      // No romper la respuesta al usuario; solo loguear
-    }
+    // Aplicar beneficios premium a los negocios del usuario.
+    // Lógica compartida con la aprobación de pago manual (admin) para evitar drift.
+    await applyTierBenefitsToBusinesses(user.id, result.tier ?? targetTier)
 
     return NextResponse.json({
       success: true,

@@ -24,7 +24,8 @@ export default async function AdminPagosPage() {
       id,
       user_id,
       business_id,
-      plan_id,
+      target_tier,
+      months,
       amount_usd,
       payment_method,
       reference,
@@ -32,8 +33,7 @@ export default async function AdminPagosPage() {
       status,
       created_at,
       admin_notes,
-      businesses(name),
-      premium_plans(name, billing_period, max_photos)
+      businesses(name)
     `)
     .order("created_at", { ascending: false })
 

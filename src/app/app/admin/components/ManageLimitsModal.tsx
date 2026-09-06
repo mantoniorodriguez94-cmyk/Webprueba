@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
-const TIER_LABELS: Record<number, string> = { 0: "Básico", 1: "Conecta", 2: "Destaca", 3: "Fundador" }
+const TIER_LABELS: Record<number, string> = { 0: "Básico", 1: "Conecta", 2: "Destaca", 3: "Patrocina" }
 
 type Props = {
   isOpen: boolean
