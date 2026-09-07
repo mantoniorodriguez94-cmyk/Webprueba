@@ -5,7 +5,29 @@ import { createClient } from '@supabase/supabase-js'
 const REFERRAL_COOKIE_NAME = 'encuentra_ref'
 const REFERRAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 días en segundos
 
+// Dominio canónico: appencuentra.com, appencuentra.com y encuentrapp.com
+// también resuelven a esta misma app, pero deben redirigir aquí (301/308)
+// para que no cuenten como contenido duplicado ante buscadores.
+const CANONICAL_HOST = 'appencuentra.com'
+const REDIRECT_HOSTS = new Set([
+  'www.appencuentra.com',
+  'encuentr.app',
+  'www.encuentr.app',
+  'encuentrapp.com',
+  'www.encuentrapp.com',
+])
+
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host')?.toLowerCase() ?? ''
+
+  if (REDIRECT_HOSTS.has(host)) {
+    const canonicalUrl = new URL(request.url)
+    canonicalUrl.hostname = CANONICAL_HOST
+    canonicalUrl.port = ''
+    canonicalUrl.protocol = 'https'
+    return NextResponse.redirect(canonicalUrl, 308)
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
