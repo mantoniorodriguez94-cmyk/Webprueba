@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
+import { alertModal } from "@/lib/alertModal"
 
 type DaySchedule = {
   day: string
@@ -64,7 +65,7 @@ export default function HorariosPage() {
         // Verificar permisos
         const hasPermission = data.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para configurar los horarios de este negocio")
+          alertModal.warning("No tienes permiso para configurar los horarios de este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -84,7 +85,7 @@ export default function HorariosPage() {
         }
       } catch (error) {
         console.error("Error cargando negocio:", error)
-        alert("Error cargando el negocio")
+        alertModal.error("Error cargando el negocio")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)
@@ -128,11 +129,13 @@ export default function HorariosPage() {
 
       if (error) throw error
 
-      alert("✅ Horarios guardados exitosamente")
+      alertModal.success("Horarios guardados exitosamente")
       router.push(`/app/dashboard/negocios/${businessId}`)
     } catch (error: any) {
       console.error("Error guardando horarios:", error)
-      alert("❌ Error al guardar los horarios: " + (error.message || "Error desconocido"))
+      alertModal.error("Error al guardar los horarios", {
+        description: error.message || "Error desconocido"
+      })
     } finally {
       setSaving(false)
     }

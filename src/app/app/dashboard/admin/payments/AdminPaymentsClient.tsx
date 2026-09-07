@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import type { ManualPaymentSubmission } from "@/types/subscriptions"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
+import { alertModal } from "@/lib/alertModal"
 import { getLabelForTier } from "@/lib/memberships/tiers"
 import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
@@ -247,7 +248,9 @@ export default function AdminPaymentsClient({
       window.URL.revokeObjectURL(downloadUrl)
     } catch (err) {
       console.error('Error descargando imagen:', err)
-      alert('Error al descargar la imagen. Por favor, intenta nuevamente.')
+      alertModal.error('Error al descargar la imagen', {
+        description: 'Por favor, intenta nuevamente.'
+      })
     }
   }
 
@@ -267,7 +270,9 @@ export default function AdminPaymentsClient({
 
     } catch (err: any) {
       console.error('Error cargando pagos:', err)
-      alert(err.message)
+      alertModal.error('Error cargando pagos', {
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -304,7 +309,9 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error aprobando pago')
       }
 
-      alert('✅ Pago aprobado exitosamente. La membresía ha sido activada.')
+      alertModal.success('Pago aprobado exitosamente', {
+        description: 'La membresía ha sido activada.'
+      })
       
       // Si estamos viendo pendientes, recargar para que desaparezca de la lista
       if (filter === 'pending') {
@@ -315,7 +322,9 @@ export default function AdminPaymentsClient({
 
     } catch (err: any) {
       console.error('Error aprobando pago:', err)
-      alert(`❌ Error: ${err.message || 'Error desconocido'}`)
+      alertModal.error('Error al aprobar el pago', {
+        description: err.message || 'Error desconocido'
+      })
     } finally {
       setProcessing(null)
     }
@@ -325,7 +334,7 @@ export default function AdminPaymentsClient({
     // Verificar que han pasado al menos 24 horas
     const submission = submissions.find(s => s.id === submissionId)
     if (!submission) {
-      alert('Error: No se encontró el pago')
+      alertModal.error('No se encontró el pago')
       return
     }
 
@@ -335,13 +344,15 @@ export default function AdminPaymentsClient({
 
     if (hoursSinceCreation < 24) {
       const hoursRemaining = Math.ceil(24 - hoursSinceCreation)
-      alert(`⏳ No se puede rechazar el pago todavía. Debes esperar al menos 24 horas desde que fue enviado. Faltan aproximadamente ${hoursRemaining} horas.`)
+      alertModal.warning('No se puede rechazar el pago todavía', {
+        description: `Debes esperar al menos 24 horas desde que fue enviado. Faltan aproximadamente ${hoursRemaining} horas.`
+      })
       return
     }
 
     const notes = prompt('Motivo del rechazo (este mensaje se enviará al usuario):')
     if (!notes || notes.trim() === '') {
-      alert('❌ Debes proporcionar un motivo para el rechazo')
+      alertModal.error('Debes proporcionar un motivo para el rechazo')
       return
     }
 
@@ -367,7 +378,9 @@ export default function AdminPaymentsClient({
         throw new Error(data.error || 'Error rechazando pago')
       }
 
-      alert('✅ Pago rechazado exitosamente. El usuario ha sido notificado.')
+      alertModal.success('Pago rechazado exitosamente', {
+        description: 'El usuario ha sido notificado.'
+      })
       
       // Si estamos viendo pendientes, recargar para que desaparezca de la lista
       if (filter === 'pending') {
@@ -378,7 +391,9 @@ export default function AdminPaymentsClient({
 
     } catch (err: any) {
       console.error('Error rechazando pago:', err)
-      alert(`❌ Error: ${err.message || 'Error desconocido'}`)
+      alertModal.error('Error al rechazar el pago', {
+        description: err.message || 'Error desconocido'
+      })
     } finally {
       setProcessing(null)
     }
@@ -602,7 +617,7 @@ export default function AdminPaymentsClient({
                     window.URL.revokeObjectURL(downloadUrl)
                   } catch (err) {
                     console.error('Error descargando imagen:', err)
-                    alert('Error al descargar la imagen')
+                    alertModal.error('Error al descargar la imagen')
                   }
                 }}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"

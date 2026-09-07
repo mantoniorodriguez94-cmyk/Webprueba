@@ -3,6 +3,7 @@ import "./globals.css";
 import InstallPWA from "@/components/InstallPWA";
 import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
+import AlertModalHost from "@/components/ui/AlertModalHost";
 
 export const metadata: Metadata = {
   title: "App Encuentra - Conecta negocios y personas",
@@ -72,6 +73,7 @@ export default function RootLayout({
 
         {/* Toast Notifications */}
         <Toaster theme="dark" richColors position="top-center" />
+        <AlertModalHost />
 
         {/* Admin direct message modal (when show_admin_modal is true) */}
         <AdminMessageModal />

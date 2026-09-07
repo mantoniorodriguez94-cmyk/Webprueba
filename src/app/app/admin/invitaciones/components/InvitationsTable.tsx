@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import type { InvitationData } from "../page"
+import { alertModal } from "@/lib/alertModal"
 
 interface InvitationsTableProps {
   invitations: InvitationData[]
@@ -52,11 +53,13 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
           // Recargar la página para ver el nuevo código
           window.location.reload()
         } else {
-          alert(`Error al regenerar código: ${data.error}`)
+          alertModal.error("Error al regenerar código", {
+            description: data.error
+          })
         }
       } catch (err) {
         console.error("Error regenerando código:", err)
-        alert("Error de conexión al regenerar código")
+        alertModal.error("Error de conexión al regenerar código")
       }
     }
   }

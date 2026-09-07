@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import { alertModal } from "@/lib/alertModal"
 
 /**
  * Página de gestión completa del negocio para ADMIN
@@ -96,7 +97,7 @@ export default function AdminGestionarNegocioPage() {
 
       if (updateError) throw updateError
 
-      alert("✅ Negocio actualizado correctamente")
+      alertModal.success("Negocio actualizado correctamente")
       loadBusiness() // Recargar datos
     } catch (err: any) {
       setError(err.message || "Error al guardar")
@@ -120,7 +121,7 @@ export default function AdminGestionarNegocioPage() {
 
       if (deleteError) throw deleteError
 
-      alert("✅ Negocio eliminado correctamente")
+      alertModal.success("Negocio eliminado correctamente")
       router.push("/app/admin/negocios")
     } catch (err: any) {
       setError(err.message || "Error al eliminar")

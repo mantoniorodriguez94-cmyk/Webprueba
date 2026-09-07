@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import LocationSelector from "@/components/LocationSelector"
 import { toast } from "sonner"
+import { alertModal } from "@/lib/alertModal"
+import {
+  isTierActive,
+  getMaxBusinessesForTier,
+  getLabelForTier,
+  getPriceForTier,
+  SUBSCRIPTION_TIER_PATROCINA
+} from "@/lib/memberships/tiers"
 
 // Simple ID generator (no need for uuid package)
 function generateId() {
@@ -53,56 +61,57 @@ export default function NuevoNegocioPage() {
         // Verificar si el usuario es tipo company
         const userRole = user.user_metadata?.role ?? "person"
         if (userRole !== "company") {
-          alert("⚠️ Para crear negocios, necesitas una cuenta tipo Empresa.")
+          alertModal.warning("Para crear negocios, necesitas una cuenta tipo Empresa.")
           router.push("/app/dashboard")
           return
         }
-        
-        // Verificar si tiene algún negocio premium activo
-        const { data: businesses } = await supabase
-          .from("businesses")
-          .select("is_premium, premium_until")
-          .eq("owner_id", user.id)
-        
-        const hasPremiumBusiness = businesses?.some(b => 
-          b.is_premium === true && 
-          b.premium_until && 
-          new Date(b.premium_until) > new Date()
-        ) ?? false
-        
-        setIsPremium(hasPremiumBusiness)
-        
+
+        // Fuente única de verdad para el tier: profiles.subscription_tier
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_tier, subscription_end_date")
+          .eq("id", user.id)
+          .maybeSingle()
+
+        const rawTier = profile?.subscription_tier ?? 0
+        const tierEndDate = profile?.subscription_end_date ?? null
+        const effectiveTier = isTierActive(rawTier, tierEndDate) ? rawTier : 0
+
+        setIsPremium(effectiveTier > 0)
+
         // Verificar si es administrador (sin límites)
         const isAdmin = user.user_metadata?.is_admin ?? false
-        
-        // Si NO es admin, aplicar límites
+
+        // Si NO es admin, aplicar límites según el tier real
         if (!isAdmin) {
-          // Obtener el límite permitido
-          const isPremium = user.user_metadata?.is_premium ?? false
-          const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
-          
+          const allowedBusinesses = getMaxBusinessesForTier(effectiveTier)
+
           // Contar cuántos negocios tiene actualmente
           const { data: businesses, error: fetchError } = await supabase
             .from("businesses")
             .select("id")
             .eq("owner_id", user.id)
-          
+
           if (fetchError) throw fetchError
-          
+
           const currentCount = businesses?.length ?? 0
-          
-          // Si ya alcanzó el límite, mostrar alerta premium
+
+          // Si ya alcanzó el límite, mostrar alerta según el tier
           if (currentCount >= allowedBusinesses) {
-            if (!isPremium) {
-              alert("⭐ Para crear más negocios, únete al Plan Premium.\n\n✨ Beneficios Premium:\n• Crear de 2 a 5 negocios\n• 1 semana en Destacados\n• Borde dorado especial\n\nPrecio: $5 USD/mes")
+            if (effectiveTier < SUBSCRIPTION_TIER_PATROCINA) {
+              const patrocinaLabel = getLabelForTier(SUBSCRIPTION_TIER_PATROCINA)
+              const patrocinaPrice = getPriceForTier(SUBSCRIPTION_TIER_PATROCINA)
+              alertModal.info(`Actualiza a ${patrocinaLabel} para crear más negocios`, {
+                description: `El plan ${patrocinaLabel} ($${patrocinaPrice} USD/mes) te permite tener hasta 2 negocios activos, además de chat con clientes, prioridad en búsquedas y borde dorado en tu perfil.`
+              })
             } else {
-              alert("⚠️ Has alcanzado el límite de negocios de tu plan Premium.")
+              alertModal.warning(`Has alcanzado el límite de negocios de tu plan ${getLabelForTier(effectiveTier)}.`)
             }
             router.push("/app/dashboard/mis-negocios")
             return
           }
         }
-        
+
         setChecking(false)
       } catch (err) {
         console.error("Error verificando límite:", err)

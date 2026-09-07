@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import { alertModal } from "@/lib/alertModal"
 
 type Promotion = {
   id: string
@@ -70,7 +71,7 @@ export default function VerPromocionesPage() {
         setPromotions(promotionsData || [])
       } catch (error) {
         console.error("Error cargando datos:", error)
-        alert("Error cargando las promociones")
+        alertModal.error("Error cargando las promociones")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import BottomNav from "@/components/ui/BottomNav"
 import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
 import { toast } from "sonner"
+import { alertModal } from "@/lib/alertModal"
 import { Star } from "lucide-react"
 
 export default function PerfilPage() {
@@ -238,11 +239,16 @@ export default function PerfilPage() {
 
       if (error) throw error
 
-      alert("Tu cuenta ha sido convertida a tipo Negocio. Recarga la página.")
-      window.location.reload()
+      alertModal.success("Cuenta convertida a tipo Negocio", {
+        description: "Tu cuenta ahora es de tipo Negocio. Recarga la página para ver los cambios.",
+        confirmLabel: "Recargar página",
+        onClose: () => window.location.reload()
+      })
     } catch (error: any) {
       console.error("Error:", error)
-      alert("Error al convertir cuenta: " + (error.message || String(error)))
+      alertModal.error("Error al convertir cuenta", {
+        description: error.message || String(error)
+      })
     } finally {
       setConverting(false)
       setShowConvertModal(false)

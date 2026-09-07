@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
+import { alertModal } from "@/lib/alertModal"
 
 interface PaymentReceiptImageProps {
   screenshotUrl: string
@@ -114,7 +115,9 @@ export default function PaymentReceiptImage({
       window.URL.revokeObjectURL(downloadUrl)
     } catch (err) {
       console.error('Error descargando imagen:', err)
-      alert('Error al descargar la imagen. Por favor, intenta nuevamente.')
+      alertModal.error('Error al descargar la imagen', {
+        description: 'Por favor, intenta nuevamente.'
+      })
     }
   }
 

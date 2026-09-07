@@ -9,6 +9,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
+import { alertModal } from "@/lib/alertModal"
 
 type Promotion = {
   id: string
@@ -76,7 +77,7 @@ export default function GestionarNegocioPage() {
 
         // Verificar que el usuario es el dueño
         if (data.owner_id !== user.id) {
-          alert("No tienes permiso para gestionar este negocio")
+          alertModal.warning("No tienes permiso para gestionar este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -114,7 +115,7 @@ export default function GestionarNegocioPage() {
         }
       } catch (error) {
         console.error("Error cargando negocio:", error)
-        alert("Error cargando el negocio")
+        alertModal.error("Error cargando el negocio")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)

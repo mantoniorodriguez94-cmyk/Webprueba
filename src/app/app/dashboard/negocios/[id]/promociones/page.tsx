@@ -8,6 +8,7 @@ import Link from "next/link"
 import type { Business } from "@/types/business"
 import Image from "next/image"
 import { toast } from "sonner"
+import { alertModal } from "@/lib/alertModal"
 
 type Promotion = {
   id: string
@@ -55,7 +56,7 @@ export default function PromocionesPage() {
         // Verificar permisos
         const hasPermission = businessData.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para gestionar las promociones de este negocio")
+          alertModal.warning("No tienes permiso para gestionar las promociones de este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -73,7 +74,7 @@ export default function PromocionesPage() {
         setPromotions(promotionsData || [])
       } catch (error) {
         console.error("Error cargando datos:", error)
-        alert("Error cargando datos")
+        alertModal.error("Error cargando datos")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)
@@ -96,10 +97,10 @@ export default function PromocionesPage() {
       if (error) throw error
 
       setPromotions(promotions.filter(p => p.id !== id))
-      alert("✅ Promoción eliminada exitosamente")
+      alertModal.success("Promoción eliminada exitosamente")
     } catch (error: any) {
       console.error("Error eliminando promoción:", error)
-      alert("❌ Error al eliminar la promoción")
+      alertModal.error("Error al eliminar la promoción")
     }
   }
 
@@ -118,7 +119,7 @@ export default function PromocionesPage() {
       ))
     } catch (error: any) {
       console.error("Error actualizando promoción:", error)
-      alert("❌ Error al actualizar la promoción")
+      alertModal.error("Error al actualizar la promoción")
     }
   }
 
@@ -518,12 +519,12 @@ function CreatePromotionModal({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("La imagen no debe superar los 5MB")
+      alertModal.warning("La imagen no debe superar los 5MB")
       return
     }
 
     if (!file.type.startsWith('image/')) {
-      alert("Solo se permiten archivos de imagen")
+      alertModal.warning("Solo se permiten archivos de imagen")
       return
     }
 
@@ -539,17 +540,17 @@ function CreatePromotionModal({
     e.preventDefault()
 
     if (!name.trim()) {
-      alert("Por favor ingresa un nombre para la promoción")
+      alertModal.warning("Por favor ingresa un nombre para la promoción")
       return
     }
 
     if (!startDate || !endDate) {
-      alert("Por favor selecciona las fechas de la promoción")
+      alertModal.warning("Por favor selecciona las fechas de la promoción")
       return
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      alert("La fecha de fin debe ser posterior a la fecha de inicio")
+      alertModal.warning("La fecha de fin debe ser posterior a la fecha de inicio")
       return
     }
 
@@ -593,11 +594,13 @@ function CreatePromotionModal({
 
       if (error) throw error
 
-      alert("✅ Promoción creada exitosamente")
+      alertModal.success("Promoción creada exitosamente")
       onSuccess(data)
     } catch (error: any) {
       console.error("Error creando promoción:", error)
-      alert("❌ Error al crear la promoción: " + (error.message || "Error desconocido"))
+      alertModal.error("Error al crear la promoción", {
+        description: error.message || "Error desconocido"
+      })
     } finally {
       setCreating(false)
     }

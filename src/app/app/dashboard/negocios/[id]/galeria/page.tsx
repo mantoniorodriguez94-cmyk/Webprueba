@@ -7,6 +7,7 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import Image from "next/image"
+import { alertModal } from "@/lib/alertModal"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -76,7 +77,7 @@ export default function GaleriaPage() {
         // Verificar permisos
         const hasPermission = data.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para gestionar la galería de este negocio")
+          alertModal.warning("No tienes permiso para gestionar la galería de este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -84,7 +85,7 @@ export default function GaleriaPage() {
         setBusiness(data)
       } catch (error) {
         console.error("Error cargando negocio:", error)
-        alert("Error cargando el negocio")
+        alertModal.error("Error cargando el negocio")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)
@@ -103,9 +104,13 @@ export default function GaleriaPage() {
     const currentImageCount = galleryUrls.length
     if (currentImageCount >= maxImages) {
       if (isPremiumActive) {
-        alert(`⚠️ Has alcanzado el límite premium de ${MAX_IMAGES_PREMIUM} imágenes.\n\nElimina algunas fotos antes de agregar nuevas.`)
+        alertModal.warning(`Has alcanzado el límite premium de ${MAX_IMAGES_PREMIUM} imágenes`, {
+          description: "Elimina algunas fotos antes de agregar nuevas."
+        })
       } else {
-        alert(`⚠️ Has alcanzado el límite gratuito de ${MAX_IMAGES_FREE} imágenes.\n\n⭐ Mejora a Premium para subir hasta ${MAX_IMAGES_PREMIUM} imágenes.\n\nO elimina algunas fotos antes de agregar nuevas.`)
+        alertModal.warning(`Has alcanzado el límite gratuito de ${MAX_IMAGES_FREE} imágenes`, {
+          description: `⭐ Mejora a Premium para subir hasta ${MAX_IMAGES_PREMIUM} imágenes.\n\nO elimina algunas fotos antes de agregar nuevas.`
+        })
       }
       e.target.value = "" // Limpiar input
       return
@@ -113,13 +118,13 @@ export default function GaleriaPage() {
 
     // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("La imagen no debe superar los 5MB")
+      alertModal.warning("La imagen no debe superar los 5MB")
       return
     }
 
     // Validar tipo
     if (!file.type.startsWith('image/')) {
-      alert("Solo se permiten archivos de imagen")
+      alertModal.warning("Solo se permiten archivos de imagen")
       return
     }
 
@@ -154,10 +159,12 @@ export default function GaleriaPage() {
 
       // Actualizar estado local
       setBusiness({ ...business, gallery_urls: newUrls as any })
-      alert("✅ Imagen agregada exitosamente")
+      alertModal.success("Imagen agregada exitosamente")
     } catch (error: any) {
       console.error("Error subiendo imagen:", error)
-      alert("❌ Error al subir la imagen: " + (error.message || "Error desconocido"))
+      alertModal.error("Error al subir la imagen", {
+        description: error.message || "Error desconocido"
+      })
     } finally {
       setUploading(false)
     }
@@ -197,10 +204,12 @@ export default function GaleriaPage() {
 
       // Actualizar estado local
       setBusiness({ ...business, gallery_urls: newUrls as any })
-      alert("✅ Imagen eliminada exitosamente")
+      alertModal.success("Imagen eliminada exitosamente")
     } catch (error: any) {
       console.error("Error eliminando imagen:", error)
-      alert("❌ Error al eliminar la imagen: " + (error.message || "Error desconocido"))
+      alertModal.error("Error al eliminar la imagen", {
+        description: error.message || "Error desconocido"
+      })
     }
   }
 

@@ -19,6 +19,7 @@ import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { SUBSCRIPTION_TIER_CONECTA, isTierActive } from "@/lib/memberships/tiers"
+import { alertModal } from "@/lib/alertModal"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -213,7 +214,7 @@ export default function BusinessDetailPage() {
   // Enviar o actualizar review
   const handleSubmitReview = async (data: ReviewFormData) => {
     if (!user || !businessId) {
-      alert('Debes iniciar sesión para dejar una reseña')
+      alertModal.info('Debes iniciar sesión para dejar una reseña')
       return
     }
 
@@ -260,11 +261,13 @@ export default function BusinessDetailPage() {
       setShowReviewForm(false)
       
       // Mensaje de éxito con más detalles
-      const successMessage = userReview 
-        ? '✅ Tu reseña ha sido actualizada exitosamente' 
-        : '🌟 ¡Reseña publicada! Gracias por compartir tu experiencia.'
-      
-      alert(successMessage)
+      if (userReview) {
+        alertModal.success('Tu reseña ha sido actualizada exitosamente')
+      } else {
+        alertModal.success('¡Reseña publicada!', {
+          description: 'Gracias por compartir tu experiencia.'
+        })
+      }
     } catch (error: any) {
       console.error('Error submitting review:', error)
       throw error
@@ -345,7 +348,7 @@ export default function BusinessDetailPage() {
         } catch (e2) {
           console.error("[CRITICAL DEBUG] final fallback failed:", e2)
         }
-        alert("Error al cargar negocio")
+        alertModal.error("Error al cargar negocio")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)

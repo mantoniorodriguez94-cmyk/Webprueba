@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
+import { alertModal } from "@/lib/alertModal"
 
 type AnalyticsSummary = {
   total_views: number
@@ -61,7 +62,7 @@ export default function EstadisticasPage() {
 
         const hasPermission = businessData.owner_id === user.id || user.user_metadata?.is_admin
         if (!hasPermission) {
-          alert("No tienes permiso para ver las estadísticas de este negocio")
+          alertModal.warning("No tienes permiso para ver las estadísticas de este negocio")
           router.push("/app/dashboard")
           return
         }
@@ -121,7 +122,7 @@ export default function EstadisticasPage() {
         }
       } catch (error) {
         console.error("Error cargando estadísticas:", error)
-        alert("Error cargando estadísticas")
+        alertModal.error("Error cargando estadísticas")
         router.push("/app/dashboard")
       } finally {
         setLoading(false)

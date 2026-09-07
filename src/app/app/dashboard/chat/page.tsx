@@ -10,6 +10,7 @@ import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
 import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
+import { alertModal } from "@/lib/alertModal"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -438,7 +439,9 @@ function ChatInner() {
       setMessages((prev) =>
         prev.map((m) => (m.tempId === tempId ? { ...m, status: "error" as const } : m))
       )
-      alert("⚠️ No se pudo enviar el mensaje. Por favor, intenta de nuevo.")
+      alertModal.error("No se pudo enviar el mensaje", {
+        description: "Por favor, intenta de nuevo."
+      })
     } finally {
       setSending(false)
     }
@@ -489,7 +492,9 @@ function ChatInner() {
       }
       setOpenMenuId(null)
     } catch (err: any) {
-      alert(`No se pudo eliminar: ${err.message || "Error desconocido"}`)
+      alertModal.error("No se pudo eliminar la conversación", {
+        description: err.message || "Error desconocido"
+      })
     }
   }
 
