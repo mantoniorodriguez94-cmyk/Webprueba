@@ -5,12 +5,16 @@ import { createClient } from '@supabase/supabase-js'
 const REFERRAL_COOKIE_NAME = 'encuentra_ref'
 const REFERRAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 días en segundos
 
-// Dominio canónico: appencuentra.com, appencuentra.com y encuentrapp.com
-// también resuelven a esta misma app, pero deben redirigir aquí (301/308)
-// para que no cuenten como contenido duplicado ante buscadores.
+// Dominio canónico: encuentr.app y encuentrapp.com también resuelven a esta
+// misma app, pero deben redirigir aquí (308) para que no cuenten como
+// contenido duplicado ante buscadores.
+//
+// IMPORTANTE: Vercel ya redirige a nivel de borde appencuentra.com (bare) ->
+// www.appencuentra.com ANTES de que este middleware corra. NO incluir
+// 'www.appencuentra.com' aquí — hacerlo crea un loop infinito entre el
+// redirect de Vercel (bare->www) y este middleware (www->bare).
 const CANONICAL_HOST = 'appencuentra.com'
 const REDIRECT_HOSTS = new Set([
-  'www.appencuentra.com',
   'encuentr.app',
   'www.encuentr.app',
   'encuentrapp.com',
