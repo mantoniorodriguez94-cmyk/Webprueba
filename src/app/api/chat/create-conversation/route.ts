@@ -3,7 +3,12 @@
  *
  * Creates or finds an existing conversation between the authenticated sender
  * and the target business, then inserts the first message.
- * Chat is open to all authenticated users — no tier check required.
+ *
+ * Server-side gate: BOTH the sender and the business owner need an active
+ * paid membership (tier >= 1). This mirrors the client-side gates
+ * (SendMessageModal for the sender, negocios/[id]/page.tsx's ownerHasChat
+ * for the receiver) — never trust the client alone, the API must be able
+ * to reject a request even if someone calls it directly.
  *
  * Returns { conversationId: string }
  */
@@ -12,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { sendChatNotificationEmail } from "@/lib/emails"
+import { isTierActive } from "@/lib/memberships/tiers"
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,7 +56,6 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 2. Fetch business ────────────────────────────────────────────────────
-    // Chat está abierto para todos los usuarios autenticados; no se requiere plan.
     const supabase = createAdminClient()
 
     const { data: business, error: bizErr } = await supabase
@@ -71,6 +76,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "No puedes enviarte mensajes a ti mismo." },
         { status: 400 }
+      )
+    }
+
+    // ── 2b. Membership gate — BOTH sides need an active tier ──────────────────
+    const [senderProfileResult, ownerProfileResult] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("subscription_tier, subscription_end_date")
+        .eq("id", sender.id)
+        .maybeSingle(),
+      business.owner_id
+        ? supabase
+            .from("profiles")
+            .select("subscription_tier, subscription_end_date")
+            .eq("id", business.owner_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ])
+
+    const senderTier = (senderProfileResult.data as any)?.subscription_tier ?? 0
+    const senderEndDate = (senderProfileResult.data as any)?.subscription_end_date ?? null
+
+    if (!isTierActive(senderTier, senderEndDate)) {
+      return NextResponse.json(
+        { error: "Necesitas una membresía activa para enviar mensajes." },
+        { status: 403 }
+      )
+    }
+
+    const ownerTier = (ownerProfileResult.data as any)?.subscription_tier ?? 0
+    const ownerEndDate = (ownerProfileResult.data as any)?.subscription_end_date ?? null
+
+    if (!isTierActive(ownerTier, ownerEndDate)) {
+      return NextResponse.json(
+        { error: "Este negocio no tiene una membresía activa para recibir mensajes." },
+        { status: 403 }
       )
     }
 
