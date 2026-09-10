@@ -20,6 +20,7 @@ import useMembershipAccess from "@/hooks/useMembershipAccess"
 import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { SUBSCRIPTION_TIER_CONECTA, isTierActive } from "@/lib/memberships/tiers"
 import { alertModal } from "@/lib/alertModal"
+import { Dialog } from "@/components/ui/Overlay"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -397,7 +398,7 @@ export default function BusinessDetailPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -428,7 +429,7 @@ export default function BusinessDetailPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1070,54 +1071,47 @@ export default function BusinessDetailPage() {
       )}
 
       {/* Modal: negocio sin chat activo */}
-      {showChatDisabledModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowChatDisabledModal(false)}
-        >
-          <div
-            className="max-w-md w-full bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Chat no disponible</h3>
-                <p className="text-sm text-gray-300">
-                  Este negocio no cuenta con la función de chat activa por el momento.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowChatDisabledModal(false)}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition-colors"
-            >
-              Entendido
-            </button>
+      <Dialog
+        open={showChatDisabledModal}
+        onClose={() => setShowChatDisabledModal(false)}
+        aria-label="Chat no disponible"
+        panelClassName="max-w-md w-full bg-ink-3/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl"
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">Chat no disponible</h3>
+            <p className="text-sm text-gray-300">
+              Este negocio no cuenta con la función de chat activa por el momento.
+            </p>
           </div>
         </div>
-      )}
+        <button
+          onClick={() => setShowChatDisabledModal(false)}
+          className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition-colors"
+        >
+          Entendido
+        </button>
+      </Dialog>
 
       {/* Modal: visitante sin plan Conecta */}
-      {showUpgradeSuggestion && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowUpgradeSuggestion(false)}
-        >
-          <div className="max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <UpgradeSuggestion
-              requiredTier={SUBSCRIPTION_TIER_CONECTA}
-              featureName="Chat con negocios"
-              featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
-              variant="modal"
-            />
-          </div>
-        </div>
-      )}
+      <Dialog
+        open={showUpgradeSuggestion}
+        onClose={() => setShowUpgradeSuggestion(false)}
+        aria-label="Mejora tu plan"
+        panelClassName="max-w-md w-full"
+      >
+        <UpgradeSuggestion
+          requiredTier={SUBSCRIPTION_TIER_CONECTA}
+          featureName="Chat con negocios"
+          featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
+          variant="modal"
+        />
+      </Dialog>
 
       {/* Modal de Reportar Negocio */}
       {showReportBusinessModal && business && (

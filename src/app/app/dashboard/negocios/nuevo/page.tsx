@@ -6,6 +6,7 @@ import Link from "next/link"
 import LocationSelector from "@/components/LocationSelector"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
+import { Dialog } from "@/components/ui/Overlay"
 import {
   isTierActive,
   getMaxBusinessesForTier
@@ -584,13 +585,12 @@ export default function NuevoNegocioPage() {
       </div>
 
       {/* Modal de Mapa */}
-      {showMapModal && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/80 z-50"
-            onClick={() => setShowMapModal(false)}
-          />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto shadow-2xl">
+      <Dialog
+        open={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        aria-label="Seleccionar ubicación GPS"
+        panelClassName="bg-ink-2/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      >
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">📍 Seleccionar Ubicación GPS</h3>
@@ -719,13 +719,11 @@ export default function NuevoNegocioPage() {
             {/* Ayuda */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
               <p className="text-xs text-blue-900">
-                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
+                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps,
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>
             </div>
-          </div>
-        </>
-      )}
+      </Dialog>
     </div>
   )
 }

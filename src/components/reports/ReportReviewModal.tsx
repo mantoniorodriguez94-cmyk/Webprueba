@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
+import { Dialog } from "@/components/ui/Overlay"
 
 interface ReportReviewModalProps {
   reviewId: string
@@ -29,6 +30,15 @@ export default function ReportReviewModal({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+
+  // Ver nota en ReportBusinessModal: cierre en dos tiempos para que la
+  // animación de salida de Dialog se reproduzca antes de que el padre
+  // desmonte este componente.
+  const [open, setOpen] = useState(true)
+  const closeWithAnimation = () => {
+    setOpen(false)
+    setTimeout(onClose, 200)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +82,7 @@ export default function ReportReviewModal({
       setSuccess(true)
       setTimeout(() => {
         onSuccess?.()
-        onClose()
+        closeWithAnimation()
       }, 2000)
     } catch (err: any) {
       console.error("Error reportando reseña:", err)
@@ -82,10 +92,15 @@ export default function ReportReviewModal({
     }
   }
 
-  if (success) {
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
+  return (
+    <Dialog
+      open={open}
+      onClose={closeWithAnimation}
+      aria-label="Reportar reseña"
+      panelClassName="max-w-md w-full max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl"
+    >
+      {success ? (
+        <div className="p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -94,18 +109,12 @@ export default function ReportReviewModal({
           <h3 className="text-xl font-bold text-gray-900 mb-2">Reporte Enviado</h3>
           <p className="text-gray-600">Gracias por tu reporte. Lo revisaremos pronto.</p>
         </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      ) : (
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Reportar Reseña</h3>
             <button
-              onClick={onClose}
+              onClick={closeWithAnimation}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,8 +125,8 @@ export default function ReportReviewModal({
 
           {reviewComment && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Reseña reportada:</p>
-                        <p className="text-sm text-gray-700 italic">&ldquo;{reviewComment.substring(0, 100)}{reviewComment.length > 100 ? '...' : ''}&rdquo;</p>
+              <p className="text-xs text-gray-500 mb-1">Reseña reportada:</p>
+              <p className="text-sm text-gray-700 italic">&ldquo;{reviewComment.substring(0, 100)}{reviewComment.length > 100 ? '...' : ''}&rdquo;</p>
             </div>
           )}
 
@@ -170,7 +179,7 @@ export default function ReportReviewModal({
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={closeWithAnimation}
                 disabled={submitting}
                 className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50"
               >
@@ -186,8 +195,8 @@ export default function ReportReviewModal({
             </div>
           </form>
         </div>
-      </div>
-    </div>
+      )}
+    </Dialog>
   )
 }
 

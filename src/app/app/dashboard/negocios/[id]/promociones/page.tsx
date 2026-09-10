@@ -9,6 +9,7 @@ import type { Business } from "@/types/business"
 import Image from "next/image"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
+import { Dialog } from "@/components/ui/Overlay"
 
 type Promotion = {
   id: string
@@ -145,9 +146,9 @@ export default function PromocionesPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -156,7 +157,7 @@ export default function PromocionesPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
@@ -180,7 +181,7 @@ export default function PromocionesPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,7 +218,7 @@ export default function PromocionesPage() {
         
         {/* Lista de Promociones */}
         {promotions.length === 0 ? (
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-12 text-center">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-12 text-center">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
@@ -291,7 +292,7 @@ function PromotionCard({
   const canReactivate = !promotion.is_active || isExpired
 
   return (
-    <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 overflow-hidden hover:shadow-2xl transition-all group">
+    <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 overflow-hidden hover:shadow-2xl transition-all group">
       {/* Imagen */}
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-pink-100 to-pink-200">
         {promotion.image_url ? (
@@ -409,6 +410,15 @@ function RenewPromotionModal({
   })
   const [saving, setSaving] = useState(false)
 
+  // El padre monta/desmonta este componente vía `{renewPromotion && (...)}`.
+  // Cierre en dos tiempos para que la animación de salida de Dialog se
+  // reproduzca antes de que el padre desmonte este componente.
+  const [open, setOpen] = useState(true)
+  const closeWithAnimation = () => {
+    setOpen(false)
+    setTimeout(onClose, 200)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!endDate) {
@@ -432,18 +442,16 @@ function RenewPromotionModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
-      onClick={onClose}
+    <Dialog
+      open={open}
+      onClose={closeWithAnimation}
+      aria-label="Reactivar o renovar promoción"
+      panelClassName="bg-ink-2/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 w-full max-w-md flex flex-col overflow-hidden"
     >
-      <div
-        className="bg-transparent backdrop-blur-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-white/20/40 w-full sm:max-w-md sm:m-4 flex flex-col animate-fadeIn"
-        onClick={(e) => e.stopPropagation()}
-      >
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white rounded-t-3xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Reactivar / Renovar promoción</h2>
-            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+            <button onClick={closeWithAnimation} className="p-2 hover:bg-white/20 rounded-full transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -469,7 +477,7 @@ function RenewPromotionModal({
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={closeWithAnimation}
               disabled={saving}
               className="flex-1 px-4 py-3 border-2 border-white/20 text-gray-300 rounded-2xl hover:bg-white/5 font-semibold disabled:opacity-50"
             >
@@ -491,8 +499,7 @@ function RenewPromotionModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   )
 }
 
@@ -513,6 +520,15 @@ function CreatePromotionModal({
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
+
+  // El padre monta/desmonta este componente vía `{showCreateModal && (...)}`.
+  // Cierre en dos tiempos para que la animación de salida de Dialog se
+  // reproduzca antes de que el padre desmonte este componente.
+  const [open, setOpen] = useState(true)
+  const closeWithAnimation = () => {
+    setOpen(false)
+    setTimeout(onClose, 200)
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -607,20 +623,22 @@ function CreatePromotionModal({
   }
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
-      onClick={onClose}
+    <Dialog
+      open={open}
+      onClose={closeWithAnimation}
+      aria-label="Nueva promoción"
+      panelClassName="bg-white rounded-3xl shadow-2xl border-2 border-white/20 w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col overflow-hidden"
     >
-      <div 
-        className="bg-transparent backdrop-blur-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border-2 border-white/20/40 w-full sm:max-w-2xl sm:m-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-fadeIn"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-pink-500 to-pink-600 p-6 text-white rounded-t-3xl flex-shrink-0">
+        {/* Header — nota: el cuerpo del formulario usa fondo claro (inputs
+            blancos, etiquetas oscuras); antes el panel era `bg-transparent`,
+            dejando las etiquetas gray-700 casi invisibles sobre el fondo
+            oscuro de la página detrás. Se corrige a un panel blanco real,
+            consistente con SendMessageModal/ReportBusinessModal. */}
+        <div className="bg-gradient-to-r from-pink-500 to-pink-600 p-6 text-white flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Nueva Promoción</h2>
             <button
-              onClick={onClose}
+              onClick={closeWithAnimation}
               className="p-2 hover:bg-white/20 rounded-full transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -721,7 +739,7 @@ function CreatePromotionModal({
                   <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-gray-300 font-medium mb-1">Haz clic para subir una imagen</p>
+                  <p className="text-gray-600 font-medium mb-1">Haz clic para subir una imagen</p>
                   <p className="text-sm text-gray-500">Máximo 5MB • JPG, PNG, GIF, WebP</p>
                   <input
                     type="file"
@@ -736,10 +754,10 @@ function CreatePromotionModal({
         </form>
 
         {/* Footer */}
-        <div className="p-6 bg-gray-50 rounded-b-3xl flex gap-4 flex-shrink-0 border-t border-gray-100">
+        <div className="p-6 bg-gray-50 flex gap-4 flex-shrink-0 border-t border-gray-100">
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeWithAnimation}
             disabled={creating}
             className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50"
           >
@@ -765,8 +783,7 @@ function CreatePromotionModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+    </Dialog>
   )
 }
 

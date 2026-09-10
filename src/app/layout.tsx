@@ -6,6 +6,12 @@ import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 import AlertModalHost from "@/components/ui/AlertModalHost";
 
+// Tipografía: se conserva deliberadamente el trío Fraunces/Sora/JetBrains
+// Mono de la etapa anterior — Fraunces es una serif display cálida y humana
+// (curvas suaves, nada corporativo) y Sora es un sans geométrico pero
+// amigable, legible en tarjetas de negocio. Encajan con el tono "cálido y
+// confiable" sin necesidad de cambiarlas; el trabajo real de esta pasada
+// está en la paleta, el movimiento y la jerarquía, no en la tipografía.
 const fontDisplay = Fraunces({
   subsets: ["latin"],
   variable: "--font-display",
@@ -53,7 +59,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b1b1d",
+  themeColor: "#1a1512",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

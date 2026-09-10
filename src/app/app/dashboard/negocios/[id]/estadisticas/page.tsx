@@ -197,7 +197,7 @@ export default function EstadisticasPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,7 +300,7 @@ export default function EstadisticasPage() {
                 </div>
                 Visitas Diarias
               </h2>
-              <span className="text-xs text-gray-400 bg-gray-700/50 px-3 py-1.5 rounded-full font-medium">Últimos 30 días</span>
+              <span className="text-xs text-gray-400 bg-ink-3/50 px-3 py-1.5 rounded-full font-medium">Últimos 30 días</span>
             </div>
             
             {viewsByDay.length > 0 ? (
@@ -314,7 +314,7 @@ export default function EstadisticasPage() {
                           {new Date(day.view_date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
                         </span>
                         <div className="flex-1 relative">
-                          <div className="bg-gray-700/50 rounded-full h-10 overflow-hidden border border-gray-600/30">
+                          <div className="bg-ink-3/50 rounded-full h-10 overflow-hidden border border-white/10">
                             <div 
                               className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full flex items-center justify-end pr-4 transition-all duration-700 group-hover:from-blue-400 group-hover:to-cyan-400"
                               style={{ width: `${Math.max(percentage, 8)}%` }}
@@ -323,7 +323,7 @@ export default function EstadisticasPage() {
                             </div>
                           </div>
                         </div>
-                        <span className="text-xs text-gray-400 w-20 bg-gray-700/50 px-3 py-1.5 rounded-full text-center font-medium">
+                        <span className="text-xs text-gray-400 w-20 bg-ink-3/50 px-3 py-1.5 rounded-full text-center font-medium">
                           {day.unique_viewers} único{day.unique_viewers !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -333,7 +333,7 @@ export default function EstadisticasPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-ink-3 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -407,7 +407,7 @@ export default function EstadisticasPage() {
                         { label: interaction.interaction_type, icon: "📊", color: "from-gray-400 to-gray-600" }
                       
                       return (
-                        <div key={index} className="flex items-center gap-3 bg-gray-700/30 rounded-2xl p-3 border border-white/20/50">
+                        <div key={index} className="flex items-center gap-3 bg-ink-3/30 rounded-2xl p-3 border border-white/20">
                           <div className={`w-12 h-12 bg-gradient-to-br ${config.color} rounded-xl flex items-center justify-center text-lg shadow-lg`}>
                             {config.icon}
                           </div>
@@ -423,7 +423,7 @@ export default function EstadisticasPage() {
                 </>
               ) : (
                 <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 bg-ink-3 rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
                     </svg>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import { Dialog } from "@/components/ui/Overlay"
 
 /**
  * Shows a modal when the logged-in user has show_admin_modal = true and admin_message set.
@@ -60,24 +61,29 @@ export default function AdminMessageModal() {
     }
   }
 
-  if (loading || !message) return null
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70">
-      <div className="bg-gray-900 border-2 border-amber-500/50 rounded-2xl max-w-md w-full shadow-2xl p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-amber-400 font-semibold">Mensaje del equipo</span>
-        </div>
-        <p className="text-white whitespace-pre-wrap text-sm mb-6">{message}</p>
-        <button
-          type="button"
-          onClick={dismiss}
-          disabled={dismissing}
-          className="w-full py-3 rounded-xl bg-amber-500/20 text-amber-200 border border-amber-500/50 font-medium hover:bg-amber-500/30 disabled:opacity-50"
-        >
-          {dismissing ? "Cerrando..." : "Entendido"}
-        </button>
+    <Dialog
+      open={!loading && !!message}
+      onClose={() => {
+        // El mensaje solo se descarta con el botón "Entendido" — igual que
+        // el comportamiento original, que no tenía cierre por click afuera.
+      }}
+      closeOnBackdropClick={false}
+      aria-label="Mensaje del equipo"
+      panelClassName="max-w-md w-full bg-ink-2 border-2 border-amber-500/50 rounded-3xl shadow-2xl p-6"
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-amber-400 font-semibold">Mensaje del equipo</span>
       </div>
-    </div>
+      <p className="text-white whitespace-pre-wrap text-sm mb-6">{message}</p>
+      <button
+        type="button"
+        onClick={dismiss}
+        disabled={dismissing}
+        className="w-full py-3 rounded-xl bg-amber-500/20 text-amber-200 border border-amber-500/50 font-medium hover:bg-amber-500/30 disabled:opacity-50"
+      >
+        {dismissing ? "Cerrando..." : "Entendido"}
+      </button>
+    </Dialog>
   )
 }

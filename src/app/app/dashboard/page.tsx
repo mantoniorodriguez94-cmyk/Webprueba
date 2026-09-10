@@ -15,6 +15,7 @@ import BottomNav from "@/components/ui/BottomNav"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, getLabelForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
 import { toast } from "sonner"
 
 // Lazy-load de componentes pesados para mejorar performance
@@ -722,7 +723,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700 p-8 max-w-md">
+        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border border-white/10 p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -807,7 +808,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       {/* Header Móvil Moderno */}
-      <header className="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
+      <header className="sticky top-0 z-40 bg-ink/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
         <div className="px-4 py-4 lg:px-6">
           {/* Top Row - Logo y Acciones (navegación simplificada) */}
           <div className="flex items-center justify-between gap-4 mb-4">
@@ -826,23 +827,156 @@ export default function DashboardPage() {
 
             {/* Acciones (Buscar + Usuario) */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Botón de Búsqueda - Solo visible en Desktop */}
+              {/* Botón de Búsqueda — visible también en móvil: antes era
+                  desktop-only y dejaba a los usuarios móviles sin forma de
+                  buscar desde el dashboard. */}
               <button
                 onClick={() => setShowSearchModal(true)}
-                className="hidden lg:flex p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white transition-all duration-200 hover:scale-105"
+                aria-label="Buscar"
+                className="flex p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white transition-all duration-200 hover:scale-105"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
 
-              {/* Menú de Usuario */}
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-200 hover:scale-105"
-              >
-                {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
-              </button>
+              {/* Menú de Usuario — Popover anclado al avatar */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-200 hover:scale-105"
+                >
+                  {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                </button>
+
+                <Popover
+                  open={showUserMenu}
+                  onClose={() => setShowUserMenu(false)}
+                  align="right"
+                  panelClassName="w-80 bg-ink-3/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+                >
+                  {/* Header del perfil */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
+                        {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-lg leading-tight truncate">
+                              {user?.user_metadata?.full_name || "Usuario"}
+                            </h3>
+                            {user?.email && (
+                              <p className="text-xs text-blue-100/90 break-all">
+                                {user.email}
+                              </p>
+                            )}
+                          </div>
+                          {!tierLoading && effectiveTier > 0 && (
+                            <MembershipBadge type={currentBadgeType} className="shrink-0" />
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-white/80">
+                          {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
+                          {" · "}
+                          {tierLoading ? (
+                            <span className="opacity-40">…</span>
+                          ) : (
+                            <span className={effectiveTier > 0 ? "font-semibold text-yellow-200" : "opacity-70"}>
+                              {getLabelForTier(effectiveTier as MembershipTier)}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Opciones */}
+                  <div className="p-4 space-y-2">
+                    {/* Mensajes — Unified inbox for all users */}
+                    {(() => {
+                      const totalUnread =
+                        unreadMessagesPersonCount +
+                        Object.values(unreadMessagesByBusiness).reduce(
+                          (sum, count) => sum + count,
+                          0
+                        )
+                      return (
+                        <Link
+                          href="/app/dashboard/chat"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                        >
+                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white">Mensajes</p>
+                            <p className="text-xs text-gray-400">
+                              {totalUnread > 0 ? `${totalUnread} sin leer` : "Consultas y mensajes directos"}
+                            </p>
+                          </div>
+                          {totalUnread > 0 && (
+                            <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
+                              {totalUnread}
+                            </div>
+                          )}
+                        </Link>
+                      )
+                    })()}
+
+                    {/* Membresía - Conecta, Destaca, Patrocina (primera opción de configuración) */}
+                    <Link
+                      href="/app/dashboard/membresia"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                    >
+                      <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="font-semibold text-yellow-300">Membresía</p>
+                        <p className="text-xs text-gray-400">Conecta, Destaca, Patrocina</p>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+
+                    {/* Perfil - Para todos */}
+                    <Link
+                      href="/app/dashboard/perfil"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                    >
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="font-semibold text-white">Mi Perfil</p>
+                        <p className="text-xs text-gray-400">Configuración y más</p>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+
+                  {/* Logout */}
+                  <div className="p-4 border-t border-white/10">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-2xl transition-all font-semibold"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                </Popover>
+              </div>
             </div>
           </div>
 
@@ -1058,187 +1192,48 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Modal de Filtros (Móvil) */}
-      {showFilterModal && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/80 z-50 lg:hidden"
+      {/* Filtros (Móvil) — Sheet: hoja inferior con animación de entrada/salida */}
+      <Sheet
+        open={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        aria-label="Filtros"
+        panelClassName="w-full max-h-[85vh] overflow-y-auto bg-ink-2/98 rounded-t-3xl lg:hidden"
+      >
+        <div className="pb-4 border-b border-white/10 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white">Filtros</h3>
+          <button
             onClick={() => setShowFilterModal(false)}
-          />
-          <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden bg-transparent rounded-t-3xl max-h-[85vh] overflow-y-auto animate-slide-up">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between sticky top-0 bg-transparent">
-              <h3 className="text-lg font-bold text-white">Filtros</h3>
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="p-2 rounded-full hover:bg-transparent text-gray-400"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-4">
-              <FilterSidebar onFilterChange={(newFilters) => {
-                handleFilterChange(newFilters)
-                setShowFilterModal(false)
-              }} />
-            </div>
-          </div>
-        </>
-      )}
+            className="p-2 rounded-full hover:bg-white/10 text-gray-400"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="pt-4">
+          <FilterSidebar onFilterChange={(newFilters) => {
+            handleFilterChange(newFilters)
+            setShowFilterModal(false)
+          }} />
+        </div>
+      </Sheet>
 
-      {/* Modal de Búsqueda */}
-      {showSearchModal && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/80 z-50"
-            onClick={() => setShowSearchModal(false)}
-          />
-          <div className="fixed inset-x-4 top-20 z-50 bg-transparent rounded-3xl p-4 animate-fade-in max-w-2xl mx-auto">
-            <input
-              type="text"
-              placeholder="Buscar negocios, categorías, ubicación..."
-              value={filters.searchTerm}
-              onChange={(e) => handleFilterChange({ ...filters, searchTerm: e.target.value })}
-              className="w-full bg-transparent text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-              autoFocus
-            />
-          </div>
-        </>
-      )}
-
-      {/* Menú de Usuario (Dropdown) */}
-      {showUserMenu && (
-        <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setShowUserMenu(false)}
-          />
-          <div className="fixed top-16 right-4 w-80 bg-transparent backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 z-50 overflow-hidden animate-fade-in">
-            {/* Header del perfil */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
-                  {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-lg leading-tight truncate">
-                        {user?.user_metadata?.full_name || "Usuario"}
-                      </h3>
-                      {user?.email && (
-                        <p className="text-xs text-blue-100/90 break-all">
-                          {user.email}
-                        </p>
-                      )}
-                    </div>
-                    {!tierLoading && effectiveTier > 0 && (
-                      <MembershipBadge type={currentBadgeType} className="shrink-0" />
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-white/80">
-                    {userRole === "company" ? "Cuenta Empresa" : "Cuenta Personal"}
-                    {" · "}
-                    {tierLoading ? (
-                      <span className="opacity-40">…</span>
-                    ) : (
-                      <span className={effectiveTier > 0 ? "font-semibold text-yellow-200" : "opacity-70"}>
-                        {getLabelForTier(effectiveTier as MembershipTier)}
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Opciones */}
-            <div className="p-4 space-y-2">
-              {/* Mensajes — Unified inbox for all users */}
-              {(() => {
-                const totalUnread =
-                  unreadMessagesPersonCount +
-                  Object.values(unreadMessagesByBusiness).reduce(
-                    (sum, count) => sum + count,
-                    0
-                  )
-                return (
-                  <Link
-                    href="/app/dashboard/chat"
-                    onClick={() => setShowUserMenu(false)}
-                    className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-                  >
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <div className="flex-1">
-                      <p className="font-semibold text-white">Mensajes</p>
-                      <p className="text-xs text-gray-400">
-                        {totalUnread > 0 ? `${totalUnread} sin leer` : "Consultas y mensajes directos"}
-                      </p>
-                    </div>
-                    {totalUnread > 0 && (
-                      <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
-                        {totalUnread}
-                      </div>
-                    )}
-                  </Link>
-                )
-              })()}
-
-              {/* Membresía - Conecta, Destaca, Patrocina (primera opción de configuración) */}
-              <Link
-                href="/app/dashboard/membresia"
-                onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-              >
-                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-semibold text-yellow-300">Membresía</p>
-                  <p className="text-xs text-gray-400">Conecta, Destaca, Patrocina</p>
-                </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-
-              {/* Perfil - Para todos */}
-              <Link
-                href="/app/dashboard/perfil"
-                onClick={() => setShowUserMenu(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-transparent transition-all"
-              >
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-semibold text-white">Mi Perfil</p>
-                  <p className="text-xs text-gray-400">Configuración y más</p>
-                </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-
-            </div>
-
-            {/* Logout */}
-            <div className="p-4 border-t border-gray-700">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-2xl transition-all font-semibold"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Cerrar Sesión
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Búsqueda — Dialog */}
+      <Dialog
+        open={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        aria-label="Buscar"
+        panelClassName="max-w-2xl w-full bg-ink-2/98 border border-white/20 rounded-3xl p-4 shadow-2xl"
+      >
+        <input
+          type="text"
+          placeholder="Buscar negocios, categorías, ubicación..."
+          value={filters.searchTerm}
+          onChange={(e) => handleFilterChange({ ...filters, searchTerm: e.target.value })}
+          className="w-full bg-transparent text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+          autoFocus
+        />
+      </Dialog>
 
       {/* Bottom Navigation (Móvil) */}
       {/* Modal de confirmación para eliminar negocio desde el feed */}

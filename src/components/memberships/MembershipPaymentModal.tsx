@@ -7,6 +7,7 @@ import type { ResolvedMembershipTier } from "@/lib/memberships/tiers"
 import { calculateSubscriptionTotal, getPlanByTier } from "@/lib/memberships/tiers"
 import { submitManualPayment } from "@/actions/payments"
 import { toast } from "sonner"
+import { Dialog } from "@/components/ui/Overlay"
 
 interface MembershipPaymentModalProps {
   isOpen: boolean
@@ -51,7 +52,11 @@ export function MembershipPaymentModal({
   const [manualSubmitted, setManualSubmitted] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  if (!isOpen || !selectedTier) return null
+  // No se desmonta con `!isOpen`: el padre mantiene `selectedTier` poblado
+  // tras la primera selección (solo alterna `isOpen`), así que dejamos que
+  // sea Dialog quien controle visibilidad — eso es lo que permite que la
+  // animación de salida se reproduzca en vez de desaparecer en seco.
+  if (!selectedTier) return null
 
   // Read from env so it can be changed without touching code
   const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ""
@@ -155,8 +160,12 @@ export function MembershipPaymentModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-xl px-4">
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/15 bg-gray-900/95 backdrop-blur-xl p-6 shadow-2xl shadow-black/60 animate-fade-in">
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      aria-label="Completar contribución"
+      panelClassName="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/15 bg-ink-2/95 backdrop-blur-xl p-6 shadow-2xl shadow-black/60"
+    >
         {/* Header */}
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
@@ -591,8 +600,7 @@ export function MembershipPaymentModal({
             </form>
           )
         )}
-      </div>
-    </div>
+    </Dialog>
   )
 }
 

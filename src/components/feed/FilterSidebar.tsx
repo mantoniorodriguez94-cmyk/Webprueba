@@ -107,7 +107,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     filters.municipality_id !== null
 
   return (
-    <div className="bg-transparent9/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
+    <div className="bg-ink-2/50 backdrop-blur-sm rounded-3xl border border-white/20 p-5 space-y-5 sticky top-20">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-white/20">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-semibold px-3 py-1.5 bg-gray-700 rounded-full hover:bg-gray-600"
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-semibold px-3 py-1.5 bg-ink-3 rounded-full hover:bg-ink-4"
           >
             Limpiar
           </button>
@@ -139,7 +139,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
           placeholder="Buscar negocios..."
           value={filters.searchTerm}
           onChange={(e) => updateFilter("searchTerm", e.target.value)}
-          className="w-full bg-gray-700 border-2 border-gray-600 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-gray-700/80 transition-all"
+          className="w-full bg-ink-3 border-2 border-ink-4 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-ink-3/80 transition-all"
         />
       </div>
 
@@ -152,7 +152,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
           </svg>
           Ubicación
         </label>
-        <div className="[&_select]:!bg-gray-700 [&_select]:!border-gray-600 [&_select]:!text-white [&_select]:!placeholder-gray-400 [&_select]:focus:!border-purple-500 [&_label]:!text-gray-300">
+        <div className="[&_select]:!bg-ink-3 [&_select]:!border-ink-4 [&_select]:!text-white [&_select]:!placeholder-gray-400 [&_select]:focus:!border-purple-500 [&_label]:!text-gray-300">
           <LocationSelector
             selectedStateId={filters.state_id}
             selectedMunicipalityId={filters.municipality_id}
@@ -180,7 +180,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
               className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 filters.category === cat
                   ? "bg-blue-500 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                  : "bg-ink-3 text-gray-300 hover:bg-ink-4 border border-ink-4"
               }`}
             >
               {cat}
@@ -208,8 +208,8 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
               onClick={() => updateFilter("sortBy", option.value)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 filters.sortBy === option.value
-                  ? "bg-gray-700 border-2 border-blue-500 text-white"
-                  : "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border-2 border-gray-600"
+                  ? "bg-ink-3 border-2 border-blue-500 text-white"
+                  : "bg-ink-3/50 text-gray-300 hover:bg-ink-3 border-2 border-ink-4"
               }`}
             >
               <span className="text-lg">{option.icon}</span>

@@ -58,7 +58,7 @@ export default function PaymentActionButton({
         disabled={loading}
         className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
           loading
-            ? "bg-gray-700 cursor-not-allowed opacity-50"
+            ? "bg-ink-3 cursor-not-allowed opacity-50"
             : bgColor
         }`}
       >

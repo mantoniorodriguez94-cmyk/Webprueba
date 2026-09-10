@@ -120,7 +120,7 @@ function ReviewCard({ review }: { review: Review }) {
 
           {/* Comment */}
           {review.comment && (
-            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap bg-gray-900/30 rounded-2xl p-4 border border-white/20/50">
+            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap bg-ink-2/30 rounded-2xl p-4 border border-white/20">
               {review.comment}
             </p>
           )}

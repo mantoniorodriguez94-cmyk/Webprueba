@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Drawer } from "@/components/ui/Overlay"
 
 type NavItem = {
   href: string
@@ -10,41 +11,36 @@ type NavItem = {
   icon: React.ReactNode
 }
 
-const navItems: NavItem[] = [
+type NavGroup = {
+  /** Sin título = grupo "suelto" (Dashboard solo, arriba del todo). */
+  title?: string
+  items: NavItem[]
+}
+
+// Antes una lista plana de 7 ítems sin jerarquía. Se agrupan por dominio
+// para que el sidebar se lea como una estructura, no una lista arbitraria.
+const navGroups: NavGroup[] = [
   {
-    href: "/app/admin",
-    label: "Dashboard",
-    icon: <DashboardIcon />,
+    items: [{ href: "/app/admin", label: "Dashboard", icon: <DashboardIcon /> }],
   },
   {
-    href: "/app/admin/pagos",
-    label: "Pagos manuales",
-    icon: <PaymentsIcon />,
+    title: "Negocios",
+    items: [
+      { href: "/app/admin/negocios", label: "Negocios", icon: <StoreIcon /> },
+      { href: "/app/admin/destacados", label: "Destacados", icon: <StarIcon /> },
+    ],
   },
   {
-    href: "/app/admin/negocios",
-    label: "Negocios",
-    icon: <StoreIcon />,
+    title: "Personas",
+    items: [
+      { href: "/app/admin/usuarios", label: "Usuarios", icon: <UsersIcon /> },
+      { href: "/app/admin/referrales", label: "Referidos", icon: <GiftIcon /> },
+      { href: "/app/admin/invitaciones", label: "Invitaciones", icon: <TicketIcon /> },
+    ],
   },
   {
-    href: "/app/admin/destacados",
-    label: "Destacados",
-    icon: <StarIcon />,
-  },
-  {
-    href: "/app/admin/usuarios",
-    label: "Usuarios",
-    icon: <UsersIcon />,
-  },
-  {
-    href: "/app/admin/invitaciones",
-    label: "Invitaciones",
-    icon: <TicketIcon />,
-  },
-  {
-    href: "/app/admin/referrales",
-    label: "Referidos",
-    icon: <GiftIcon />,
+    title: "Pagos",
+    items: [{ href: "/app/admin/pagos", label: "Pagos manuales", icon: <PaymentsIcon /> }],
   },
 ]
 
@@ -58,9 +54,9 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   }, [pathname])
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white flex flex-col">
+    <div className="min-h-screen bg-ink text-white flex flex-col">
       {/* HEADER SUPERIOR */}
-      <header className="w-full border-b border-white/10 bg-black/40 backdrop-blur-xl z-30">
+      <header className="w-full border-b border-white/10 bg-ink-2/60 backdrop-blur-xl z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Izquierda: botón menú móvil + logo / título */}
           <div className="flex items-center gap-3">
@@ -141,24 +137,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 gap-4">
         {/* SIDEBAR DESKTOP */}
         <aside className="hidden md:flex flex-col w-64 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 mt-1 h-[calc(100vh-5rem)] sticky top-20">
-          <nav className="flex flex-col gap-1 text-sm">
-            {navItems.map((item) => {
-              const isActive =
-                item.href === "/app/admin"
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href)
-
-              return (
-                <SidebarLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  active={isActive}
-                />
-              )
-            })}
-          </nav>
+          <NavGroupsList groups={navGroups} pathname={pathname} />
 
           {/* Footer sidebar */}
           <div className="mt-auto pt-4 text-[10px] text-gray-500 border-t border-white/10">
@@ -168,68 +147,48 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
           </div>
         </aside>
 
-        {/* SIDEBAR MÓVIL (DRAWER) */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
-            {/* fondo oscuro */}
-            <div
-              className="absolute inset-0 bg-black/60"
+        {/* SIDEBAR MÓVIL — Drawer compartido (antes {sidebarOpen && (...)} sin animación) */}
+        <Drawer
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          className="md:hidden"
+          aria-label="Menú de administración"
+          panelClassName="h-full w-64 bg-ink border-r border-white/10 shadow-2xl p-4 flex flex-col"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-semibold text-gray-100">
+              Menú admin
+            </span>
+            <button
               onClick={() => setSidebarOpen(false)}
-            />
-            {/* panel lateral */}
-            <div className="absolute left-0 top-0 h-full w-64 bg-[#020617] border-r border-white/10 shadow-2xl p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-gray-100">
-                  Menú admin
-                </span>
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10"
-                  aria-label="Cerrar menú"
-                >
-                  <CloseIcon />
-                </button>
-              </div>
-              <nav className="flex flex-col gap-1 text-sm">
-                {navItems.map((item) => {
-                  const isActive =
-                    item.href === "/app/admin"
-                      ? pathname === item.href
-                      : pathname.startsWith(item.href)
-
-                  return (
-                    <SidebarLink
-                      key={item.href}
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      active={isActive}
-                    />
-                  )
-                })}
-              </nav>
-
-              {/* Acción de bloqueo rápido también disponible en móvil */}
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await fetch("/api/admin/security/logout", { method: "POST" })
-                  } catch {
-                  } finally {
-                    if (typeof window !== "undefined") {
-                      window.location.reload()
-                    }
-                  }
-                }}
-                className="mt-4 inline-flex items-center justify-center gap-2 text-xs px-3 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 transition"
-              >
-                <span className="text-sm leading-none">🔒</span>
-                <span>Bloquear Panel</span>
-              </button>
-            </div>
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10"
+              aria-label="Cerrar menú"
+            >
+              <CloseIcon />
+            </button>
           </div>
-        )}
+
+          <NavGroupsList groups={navGroups} pathname={pathname} />
+
+          {/* Acción de bloqueo rápido también disponible en móvil */}
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await fetch("/api/admin/security/logout", { method: "POST" })
+              } catch {
+              } finally {
+                if (typeof window !== "undefined") {
+                  window.location.reload()
+                }
+              }
+            }}
+            className="mt-4 inline-flex items-center justify-center gap-2 text-xs px-3 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 transition"
+          >
+            <span className="text-sm leading-none">🔒</span>
+            <span>Bloquear Panel</span>
+          </button>
+        </Drawer>
 
         {/* CONTENIDO */}
         <main className="flex-1 mt-1">
@@ -239,6 +198,41 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         </main>
       </div>
     </div>
+  )
+}
+
+/* ================================
+   GRUPOS DE NAVEGACIÓN DEL SIDEBAR (compartido entre desktop y Drawer móvil)
+================================ */
+function NavGroupsList({ groups, pathname }: { groups: NavGroup[]; pathname: string }) {
+  return (
+    <nav className="flex flex-col gap-4 text-sm">
+      {groups.map((group, i) => (
+        <div key={group.title ?? `group-${i}`} className="flex flex-col gap-1">
+          {group.title && (
+            <span className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+              {group.title}
+            </span>
+          )}
+          {group.items.map((item) => {
+            const isActive =
+              item.href === "/app/admin"
+                ? pathname === item.href
+                : pathname.startsWith(item.href)
+
+            return (
+              <SidebarLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={isActive}
+              />
+            )
+          })}
+        </div>
+      ))}
+    </nav>
   )
 }
 

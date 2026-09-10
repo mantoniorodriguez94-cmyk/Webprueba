@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
@@ -82,43 +81,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      {/* Contenedor principal con animación */}
-      <div className="w-full max-w-md animate-fadeIn">
-        {/* Logo y Marca */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center gap-3 group">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform group-hover:scale-105">
-              <Image 
-                src="/assets/logotipo.png" 
-                alt="Logo App Encuentra"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 transition-colors group-hover:text-blue-300">
-              App Encuentra
-            </h1>
-          </Link>
-          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-300 bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 rounded-full mt-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-            Portal Encuentra · Venezuela
-          </span>
-          <p className="text-gray-300 mt-3 text-sm sm:text-base">
-            Conecta con tu comunidad
+    <>
+      {/* Tarjeta de formulario */}
+      <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
+        <div className="mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            Iniciar sesión
+          </h2>
+          <p className="text-gray-300 mt-2 text-sm sm:text-base">
+            Bienvenido de nuevo a App Encuentra
           </p>
         </div>
-
-        {/* Tarjeta de formulario */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
-          <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              Iniciar sesión
-            </h2>
-            <p className="text-gray-300 mt-2 text-sm sm:text-base">
-              Bienvenido de nuevo a App Encuentra
-            </p>
-          </div>
 
           {/* Success message */}
           {success && (
@@ -310,47 +283,6 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-
-        {/* Back to home */}
-        <div className="text-center mt-6">
-          <Link 
-            href="/" 
-            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group"
-          >
-            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Volver al inicio
-          </Link>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out;
-        }
-
-        .animate-shake {
-          animation: shake 0.4s ease-out;
-        }
-      `}</style>
-    </div>
+      </>
   );
 }

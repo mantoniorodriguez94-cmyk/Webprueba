@@ -9,59 +9,78 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Identidad Encuentra — remapea los acentos genéricos de Tailwind a la
-        // paleta de marca. Un solo cambio aquí rebrandea toda la app: cientos
-        // de clases bg-blue-500 / text-purple-400 / etc. ya existentes en el
-        // código heredan el color de marca sin tocar cada archivo.
+        // ── Paleta Encuentra v2 — "directorio cálido y confiable" ──────────
+        // Diseñada como sistema, no como intercambio mecánico de tokens.
+        // Sigue remapeando los acentos genéricos de Tailwind (mismo mecanismo
+        // que ya cablea ~1000 clases en 101 archivos), pero con curvas nuevas
+        // elegidas por relación de color, no solo por "parecido al anterior".
+        //
+        // - Miel/Oro (blue·yellow·amber) y Terracota (purple) son ANÁLOGOS:
+        //   ambos viven en el lado cálido del círculo (ámbar → naranja-rojo),
+        //   así que conviven sin pelear — uno es el metal (Patrocina), el
+        //   otro es el pin de ubicación. Cálidos, nunca neón.
+        // - Verde-Jade (green·cyan, "señal/activo") es su COMPLEMENTARIO: el
+        //   único acento frío del sistema, reservado para estados (en línea,
+        //   verificado, disponible). Al ser el único frío, cuando aparece se
+        //   nota — perfecto para una señal, no para decoración.
+        // - Los tres se apoyan en `ink` (neutro oscuro) y `paper` (neutro
+        //   claro) con temperatura cálida — nada de negros azulados de
+        //   producto SaaS.
         blue: {
-          // antes "azul de acción" genérico → ahora oro, el acento primario
-          50: '#FBF4E4', 100: '#F6E7C4', 200: '#EFD48F', 300: '#E8BE5E',
-          400: '#ECB44A', 500: '#E8A93B', 600: '#C98A22', 700: '#A16D18',
-          800: '#78520F', 900: '#4E360A', 950: '#2C1C04',
+          // Miel/Oro — acento primario, brillo de "Patrocina"
+          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
+          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
+          800: '#67400F', 900: '#452A09', 950: '#2A1804',
         },
         purple: {
-          // antes segundo tono de gradiente → ahora coral, el pin de GPS
-          50: '#FFF1ED', 100: '#FFDFD5', 200: '#FFBEAA', 300: '#FF9C80',
-          400: '#FF8266', 500: '#FF6F52', 600: '#E5543A', 700: '#B93F2A',
-          800: '#8C2E1E', 900: '#5E1F14', 950: '#3A130C',
+          // Terracota — el pin de GPS, segundo acento cálido
+          50: '#FFF2ED', 100: '#FFDFD1', 200: '#FFBBA0', 300: '#FB9873',
+          400: '#F17C55', 500: '#E2603A', 600: '#C1482A', 700: '#9A3820',
+          800: '#712915', 900: '#4C1B0E', 950: '#2E1008',
         },
         green: {
-          // antes verde de éxito genérico → ahora el verde-señal de marca
-          50: '#E9FBF6', 100: '#C9F3E8', 200: '#93E6D4', 300: '#61D6C0',
-          400: '#3ECDB4', 500: '#2AB49C', 600: '#1F8672', 700: '#186B5B',
-          800: '#124E43', 900: '#0C342D', 950: '#06201B',
+          // Jade — único acento frío, reservado para "señal/activo"
+          50: '#EEFBF3', 100: '#D3F3E1', 200: '#A2E5C4', 300: '#6FD1A7',
+          400: '#45B98D', 500: '#2E9973', 600: '#227A5C', 700: '#1C614A',
+          800: '#17493A', 900: '#123527', 950: '#081F17',
         },
         cyan: {
-          // pequeños acentos sueltos → mismo verde-señal para coherencia
-          50: '#E9FBF6', 100: '#C9F3E8', 200: '#93E6D4', 300: '#61D6C0',
-          400: '#3ECDB4', 500: '#2AB49C', 600: '#1F8672', 700: '#186B5B',
-          800: '#124E43', 900: '#0C342D', 950: '#06201B',
+          // mismo jade, para acentos sueltos que antes usaban cyan
+          50: '#EEFBF3', 100: '#D3F3E1', 200: '#A2E5C4', 300: '#6FD1A7',
+          400: '#45B98D', 500: '#2E9973', 600: '#227A5C', 700: '#1C614A',
+          800: '#17493A', 900: '#123527', 950: '#081F17',
         },
         yellow: {
-          // ya se usaba como "dorado premium" (Patrocina) → mismo oro de marca
-          50: '#FBF4E4', 100: '#F6E7C4', 200: '#EFD48F', 300: '#E8BE5E',
-          400: '#ECB44A', 500: '#E8A93B', 600: '#C98A22', 700: '#A16D18',
-          800: '#78520F', 900: '#4E360A', 950: '#2C1C04',
+          // mismo miel/oro — ya se usaba como "dorado premium" (Patrocina)
+          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
+          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
+          800: '#67400F', 900: '#452A09', 950: '#2A1804',
         },
         amber: {
-          50: '#FBF4E4', 100: '#F6E7C4', 200: '#EFD48F', 300: '#E8BE5E',
-          400: '#ECB44A', 500: '#E8A93B', 600: '#C98A22', 700: '#A16D18',
-          800: '#78520F', 900: '#4E360A', 950: '#2C1C04',
+          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
+          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
+          800: '#67400F', 900: '#452A09', 950: '#2A1804',
         },
-        // Tokens nuevos para trabajo dirigido (fondo de página, superficies).
-        // No reemplazan `gray` — ese sigue igual porque también se usa como
+        // Neutros de marca — fondo de página y superficies.
+        // No reemplazan `gray`: ese sigue igual porque también se usa como
         // color plano en paneles claros (admin/legal) y remapearlo en bloque
         // rompería el contraste ahí.
+        //
+        // `ink` deja de ser negro-azulado (frío, de producto técnico) y pasa
+        // a un carbón cálido con fondo de café/espresso — es lo que hace que
+        // el dashboard oscuro se sienta "cálido y confiable" en vez de
+        // corporativo. `paper` es el correspondiente claro, un crema tibio
+        // en vez de un blanco/gris frío.
         ink: {
-          DEFAULT: '#0B1B1D',
-          2: '#102A2C',
-          3: '#173A3D',
-          4: '#1F484C',
+          DEFAULT: '#1A1512',
+          2: '#241D18',
+          3: '#302620',
+          4: '#3D3129',
         },
         paper: {
-          DEFAULT: '#F4F7F5',
-          dim: '#A9BCB7',
-          faint: '#7C928D',
+          DEFAULT: '#FAF6F0',
+          dim: '#C9BEB0',
+          faint: '#9C8F80',
         },
       },
       fontFamily: {
@@ -76,8 +95,8 @@ const config: Config = {
           '100%': { transform: 'translateY(0)' },
         },
         'radar-pulse': {
-          '0%': { boxShadow: '0 0 0 0 rgba(62,205,180,0.55)' },
-          '100%': { boxShadow: '0 0 0 22px rgba(62,205,180,0)' },
+          '0%': { boxShadow: '0 0 0 0 rgba(69,185,141,0.55)' },
+          '100%': { boxShadow: '0 0 0 22px rgba(69,185,141,0)' },
         },
         marquee: {
           '0%': { transform: 'translateX(0)' },
@@ -88,8 +107,8 @@ const config: Config = {
           '50%': { opacity: '0.5' },
         },
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 10px rgba(232, 169, 59, 0.5)' },
-          '50%': { boxShadow: '0 0 20px rgba(232, 169, 59, 0.8)' },
+          '0%, 100%': { boxShadow: '0 0 10px rgba(204, 138, 44, 0.5)' },
+          '50%': { boxShadow: '0 0 20px rgba(204, 138, 44, 0.8)' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },

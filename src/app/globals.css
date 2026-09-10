@@ -6,7 +6,7 @@
   body {
     @apply text-white;
     font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-    background-color: #0b1b1d;
+    background-color: #1a1512;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -16,7 +16,7 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display), Georgia, serif;
   }
-  
+
   /* Para móviles: forzar aspect ratio 9:16 */
   @media (max-width: 768px) {
     body {
@@ -38,8 +38,8 @@
   }
 
   ::selection {
-    background-color: #e8a93b;
-    color: #2c1c04;
+    background-color: #cc8a2c;
+    color: #2a1804;
   }
 }
 
@@ -56,17 +56,35 @@
     @apply bg-ink-3/50 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-2xl;
     @apply rounded-3xl transition-all duration-500 hover:-translate-y-1;
   }
+
+  /* Brillo para Destaca (Tier 2) */
+  .tier-silver-glow {
+    @apply border-slate-300/80 ring-1 ring-slate-200/50;
+    box-shadow:
+      0 0 15px rgba(148, 163, 184, 0.3),
+      0 0 30px rgba(148, 163, 184, 0.15);
+    transition: all 0.3s ease;
+  }
+
+  .tier-silver-glow:hover {
+    box-shadow:
+      0 0 20px rgba(148, 163, 184, 0.4),
+      0 0 40px rgba(148, 163, 184, 0.2);
+    @apply border-slate-200;
+  }
+
+  /* Brillo animado para Fundador (Tier 3) — dorado de marca */
+  .tier-gold-glow {
+    @apply border-yellow-500/90 ring-2 ring-yellow-400/60;
+    animation: gold-pulse 3s infinite ease-in-out;
+  }
+
+  .tier-gold-glow:hover {
+    @apply border-yellow-400 ring-yellow-300/80;
+  }
 }
 
 @layer utilities {
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  .animate-fade-in {
-    animation: fadeIn 0.2s ease-out forwards;
-  }
-
   .text-balance {
     text-wrap: balance;
   }
@@ -89,6 +107,17 @@
     scrollbar-width: none;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Sistema de animación — una sola declaración por keyframe/utilidad
+   (antes había fadeIn y .animate-fade-in duplicados en dos bloques
+   distintos de este archivo; se consolidan aquí).
+
+   Para overlays/modales/menús usa los primitivos de
+   src/components/ui/Overlay.tsx (Dialog, Sheet, Drawer, Popover), que
+   animan con framer-motion + AnimatePresence (entrada Y salida). Estas
+   clases CSS son para contenido en flujo (scroll-reveal, cards, hero).
+   ────────────────────────────────────────────────────────────────────── */
 
 .scroll-reveal {
   opacity: 0;
@@ -114,66 +143,51 @@
   @apply bg-gray-400 rounded-full hover:bg-gray-500;
 }
 
-/* Animaciones para HERO */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Animación para cards del dashboard */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
-  opacity: 0;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(204, 138, 44, 0.5),
+      0 0 20px rgba(204, 138, 44, 0.3),
+      0 0 30px rgba(204, 138, 44, 0.1);
   }
-  100% {
-    background-position: 1000px 0;
+  50% {
+    box-shadow:
+      0 0 20px rgba(204, 138, 44, 0.8),
+      0 0 40px rgba(204, 138, 44, 0.5),
+      0 0 60px rgba(204, 138, 44, 0.2);
   }
 }
 
+/* Animación 3D flotante para el teléfono (PhoneMockup usa framer-motion
+   para su propio movimiento; esto queda para el wrapper CSS del hero) */
+@keyframes float-3d {
+  0%, 100% { transform: rotateY(-12deg) rotateX(5deg) translateY(0); }
+  50% { transform: rotateY(-12deg) rotateX(5deg) translateY(-20px); }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-fade-in-up {
@@ -194,55 +208,4 @@
 
 .animation-delay-600 {
   animation-delay: 0.6s;
-}
-@layer components {
-  /* Brillo para Destaca (Tier 2) */
-  .tier-silver-glow {
-    @apply border-slate-300/80 ring-1 ring-slate-200/50;
-    box-shadow: 
-      0 0 15px rgba(148, 163, 184, 0.3),
-      0 0 30px rgba(148, 163, 184, 0.15);
-    transition: all 0.3s ease;
-  }
-
-  .tier-silver-glow:hover {
-    box-shadow: 
-      0 0 20px rgba(148, 163, 184, 0.4),
-      0 0 40px rgba(148, 163, 184, 0.2);
-    @apply border-slate-200;
-  }
-
-  /* Brillo Animado para Fundador (Tier 3) */
-  .tier-gold-glow {
-    @apply border-yellow-500/90 ring-2 ring-yellow-400/60;
-    animation: gold-pulse 3s infinite ease-in-out;
-  }
-
-  .tier-gold-glow:hover {
-    @apply border-yellow-400 ring-yellow-300/80;
-  }
-
-  @keyframes gold-pulse {
-    0%, 100% {
-      box-shadow:
-        0 0 10px rgba(232, 169, 59, 0.5),
-        0 0 20px rgba(232, 169, 59, 0.3),
-        0 0 30px rgba(232, 169, 59, 0.1);
-    }
-    50% {
-      box-shadow:
-        0 0 20px rgba(232, 169, 59, 0.8),
-        0 0 40px rgba(232, 169, 59, 0.5),
-        0 0 60px rgba(232, 169, 59, 0.2);
-    }
-  }
-}
-/* Animación 3D flotante para el teléfono */
-@keyframes float-3d {
-  0%, 100% {
-    transform: rotateY(-12deg) rotateX(5deg) translateY(0);
-  }
-  50% {
-    transform: rotateY(-12deg) rotateX(5deg) translateY(-20px);
-  }
 }
