@@ -7,6 +7,8 @@ import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
 import PhoneMockup from "@/components/PhoneMockup";
 import useUser from "@/hooks/useUser";
 import PromotionsCarousel from "@/components/dashboard/PromotionsCarousel";
+import PublicPricingTable from "@/components/landing/PublicPricingTable";
+import FaqAccordion from "@/components/landing/FaqAccordion";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -78,11 +80,17 @@ export default function Home() {
                 >
                   Para personas
                 </button>
-                <button 
+                <button
                   onClick={() => scrollToSection('para-negocios')}
                   className="text-gray-300 hover:text-white transition"
                 >
                   Para negocios
+                </button>
+                <button
+                  onClick={() => scrollToSection('precios')}
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Precios
                 </button>
               </nav>
 
@@ -149,11 +157,17 @@ export default function Home() {
                 >
                   Para personas
                 </button>
-                <button 
+                <button
                   onClick={() => scrollToSection('para-negocios')}
                   className="block w-full text-left text-gray-300 hover:text-white transition py-2"
                 >
                   Para negocios
+                </button>
+                <button
+                  onClick={() => scrollToSection('precios')}
+                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
+                >
+                  Precios
                 </button>
                 <div className="pt-3 border-t border-gray-700">
                   {!userLoading && (
@@ -193,7 +207,7 @@ export default function Home() {
 
                 {/* Subtítulo */}
                 <p className="text-lg sm:text-xl text-gray-200 leading-relaxed max-w-xl mx-auto lg:mx-0 opacity-0 animate-fade-in-up animation-delay-400">
-                  Conecta con negocios reales, revisa reseñas auténticas y comunícate directamente sin intermediarios.
+                  Encuéntralos con un clic — sin depender de &quot;frente a la escuela&quot; o &quot;a 500 metros del hospital&quot;. Ve la distancia exacta a cada negocio y llega directo.
                 </p>
 
                 {/* Botones de Acción - Máximo 2 (mobile: full width, min 48px tap target) */}
@@ -368,26 +382,26 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
               <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
                   <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Visibilidad local</h3>
-                <p className="text-gray-300 text-sm">Aparece en búsquedas locales cuando los clientes te necesitan.</p>
+                <h3 className="text-lg font-bold text-white mb-2">Ubicación GPS exacta, sin dar referencias</h3>
+                <p className="text-gray-300 text-sm">Se acabó dar direcciones por referencia — tu ubicación se abre con un clic.</p>
               </div>
 
               <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-4">
                   <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Galería de fotos</h3>
-                <p className="text-gray-300 text-sm">Muestra tus productos y servicios con imágenes de calidad.</p>
+                <h3 className="text-lg font-bold text-white mb-2">Te encuentran por categoría y distancia</h3>
+                <p className="text-gray-300 text-sm">Apareces cuando alguien busca tu rubro cerca de él, con la distancia exacta.</p>
               </div>
 
               <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
@@ -396,18 +410,28 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Contacto directo</h3>
-                <p className="text-gray-300 text-sm">Recibe mensajes de clientes interesados en tiempo real.</p>
+                <h3 className="text-lg font-bold text-white mb-2">Chatea antes de que se vayan</h3>
+                <p className="text-gray-300 text-sm">Responde antes de que un cliente interesado decida ir a otro lado.</p>
               </div>
 
               <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
                 <div className="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mb-4">
                   <svg className="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 00-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97a1.125 1.125 0 00.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Estadísticas y opciones premium</h3>
-                <p className="text-gray-300 text-sm">Mide tu impacto y potencia tu presencia con planes premium.</p>
+                <h3 className="text-lg font-bold text-white mb-2">WhatsApp y llamada directa, sin comisión</h3>
+                <p className="text-gray-300 text-sm">Contacto directo con un botón, sin intermediarios por cada venta.</p>
+              </div>
+
+              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+                <div className="w-14 h-14 bg-cyan-500/20 rounded-2xl flex items-center justify-center mb-4">
+                  <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Compites de igual a igual</h3>
+                <p className="text-gray-300 text-sm">Sea cual sea tu tamaño: desde un mecánico hasta un negocio grande.</p>
               </div>
             </div>
 
@@ -419,6 +443,33 @@ export default function Home() {
                 </button>
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* BLOQUE 5.5 — PRECIOS */}
+        <section id="precios" className="w-full py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
+                Planes para cada etapa de tu negocio
+              </h2>
+              <p className="text-gray-300 max-w-2xl mx-auto">
+                Empieza gratis. Sube de nivel solo cuando veas que te está funcionando.
+              </p>
+            </div>
+            <PublicPricingTable ctaHref={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} />
+          </div>
+        </section>
+
+        {/* BLOQUE 5.75 — PREGUNTAS FRECUENTES */}
+        <section id="preguntas-frecuentes" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
+                Preguntas frecuentes
+              </h2>
+            </div>
+            <FaqAccordion />
           </div>
         </section>
 
@@ -534,11 +585,19 @@ export default function Home() {
                     </Link>
                   </li>
                   <li>
-                    <button 
+                    <button
                       onClick={() => scrollToSection('para-negocios')}
                       className="hover:text-white transition text-left"
                     >
                       Beneficios premium
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => scrollToSection('precios')}
+                      className="hover:text-white transition text-left"
+                    >
+                      Precios
                     </button>
                   </li>
                   <li>
