@@ -8,10 +8,7 @@ import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
 import {
   isTierActive,
-  getMaxBusinessesForTier,
-  getLabelForTier,
-  getPriceForTier,
-  SUBSCRIPTION_TIER_PATROCINA
+  getMaxBusinessesForTier
 } from "@/lib/memberships/tiers"
 
 // Simple ID generator (no need for uuid package)
@@ -82,7 +79,7 @@ export default function NuevoNegocioPage() {
         // Verificar si es administrador (sin límites)
         const isAdmin = user.user_metadata?.is_admin ?? false
 
-        // Si NO es admin, aplicar límites según el tier real
+        // Si NO es admin, aplicar límite de 1 negocio por cuenta
         if (!isAdmin) {
           const allowedBusinesses = getMaxBusinessesForTier(effectiveTier)
 
@@ -96,17 +93,9 @@ export default function NuevoNegocioPage() {
 
           const currentCount = businesses?.length ?? 0
 
-          // Si ya alcanzó el límite, mostrar alerta según el tier
+          // Si ya alcanzó el límite, mostrar alerta
           if (currentCount >= allowedBusinesses) {
-            if (effectiveTier < SUBSCRIPTION_TIER_PATROCINA) {
-              const patrocinaLabel = getLabelForTier(SUBSCRIPTION_TIER_PATROCINA)
-              const patrocinaPrice = getPriceForTier(SUBSCRIPTION_TIER_PATROCINA)
-              alertModal.info(`Actualiza a ${patrocinaLabel} para crear más negocios`, {
-                description: `El plan ${patrocinaLabel} ($${patrocinaPrice} USD/mes) te permite tener hasta 2 negocios activos, además de chat con clientes, prioridad en búsquedas y borde dorado en tu perfil.`
-              })
-            } else {
-              alertModal.warning(`Has alcanzado el límite de negocios de tu plan ${getLabelForTier(effectiveTier)}.`)
-            }
+            alertModal.warning("Ya tienes un negocio registrado. Cada cuenta permite gestionar un solo negocio.")
             router.push("/app/dashboard/mis-negocios")
             return
           }

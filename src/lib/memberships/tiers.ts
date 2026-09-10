@@ -102,10 +102,9 @@ export function getPlanByTier(
   }
 }
 
-/** Máximo de negocios por cuenta: tier 0–2 → 1, tier 3 (Patrocina) → 2 */
+/** Máximo de negocios por cuenta: 1 negocio por usuario, sin importar el tier. */
 export function getMaxBusinessesForTier(tier: number | null | undefined): number {
-  if (tier == null || !Number.isFinite(tier)) return 1
-  return tier === SUBSCRIPTION_TIER_PATROCINA ? 2 : 1
+  return 1
 }
 
 /**
