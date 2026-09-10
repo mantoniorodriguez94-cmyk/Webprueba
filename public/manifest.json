@@ -4,8 +4,8 @@
   "description": "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#3b82f6",
+  "background_color": "#0b1b1d",
+  "theme_color": "#0b1b1d",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
