@@ -9,6 +9,8 @@ import useUser from "@/hooks/useUser";
 import PromotionsCarousel from "@/components/dashboard/PromotionsCarousel";
 import PublicPricingTable from "@/components/landing/PublicPricingTable";
 import FaqAccordion from "@/components/landing/FaqAccordion";
+import { Drawer } from "@/components/ui/Overlay";
+import { Search, MapPin, MessageCircle, ShieldCheck } from "lucide-react";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,7 +37,7 @@ export default function Home() {
     <>
       <main className="min-h-screen text-white flex flex-col">
         {/* BLOQUE 1 — HEADER */}
-        <header className="bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700/50">
+        <header className="bg-ink/80 backdrop-blur-md sticky top-0 z-50 border-b border-white/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 sm:py-4">
               {/* Logo */}
@@ -56,13 +58,13 @@ export default function Home() {
 
               {/* Desktop Navigation - Máximo 5 opciones */}
               <nav className="hidden lg:flex items-center space-x-6">
-                <button 
+                <button
                   onClick={scrollToTop}
                   className="text-gray-300 hover:text-white transition"
                 >
-                
+                  Inicio
                 </button>
-                <Link 
+                <Link
                   href="/app/dashboard"
                   className="text-gray-300 hover:text-white transition"
                 >
@@ -116,7 +118,7 @@ export default function Home() {
               {/* Mobile Menu Button */}
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition"
+                className="lg:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 transition"
                 aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,68 +130,77 @@ export default function Home() {
                 </svg>
               </button>
             </div>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-              <div className="lg:hidden pb-4 border-t border-gray-700 mt-2 pt-4 space-y-3">
-                <button 
-                  onClick={scrollToTop}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
-                >
-                  Inicio
-                </button>
-                <Link 
-                  href="/app/dashboard"
-                  className="block text-gray-300 hover:text-white transition py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Negocios
-                </Link>
-                <button 
-                  onClick={() => scrollToSection('como-funciona')}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
-                >
-                  Cómo funciona
-                </button>
-                <button 
-                  onClick={() => scrollToSection('para-personas')}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
-                >
-                  Para personas
-                </button>
-                <button
-                  onClick={() => scrollToSection('para-negocios')}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
-                >
-                  Para negocios
-                </button>
-                <button
-                  onClick={() => scrollToSection('precios')}
-                  className="block w-full text-left text-gray-300 hover:text-white transition py-2"
-                >
-                  Precios
-                </button>
-                <div className="pt-3 border-t border-gray-700">
-                  {!userLoading && (
-                    user ? (
-                      <Link href="/app/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                        <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-all font-semibold">
-                          Mi cuenta
-                        </button>
-                      </Link>
-                    ) : (
-                      <Link href="/app/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                        <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-all font-semibold">
-                          Entrar
-                        </button>
-                      </Link>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </header>
+
+        {/* Mobile Menu — panel lateral con animación de entrada/salida */}
+        <Drawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          aria-label="Menú de navegación"
+          panelClassName="h-full w-[80vw] max-w-xs overflow-y-auto bg-ink-2/98 border-r border-white/10 shadow-2xl p-6 flex flex-col"
+        >
+          <div className="flex items-center gap-2 mb-8">
+            <Image src="/assets/logotipo.png" alt="Logo App Encuentra" width={40} height={40} className="w-10 h-10" unoptimized />
+            <span className="text-lg font-bold text-white">App Encuentra</span>
+          </div>
+          <nav className="flex flex-col space-y-1">
+            <button
+              onClick={scrollToTop}
+              className="block w-full text-left text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+            >
+              Inicio
+            </button>
+            <Link
+              href="/app/dashboard"
+              className="block text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Negocios
+            </Link>
+            <button
+              onClick={() => scrollToSection('como-funciona')}
+              className="block w-full text-left text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+            >
+              Cómo funciona
+            </button>
+            <button
+              onClick={() => scrollToSection('para-personas')}
+              className="block w-full text-left text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+            >
+              Para personas
+            </button>
+            <button
+              onClick={() => scrollToSection('para-negocios')}
+              className="block w-full text-left text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+            >
+              Para negocios
+            </button>
+            <button
+              onClick={() => scrollToSection('precios')}
+              className="block w-full text-left text-gray-200 hover:text-white hover:bg-white/5 transition rounded-xl px-3 py-3"
+            >
+              Precios
+            </button>
+          </nav>
+          <div className="mt-auto pt-6 border-t border-white/10">
+            {!userLoading && (
+              user ? (
+                <Link href="/app/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-full transition-all font-semibold">
+                    Mi cuenta
+                  </button>
+                </Link>
+              ) : (
+                <Link href="/app/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-full transition-all font-semibold">
+                    Entrar
+                  </button>
+                </Link>
+              )
+            )}
+          </div>
+        </Drawer>
 
         {/* BLOQUE 2 — HERO */}
         <section id="inicio" className="relative w-full min-h-[85vh] lg:min-h-screen flex items-center py-12 lg:py-0">
@@ -244,6 +255,58 @@ export default function Home() {
           </div>
         </section>
 
+        {/* BLOQUE 3 — CÓMO FUNCIONA
+            Se movió justo después del hero: un visitante nuevo debía cruzar
+            dos carruseles de contenido en vivo antes de que algo le
+            explicara qué es el producto. Ahora la explicación va primero. */}
+        <section id="como-funciona" className="w-full py-20 bg-ink-2/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
+                ¿Cómo funciona?
+              </h2>
+              <p className="text-gray-300 max-w-xl mx-auto">
+                Tres pasos, sin vueltas.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+              {/* Paso 1: Explora */}
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-500/30">
+                  <Search className="w-9 h-9 text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Explora</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  Busca negocios locales según lo que necesitas.
+                </p>
+              </div>
+
+              {/* Paso 2: Conecta */}
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl shadow-purple-500/30">
+                  <MessageCircle className="w-9 h-9 text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Conecta</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  Chatea directamente con el negocio.
+                </p>
+              </div>
+
+              {/* Paso 3: Confía */}
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl flex items-center justify-center shadow-xl shadow-green-500/30">
+                  <ShieldCheck className="w-9 h-9 text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Confía</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  Lee reseñas reales antes de decidir.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* BLOQUE 2.5 — PROMOCIONES DESTACADAS */}
         <section className="w-full py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -254,58 +317,6 @@ export default function Home() {
         {/* Carrusel de Negocios */}
         <section className="w-full py-12">
           <WaveMasonryCarousel />
-        </section>
-
-        {/* BLOQUE 3 — CÓMO FUNCIONA */}
-        <section id="como-funciona" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-                ¿Cómo funciona?
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
-              {/* Paso 1: Explora */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-blue-500/30">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-white">Explora</h3>
-                <p className="text-gray-300 leading-relaxed">
-                  Busca negocios locales según lo que necesitas.
-                </p>
-              </div>
-
-              {/* Paso 2: Conecta */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-purple-500/30">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-white">Conecta</h3>
-                <p className="text-gray-300 leading-relaxed">
-                  Chatea directamente con el negocio.
-                </p>
-              </div>
-
-              {/* Paso 3: Confía */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-green-500/30">
-                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-white">Confía</h3>
-                <p className="text-gray-300 leading-relaxed">
-                  Lee reseñas reales antes de decidir.
-                </p>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
@@ -379,7 +390,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="para-negocios" className="w-full py-20 bg-ink-2/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -390,10 +401,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
               <div className="group bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-blue-500/40 transition-colors">
                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
-                  <svg className="w-7 h-7 text-blue-400 group-hover:animate-pin-drop" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                  </svg>
+                  <MapPin className="w-7 h-7 text-blue-400 group-hover:animate-pin-drop" strokeWidth={2} />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">Ubicación GPS exacta, sin dar referencias</h3>
                 <p className="text-gray-300 text-sm">Se acabó dar direcciones por referencia — tu ubicación se abre con un clic.</p>
@@ -467,7 +475,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5.75 — PREGUNTAS FRECUENTES */}
-        <section id="preguntas-frecuentes" className="w-full py-20 bg-gray-900/50 backdrop-blur-sm">
+        <section id="preguntas-frecuentes" className="w-full py-20 bg-ink-2/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
@@ -538,7 +546,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 8 — FOOTER (4 columnas) */}
-        <footer className="bg-gray-900 text-gray-300 mt-auto">
+        <footer className="bg-ink-2 text-gray-300 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
               {/* Columna 1 — Marca */}
@@ -637,7 +645,7 @@ export default function Home() {
             </div>
 
             {/* Línea inferior */}
-            <div className="bg-gray-800/50 mt-8 pt-8 border-t border-gray-700/50 text-center text-sm text-gray-400">
+            <div className="bg-ink-3/40 mt-8 pt-8 border-t border-white/10 text-center text-sm text-gray-400">
               © {new Date().getFullYear()} App Encuentra — Todos los derechos reservados
             </div>
           </div>
