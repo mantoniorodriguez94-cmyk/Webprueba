@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import { toast } from "sonner"
+import { Dialog } from "@/components/ui/Overlay"
 
 // Simple ID generator
 function generateId() {
@@ -233,7 +234,7 @@ export default function EditarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
@@ -244,7 +245,7 @@ export default function EditarNegocioPage() {
   if (!negocio || !canEdit) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <p className="text-gray-300 mb-6">No tienes permiso para editar este negocio</p>
           <Link 
@@ -266,7 +267,7 @@ export default function EditarNegocioPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-white/10 rounded-full transition-colors"
               title="Volver"
             >
               <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,7 +293,7 @@ export default function EditarNegocioPage() {
       {/* Contenido */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Form Card */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 sm:p-8 lg:p-10">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
               <div className="flex items-center gap-3">
@@ -528,7 +529,7 @@ export default function EditarNegocioPage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href={`/app/dashboard/negocios/${negocio.id}`}
-                className="flex-1 text-center border-2 border-gray-300 text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-gray-700 transition-colors"
+                className="flex-1 text-center border-2 border-white/20 text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-ink-3 transition-colors"
               >
                 Cancelar
               </Link>
@@ -556,66 +557,67 @@ export default function EditarNegocioPage() {
         </div>
       </div>
 
-      {/* ── Success Overlay ──────────────────────────────────────────────── */}
-      {saveSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="flex flex-col items-center gap-5 bg-gray-900/95 border border-white/10 rounded-3xl px-10 py-10 shadow-2xl mx-4 max-w-sm w-full">
-            {/* Animated checkmark circle */}
-            <div className="relative flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center animate-in zoom-in duration-300">
-                <svg
-                  className="w-10 h-10 text-emerald-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              {/* Outer pulse ring */}
-              <span className="absolute w-20 h-20 rounded-full border-2 border-emerald-500/30 animate-ping opacity-40" />
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-white mb-1">
-                ¡Cambios guardados!
-              </h3>
-              <p className="text-sm text-gray-400">
-                Tu negocio ha sido actualizado con éxito.
-              </p>
-            </div>
-
-            {/* Progress bar */}
-            <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full"
-                style={{ animation: "progress-bar 1.5s linear forwards" }}
+      {/* ── Success Overlay — transitorio, navega solo tras ~1.6s ─────────── */}
+      <Dialog
+        open={saveSuccess}
+        onClose={() => {}}
+        closeOnBackdropClick={false}
+        aria-label="Cambios guardados"
+        panelClassName="flex flex-col items-center gap-5 bg-ink-2/95 border border-white/10 rounded-3xl px-10 py-10 shadow-2xl mx-4 max-w-sm w-full"
+      >
+        {/* Animated checkmark circle */}
+        <div className="relative flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center">
+            <svg
+              className="w-10 h-10 text-emerald-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 13l4 4L19 7"
               />
-            </div>
+            </svg>
           </div>
-
-          <style>{`
-            @keyframes progress-bar {
-              from { width: 0% }
-              to   { width: 100% }
-            }
-          `}</style>
+          {/* Outer pulse ring */}
+          <span className="absolute w-20 h-20 rounded-full border-2 border-emerald-500/30 animate-ping opacity-40" />
         </div>
-      )}
+
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-white mb-1">
+            ¡Cambios guardados!
+          </h3>
+          <p className="text-sm text-gray-400">
+            Tu negocio ha sido actualizado con éxito.
+          </p>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+          <div
+            className="h-full bg-emerald-500 rounded-full"
+            style={{ animation: "progress-bar 1.5s linear forwards" }}
+          />
+        </div>
+
+        <style>{`
+          @keyframes progress-bar {
+            from { width: 0% }
+            to   { width: 100% }
+          }
+        `}</style>
+      </Dialog>
 
       {/* Modal de Mapa */}
-      {showMapModal && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/80 z-50"
-            onClick={() => setShowMapModal(false)}
-          />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg mx-auto animate-fade-in max-h-[90vh] overflow-y-auto shadow-2xl">
+      <Dialog
+        open={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        aria-label="Actualizar ubicación GPS"
+        panelClassName="bg-ink-2/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      >
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">📍 Actualizar Ubicación GPS</h3>
@@ -744,13 +746,11 @@ export default function EditarNegocioPage() {
             {/* Ayuda */}
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl">
               <p className="text-xs text-blue-200">
-                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps, 
+                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps,
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>
             </div>
-          </div>
-        </>
-      )}
+      </Dialog>
     </div>
   )
 }

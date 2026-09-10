@@ -216,9 +216,9 @@ export default function GaleriaPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -227,7 +227,7 @@ export default function GaleriaPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
@@ -249,7 +249,7 @@ export default function GaleriaPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,7 +277,7 @@ export default function GaleriaPage() {
         
         {/* Botón para agregar imagen */}
         <div className={`bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 p-6 mb-8 ${
-          isPremiumActive ? 'border-yellow-500/40' : 'border-white/20/40'
+          isPremiumActive ? 'border-yellow-500/40' : 'border-white/20'
         }`}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
@@ -353,7 +353,7 @@ export default function GaleriaPage() {
 
         {/* Galería de Imágenes */}
         {galleryUrls.length === 0 ? (
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-12 text-center">
+          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-12 text-center">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -363,7 +363,7 @@ export default function GaleriaPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {galleryUrls.map((url: string, idx: number) => (
-              <div key={idx} className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 overflow-hidden hover:shadow-2xl transition-all group">
+              <div key={idx} className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 overflow-hidden hover:shadow-2xl transition-all group">
                 <div className="relative aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedImage(url)}>
                   <Image
                     src={url}

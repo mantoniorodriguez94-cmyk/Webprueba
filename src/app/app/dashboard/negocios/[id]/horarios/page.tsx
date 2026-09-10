@@ -144,9 +144,9 @@ export default function HorariosPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
+          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -155,7 +155,7 @@ export default function HorariosPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
+        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
@@ -177,7 +177,7 @@ export default function HorariosPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 title="Volver"
               >
                 <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +223,7 @@ export default function HorariosPage() {
         {/* Horarios por día */}
         <div className="space-y-4 mb-8">
           {schedules.map((schedule, index) => (
-            <div key={schedule.day} className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 hover:shadow-2xl transition-all">
+            <div key={schedule.day} className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:shadow-2xl transition-all">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 {/* Día y Toggle */}
                 <div className="flex items-center gap-4 min-w-[160px]">
@@ -289,10 +289,10 @@ export default function HorariosPage() {
         </div>
 
         {/* Botones de Acción */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20/40 p-6 flex gap-4">
+        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 flex gap-4">
           <Link
             href={`/app/dashboard/negocios/${businessId}`}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-100 rounded-2xl hover:bg-gray-100 transition-colors font-semibold text-center"
+            className="flex-1 px-6 py-3 border-2 border-white/20 text-gray-100 rounded-2xl hover:bg-white/10 transition-colors font-semibold text-center"
           >
             Cancelar
           </Link>
