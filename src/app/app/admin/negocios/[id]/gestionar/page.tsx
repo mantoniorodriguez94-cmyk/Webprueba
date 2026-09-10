@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
 import { alertModal } from "@/lib/alertModal"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 /**
  * Página de gestión completa del negocio para ADMIN
@@ -194,7 +195,7 @@ export default function AdminGestionarNegocioPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
               />
             </div>
 
@@ -204,7 +205,7 @@ export default function AdminGestionarNegocioPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
               />
             </div>
 
@@ -214,7 +215,7 @@ export default function AdminGestionarNegocioPage() {
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
               />
             </div>
 
@@ -224,7 +225,7 @@ export default function AdminGestionarNegocioPage() {
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
               />
             </div>
 
@@ -235,7 +236,7 @@ export default function AdminGestionarNegocioPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                  className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
                 />
               </div>
               <div>
@@ -244,7 +245,7 @@ export default function AdminGestionarNegocioPage() {
                   type="tel"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                  className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
                 />
               </div>
             </div>
@@ -257,7 +258,7 @@ export default function AdminGestionarNegocioPage() {
                   step="any"
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                  className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
                 />
               </div>
               <div>
@@ -267,7 +268,7 @@ export default function AdminGestionarNegocioPage() {
                   step="any"
                   value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white"
+                  className="w-full px-4 py-2 bg-ink-2 border border-ink-4 rounded-xl text-white"
                 />
               </div>
             </div>
@@ -337,35 +338,25 @@ export default function AdminGestionarNegocioPage() {
             Esta acción es permanente y no se puede deshacer. Se eliminará el negocio y todos sus datos asociados.
           </p>
           
-          {!showDeleteConfirm ? (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-medium transition-colors"
-            >
-              Eliminar Negocio
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-red-300 font-medium">¿Estás seguro de que deseas eliminar este negocio?</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-medium transition-colors disabled:opacity-50"
-                >
-                  {deleting ? "Eliminando..." : "Sí, eliminar"}
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleting}
-                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-xl font-medium transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-medium transition-colors"
+          >
+            Eliminar Negocio
+          </button>
         </div>
+
+        {/* Confirmación de eliminación — primitivo compartido (antes un
+            swap de contenido inline dentro de la misma tarjeta) */}
+        <ConfirmationModal
+          open={showDeleteConfirm}
+          title="¿Eliminar este negocio permanentemente?"
+          description="Esta acción es permanente y no se puede deshacer. Se eliminará el negocio y todos sus datos asociados."
+          confirmLabel={deleting ? "Eliminando..." : "Sí, eliminar"}
+          loading={deleting}
+          onConfirm={handleDelete}
+          onClose={() => setShowDeleteConfirm(false)}
+        />
       </div>
     </div>
   )
