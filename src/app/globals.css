@@ -5,12 +5,16 @@
 @layer base {
   body {
     @apply text-white;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-    background-color: #111827;
+    font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+    background-color: #0b1b1d;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), Georgia, serif;
   }
   
   /* Para móviles: forzar aspect ratio 9:16 */
@@ -34,21 +38,22 @@
   }
 
   ::selection {
-    @apply bg-blue-100 text-blue-900;
+    background-color: #e8a93b;
+    color: #2c1c04;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/60 backdrop-blur-md border border-gray-200/40 shadow-sm;
+    @apply bg-ink-3/60 backdrop-blur-md border border-white/10 shadow-sm;
   }
 
   .glass-strong {
-    @apply bg-white/70 backdrop-blur-xl border border-gray-300/40 shadow-md;
+    @apply bg-ink-3/80 backdrop-blur-xl border border-white/15 shadow-md;
   }
 
   .card-elegant {
-    @apply bg-white/65 backdrop-blur-md border border-gray-200/50 shadow-lg hover:shadow-2xl;
+    @apply bg-ink-3/50 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-2xl;
     @apply rounded-3xl transition-all duration-500 hover:-translate-y-1;
   }
 }
@@ -218,17 +223,17 @@
   }
 
   @keyframes gold-pulse {
-    0%, 100% { 
-      box-shadow: 
-        0 0 10px rgba(234, 179, 8, 0.5),
-        0 0 20px rgba(234, 179, 8, 0.3),
-        0 0 30px rgba(234, 179, 8, 0.1);
+    0%, 100% {
+      box-shadow:
+        0 0 10px rgba(232, 169, 59, 0.5),
+        0 0 20px rgba(232, 169, 59, 0.3),
+        0 0 30px rgba(232, 169, 59, 0.1);
     }
-    50% { 
-      box-shadow: 
-        0 0 20px rgba(234, 179, 8, 0.8),
-        0 0 40px rgba(234, 179, 8, 0.5),
-        0 0 60px rgba(234, 179, 8, 0.2);
+    50% {
+      box-shadow:
+        0 0 20px rgba(232, 169, 59, 0.8),
+        0 0 40px rgba(232, 169, 59, 0.5),
+        0 0 60px rgba(232, 169, 59, 0.2);
     }
   }
 }

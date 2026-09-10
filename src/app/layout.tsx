@@ -1,9 +1,32 @@
 import type { Metadata, Viewport } from "next";
+import { Fraunces, Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import InstallPWA from "@/components/InstallPWA";
 import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 import AlertModalHost from "@/components/ui/AlertModalHost";
+
+const fontDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["500", "600", "700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const fontBody = Sora({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "App Encuentra - Conecta negocios y personas",
@@ -30,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#3b82f6",
+  themeColor: "#0b1b1d",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -43,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable}`}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -51,9 +74,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="App Encuentra" />
         <link rel="apple-touch-icon" href="/icons/icon-512-maskable.png" />
       </head>
-      <body className="antialiased relative min-h-screen bg-gray-900">
+      <body className="antialiased relative min-h-screen bg-ink font-sans">
         {/* Fondo de mapa fijo */}
-        <div 
+        <div
           className="fixed inset-0 z-0"
           style={{
             backgroundImage: 'url(/assets/map-background11.png)',
@@ -63,9 +86,9 @@ export default function RootLayout({
             backgroundAttachment: 'fixed',
           }}
         />
-        {/* Overlay oscuro sutil para mejor contraste */}
-        <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-blue-900/60"></div>
-        
+        {/* Overlay de marca: tinta profunda con un leve calor dorado, en vez del degradado azul genérico */}
+        <div className="fixed inset-0 z-0 bg-gradient-to-br from-ink/90 via-ink-2/85 to-ink-3/70"></div>
+
         {/* Contenido */}
         <div className="relative z-10">
           {children}
