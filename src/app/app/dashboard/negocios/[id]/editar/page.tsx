@@ -234,7 +234,7 @@ export default function EditarNegocioPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
         </div>
       </div>
@@ -249,7 +249,7 @@ export default function EditarNegocioPage() {
           <p className="text-gray-300 mb-6">No tienes permiso para editar este negocio</p>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -414,7 +414,7 @@ export default function EditarNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-[#0288D1] hover:bg-[#0277BD] text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
                   disabled={loading}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -535,7 +535,7 @@ export default function EditarNegocioPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>

@@ -101,7 +101,7 @@ export default function VerPromocionesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando promociones...</p>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function VerPromocionesPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -127,7 +127,7 @@ export default function VerPromocionesPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-[#0288D1]/20">
+      <header className="bg-gray-900/80 backdrop-blur-xl sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -190,7 +190,7 @@ export default function VerPromocionesPage() {
             </p>
             <Link
               href={`/app/dashboard/negocios/${business.id}`}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
             >
               Volver al Negocio
             </Link>

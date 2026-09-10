@@ -724,7 +724,7 @@ function ChatInner() {
                 return (
                   <div
                     key={conv.conversation_id}
-                    className={`relative w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-white/5 ${
+                    className={`group relative w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-white/5 ${
                       isSelected
                         ? isClient
                           ? "bg-blue-600/10 border-l-2 border-l-blue-500"
@@ -782,10 +782,10 @@ function ChatInner() {
                     {unread > 0 && (
                       <div
                         className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 relative z-10 ${
-                          isClient ? "bg-blue-500" : "bg-emerald-500"
+                          isClient ? "bg-blue-500" : "bg-emerald-500 group-hover:animate-radar-pulse"
                         }`}
                       >
-                        <span className="text-xs font-bold text-white">{unread}</span>
+                        <span className="text-xs font-mono font-bold text-white">{unread}</span>
                       </div>
                     )}
 

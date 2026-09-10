@@ -68,7 +68,7 @@ export default function ConfirmEmailPage() {
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center space-y-4">
         <div className={`flex items-center justify-center gap-3 ${isError ? "text-red-600" : "text-green-600"}`}>
           {isLoading ? (
-            <svg className="w-6 h-6 animate-spin text-[#0288D1]" fill="none" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -92,7 +92,7 @@ export default function ConfirmEmailPage() {
           <div className="space-y-3">
             <Link
               href="/app/auth/login"
-              className="block w-full bg-[#0288D1] text-white rounded-xl py-3 font-semibold hover:bg-[#0277BD] transition-colors"
+              className="block w-full bg-blue-500 text-white rounded-xl py-3 font-semibold hover:bg-blue-600 transition-colors"
             >
               Ir al inicio de sesión
             </Link>

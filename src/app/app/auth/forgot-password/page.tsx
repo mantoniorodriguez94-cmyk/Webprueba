@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                 className="object-contain"
               />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#0288D1] transition-colors group-hover:text-[#0277BD]">
+            <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 transition-colors group-hover:text-blue-300">
               App Encuentra
             </h1>
           </Link>
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@email.com"
-                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0288D1] focus:ring-4 focus:ring-[#E3F2FD] transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
+                      className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                       disabled={loading}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -177,7 +177,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center space-y-3">
             <Link 
               href="/app/auth/login" 
-              className="block text-[#0288D1] hover:text-[#0277BD] font-semibold transition-colors hover:underline text-sm sm:text-base"
+              className="block text-blue-400 hover:text-blue-300 font-semibold transition-colors hover:underline text-sm sm:text-base"
             >
               Volver al inicio de sesión
             </Link>

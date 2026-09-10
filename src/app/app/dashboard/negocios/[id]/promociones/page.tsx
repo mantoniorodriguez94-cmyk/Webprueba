@@ -146,7 +146,7 @@ export default function PromocionesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function PromocionesPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
           >
             Volver al Dashboard
           </Link>

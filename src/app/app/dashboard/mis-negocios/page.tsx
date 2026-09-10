@@ -233,7 +233,7 @@ export default function MisNegociosPage() {
           <div className="bg-transparent rounded-3xl border border-white/20 p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-gray-300">Límite de negocios</span>
-              <span className="text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>
+              <span className="font-mono text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
               <div 

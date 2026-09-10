@@ -396,7 +396,7 @@ export default function BusinessDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
       </div>
@@ -410,7 +410,7 @@ export default function BusinessDetailPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -449,7 +449,7 @@ export default function BusinessDetailPage() {
             {isOwner && (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/gestionar`}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-4 py-2 rounded-full hover:shadow-xl transition-all font-semibold text-sm"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full hover:shadow-xl transition-all font-semibold text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -468,7 +468,7 @@ export default function BusinessDetailPage() {
         <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] flex-shrink-0 ring-1 ring-gray-700 shadow-lg">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 flex-shrink-0 ring-1 ring-gray-700 shadow-lg">
               {business.logo_url ? (
                 <Image
                   src={business.logo_url}
@@ -481,7 +481,7 @@ export default function BusinessDetailPage() {
                   sizes="96px"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#0288D1] font-bold text-3xl">
+                <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-3xl">
                   {business.name[0]}
                 </div>
               )}
@@ -495,7 +495,7 @@ export default function BusinessDetailPage() {
               )}
               {business.category && (
                 <p className="text-gray-300 flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                   {business.category}
@@ -518,7 +518,7 @@ export default function BusinessDetailPage() {
               
               {ownerHasFullContact && (business.phone || business.whatsapp) && (
                 <p className="text-gray-300 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#0288D1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   {business.phone || business.whatsapp}

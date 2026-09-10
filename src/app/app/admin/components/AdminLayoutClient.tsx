@@ -75,7 +75,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
             {/* Logo / Marca */}
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0288D1] to-[#14b8a6] flex items-center justify-center shadow-lg">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center shadow-lg">
                 <svg
                   viewBox="0 0 24 24"
                   className="w-5 h-5 text-white"
@@ -99,8 +99,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
           {/* Derecha: estado admin + acciones rápidas */}
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+            <span className="group hidden sm:inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse group-hover:animate-radar-pulse" />
               Admin activo
             </span>
 
@@ -261,7 +261,7 @@ function SidebarLink({
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
         active
-          ? "bg-[#0288D1]/20 border border-[#0288D1]/60 text-white shadow-lg shadow-[#0288D1]/30"
+          ? "bg-blue-500/20 border border-blue-500/60 text-white shadow-lg shadow-blue-500/30"
           : "bg-transparent text-gray-300 hover:bg-white/10 hover:text-white border border-transparent"
       }`}
     >

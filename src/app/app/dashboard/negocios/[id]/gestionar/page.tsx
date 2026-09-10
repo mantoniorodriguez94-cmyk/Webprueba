@@ -129,7 +129,7 @@ export default function GestionarNegocioPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20/40 p-12 animate-fadeIn">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0288D1] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-700 font-medium">Cargando...</p>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function GestionarNegocioPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -233,8 +233,8 @@ export default function GestionarNegocioPage() {
                 </p>
               )}
               {business.address && (
-                <p className="text-gray-300 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p className="group text-gray-300 flex items-center gap-2">
+                  <svg className="w-5 h-5 group-hover:animate-pin-drop" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -246,7 +246,7 @@ export default function GestionarNegocioPage() {
             {/* Botón Editar */}
             <Link
               href={`/app/dashboard/negocios/${business.id}/editar`}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#0288D1] to-[#0277BD] text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

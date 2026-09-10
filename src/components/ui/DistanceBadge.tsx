@@ -41,11 +41,11 @@ export default function DistanceBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/20 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30 ${className}`}
+      className={`group inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/20 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30 ${className}`}
       title={`Aproximadamente ${distance} km de distancia`}
     >
       <svg
-        className="w-3.5 h-3.5"
+        className="w-3.5 h-3.5 group-hover:animate-pin-drop"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -63,7 +63,7 @@ export default function DistanceBadge({
           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
         />
       </svg>
-      <span>{distance} km</span>
+      <span className="font-mono">{distance} km</span>
     </span>
   )
 }

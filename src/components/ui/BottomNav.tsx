@@ -106,7 +106,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
           >
             {/* Badge de notificaciones */}
             {item.badge && item.badge > 0 && (
-              <div className="absolute top-1 right-1/4 bg-red-500 text-white text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 animate-pulse">
+              <div className="absolute top-1 right-1/4 bg-red-500 text-white text-xs font-mono font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 animate-pulse">
                 {item.badge > 9 ? "9+" : item.badge}
               </div>
             )}

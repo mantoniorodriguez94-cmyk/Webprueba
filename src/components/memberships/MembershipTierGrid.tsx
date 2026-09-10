@@ -148,7 +148,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
 
                 <div className="mb-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold text-white">
+                    <span className="font-mono text-3xl font-extrabold text-white">
                       ${t.price}
                     </span>
                     <span className="text-sm text-gray-400">
@@ -238,7 +238,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
 
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className="text-3xl font-extrabold text-white">${founderTier.price}</span>
+                  <span className="font-mono text-3xl font-extrabold text-white">${founderTier.price}</span>
                   <span className="text-sm text-yellow-100">/mes</span>
                 </div>
                 <p className="mt-1 text-[11px] text-yellow-100">
