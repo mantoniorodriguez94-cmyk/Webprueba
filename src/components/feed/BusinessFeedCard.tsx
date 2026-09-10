@@ -19,6 +19,7 @@ import {
 import { supabase } from "@/lib/supabaseClient"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
+import { Dialog } from "@/components/ui/Overlay"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -362,7 +363,7 @@ export default function BusinessFeedCard({
               </div>
             ))}
             {gallery.length > 3 && (
-              <div className="flex-shrink-0 w-32 h-32 bg-gray-700/50 rounded-xl flex items-center justify-center">
+              <div className="flex-shrink-0 w-32 h-32 bg-ink-3/50 rounded-xl flex items-center justify-center">
                 <button
                   onClick={handleGalleryView}
                   className="text-white text-center"
@@ -396,7 +397,7 @@ export default function BusinessFeedCard({
       )}
 
       {/* Información de contacto */}
-      <div className="px-4 py-3 space-y-2 border-t border-gray-700">
+      <div className="px-4 py-3 space-y-2 border-t border-white/10">
         {/* Ubicación con lógica inteligente */}
         {(business.address || (business.latitude && business.longitude)) && (
           <div className="flex items-center gap-2 flex-wrap">
@@ -428,13 +429,13 @@ export default function BusinessFeedCard({
       </div>
 
       {/* Barra de Acciones */}
-      <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between gap-2">
+      <div className="px-4 py-3 border-t border-white/10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {/* Me gusta */}
           <button
             onClick={handleLike}
             className={`p-2 rounded-full transition-all ${
-              liked ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:bg-gray-700"
+              liked ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:bg-white/10"
             }`}
           >
             <svg
@@ -456,7 +457,7 @@ export default function BusinessFeedCard({
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
-              className="p-2 rounded-full transition-all text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+              className="p-2 rounded-full transition-all text-gray-400 hover:bg-white/10 hover:text-blue-400"
               title="Enviar mensaje"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -466,7 +467,7 @@ export default function BusinessFeedCard({
           )}
 
           {/* Compartir */}
-          <button onClick={handleShare} className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-green-400 transition-all">
+          <button onClick={handleShare} className="p-2 rounded-full text-gray-400 hover:bg-white/10 hover:text-green-400 transition-all">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
@@ -477,7 +478,7 @@ export default function BusinessFeedCard({
         <button
           onClick={handleSave}
           className={`p-2 rounded-full transition-all ${
-            saved ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:bg-gray-700"
+            saved ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:bg-white/10"
           }`}
         >
           <svg
@@ -526,7 +527,7 @@ export default function BusinessFeedCard({
         )}
         <Link 
           href={`/app/dashboard/negocios/${business.id}`}
-          className="flex-1 bg-gray-700 hover:bg-gray-600 border-2 border-gray-600 text-white hover:border-gray-500 font-bold py-3 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
+          className="flex-1 bg-ink-3 hover:bg-ink-4 border-2 border-ink-4 text-white hover:border-white/20 font-bold py-3 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -548,44 +549,42 @@ export default function BusinessFeedCard({
       )}
 
       {/* Modal de galería completa */}
-      {showGallery && gallery.length > 0 && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowGallery(false)}
-        >
-          <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">
-                Galería de {business.name}
-              </h3>
-              <button
-                onClick={() => setShowGallery(false)}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Grid de imágenes */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[80vh] overflow-y-auto">
-              {gallery.map((url: string, idx: number) => (
-                <div key={idx} className="relative aspect-square overflow-hidden rounded-lg bg-gray-800">
-                  <Image
-                    src={url}
-                    alt={`${business.name} - imagen ${idx + 1}`}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                    unoptimized
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+      <Dialog
+        open={showGallery && gallery.length > 0}
+        onClose={() => setShowGallery(false)}
+        aria-label={`Galería de ${business.name}`}
+        panelClassName="max-w-4xl w-full max-h-[85vh] overflow-y-auto bg-black/95 border border-white/10 rounded-3xl p-4 sm:p-6"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-white">
+            Galería de {business.name}
+          </h3>
+          <button
+            onClick={() => setShowGallery(false)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      )}
+
+        {/* Grid de imágenes */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {gallery.map((url: string, idx: number) => (
+            <div key={idx} className="relative aspect-square overflow-hidden rounded-lg bg-ink-3">
+              <Image
+                src={url}
+                alt={`${business.name} - imagen ${idx + 1}`}
+                fill
+                className="object-cover hover:scale-105 transition-transform duration-300"
+                unoptimized
+              />
+            </div>
+          ))}
+        </div>
+      </Dialog>
     </div>
   )
 }
