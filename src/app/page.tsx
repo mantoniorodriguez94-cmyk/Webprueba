@@ -198,6 +198,11 @@ export default function Home() {
               
               {/* Contenido Principal - Izquierda */}
               <div className="w-full lg:w-1/2 text-center lg:text-left space-y-8">
+                {/* Eyebrow */}
+                <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-300 bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 rounded-full opacity-0 animate-fade-in-up">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                  Portal Encuentra · Venezuela
+                </span>
                 {/* Título Principal */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-tight opacity-0 animate-fade-in-up animation-delay-200">
                   Encuentra negocios locales
@@ -383,9 +388,9 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
-              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
+              <div className="group bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-blue-500/40 transition-colors">
                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
-                  <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7 text-blue-400 group-hover:animate-pin-drop" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
@@ -404,8 +409,8 @@ export default function Home() {
                 <p className="text-gray-300 text-sm">Apareces cuando alguien busca tu rubro cerca de él, con la distancia exacta.</p>
               </div>
 
-              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
-                <div className="w-14 h-14 bg-green-500/20 rounded-2xl flex items-center justify-center mb-4">
+              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-green-500/40 transition-colors">
+                <div className="w-14 h-14 bg-green-500/20 rounded-2xl flex items-center justify-center mb-4 hover:animate-radar-pulse">
                   <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
