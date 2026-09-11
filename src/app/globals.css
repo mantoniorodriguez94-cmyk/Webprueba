@@ -2,11 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Tokens de superficie y texto ──────────────────────────────────────
+   Viven como variables CSS, no como valores fijos en tailwind.config, por
+   dos motivos:
+
+   1. Toda la paleta se ajusta desde un solo lugar. Cambiar el fondo de la
+      app deja de ser buscar y reemplazar en 103 archivos.
+   2. Deja el modo oscuro a mitad de camino: alcanza con redefinir estas
+      mismas variables bajo [data-theme="dark"] y ~1.600 usos de text-ink,
+      text-ink-2 y paper cambian solos, sin tocar ninguna pantalla.
+
+   Se guardan como canales RGB separados por espacio (no como #hex) porque
+   así Tailwind puede seguir aplicando opacidad: bg-ink/5, border-black/10,
+   etc. siguen funcionando igual.
+   ─────────────────────────────────────────────────────────────────────── */
+:root {
+  --ink: 14 14 22; /* #0E0E16 */
+  --ink-2: 107 107 120; /* #6B6B78 */
+  --ink-3: 58 58 70; /* #3A3A46 */
+  --ink-4: 36 36 44; /* #24242C */
+  --paper: 241 240 246; /* #F1F0F6 */
+  --paper-2: 250 249 253; /* #FAF9FD */
+  --paper-dim: 233 231 240; /* #E9E7F0 */
+  --blanco: 250 249 253; /* #FAF9FD */
+}
+
 @layer base {
   body {
     @apply text-ink;
     font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-    background-color: #F1F0F6;
+    background-color: rgb(var(--paper));
   }
 
   h1, h2, h3, h4 {
@@ -27,7 +52,7 @@
 
   ::selection {
     background-color: #5B4FE8;
-    color: #FAF9FD;
+    color: rgb(var(--paper-2));
   }
 }
 
@@ -135,7 +160,7 @@
       radial-gradient(54% 44% at 86% 14%, #C9D9F6 0%, transparent 72%),
       radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
       radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
-      #F1F0F6;
+      rgb(var(--paper));
   }
 
   .scrollbar-none::-webkit-scrollbar {

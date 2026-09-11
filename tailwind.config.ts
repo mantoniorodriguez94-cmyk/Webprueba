@@ -96,10 +96,10 @@ const config: Config = {
         // puntual (botón principal negro, chip oscuro) — no como fondo de
         // panel: eso ahora es `paper`.
         ink: {
-          DEFAULT: '#0E0E16', // tinta principal / superficie oscura intencional
-          2: '#6B6B78',        // tinta secundaria
-          3: '#3A3A46',        // superficie oscura intencional, paso intermedio (uso puntual)
-          4: '#24242C',        // superficie oscura intencional, más profunda (uso puntual)
+          DEFAULT: 'rgb(var(--ink) / <alpha-value>)',   // tinta principal
+          2: 'rgb(var(--ink-2) / <alpha-value>)',        // tinta secundaria
+          3: 'rgb(var(--ink-3) / <alpha-value>)',        // superficie oscura intencional
+          4: 'rgb(var(--ink-4) / <alpha-value>)',        // superficie oscura, más profunda
         },
         // Superficie — fondos claros. Antes era un crema tibio sin uso real
         // en el código (0 referencias en `src`); ahora es el par de la
@@ -120,15 +120,12 @@ const config: Config = {
         // en todas de una sola vez. El texto sobre el botón violeta o sobre
         // foto también queda tintado, que es preferible — el blanco puro
         // sobre color saturado es innecesariamente duro.
-        white: '#FAF9FD',
+        white: 'rgb(var(--blanco) / <alpha-value>)',
 
         paper: {
-          // El fondo baja de #FBFAFC a un gris tenue: antes había 4 puntos
-          // de diferencia con las tarjetas, prácticamente nada, y esa falta
-          // de separación era la otra mitad de la sensación de planitud.
-          DEFAULT: '#F1F0F6', // fondo de página
-          2: '#FAF9FD',       // superficie / tarjetas (= white tintado)
-          dim: '#E9E7F0',     // superficie elevada / hover, lavado sutil
+          DEFAULT: 'rgb(var(--paper) / <alpha-value>)',  // fondo de página
+          2: 'rgb(var(--paper-2) / <alpha-value>)',      // superficie / tarjetas
+          dim: 'rgb(var(--paper-dim) / <alpha-value>)',  // elevada / hover
         },
       },
       fontFamily: {
