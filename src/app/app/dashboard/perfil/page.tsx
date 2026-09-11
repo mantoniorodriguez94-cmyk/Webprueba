@@ -303,46 +303,40 @@ export default function PerfilPage() {
       {/* INFORMACIÓN DE USUARIO */}
       <div className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
 
-        <div className="bg-gradient-to-br from-blue-600 to-blue-500 rounded-3xl p-8 text-white">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white/30">
+        {/* Identidad — compacta a propósito.
+            Antes era un bloque violeta de 8 de padding con avatar de 80px que
+            ocupaba casi un tercio de la pantalla para mostrar tres datos. Además
+            contradecía la regla de la paleta: el color saturado es el acento, no
+            un campo grande. Ahora el violeta vive solo en el avatar. */}
+        <div className="surface rounded-3xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 flex-shrink-0 rounded-2xl bg-gradient-to-br from-[#E24FD6] via-[#7C5CF0] to-[#5B9BF0] flex items-center justify-center text-lg font-bold text-white">
               {fullName[0]?.toUpperCase() || "U"}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-2xl font-bold mb-1 truncate">{fullName}</h2>
-                  <p className="text-blue-100 mb-2 break-all">{email}</p>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        isCompany
-                          ? "bg-white/20 text-white border border-white/30"
-                          : "bg-white/20 text-white border border-white/30"
-                      }`}
-                    >
-                      {isCompany ? "👔 Cuenta Negocio" : "👤 Cuenta Personal"}
-                    </span>
-
-                    {/* ============================================
-                        🔥 INSIGNIA ADMIN
-                      ============================================ */}
-                    {isAdmin && (
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/30 text-red-100 border border-red-300/30">
-                        🔥 Administrador
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {membershipLoading ? (
-                  <span className="inline-flex h-6 w-16 animate-pulse rounded-full bg-white/10 shrink-0" />
-                ) : (
-                  <MembershipBadge type={currentBadgeType} className="shrink-0" />
-                )}
-              </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-base font-bold text-ink leading-tight truncate">
+                {fullName}
+              </h2>
+              <p className="text-xs text-ink-2 truncate">{email}</p>
             </div>
+
+            {membershipLoading ? (
+              <span className="inline-flex h-6 w-14 animate-pulse rounded-full bg-black/5 flex-shrink-0" />
+            ) : (
+              <MembershipBadge type={currentBadgeType} className="flex-shrink-0" />
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-black/5 px-2.5 py-1 text-[11px] font-semibold text-ink-2">
+              {isCompany ? "Cuenta de negocio" : "Cuenta personal"}
+            </span>
+            {isAdmin && (
+              <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-600 border border-red-100">
+                Administrador
+              </span>
+            )}
           </div>
         </div>
 
@@ -392,81 +386,80 @@ export default function PerfilPage() {
         <div className="space-y-4 pt-2">
           <h3 className="text-lg font-bold text-ink px-2">Invitaciones</h3>
 
-            {/* Sección Invitaciones / Referidos */}
-            <div className="surface rounded-3xl p-5 mb-6">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-50">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
+            <div className="surface rounded-3xl overflow-hidden">
+              {/* Encabezado: la recompensa primero, que es lo que motiva */}
+              <div className="p-5 pb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 flex-shrink-0 rounded-2xl bg-blue-50 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-semibold text-ink leading-tight">Invitá a tus amigos</h4>
+                    <p className="text-sm text-ink-2 mt-0.5">
+                      Por cada 3 negocios que se sumen, ganás{" "}
+                      <span className="font-semibold text-amber-600">un mes de Patrocina gratis</span>.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-ink">Invita a tus amigos</h4>
-                  <p className="text-sm text-ink-2">
-                    Invita a 3 negocios y obtén <span className="font-semibold text-amber-600">1 mes de Plan Patrocina GRATIS.</span>
-                  </p>
-                  <p className="text-xs text-ink-2/80 mt-1">
-                    Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Patrocina).
-                  </p>
+              </div>
+
+              {/* Progreso: el dato que la persona vuelve a mirar */}
+              <div className="px-5 pb-4">
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-xs font-medium text-ink-2">Invitados válidos</span>
+                  <span className="font-mono text-sm font-bold text-ink tabular-nums">
+                    {qualifiedInvitedCount}<span className="text-ink-2 font-normal"> / 3</span>
+                  </span>
                 </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row items-stretch gap-2 p-3 bg-black/[0.03] rounded-xl border border-black/10">
-                <input
-                  type="text"
-                  readOnly
-                  value={`https://appencuentra.com/register?ref=${user?.id || ""}`}
-                  className="flex-1 bg-transparent text-ink text-sm outline-none"
-                />
-                <div className="flex gap-2">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                    style={{ width: `${Math.min(100, (qualifiedInvitedCount / 3) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-[11px] leading-snug text-ink-2">
+                  Se registraron {invitedCount}. Un invitado cuenta como válido cuando activa
+                  cualquier plan (Conecta, Destaca o Patrocina).
+                </p>
+              </div>
+
+              {/* Acciones: el enlace y las dos formas de compartirlo */}
+              <div className="border-t border-black/5 bg-black/[0.02] p-4 space-y-2">
+                <div className="truncate rounded-xl border border-black/10 bg-white px-3 py-2 font-mono text-xs text-ink-2">
+                  {`appencuentra.com/register?ref=${user?.id || ""}`}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={async () => {
                       const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
                       try {
                         await navigator.clipboard.writeText(link)
-                        toast.success("Enlace de invitación copiado al portapapeles")
+                        toast.success("Enlace de invitación copiado")
                       } catch (err) {
                         console.error("Error copiando:", err)
-                        toast.error("No se pudo copiar el enlace. Intenta de nuevo.")
+                        toast.error("No se pudo copiar el enlace. Intentá de nuevo.")
                       }
                     }}
-                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold"
+                    className="rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-black/[0.03] transition-colors"
                   >
-                    Copiar
+                    Copiar enlace
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
                       const message = `¡Hola! Únete a App Encuentra y haz crecer tu negocio. Si te registras con mi link y activas un plan, ¡ambos ganamos beneficios! ${link}`
-                      const url = `https://wa.me/?text=${encodeURIComponent(message)}`
-                      window.open(url, "_blank", "noopener,noreferrer")
+                      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer")
                     }}
-                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold"
+                    className="rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-colors"
                   >
                     WhatsApp
                   </button>
                 </div>
               </div>
-              <div className="space-y-1 text-xs text-ink-2 text-center">
-                <p>
-                  Registrados: <span className="font-semibold text-ink">{invitedCount}</span>
-                </p>
-                <p>
-                  Invitados válidos:{" "}
-                  <span className="font-semibold text-ink">{qualifiedInvitedCount}</span>
-                  <span className="text-ink-2"> / 3</span>
-                </p>
-                <div className="mt-2 h-2 w-full bg-black/8 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, (qualifiedInvitedCount / 3) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
             </div>
         </div>
 
