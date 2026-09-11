@@ -96,24 +96,24 @@
   /* Brillo animado para "Patrocina" (Tier 3) — antes dorado, ahora magenta:
      el magenta es la puntuación de marca (promo activa / tier tope), nunca
      un campo de color grande, así que se usa solo en este borde/anillo. */
-  /* Patrocina (tier 3) — grafito, el mismo código que usa el plan en la
-     página de membresía. Es el nivel máximo, así que se distingue por
-     CONTRASTE y no por color: entre tarjetas de borde claro, un marco
-     oscuro salta de inmediato, que es justo la "prioridad visual" que el
-     plan promete.
+  /* Patrocina (tier 3) — dorado.
+     Se probó grafito ("tarjeta negra") y el cliente prefirió volver al oro:
+     para el nivel más alto, el dorado es la convención que la gente ya sabe
+     leer sin que nadie se lo explique.
 
-     Antes usaba `animation: magenta-pulse`, cuyos keyframes no existían en
-     ninguna parte: el borde nunca pulsó. Se reemplaza por un realce estático,
-     que además no distrae en un feed que se recorre. */
+     Ojo con la distinción: el oro fue rechazado como color de MARCA — la app
+     es violeta, no dorada. Acá funciona porque es un marcador semántico de
+     nivel, confinado a la tarjeta de un patrocinador. Si el oro empieza a
+     aparecer en botones o fondos, eso sí es el error de antes volviendo. */
   .tier-patrocina-glow {
-    @apply border-ink/80 ring-2 ring-ink/15;
-    box-shadow: 0 6px 20px rgba(14, 14, 22, 0.13);
+    @apply border-amber-400 ring-2 ring-amber-300/50;
+    box-shadow: 0 6px 22px rgba(224, 142, 11, 0.22);
     transition: all 0.3s ease;
   }
 
   .tier-patrocina-glow:hover {
-    @apply border-ink ring-ink/25;
-    box-shadow: 0 10px 28px rgba(14, 14, 22, 0.18);
+    @apply border-amber-500 ring-amber-400/60;
+    box-shadow: 0 10px 30px rgba(224, 142, 11, 0.3);
   }
 }
 

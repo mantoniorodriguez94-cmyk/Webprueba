@@ -198,11 +198,10 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
       </section>
 
       {/* Sección B: Círculo de Patrocinadores
-          Grafito en vez del magenta de marca, a pedido del cliente: el nivel
-          apunta a dueños de negocio y el magenta se leía demasiado dulce.
-          Además los otros dos niveles ya ocupan violeta (Conecta) y plateado
-          (Destaca), así que el grafito los distingue — y "tarjeta negra" es
-          el código universal de nivel máximo, sin necesidad de color. */}
+          Dorado: el cliente probó grafito y prefirió el oro, que es la
+          convención que la gente ya sabe leer para el nivel más alto. Sigue
+          sin ser color de marca: la app es violeta, y el oro vive confinado
+          a este nivel. */}
       {founderTier && (
         <section className="mt-8 space-y-3">
           <h2 className="text-sm font-semibold text-ink uppercase tracking-wide flex items-center gap-2">
@@ -218,17 +217,17 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
           <button
             type="button"
             onClick={() => onSelectTier(founderTier.tier)}
-            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-ink/70 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-amber-400 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
             <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-ink/5 border border-ink/15 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
                   <Crown className="w-6 h-6 text-ink" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-ink">Patrocina</h3>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white text-[10px] font-semibold px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5">
                       <HeartHandshake className="w-3 h-3" />
                       Special
                     </span>
