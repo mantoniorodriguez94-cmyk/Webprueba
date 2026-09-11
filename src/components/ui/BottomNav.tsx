@@ -1,142 +1,152 @@
 "use client"
+
+/**
+ * Barra inferior de navegación (solo móvil).
+ *
+ * Antes tenía tres destinos —Inicio, Mensajes, Perfil— idénticos para negocios
+ * y para personas: el componente ya distinguía los dos casos, pero las dos
+ * ramas devolvían exactamente la misma lista. Eso dejaba fuera destinos de uso
+ * diario (Mis Negocios, Guardados, Buscar), enterrados en menús.
+ *
+ * Ahora cada público ve lo suyo. Cinco es el tope deliberado: con seis, las
+ * etiquetas se cortan en pantallas de 360 px.
+ */
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import { Home, MessageCircle, User, Store, Crown, Search, Bookmark } from "lucide-react"
 
 interface BottomNavProps {
   isCompany?: boolean
   unreadCount?: number
-  messagesHref?: string // URL dinámica para mensajes
+  messagesHref?: string
 }
 
-export default function BottomNav({ isCompany = false, unreadCount = 0, messagesHref }: BottomNavProps) {
+type Destino = {
+  href: string
+  label: string
+  Icono: React.ElementType
+  activo: boolean
+  badge?: number
+}
+
+export default function BottomNav({
+  isCompany = false,
+  unreadCount = 0,
+  messagesHref,
+}: BottomNavProps) {
   const pathname = usePathname()
-  const [mounted, setMounted] = useState(false)
+  const [montado, setMontado] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setMontado(true)
   }, [])
 
-  if (!mounted) return null
+  if (!montado) return null
 
-  // Unified inbox for all users; override still accepted if provided externally
-  const defaultMessagesHref = "/app/dashboard/chat"
-  const finalMessagesHref = messagesHref || defaultMessagesHref
+  const hrefMensajes = messagesHref || "/app/dashboard/chat"
 
-  const navItems = isCompany
+  const inicio: Destino = {
+    href: "/app/dashboard",
+    label: "Inicio",
+    Icono: Home,
+    activo: pathname === "/app/dashboard",
+  }
+
+  const mensajes: Destino = {
+    href: hrefMensajes,
+    label: "Mensajes",
+    Icono: MessageCircle,
+    activo: Boolean(pathname?.includes("/chat") || pathname?.includes("/mensajes")),
+    badge: unreadCount,
+  }
+
+  const perfil: Destino = {
+    href: "/app/dashboard/perfil",
+    label: "Perfil",
+    Icono: User,
+    activo: pathname === "/app/dashboard/perfil",
+  }
+
+  const destinos: Destino[] = isCompany
     ? [
+        // Un dueño entra a gestionar lo suyo y a revisar su plan: antes ambas
+        // cosas estaban a dos o tres toques de distancia.
+        inicio,
         {
-          href: "/app/dashboard",
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-          ),
-          label: "Inicio",
-          active: pathname === "/app/dashboard",
+          href: "/app/dashboard/mis-negocios",
+          label: "Mi negocio",
+          Icono: Store,
+          activo: Boolean(pathname?.startsWith("/app/dashboard/mis-negocios")),
         },
+        mensajes,
         {
-          href: finalMessagesHref,
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          ),
-          label: "Mensajes",
-          active: pathname?.includes("/chat") || pathname?.includes("/mensajes"),
-          badge: unreadCount,
+          href: "/app/dashboard/membresia",
+          label: "Plan",
+          Icono: Crown,
+          activo: Boolean(pathname?.startsWith("/app/dashboard/membresia")),
         },
-        {
-          href: "/app/dashboard/perfil",
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          ),
-          label: "Perfil",
-          active: pathname === "/app/dashboard/perfil",
-        },
+        perfil,
       ]
     : [
+        inicio,
         {
-          href: "/app/dashboard",
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-          ),
-          label: "Inicio",
-          active: pathname === "/app/dashboard",
+          // Abre el buscador del directorio, que vivía escondido en un botón
+          // del encabezado.
+          href: "/app/dashboard?buscar=1",
+          label: "Buscar",
+          Icono: Search,
+          activo: false,
         },
         {
-          href: finalMessagesHref,
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          ),
-          label: "Mensajes",
-          active: pathname?.includes("/chat") || pathname?.includes("/mensajes"),
-          badge: unreadCount,
+          href: "/app/dashboard/guardados",
+          label: "Guardados",
+          Icono: Bookmark,
+          activo: Boolean(pathname?.startsWith("/app/dashboard/guardados")),
         },
-        {
-          href: "/app/dashboard/perfil",
-          icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          ),
-          label: "Perfil",
-          active: pathname === "/app/dashboard/perfil",
-        },
+        mensajes,
+        perfil,
       ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/90 backdrop-blur-sm border-t border-black/8 safe-bottom">
-      <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map((item, index) => (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/90 backdrop-blur-md border-t border-black/10 safe-bottom">
+      <div className="flex items-stretch justify-around px-1 py-1.5">
+        {destinos.map(({ href, label, Icono, activo, badge }) => (
           <Link
-            key={index}
-            href={item.href}
-            className={`relative flex flex-col items-center justify-center flex-1 py-2 px-3 rounded-2xl transition-all duration-300 ${
-              item.active
-                ? "bg-blue-50"
-                : "hover:bg-black/5"
+            key={label}
+            href={href}
+            aria-current={activo ? "page" : undefined}
+            className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 transition-colors ${
+              activo ? "bg-blue-50" : "hover:bg-black/5"
             }`}
           >
-            {/* Badge de notificaciones */}
-            {item.badge && item.badge > 0 && (
-              <div className="absolute top-1 right-1/4 bg-red-500 text-white text-xs font-mono font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 animate-pulse">
-                {item.badge > 9 ? "9+" : item.badge}
-              </div>
+            {activo && (
+              <span className="absolute -top-1.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-blue-500" />
             )}
 
-            {/* Icono */}
-            <div
-              className={`transition-all duration-300 ${
-                item.active ? "text-blue-600 scale-110" : "text-ink-2"
-              }`}
-            >
-              {item.icon}
-            </div>
+            {Boolean(badge && badge > 0) && (
+              <span className="absolute top-0.5 right-1/2 translate-x-4 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-mono font-bold flex items-center justify-center">
+                {badge! > 9 ? "9+" : badge}
+              </span>
+            )}
 
-            {/* Label */}
+            <Icono
+              className={`w-[22px] h-[22px] transition-colors ${
+                activo ? "text-blue-600" : "text-ink-2"
+              }`}
+              strokeWidth={activo ? 2.2 : 1.8}
+            />
             <span
-              className={`text-xs font-semibold mt-1 transition-colors ${
-                item.active ? "text-blue-600" : "text-ink-2"
+              className={`text-[10px] font-semibold leading-none text-center ${
+                activo ? "text-blue-600" : "text-ink-2"
               }`}
             >
-              {item.label}
+              {label}
             </span>
-
-            {/* Indicador activo */}
-            {item.active && (
-              <div className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-500 rounded-full" />
-            )}
           </Link>
         ))}
       </div>
     </nav>
   )
 }
-

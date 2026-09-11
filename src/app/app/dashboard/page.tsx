@@ -96,6 +96,17 @@ export default function DashboardPage() {
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
+
+  // La barra inferior enlaza acá con ?buscar=1 para abrir el buscador: es un
+  // destino de navegación, no un botón local, así que tiene que viajar en la
+  // URL. Se limpia el parámetro para que recargar o compartir el enlace no
+  // reabra el modal.
+  useEffect(() => {
+    if (searchParamsInitial?.get("buscar") === "1") {
+      setShowSearchModal(true)
+      window.history.replaceState({}, "", "/app/dashboard")
+    }
+  }, [searchParamsInitial])
   const [showFilters, setShowFilters] = useState(false)
   const [unreadMessagesByBusiness, setUnreadMessagesByBusiness] = useState<Record<string, number>>({})
   const [unreadMessagesPersonCount, setUnreadMessagesPersonCount] = useState(0)
