@@ -43,21 +43,28 @@
   }
 
   /* Espacio que el scroll a una sección le deja al header pegajoso (~80px),
-     que si no se le monta encima al título.
+     que si no se le monta encima al título. Lista explícita: un id por
+     sección, las seis del menú de la landing.
 
-     Esto era una lista de cuatro `id` escritos a mano y las secciones ya son
-     seis: "precios" y "preguntas-frecuentes" quedaron fuera, sin margen, y el
-     header les tapaba el título. Las dos están en el menú.
+     Si agregas una sección al menú, agrégala también acá. Sí, es un paso que
+     hay que acordarse de dar, y por eso se le escaparon "precios" y
+     "preguntas-frecuentes" en su momento. Pero las dos alternativas
+     "automáticas" ya se probaron en producción y las dos rompieron las
+     secciones que funcionaban:
 
-     Ahora aplica a toda <section> con id, así que cubre las seis y las que se
-     agreguen después sin tener que acordarse de volver acá.
+       - `scroll-padding-top` en el contenedor: Safari lo ignora cuando el
+         scroll viene de scrollIntoView(), que es como navega este menú.
+       - `section[id]` como selector: rompió las cuatro que ya andaban.
 
-     Se mantiene `scroll-margin` (en el destino) y NO `scroll-padding` (en el
-     contenedor), aunque en teoría sean equivalentes: Safari no respeta
-     scroll-padding cuando el scroll viene de scrollIntoView(), que es
-     exactamente como navega el menú de la landing. Ya se probó al revés y el
-     resultado fue perder el margen en las cuatro que funcionaban. */
-  section[id] {
+     Entre un paso manual que falla sólo en secciones nuevas, y un selector
+     general que falla en todas a la vez, este archivo se queda con el manual.
+     No lo cambies sin poder probarlo en un iPhone real. */
+  #inicio,
+  #como-funciona,
+  #para-personas,
+  #para-negocios,
+  #precios,
+  #preguntas-frecuentes {
     scroll-margin-top: 5rem;
   }
 
