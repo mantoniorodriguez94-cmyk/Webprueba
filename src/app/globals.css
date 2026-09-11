@@ -4,25 +4,13 @@
 
 @layer base {
   body {
-    @apply text-white;
+    @apply text-ink;
     font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-    background-color: #1a1512;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: #FBFAFC;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display), Georgia, serif;
-  }
-
-  /* Para móviles: forzar aspect ratio 9:16 */
-  @media (max-width: 768px) {
-    body {
-      background-size: auto 100vh;
-      background-position: center top;
-    }
   }
 
   html {
@@ -38,22 +26,54 @@
   }
 
   ::selection {
-    background-color: #cc8a2c;
-    color: #2a1804;
+    background-color: #5B4FE8;
+    color: #FBFAFC;
   }
 }
 
 @layer components {
+  /* ── Capa semántica de superficie (dirección "Luz") ─────────────────────
+     Puñado de clases que reemplazan ~1.900 decisiones sueltas de opacidad
+     sobre fondo oscuro por un puñado de roles consistentes sobre fondo
+     claro. Mapeo de los patrones oscuros que reemplazan:
+
+       bg-ink-2/3 (panel oscuro)         → .surface / .surface-elevated
+       bg-white/5, bg-white/10 (vidrio)  → .glass (ahora vidrio CLARO)
+       border-white/10, border-white/15  → .hairline
+       text-white (sobre superficie clara) → text-ink
+       text-gray-300/400 (sobre oscuro)  → text-ink-2 (sobre claro)
+     ──────────────────────────────────────────────────────────────────── */
+
+  /* Tarjeta / panel base: blanco sólido, borde-hairline casi invisible. */
+  .surface {
+    @apply bg-white border border-black/5;
+  }
+
+  /* Superficie elevada: modales, dropdowns, popovers — mismo blanco, más
+     sombra, hairline un poco más presente para separarse de lo que hay
+     debajo. */
+  .surface-elevated {
+    @apply bg-white border border-black/8 shadow-lg shadow-ink/5;
+  }
+
+  /* Divisor sutil reutilizable donde antes había border-white/10. */
+  .hairline {
+    @apply border-black/8;
+  }
+
+  /* Vidrio esmerilado — antes era vidrio oscuro sobre el mapa nocturno
+     (bg-ink-3/60 + border-white/10); ahora es vidrio CLARO sobre la malla
+     pastel de fondo. Se usa en loaders/toasts flotantes. */
   .glass {
-    @apply bg-ink-3/60 backdrop-blur-md border border-white/10 shadow-sm;
+    @apply bg-white/70 backdrop-blur-md border border-black/5 shadow-sm;
   }
 
   .glass-strong {
-    @apply bg-ink-3/80 backdrop-blur-xl border border-white/15 shadow-md;
+    @apply bg-white/85 backdrop-blur-xl border border-black/8 shadow-md;
   }
 
   .card-elegant {
-    @apply bg-ink-3/50 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-2xl;
+    @apply bg-white/90 backdrop-blur-md border border-black/5 shadow-lg hover:shadow-2xl;
     @apply rounded-3xl transition-all duration-500 hover:-translate-y-1;
   }
 
@@ -73,20 +93,38 @@
     @apply border-slate-200;
   }
 
-  /* Brillo animado para Fundador (Tier 3) — dorado de marca */
-  .tier-gold-glow {
-    @apply border-yellow-500/90 ring-2 ring-yellow-400/60;
-    animation: gold-pulse 3s infinite ease-in-out;
+  /* Brillo animado para "Patrocina" (Tier 3) — antes dorado, ahora magenta:
+     el magenta es la puntuación de marca (promo activa / tier tope), nunca
+     un campo de color grande, así que se usa solo en este borde/anillo. */
+  .tier-patrocina-glow {
+    @apply border-purple-500/90 ring-2 ring-purple-300/70;
+    animation: magenta-pulse 3s infinite ease-in-out;
   }
 
-  .tier-gold-glow:hover {
-    @apply border-yellow-400 ring-yellow-300/80;
+  .tier-patrocina-glow:hover {
+    @apply border-purple-400 ring-purple-300;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Fondo de página — malla orgánica fría aprobada por el cliente. SOLO
+     para el fondo de página (layout.tsx, y hero de landing si necesita su
+     propia capa). Nunca en botones, tarjetas o barras: ese es el error más
+     fácil de cometer con esta paleta. El acero es el punto más denso/oscuro
+     de la malla (cae antes a transparente que el resto) para que el fondo
+     conserve profundidad ahora que ya no tiene el contraste cálido/frío del
+     arena descartado por el cliente. */
+  .bg-mesh {
+    background:
+      radial-gradient(58% 48% at 14% 18%, #DAD3F5 0%, transparent 70%),
+      radial-gradient(54% 44% at 86% 14%, #C9D9F6 0%, transparent 72%),
+      radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
+      radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
+      #FBFAFC;
   }
 
   .scrollbar-none::-webkit-scrollbar {
