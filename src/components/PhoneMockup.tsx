@@ -107,7 +107,7 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.1 }}
                 whileHover={{ scale: 1.1 }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7C5CF0] to-[#5B4FE8] flex items-center justify-center shadow-lg shadow-blue-500/20">
                   <Pizza className="w-7 h-7 text-white" />
                 </div>
                 <span className="text-xs text-ink-2">Comida</span>
@@ -120,7 +120,7 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.2 }}
                 whileHover={{ scale: 1.1 }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#E24FD6] to-[#A855F7] flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
                   <Coffee className="w-7 h-7 text-white" />
                 </div>
                 <span className="text-xs text-ink-2">Café</span>
@@ -149,7 +149,7 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.3 }}
                 className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
               >
-                <div className="h-32 bg-gradient-to-br from-orange-300 via-amber-400 to-yellow-400 relative">
+                <div className="h-32 bg-gradient-to-br from-[#DAD3F5] via-[#C9D9F6] to-[#C3CFE0] relative">
                   <div className="absolute inset-0 bg-black/10" />
                 </div>
                 <div className="p-3">
