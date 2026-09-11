@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import SectionHeader from "@/components/ui/SectionHeader"
 import useUser from "@/hooks/useUser"
 import { supabase } from "@/lib/supabaseClient"
 import type { ResolvedMembershipTier, MembershipTier } from "@/lib/memberships/tiers"
@@ -150,26 +151,15 @@ export default function MembresiaPage() {
 
   return (
     <div className="min-h-screen lg:pb-10">
-      {/* Header sticky */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
-          <div className="flex flex-1 flex-col items-center gap-1 text-center">
-            <div className="inline-flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-600" />
-              <h1 className="text-lg sm:text-xl font-bold text-ink tracking-tight">
-                Membresía App Encuentra
-              </h1>
-            </div>
-            <p className="text-[11px] text-ink-2">
-              Apoya el proyecto y obtén un badge especial en tu perfil
-            </p>
-          </div>
-          <div className="w-[100px] text-right">
-            {/* Show badge only when the subscription is genuinely active — not on a stale/expired tier */}
-            {hasActiveSubscription && <MembershipBadge type={currentBadgeType} />}
-          </div>
-        </div>
-      </header>
+      <SectionHeader
+        titulo="Membresía"
+        subtitulo="Apoya el proyecto y obtén un badge especial en tu perfil"
+        icono={<Sparkles className="h-5 w-5" />}
+        ancho="7xl"
+        acciones={
+          hasActiveSubscription ? <MembershipBadge type={currentBadgeType} /> : undefined
+        }
+      />
 
       <main className="max-w-7xl mx-auto mt-6 px-4 space-y-6">
         {/* Estado actual */}

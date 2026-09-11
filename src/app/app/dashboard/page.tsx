@@ -804,7 +804,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen lg:pb-0">
       {/* Header Móvil Moderno */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/8 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/10 shadow-sm">
         <div className="px-4 py-4 lg:px-6">
           {/* Top Row - Logo y Acciones (navegación simplificada) */}
           <div className="flex items-center justify-between gap-4 mb-4">
@@ -1214,7 +1214,7 @@ export default function DashboardPage() {
         aria-label="Filtros"
         panelClassName="w-full max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl lg:hidden"
       >
-        <div className="pb-4 border-b border-black/8 flex items-center justify-between">
+        <div className="pb-4 border-b border-black/10 flex items-center justify-between">
           <h3 className="text-lg font-bold text-ink">Filtros</h3>
           <button
             onClick={() => setShowFilterModal(false)}

@@ -1,0 +1,64 @@
+"use client"
+
+/**
+ * Encabezado de las secciones del dashboard.
+ *
+ * Cada pantalla armaba el suyo, y con el tiempo divergieron en tres ejes a la
+ * vez: el ancho máximo (7xl, 5xl, 4xl), el alto (py-3 en una, py-4 en el
+ * resto) y el vidrio (bg-white/80 blur-md contra bg-white/85 blur-xl). El
+ * resultado era que la barra superior cambiaba de tamaño al cambiar de
+ * sección, que es exactamente lo que un encabezado no debe hacer.
+ *
+ * Alineado a la izquierda a propósito: el título centrado obligaba a poner un
+ * espaciador invisible del otro lado para compensar, y bastaba con quitar un
+ * botón para que el centrado se rompiera.
+ */
+
+import type { ReactNode } from "react"
+
+interface SectionHeaderProps {
+  titulo: string
+  subtitulo?: string
+  /** Ícono a la izquierda del título. */
+  icono?: ReactNode
+  /** Acciones a la derecha: un badge, un menú, un botón. */
+  acciones?: ReactNode
+  /**
+   * Ancho máximo del contenido. Debe coincidir con el del `main` de la página
+   * o el título queda desalineado respecto al contenido en escritorio. En
+   * móvil no cambia nada: ahí todo ocupa el ancho completo.
+   */
+  ancho?: "5xl" | "7xl"
+}
+
+const ANCHOS = {
+  "5xl": "max-w-5xl",
+  "7xl": "max-w-7xl",
+} as const
+
+export default function SectionHeader({
+  titulo,
+  subtitulo,
+  icono,
+  acciones,
+  ancho = "5xl",
+}: SectionHeaderProps) {
+  return (
+    <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
+      <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 px-4 py-4`}>
+        {icono && <span className="flex-shrink-0 text-blue-600">{icono}</span>}
+
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display truncate text-xl font-bold leading-tight text-ink">
+            {titulo}
+          </h1>
+          {subtitulo && (
+            <p className="truncate text-xs text-ink-2">{subtitulo}</p>
+          )}
+        </div>
+
+        {acciones && <div className="flex flex-shrink-0 items-center gap-2">{acciones}</div>}
+      </div>
+    </header>
+  )
+}

@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from "react"
+import SectionHeader from "@/components/ui/SectionHeader"
 import Link from "next/link"
 import { Bookmark } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
@@ -88,21 +89,15 @@ export default function GuardadosPage() {
 
   return (
     <div className="min-h-screen lg:pb-10">
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/10">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
-            <Bookmark className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-ink leading-tight">Guardados</h1>
-            <p className="text-xs text-ink-2">
-              {cargando
-                ? "Cargando…"
-                : `${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} guardado${negocios.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
-        </div>
-      </header>
+      <SectionHeader
+        titulo="Guardados"
+        subtitulo={
+          cargando
+            ? "Cargando…"
+            : `${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} guardado${negocios.length !== 1 ? "s" : ""}`
+        }
+        icono={<Bookmark className="w-5 h-5" />}
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {cargando ? (

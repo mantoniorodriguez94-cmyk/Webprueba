@@ -578,7 +578,7 @@ function ChatInner() {
   return (
     <div className="min-h-screen w-full flex flex-col pb-0">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/8 flex-shrink-0">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
           <Link
             href="/app/dashboard"
@@ -627,7 +627,7 @@ function ChatInner() {
           } w-full lg:w-96 flex-col border-r border-black/8 bg-white/60 min-h-0`}
         >
           {/* Tabs */}
-          <div className="flex border-b border-black/8 flex-shrink-0">
+          <div className="flex border-b border-black/10 flex-shrink-0">
             {/* Tab: Mis Consultas */}
             <button
               onClick={() => {
@@ -679,7 +679,7 @@ function ChatInner() {
 
           {/* ── Business context switcher (only when owning 2+ businesses) ── */}
           {activeTab === "negocio" && userBusinesses.length > 1 && (
-            <div className="flex-shrink-0 px-3 py-2.5 border-b border-black/8 bg-black/[0.02]">
+            <div className="flex-shrink-0 px-3 py-2.5 border-b border-black/10 bg-black/[0.02]">
               <label className="text-xs text-ink-2 mb-1.5 block font-medium tracking-wide">
                 Viendo mensajes de:
               </label>
@@ -887,7 +887,7 @@ function ChatInner() {
                 </div>
               ) : (
                 /* Client context — subtle blue bar */
-                <div className="flex-shrink-0 px-4 py-2 border-b border-black/8 bg-blue-50 flex items-center gap-2">
+                <div className="flex-shrink-0 px-4 py-2 border-b border-black/10 bg-blue-50 flex items-center gap-2">
                   <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>

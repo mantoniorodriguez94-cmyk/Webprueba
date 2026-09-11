@@ -100,7 +100,9 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
         </div>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {businessTiers.map((t) => {
-            const isCurrent = currentTier && currentTier >= t.tier
+            // `currentTier && …` devuelve el NÚMERO 0 cuando no hay plan, y React
+            // imprime ese 0 en pantalla. Comparar explícitamente da un booleano.
+            const isCurrent = currentTier > 0 && currentTier >= t.tier
 
             return (
               <button
