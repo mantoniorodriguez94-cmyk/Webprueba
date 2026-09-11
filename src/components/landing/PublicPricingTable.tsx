@@ -64,7 +64,7 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                 {t.tier === SUBSCRIPTION_TIER_FREE && (
                   <>
                     <li>📍 Acceso a tu Localización en el Mapa con un click</li>
-                    <li>📷 Foto de Perfil más 1 Foto en la Galería</li>
+                    <li>📷 Galería de hasta 6 fotos</li>
                     <li>🔍 Búsqueda Básica</li>
                     <li>🛡️ Sube tu horario de atención</li>
                     <li>📞 Publica tus promociones</li>
@@ -75,7 +75,7 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                     <li className="text-[11px] text-ink-2/80">✅ <span className="italic">Todo lo del plan Básico más:</span></li>
                     <li>💬 Sistema de Chat en vivo</li>
                     <li>📲 Comunicación Directa a WhatsApp y Llamadas con un solo botón</li>
-                    <li>📷 Galería de hasta 3 Fotos</li>
+                    <li>📷 Galería de hasta 12 fotos</li>
                   </>
                 )}
                 {t.tier === SUBSCRIPTION_TIER_DESTACADO && (
@@ -83,7 +83,7 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                     <li className="text-[11px] text-ink-2/80">✅ <span className="italic">Todo lo del plan Conecta más:</span></li>
                     <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
                     <li>🛡️ Tu negocio aparece en la sección de &quot;Más Destacados&quot;</li>
-                    <li>📷 Galería de hasta 5 Fotos</li>
+                    <li>📷 Galería de hasta 20 fotos</li>
                   </>
                 )}
               </ul>

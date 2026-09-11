@@ -108,6 +108,30 @@ export function getMaxBusinessesForTier(tier: number | null | undefined): number
 }
 
 /**
+ * Fotos de galería por plan — fuente única de verdad.
+ *
+ * Antes el límite vivía suelto en la pantalla de galería como "3 gratis, 10
+ * para cualquier plan pago", así que los tres planes daban lo mismo y la
+ * tabla de precios describía una escalera (1 / 3 / 5) que el producto no
+ * tenía. Peor: vendía 1 foto para Conecta cuando gratis ya daba 3, o sea que
+ * pagar te daba menos.
+ *
+ * Los números son generosos a propósito: con las imágenes comprimidas al
+ * subir (~250 KB en vez de ~3 MB), 20 fotos por negocio pesan 5 MB. Lo que
+ * encarece no es la cantidad sino el peso de cada archivo.
+ */
+export const MAX_FOTOS_POR_TIER: Record<number, number> = {
+  [SUBSCRIPTION_TIER_FREE]: 3,
+  [SUBSCRIPTION_TIER_CONECTA]: 6,
+  [SUBSCRIPTION_TIER_DESTACADO]: 12,
+  [SUBSCRIPTION_TIER_PATROCINA]: 20,
+}
+
+export function getMaxPhotosForTier(tier: number | null | undefined): number {
+  return MAX_FOTOS_POR_TIER[tier ?? 0] ?? MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_FREE]
+}
+
+/**
  * Single source of truth for "is this subscription tier actually usable right now".
  * tier > 0 AND (no end date = admin-granted/indefinite, OR end date still in the future).
  * Used for both the current user (useMembershipAccess) and other profiles (e.g. a

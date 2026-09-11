@@ -1,6 +1,9 @@
 // src/app/dashboard/negocios/[id]/galeria/page.tsx
 "use client"
 import React, { useEffect, useState } from "react"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import { getMaxPhotosForTier } from "@/lib/memberships/tiers"
+import { comprimirImagen } from "@/lib/comprimirImagen"
 import { confirmModal } from "@/lib/confirmModal"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
@@ -29,14 +32,20 @@ export default function GaleriaPage() {
   const canManage = isOwner || isAdmin
   
   // Verificar si el negocio es premium activo
+  // El nivel del plan del dueño, que es quien está editando su propia galería.
+  // Antes esta pantalla solo veía un is_premium genérico, y por eso no podía
+  // distinguir entre Conecta, Destaca y Patrocina.
+  const { tier } = useMembershipAccess()
+
   const isPremiumActive = business?.is_premium === true && 
                          business?.premium_until && 
                          new Date(business.premium_until) > new Date()
   
-  // Límites: base por plan + extra_photo_limit (admin)
-  const MAX_IMAGES_FREE = 3
-  const MAX_IMAGES_PREMIUM = 10
-  const baseMax = business?.max_photos ?? (isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE)
+  // Límite por plan: definido en un solo lugar (lib/memberships/tiers) para
+  // que la tabla de precios y el producto no puedan volver a divergir. Antes
+  // acá vivía un "3 gratis / 10 cualquier plan pago" que hacía que los tres
+  // planes dieran lo mismo.
+  const baseMax = business?.max_photos ?? getMaxPhotosForTier(isPremiumActive ? tier : 0)
   const maxImages = baseMax + (business?.extra_photo_limit ?? 0)
 
   // Parsear gallery_urls de manera segura
@@ -104,21 +113,22 @@ export default function GaleriaPage() {
     // Validar límite de imágenes según plan
     const currentImageCount = galleryUrls.length
     if (currentImageCount >= maxImages) {
-      if (isPremiumActive) {
-        alertModal.warning(`Has alcanzado el límite premium de ${MAX_IMAGES_PREMIUM} imágenes`, {
-          description: "Elimina algunas fotos antes de agregar nuevas."
-        })
-      } else {
-        alertModal.warning(`Has alcanzado el límite gratuito de ${MAX_IMAGES_FREE} imágenes`, {
-          description: `⭐ Mejora a Premium para subir hasta ${MAX_IMAGES_PREMIUM} imágenes.\n\nO elimina algunas fotos antes de agregar nuevas.`
-        })
-      }
+      // El mensaje nombra el límite real del plan que tiene la persona, y el
+      // del siguiente nivel solo si existe uno mejor.
+      const siguienteNivel = getMaxPhotosForTier((tier ?? 0) + 1)
+      alertModal.warning(`Llegaste al límite de ${maxImages} fotos de tu plan`, {
+        description:
+          siguienteNivel > maxImages
+            ? `Con el siguiente plan puedes subir hasta ${siguienteNivel}. También puedes eliminar algunas fotos para hacer lugar.`
+            : "Elimina algunas fotos antes de agregar nuevas.",
+      })
       e.target.value = "" // Limpiar input
       return
     }
 
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Tope generoso: el archivo se comprime antes de subir, así que esto
+    // solo frena cosas absurdas (un RAW de cámara, un archivo corrupto).
+    if (file.size > 25 * 1024 * 1024) {
       alertModal.warning("La imagen no debe superar los 5MB")
       return
     }
@@ -132,13 +142,22 @@ export default function GaleriaPage() {
     setUploading(true)
 
     try {
-      // Subir a Supabase Storage
-      const fileExt = file.name.split('.').pop()
+      // Se comprime ANTES de subir: una foto de teléfono son 3-5 MB y acá se
+      // guardaba entera para mostrarse en una tarjeta de 400px. El costo real
+      // no es el almacenamiento sino la transferencia de servirla después.
+      const { archivo, bytesOriginales, bytesFinales } = await comprimirImagen(file)
+      if (bytesFinales < bytesOriginales) {
+        console.info(
+          `[galeria] ${(bytesOriginales / 1024 / 1024).toFixed(1)} MB → ${(bytesFinales / 1024).toFixed(0)} KB`
+        )
+      }
+
+      const fileExt = archivo.name.split('.').pop()
       const fileName = `${businessId}/${Date.now()}.${fileExt}`
-      
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('business-gallery')
-        .upload(fileName, file)
+        .upload(fileName, archivo)
 
       if (uploadError) throw uploadError
 
@@ -309,14 +328,21 @@ export default function GaleriaPage() {
                 {galleryUrls.length >= maxImages && " (límite alcanzado)"}
               </div>
               
-              {/* Mensaje de upgrade para usuarios gratuitos */}
-              {!isPremiumActive && galleryUrls.length > 0 && (
-                <div className="mt-2 text-xs text-ink-2">
-                  ⭐ <Link href="/app/dashboard/perfil" className="text-amber-600 hover:text-amber-700 underline">
-                    Mejora a Premium
-                  </Link> para subir hasta {MAX_IMAGES_PREMIUM} imágenes
-                </div>
-              )}
+              {/* Invitación a subir de plan: nombra el tope del SIGUIENTE
+                  nivel, no un "premium" genérico, y desaparece cuando ya se
+                  está en el más alto. Enlaza a los planes, no al perfil. */}
+              {galleryUrls.length > 0 &&
+                getMaxPhotosForTier((tier ?? 0) + 1) > maxImages && (
+                  <div className="mt-2 text-xs text-ink-2">
+                    <Link
+                      href="/app/dashboard/membresia"
+                      className="font-semibold text-blue-600 hover:underline"
+                    >
+                      Sube de plan
+                    </Link>{" "}
+                    para subir hasta {getMaxPhotosForTier((tier ?? 0) + 1)} fotos
+                  </div>
+                )}
             </div>
             <label className={`relative ${galleryUrls.length >= maxImages ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
               <input

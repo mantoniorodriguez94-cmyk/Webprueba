@@ -164,7 +164,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                   {t.tier === 0 && (
                     <>
                       <li>📍 Acceso a tu Localización en el Mapa con un click </li>
-                      <li>📷 Foto de Perfil más 1 Foto en la Galería</li>
+                      <li>📷 Galería de hasta 6 fotos</li>
                       <li>🔍 Búsqueda Básica</li>
                       <li>🛡️ Sube tu horario de atención</li>
                       <li>📞 Publica tus promociones</li>
@@ -177,7 +177,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                       </li>
                       <li>💬 Sistema de Chat en vivo</li>
                       <li>📲 Comunicacion Directa a WhatsApp y Llamadas con un solo botón</li>
-                      <li>📷 Galería de hasta 3 Fotos</li>
+                      <li>📷 Galería de hasta 12 fotos</li>
                     </>
                   )}
                   {t.tier === 2 && (
@@ -187,7 +187,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                       </li>
                       <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
                       <li>🛡️ Tu negocio aparece en la seccion de &quot;Más Destacados&quot;</li>
-                      <li>📷 Galería de hasta 5 Fotos</li>
+                      <li>📷 Galería de hasta 20 fotos</li>
                     </>
                   )}
                 </ul>
