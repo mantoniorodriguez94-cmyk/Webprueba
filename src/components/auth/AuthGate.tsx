@@ -36,7 +36,7 @@ export default function AuthGate({
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
+      <div className="w-full max-w-md text-center surface-elevated rounded-3xl p-8">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E24FD6] via-[#7C5CF0] to-[#5B9BF0] flex items-center justify-center mx-auto mb-6">
           <svg
             className="w-10 h-10 text-white"
