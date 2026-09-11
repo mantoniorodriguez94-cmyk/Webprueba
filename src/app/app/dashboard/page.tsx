@@ -803,32 +803,36 @@ export default function DashboardPage() {
   // ========== NUEVO UI MOBILE-FIRST ==========
   return (
     <div className="min-h-screen lg:pb-0">
-      {/* Header Móvil Moderno */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/10">
-        <div className="px-4 py-4 lg:px-6">
-          {/* Top Row - Logo y Acciones (navegación simplificada) */}
-          <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Logo */}
-            <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
-              <Link href="/" className="inline-block cursor-pointer">
-                <h1 className="text-xl lg:text-2xl font-bold text-ink flex items-center gap-2">
-                  {/* La marca real, no el emoji 📍 que había quedado acá: la
-                      landing ya usaba el SVG y el dashboard no. */}
-                  <Image
-                    src="/brand/encuentra-mark.svg"
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 lg:w-9 lg:h-9"
-                    unoptimized
-                  />
-                  App Encuentra
-                </h1>
-              </Link>
-              <p className="hidden lg:block text-xs lg:text-sm text-ink-2 mt-1 truncate">
-                {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
-              </p>
+
+      {/* Encabezado con el bloque de marca de las pantallas de registro:
+          sobre la malla, sin barra ni línea divisoria. Deja de ser fijo, así
+          que la marca, la búsqueda y las pestañas se van con el
+          desplazamiento. */}
+      <div className="px-4 pt-8 lg:px-6">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center justify-center gap-3 group">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 transition-transform group-hover:scale-105">
+              <Image
+                src="/brand/encuentra-mark.svg"
+                alt="Logo App Encuentra"
+                fill
+                className="object-contain"
+              />
             </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-ink transition-colors group-hover:text-blue-600">
+              App Encuentra
+            </h1>
+          </Link>
+          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full mt-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            Portal Encuentra · Venezuela
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 mb-4">
+            <p className="text-xs sm:text-sm text-ink-2 truncate">
+              {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
+            </p>
 
             {/* Acciones (Buscar + Usuario) */}
             <div className="flex items-center gap-3 flex-shrink-0">
@@ -1019,7 +1023,6 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-      </header>
 
       {/* Main Content */}
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 py-4 lg:py-6">
