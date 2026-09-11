@@ -28,20 +28,20 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         {/* Marca — idéntica en las cinco pantallas */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center justify-center gap-3 group">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform group-hover:scale-105">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 transition-transform group-hover:scale-105">
               <Image
-                src="/assets/logotipo.png"
+                src="/brand/encuentra-mark.svg"
                 alt="Logo App Encuentra"
                 fill
                 className="object-contain"
               />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 transition-colors group-hover:text-blue-300">
+            <h1 className="text-3xl sm:text-4xl font-bold text-ink transition-colors group-hover:text-blue-600">
               App Encuentra
             </h1>
           </Link>
-          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-300 bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 rounded-full mt-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full mt-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
             Portal Encuentra · Venezuela
           </span>
         </div>
@@ -63,7 +63,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group"
+            className="text-sm text-ink-2 hover:text-ink transition-colors inline-flex items-center gap-2 group"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
