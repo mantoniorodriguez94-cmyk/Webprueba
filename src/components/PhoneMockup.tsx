@@ -7,15 +7,17 @@ import Image from "next/image";
 export default function PhoneMockup() {
   return (
     <div className="relative" style={{ perspective: '1000px' }}>
-      {/* Glow animado de fondo */}
+      {/* Glow animado de fondo — mismo recorrido del degradado de marca
+          (magenta → violeta → azul), muy desaturado y desenfocado: un
+          callback a la marca sin meter un campo de color grande. */}
       <motion.div
-        className="absolute inset-0 blur-3xl opacity-50"
+        className="absolute inset-0 blur-3xl opacity-40"
         animate={{
           background: [
-            "radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)",
-            "radial-gradient(circle, rgba(147,51,234,0.4) 0%, transparent 70%)",
-            "radial-gradient(circle, rgba(236,72,153,0.4) 0%, transparent 70%)",
-            "radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,155,240,0.35) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(124,92,240,0.35) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(226,79,214,0.25) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,155,240,0.35) 0%, transparent 70%)",
           ],
         }}
         transition={{
@@ -25,26 +27,28 @@ export default function PhoneMockup() {
         }}
       />
 
-      {/* Marco del teléfono con efectos 3D */}
-      <div 
+      {/* Marco del teléfono con efectos 3D — el bisel del dispositivo se
+          mantiene oscuro (es el marco físico, no la pantalla); la pantalla
+          de adentro muestra la app real, clara. */}
+      <div
         className="relative z-10 w-[320px] h-[640px] bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 rounded-[2.5rem] p-3 shadow-2xl shadow-blue-500/20 border-4 border-gray-800 ring-2 ring-gray-700/50"
         style={{
           transformStyle: 'preserve-3d',
           animation: 'float-3d 6s ease-in-out infinite',
         }}
       >
-        {/* Pantalla interna */}
-        <div className="w-full h-full bg-gray-950 rounded-[2.3rem] overflow-hidden relative">
+        {/* Pantalla interna — clara, como la app real */}
+        <div className="w-full h-full bg-paper rounded-[2.3rem] overflow-hidden relative">
           {/* Barra de estado */}
-          <div className="absolute top-0 left-0 right-0 z-20 px-6 pt-2 pb-1 flex items-center justify-between text-white text-xs font-semibold bg-gray-950/80 backdrop-blur-sm">
+          <div className="absolute top-0 left-0 right-0 z-20 px-6 pt-2 pb-1 flex items-center justify-between text-ink text-xs font-semibold bg-paper/90 backdrop-blur-sm">
             <span>9:41</span>
             <div className="flex items-center gap-1.5">
               {/* Signal bars */}
               <div className="flex items-end gap-0.5">
-                <div className="w-1 h-1 bg-white rounded-full"></div>
-                <div className="w-1 h-1.5 bg-white rounded-full"></div>
-                <div className="w-1 h-2 bg-white rounded-full"></div>
-                <div className="w-1 h-2.5 bg-white rounded-full"></div>
+                <div className="w-1 h-1 bg-ink rounded-full"></div>
+                <div className="w-1 h-1.5 bg-ink rounded-full"></div>
+                <div className="w-1 h-2 bg-ink rounded-full"></div>
+                <div className="w-1 h-2.5 bg-ink rounded-full"></div>
               </div>
               {/* WiFi icon */}
               <svg className="w-4 h-3" fill="none" stroke="currentColor" viewBox="0 0 16 12" strokeWidth="2">
@@ -60,39 +64,41 @@ export default function PhoneMockup() {
           </div>
 
           {/* Contenido principal */}
-          <div className="pt-12 pb-6 px-4 h-full overflow-y-auto bg-gradient-to-b from-gray-950 to-gray-900">
+          <div className="pt-12 pb-6 px-4 h-full overflow-y-auto bg-paper">
             {/* Header de la app */}
             <div className="mb-6 pt-2">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Image
-                    src="/assets/logotipo.png"
+                    src="/brand/encuentra-mark.svg"
                     alt="App Encuentra"
-                    width={32}
-                    height={32}
-                    className="w-8 h-8"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7"
                     unoptimized
                   />
-                  <span className="text-white font-bold text-lg">App Encuentra</span>
+                  <span className="text-ink font-bold text-lg">App Encuentra</span>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
                   U
                 </div>
               </div>
 
               {/* Barra de búsqueda */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-2" />
                 <input
                   type="text"
                   placeholder="Buscar en Caracas..."
-                  className="w-full bg-gray-800/50 border border-gray-700/50 rounded-full px-10 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-white border border-black/10 rounded-full px-10 py-2.5 text-sm text-ink placeholder-ink-2/70 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   readOnly
                 />
               </div>
             </div>
 
-            {/* Categorías */}
+            {/* Categorías — colores de categoría (contenido, no acento de
+                marca): se mantienen distintos entre sí a propósito, es
+                cómo el usuario escanea rubros de un vistazo. */}
             <div className="flex justify-around mb-6">
               <motion.div
                 className="flex flex-col items-center gap-2 cursor-pointer"
@@ -101,10 +107,10 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.1 }}
                 whileHover={{ scale: 1.1 }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
                   <Pizza className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-xs text-gray-300">Comida</span>
+                <span className="text-xs text-ink-2">Comida</span>
               </motion.div>
 
               <motion.div
@@ -114,10 +120,10 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.2 }}
                 whileHover={{ scale: 1.1 }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
                   <Coffee className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-xs text-gray-300">Café</span>
+                <span className="text-xs text-ink-2">Café</span>
               </motion.div>
 
               <motion.div
@@ -127,10 +133,10 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.1 }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
+                <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
                   <Heart className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-xs text-gray-300">Servicios</span>
+                <span className="text-xs text-ink-2">Servicios</span>
               </motion.div>
             </div>
 
@@ -141,20 +147,20 @@ export default function PhoneMockup() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden"
+                className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
               >
-                <div className="h-32 bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-600 relative">
-                  <div className="absolute inset-0 bg-black/20" />
+                <div className="h-32 bg-gradient-to-br from-orange-300 via-amber-400 to-yellow-400 relative">
+                  <div className="absolute inset-0 bg-black/10" />
                 </div>
                 <div className="p-3">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="text-white font-bold text-sm mb-1">Panadería El Sol</h3>
+                      <h3 className="text-ink font-bold text-sm mb-1">Panadería El Sol</h3>
                       <div className="flex items-center gap-1 mb-2">
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className="w-3 h-3 text-yellow-400 fill-current"
+                            className="w-3 h-3 text-yellow-500 fill-current"
                             viewBox="0 0 20 20"
                           >
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -162,11 +168,11 @@ export default function PhoneMockup() {
                         ))}
                       </div>
                     </div>
-                    <span className="bg-green-500/20 text-green-400 text-xs font-semibold px-2 py-1 rounded-full border border-green-500/30">
+                    <span className="bg-green-50 text-green-700 text-xs font-semibold px-2 py-1 rounded-full border border-green-200">
                       Abierto
                     </span>
                   </div>
-                  <p className="text-gray-400 text-xs">Panadería • Horneados frescos</p>
+                  <p className="text-ink-2 text-xs">Panadería • Horneados frescos</p>
                 </div>
               </motion.div>
 
@@ -175,46 +181,45 @@ export default function PhoneMockup() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden"
+                className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
               >
-                <div className="h-32 bg-gradient-to-br from-blue-400 via-cyan-500 to-teal-600 relative">
-                  <div className="absolute inset-0 bg-black/20" />
+                <div className="h-32 bg-gradient-to-br from-blue-300 via-cyan-400 to-teal-400 relative">
+                  <div className="absolute inset-0 bg-black/10" />
                 </div>
                 <div className="p-3">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="text-white font-bold text-sm mb-1">Consultorio Dental</h3>
+                      <h3 className="text-ink font-bold text-sm mb-1">Consultorio Dental</h3>
                       <div className="flex items-center gap-1 mb-2">
                         {[...Array(4)].map((_, i) => (
                           <svg
                             key={i}
-                            className="w-3 h-3 text-yellow-400 fill-current"
+                            className="w-3 h-3 text-yellow-500 fill-current"
                             viewBox="0 0 20 20"
                           >
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         ))}
-                        <svg className="w-3 h-3 text-gray-500 fill-current" viewBox="0 0 20 20">
+                        <svg className="w-3 h-3 text-black/15 fill-current" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                       </div>
-                      <span className="text-gray-400 text-xs">4.8</span>
+                      <span className="text-ink-2 text-xs">4.8</span>
                     </div>
-                    <span className="bg-blue-500/20 text-blue-400 text-xs font-semibold px-2 py-1 rounded-full border border-blue-500/30">
+                    <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full border border-blue-200">
                       Profesional
                     </span>
                   </div>
-                  <p className="text-gray-400 text-xs">Salud • Consultas dentales</p>
+                  <p className="text-ink-2 text-xs">Salud • Consultas dentales</p>
                 </div>
               </motion.div>
             </div>
           </div>
 
           {/* Home indicator */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-700 rounded-full" />
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/15 rounded-full" />
         </div>
       </div>
     </div>
   );
 }
-

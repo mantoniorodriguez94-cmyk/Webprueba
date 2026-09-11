@@ -35,7 +35,7 @@ export default function FaqAccordion() {
         return (
           <div
             key={i}
-            className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
+            className="surface rounded-2xl overflow-hidden"
           >
             <button
               type="button"
@@ -45,9 +45,9 @@ export default function FaqAccordion() {
               id={`faq-button-${i}`}
               className="w-full flex items-center justify-between gap-4 p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-2xl"
             >
-              <span className="text-base sm:text-lg font-semibold text-white">{item.q}</span>
+              <span className="text-base sm:text-lg font-semibold text-ink">{item.q}</span>
               <svg
-                className={`w-5 h-5 flex-shrink-0 text-gray-300 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                className={`w-5 h-5 flex-shrink-0 text-ink-2 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -63,7 +63,7 @@ export default function FaqAccordion() {
               style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
             >
               <div className="overflow-hidden">
-                <p className="text-gray-300 px-6 pb-6 leading-relaxed">{item.a}</p>
+                <p className="text-ink-2 px-6 pb-6 leading-relaxed">{item.a}</p>
               </div>
             </div>
           </div>
