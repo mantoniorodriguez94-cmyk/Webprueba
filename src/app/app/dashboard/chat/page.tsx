@@ -554,7 +554,7 @@ function ChatInner() {
     return (
       <AuthGate
         accion="chatear con los negocios"
-        detalle="Con tu cuenta podés escribirle directamente a cualquier negocio y seguir la conversación desde acá."
+        detalle="Con tu cuenta puedes escribirle directamente a cualquier negocio y seguir la conversación desde aquí."
       />
     )
   }

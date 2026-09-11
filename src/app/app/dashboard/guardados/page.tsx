@@ -81,7 +81,7 @@ export default function GuardadosPage() {
     return (
       <AuthGate
         accion="guardar negocios"
-        detalle="Con tu cuenta podés guardar los negocios que te interesan y volver a encontrarlos acá cuando los necesites."
+        detalle="Con tu cuenta puedes guardar los negocios que te interesan y volver a encontrarlos aquí cuando los necesites."
       />
     )
   }
@@ -118,7 +118,7 @@ export default function GuardadosPage() {
               Todavía no guardaste ningún negocio
             </h2>
             <p className="text-ink-2 mb-6 max-w-sm mx-auto">
-              Tocá el marcador en cualquier negocio del directorio y lo vas a encontrar acá
+              Toca el marcador en cualquier negocio del directorio y lo encontrarás aquí
               cuando lo necesites.
             </p>
             <Link

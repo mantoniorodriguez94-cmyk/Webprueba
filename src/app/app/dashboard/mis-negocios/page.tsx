@@ -155,7 +155,7 @@ export default function MisNegociosPage() {
     return (
       <AuthGate
         accion="registrar tu negocio"
-        detalle="Es gratis. Vas a poder publicar tu negocio, recibir mensajes de clientes y aparecer en las búsquedas cercanas."
+        detalle="Es gratis. Podrás publicar tu negocio, recibir mensajes de clientes y aparecer en las búsquedas cercanas."
       />
     )
   }

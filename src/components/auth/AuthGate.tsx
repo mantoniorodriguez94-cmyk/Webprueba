@@ -29,7 +29,7 @@ interface AuthGateProps {
 
 export default function AuthGate({
   accion = "ver los negocios",
-  detalle = "Es gratis y toma menos de un minuto. Después vas a poder buscar negocios cerca de ti, chatear con ellos y dejar reseñas.",
+  detalle = "Es gratis y toma menos de un minuto. Después podrás buscar negocios cerca de ti, chatear con ellos y dejar reseñas.",
 }: AuthGateProps) {
   const pathname = usePathname()
   const destino = encodeURIComponent(pathname || "/app/dashboard")
@@ -55,7 +55,7 @@ export default function AuthGate({
         </div>
 
         <h2 className="font-display text-2xl font-bold text-ink mb-3 text-balance">
-          Creá tu cuenta para {accion}
+          Crea tu cuenta para {accion}
         </h2>
         <p className="text-ink-2 mb-7">{detalle}</p>
 
@@ -67,7 +67,7 @@ export default function AuthGate({
         </Link>
 
         <p className="text-sm text-ink-2 mt-4">
-          ¿Ya tenés cuenta?{" "}
+          ¿Ya tienes cuenta?{" "}
           <Link
             href={`/app/auth/login?next=${destino}`}
             className="text-blue-600 font-semibold hover:underline"

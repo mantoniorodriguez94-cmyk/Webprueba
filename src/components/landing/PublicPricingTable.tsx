@@ -136,7 +136,7 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
               <BadgeCheck className="w-4 h-4 text-green-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-ink">Insignia de Patrocinador</p>
-                <p className="text-[11px] text-ink-2">Distintivo visible en tu tarjeta que muestra que apoyás la plataforma.</p>
+                <p className="text-[11px] text-ink-2">Distintivo visible en tu tarjeta que muestra que apoyas la plataforma.</p>
               </div>
             </div>
             <div className="flex items-start gap-2">

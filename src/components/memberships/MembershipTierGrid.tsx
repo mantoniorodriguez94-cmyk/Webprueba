@@ -256,7 +256,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 <div>
                   <p className="font-semibold text-ink">Insignia de Patrocinador</p>
                   <p className="text-[11px] text-ink-2">
-                    Distintivo visible en tu tarjeta que muestra que apoyás la plataforma.
+                    Distintivo visible en tu tarjeta que muestra que apoyas la plataforma.
                   </p>
                 </div>
               </div>

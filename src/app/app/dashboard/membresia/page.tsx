@@ -189,7 +189,7 @@ export default function MembresiaPage() {
               </p>
               <h2 className="mt-1 text-lg font-bold text-ink">
                 {!user
-                  ? "Elegí el nivel que quieras"
+                  ? "Elige el nivel que quieras"
                   : hasActiveSubscription
                     ? `Plan ${currentPlanLabel}`
                     : "Sin suscripción activa"}
@@ -229,7 +229,7 @@ export default function MembresiaPage() {
                 <p className="text-[11px] text-ink-2">
                   {user
                     ? "Elige un nivel de apoyo para obtener tu badge."
-                    : "Podés ver todos los planes y sus precios. La cuenta se pide al suscribirte."}
+                    : "Puedes ver todos los planes y sus precios. La cuenta se pide al suscribirte."}
                 </p>
               )}
             </div>
