@@ -1,6 +1,7 @@
 // src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
 import React, { useEffect, useState, useCallback, useRef } from "react"
+import PromotionsSpotlight from "@/components/dashboard/PromotionsSpotlight"
 import AuthGate from "@/components/auth/AuthGate"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -1073,6 +1074,16 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+
+            {/* Promociones de patrocinadores.
+                Es la contraprestación del "Módulo de Promociones" que vende el
+                plan Patrocina, que hasta ahora se cobraba sin entregarse: el
+                componente existía pero ningún archivo lo importaba.
+
+                Va acá, arriba del listado y visible en móvil, porque el
+                beneficio comprado es visibilidad frente a compradores. Si no
+                hay ninguna promoción de patrocinador, no renderiza nada. */}
+            <PromotionsSpotlight />
 
             {/* Botón de Filtros Colapsable (Solo Mobile) */}
             <div className="lg:hidden">

@@ -98,64 +98,60 @@ export default function PromotionsSpotlight() {
     loadFounderPromotions()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-xl rounded-3xl border border-yellow-500/20 p-6 shadow-xl">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-yellow-500/20 rounded-lg animate-pulse" />
-          <div className="h-6 w-56 bg-white/10 rounded animate-pulse" />
-        </div>
-        <div className="flex gap-4 overflow-hidden">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex-shrink-0 w-64 h-36 bg-white/5 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (promotions.length === 0) return null
+  // No se muestra nada mientras carga. El caso habitual es que no haya
+  // ninguna promoción de patrocinador, y un esqueleto grande que aparece para
+  // después desaparecer es peor que no mostrar nada.
+  if (loading || promotions.length === 0) return null
 
   return (
-    <section className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-xl rounded-3xl border-2 border-yellow-500/30 p-6 shadow-xl shadow-yellow-500/10">
-      <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <span className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center">
-          <Crown className="w-5 h-5 text-yellow-400" />
+    <section className="rounded-3xl border border-amber-300 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200">
+          <Crown className="h-5 w-5 text-amber-500" />
         </span>
-        Promociones Exclusivas en Grand Prairie
-      </h2>
-      <p className="text-sm text-yellow-200/90 mb-4">
-        Ofertas de negocios Patrocina — visibilidad prioritaria en la plataforma
-      </p>
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none -mx-1">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-bold text-ink leading-tight">
+            Promociones destacadas
+          </h2>
+          <p className="text-sm text-ink-2">
+            Ofertas de negocios que patrocinan la plataforma
+          </p>
+        </div>
+      </div>
+
+      <div className="-mx-1 flex gap-3 overflow-x-auto pb-2 scrollbar-none">
         {promotions.map((promo) => (
           <Link
             key={promo.id}
             href={`/app/dashboard/negocios/${promo.business_id}`}
-            className="flex-shrink-0 w-72 group"
+            className="group w-64 flex-shrink-0"
           >
-            <div className="h-full rounded-2xl border-2 border-yellow-500/40 bg-white/5 hover:border-yellow-400/60 hover:bg-white/10 transition-all duration-300 p-5 flex flex-col">
-              <span className="inline-flex items-center gap-1 self-start px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-xs font-semibold border border-yellow-500/40 mb-3">
-                <Crown className="w-3 h-3" />
-                Patrocina
+            <div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/40 p-4 transition-colors hover:border-amber-400 hover:bg-amber-50">
+              <span className="mb-2 inline-flex items-center gap-1 self-start rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                <Crown className="h-3 w-3" />
+                Patrocinador
               </span>
-              <h3 className="font-bold text-white text-lg mb-2 line-clamp-2 group-hover:text-yellow-100">
+              <h3 className="font-display text-base font-bold text-ink line-clamp-2 leading-snug">
                 {promo.name}
               </h3>
-              <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                {promo.business_name}
-              </p>
+              <p className="mt-1 text-sm text-ink-2 line-clamp-1">{promo.business_name}</p>
               {promo.price != null && Number(promo.price) > 0 && (
-                <p className="text-lg font-bold text-yellow-400 mt-auto">
+                <p className="mt-auto pt-3 font-mono text-lg font-bold tabular-nums text-ink">
                   ${Number(promo.price).toFixed(2)}
                 </p>
               )}
-              <div className="flex items-center gap-1 text-yellow-400/90 text-xs mt-2">
-                <span>Ver negocio</span>
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
+                Ver negocio
+                <svg
+                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </div>
+              </span>
             </div>
           </Link>
         ))}
