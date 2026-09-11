@@ -198,7 +198,7 @@ export default function MisNegociosPage() {
               <p className="text-sm text-ink-2 mt-1">
                 {isAdmin 
                   ? `${negocios.length} negocio${negocios.length !== 1 ? 's' : ''} • Ilimitado (Admin)` 
-                  : `${negocios.length} de ${allowedBusinesses} negocios creados`
+                  : `${negocios.length} negocio${negocios.length !== 1 ? 's' : ''} creado${negocios.length !== 1 ? 's' : ''}`
                 }
               </p>
             </div>
@@ -216,34 +216,6 @@ export default function MisNegociosPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Progress Bar - Solo si NO es admin */}
-        {!isAdmin && (
-          <div className="surface rounded-3xl p-5 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-ink-2">Límite de negocios</span>
-              <span className="font-mono text-sm font-bold text-blue-600">{negocios.length}/{allowedBusinesses}</span>
-            </div>
-            <div className="w-full bg-black/8 rounded-full h-3 overflow-hidden">
-              <div 
-                className={`h-full rounded-full transition-all duration-500 ${
-                  negocios.length >= allowedBusinesses 
-                    ? 'bg-amber-500'
-                    : 'bg-blue-500'
-                }`}
-                style={{ width: `${(negocios.length / allowedBusinesses) * 100}%` }}
-              />
-            </div>
-            {!canCreateMore && !tierLoading && limitMessage && (
-              <p className="text-xs text-amber-600 mt-2 flex items-center gap-1 flex-wrap">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {limitMessage}
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Lista de Negocios */}
         {loading ? (
           <div className="text-center py-12">
