@@ -75,12 +75,12 @@ export default function StarRating({
                 interactive 
                   ? 'cursor-pointer hover:scale-125 active:scale-95 transition-all duration-200' 
                   : 'cursor-default'
-              } ${isFilled || isPartial ? 'drop-shadow-[0_0_4px_rgba(255,215,0,0.6)]' : ''}`}
+              } ${isFilled || isPartial ? 'drop-shadow-[0_0_3px_rgba(245,158,11,0.35)]' : ''}`}
               aria-label={`${index + 1} ${index === 0 ? 'estrella' : 'estrellas'}`}
             >
               {/* Star background (empty) */}
               <svg
-                className="absolute inset-0 text-gray-600"
+                className="absolute inset-0 text-black/15"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -88,15 +88,18 @@ export default function StarRating({
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
 
-              {/* Star foreground (filled with neon gold) */}
+              {/* Star foreground (filled) — antes usaba `text-neon-gold`, una
+                  clase que no existe en el config: las estrellas "llenas" no
+                  tenían color y quedaban invisibles. Bug preexistente, ahora
+                  corregido con un ámbar semántico estándar de rating. */}
               <div
                 className="absolute inset-0 overflow-hidden transition-all duration-300"
-                style={{ 
+                style={{
                   width: isPartial ? `${partialPercentage}%` : isFilled ? '100%' : '0%'
                 }}
               >
                 <svg
-                  className="text-neon-gold animate-glow"
+                  className="text-amber-500"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                   xmlns="http://www.w3.org/2000/svg"
@@ -108,16 +111,16 @@ export default function StarRating({
               {/* Hover effect for interactive stars */}
               {interactive && hoverRating > 0 && index < hoverRating && (
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="w-full h-full bg-neon-gold/20 rounded-full blur-sm animate-pulse-glow" />
+                  <div className="w-full h-full bg-amber-400/25 rounded-full blur-sm animate-pulse-glow" />
                 </div>
               )}
             </button>
           );
         })}
       </div>
-      
+
       {showNumber && (
-        <span className={`ml-1 font-semibold text-neon-gold ${textSizeClasses[size]}`}>
+        <span className={`ml-1 font-semibold text-amber-600 ${textSizeClasses[size]}`}>
           {rating.toFixed(1)}
         </span>
       )}

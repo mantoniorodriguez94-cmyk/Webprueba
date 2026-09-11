@@ -66,18 +66,18 @@ export default function ReviewForm({
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="bg-transparent backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-      <h3 className="text-xl font-bold text-white mb-4">
+    <form onSubmit={handleSubmit} className="surface rounded-3xl p-6 shadow-sm">
+      <h3 className="text-xl font-bold text-ink mb-4">
         {existingReview ? 'Editar tu reseña' : '¿Qué te pareció este negocio?'}
       </h3>
 
-      <p className="text-gray-300 mb-6">
+      <p className="text-ink-2 mb-6">
         Comparte tu experiencia con <span className="font-semibold">{businessName}</span>
       </p>
 
       {/* Rating Selection */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-ink mb-2">
           Calificación
         </label>
         <div className="flex items-center gap-4">
@@ -88,7 +88,7 @@ export default function ReviewForm({
             onRatingChange={setRating}
           />
           {rating > 0 && (
-            <span className="text-lg font-semibold text-teal-600">
+            <span className="text-lg font-semibold text-blue-600">
               {ratingDescriptions[rating]}
             </span>
           )}
@@ -97,7 +97,7 @@ export default function ReviewForm({
 
       {/* Comment Input */}
       <div className="mb-6">
-        <label htmlFor="comment" className="block text-sm font-medium text-white mb-2">
+        <label htmlFor="comment" className="block text-sm font-medium text-ink mb-2">
           Tu experiencia
         </label>
         <textarea
@@ -106,18 +106,18 @@ export default function ReviewForm({
           onChange={(e) => setComment(e.target.value)}
           placeholder="Cuéntanos sobre tu experiencia con este negocio. ¿Qué te gustó? ¿Qué podría mejorar?"
           rows={4}
-          className="w-full px-4 py-3 bg-white/90 text-gray-900 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none placeholder:text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed pb-20 sm:pb-3"
+          className="w-full px-4 py-3 bg-white text-ink border-2 border-black/15 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 resize-none placeholder:text-ink-2/50 disabled:bg-black/5 disabled:cursor-not-allowed pb-20 sm:pb-3"
           disabled={isSubmitting}
         />
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-1 text-sm text-ink-2">
           Mínimo 10 caracteres ({comment.length}/500)
         </p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-lg">
-          <p className="text-sm text-red-400 font-medium">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+          <p className="text-sm text-red-700 font-medium">{error}</p>
         </div>
       )}
 
@@ -126,7 +126,7 @@ export default function ReviewForm({
         <button
           type="submit"
           disabled={isSubmitting || rating === 0 || comment.trim().length < 10}
-          className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
@@ -158,7 +158,7 @@ export default function ReviewForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-6 py-3 border-2 border-gray-300 bg-white/90 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 border-2 border-black/15 bg-white text-ink-2 font-semibold rounded-lg hover:bg-black/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>

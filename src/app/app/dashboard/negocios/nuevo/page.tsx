@@ -291,7 +291,7 @@ export default function NuevoNegocioPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Verificando permisos...</p>
+          <p className="mt-4 text-ink-2">Verificando permisos...</p>
         </div>
       </div>
     )
@@ -304,26 +304,26 @@ export default function NuevoNegocioPage() {
         <div className="mb-8">
           <button 
             onClick={() => router.back()}
-            className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2 group mb-4"
+            className="text-sm text-ink-2 hover:text-ink transition-colors inline-flex items-center gap-2 group mb-4"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Volver
           </button>
-          <h1 className="text-3xl font-bold text-white">Crear nuevo negocio</h1>
-          <p className="text-gray-300 mt-1">Completa la información de tu negocio</p>
+          <h1 className="text-3xl font-bold text-ink">Crear nuevo negocio</h1>
+          <p className="text-ink-2 mt-1">Completa la información de tu negocio</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-6 sm:p-8 lg:p-10">
+        <div className="surface rounded-3xl shadow-sm p-6 sm:p-8 lg:p-10">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm text-red-400 font-medium">{error}</p>
+                <p className="text-sm text-red-700 font-medium">{error}</p>
               </div>
             </div>
           )}
@@ -331,7 +331,7 @@ export default function NuevoNegocioPage() {
           <form onSubmit={handleCreate} className="space-y-6">
             {/* Nombre */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-ink mb-2">
                 Nombre del negocio *
               </label>
               <input
@@ -347,7 +347,7 @@ export default function NuevoNegocioPage() {
 
             {/* Descripción */}
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="description" className="block text-sm font-semibold text-ink mb-2">
                 Descripción
               </label>
               <textarea
@@ -363,7 +363,7 @@ export default function NuevoNegocioPage() {
 
             {/* Categoría */}
             <div>
-              <label htmlFor="category" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="category" className="block text-sm font-semibold text-ink mb-2">
                 Categoría
               </label>
               <input
@@ -378,13 +378,13 @@ export default function NuevoNegocioPage() {
             </div>
 
             {/* Ubicación: Estado y Municipio (Obligatorio) */}
-            <div className="space-y-4 p-4 bg-blue-500/10 rounded-2xl border-2 border-blue-500/30">
+            <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h3 className="font-bold text-white">Ubicación del Negocio *</h3>
+                <h3 className="font-bold text-ink">Ubicación del Negocio *</h3>
               </div>
               
               {/* Selector de Estado y Municipio */}
@@ -399,7 +399,7 @@ export default function NuevoNegocioPage() {
 
               {/* Detalles adicionales de dirección (opcional) */}
               <div>
-                <label htmlFor="addressDetails" className="block text-sm font-semibold text-white mb-2">
+                <label htmlFor="addressDetails" className="block text-sm font-semibold text-ink mb-2">
                   Detalles adicionales de dirección (opcional)
                 </label>
                 <input
@@ -411,19 +411,19 @@ export default function NuevoNegocioPage() {
                   className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
                   disabled={loading}
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-ink-2 mt-1">
                   Información adicional para ayudar a los clientes a encontrarte
                 </p>
               </div>
             </div>
 
             {/* Ubicación GPS (Opcional) */}
-            <div className="space-y-4 p-4 bg-gray-500/10 rounded-2xl border-2 border-gray-500/30">
+            <div className="space-y-4 p-4 bg-black/[0.02] rounded-2xl border-2 border-black/8">
               <div className="flex items-center gap-2 mb-2">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
-                <h3 className="font-bold text-gray-400">
+                <h3 className="font-bold text-ink-2">
                   Ubicación GPS (Opcional)
                 </h3>
               </div>
@@ -446,7 +446,7 @@ export default function NuevoNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-black/5 hover:bg-black/10 border border-black/10 text-ink font-semibold py-2.5 px-4 rounded-xl transition-all"
                   disabled={loading}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -454,7 +454,7 @@ export default function NuevoNegocioPage() {
                   </svg>
                   Colocar ubicación en mapa
                 </button>
-                <p className="text-xs text-gray-400 mt-2 text-center">
+                <p className="text-xs text-ink-2 mt-2 text-center">
                   Haz clic para seleccionar tu ubicación en un mapa interactivo
                 </p>
               </div>
@@ -462,7 +462,7 @@ export default function NuevoNegocioPage() {
 
             {/* Teléfono */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="phone" className="block text-sm font-semibold text-ink mb-2">
                 Teléfono
               </label>
               <input
@@ -478,7 +478,7 @@ export default function NuevoNegocioPage() {
 
             {/* WhatsApp */}
             <div>
-              <label htmlFor="whatsapp" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="whatsapp" className="block text-sm font-semibold text-ink mb-2">
                 WhatsApp
               </label>
               <input
@@ -494,7 +494,7 @@ export default function NuevoNegocioPage() {
 
             {/* Logo */}
             <div>
-              <label htmlFor="logo" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="logo" className="block text-sm font-semibold text-ink mb-2">
                 Logo (opcional)
               </label>
               <div className="relative">
@@ -516,9 +516,9 @@ export default function NuevoNegocioPage() {
 
             {/* Galería */}
             <div>
-              <label htmlFor="gallery" className="block text-sm font-semibold text-white mb-2 flex items-center justify-between">
+              <label htmlFor="gallery" className="block text-sm font-semibold text-ink mb-2 flex items-center justify-between">
                 <span>Galería de imágenes (opcional)</span>
-                <span className={`text-xs font-normal ${isPremium ? 'text-yellow-400' : 'text-gray-400'}`}>
+                <span className={`text-xs font-normal ${isPremium ? 'text-amber-600' : 'text-ink-2'}`}>
                   {isPremium ? `⭐ Premium: hasta ${MAX_IMAGES_PREMIUM}` : `Máx: ${MAX_IMAGES_FREE} (⭐ Premium: ${MAX_IMAGES_PREMIUM})`}
                 </span>
               </label>
@@ -536,17 +536,17 @@ export default function NuevoNegocioPage() {
               
               {/* Mensaje de error si excede el límite */}
               {galleryError && (
-                <div className="mt-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
-                  <p className="text-sm text-red-400 font-medium">{galleryError}</p>
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-700 font-medium">{galleryError}</p>
                 </div>
               )}
               
               {/* Contador de archivos seleccionados */}
               {gallery && gallery.length > 0 && (
-                <p className={`text-xs mt-2 ${gallery.length === maxImages ? 'text-yellow-400 font-semibold' : 'text-gray-400'}`}>
+                <p className={`text-xs mt-2 ${gallery.length === maxImages ? 'text-amber-600 font-semibold' : 'text-ink-2'}`}>
                   ✓ {gallery.length} de {maxImages} imagen{gallery.length !== 1 ? 'es' : ''} seleccionada{gallery.length !== 1 ? 's' : ''}
                   {!isPremium && (
-                    <Link href="/app/dashboard/perfil" className="ml-2 text-yellow-400 hover:text-yellow-300 underline">
+                    <Link href="/app/dashboard/perfil" className="ml-2 text-amber-600 hover:text-amber-700 underline">
                       ⭐ Mejora a Premium
                     </Link>
                   )}
@@ -559,7 +559,7 @@ export default function NuevoNegocioPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -575,7 +575,7 @@ export default function NuevoNegocioPage() {
               </button>
               <Link
                 href="/app/dashboard"
-                className="flex-1 text-center border-2 border-gray-300 text-white hover:text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-white/10 hover:border-gray-400 transition-colors"
+                className="flex-1 text-center border-2 border-black/15 text-ink-2 hover:text-ink font-semibold py-3 px-6 rounded-2xl hover:bg-black/5 hover:border-black/25 transition-colors"
               >
                 Cancelar
               </Link>
@@ -589,21 +589,21 @@ export default function NuevoNegocioPage() {
         open={showMapModal}
         onClose={() => setShowMapModal(false)}
         aria-label="Seleccionar ubicación GPS"
-        panelClassName="bg-ink-2/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        panelClassName="bg-white border border-black/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
       >
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">📍 Seleccionar Ubicación GPS</h3>
+                <h3 className="text-xl font-bold text-ink">📍 Seleccionar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-white/10 rounded-full transition-all"
+                  className="p-2 hover:bg-black/5 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-ink-2 hover:text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-ink-2">
                 Obtén tu ubicación actual o ingresa las coordenadas manualmente
               </p>
             </div>
@@ -629,7 +629,7 @@ export default function NuevoNegocioPage() {
                     toast.error("Tu navegador no soporta geolocalización.")
                   }
                 }}
-                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl"
+                className="w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-sm"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -637,7 +637,7 @@ export default function NuevoNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-400 mt-2 text-center">
+              <p className="text-xs text-ink-2 mt-2 text-center">
                 La precisión del GPS asegura que los clientes encuentren tu negocio más rápido.
               </p>
             </div>

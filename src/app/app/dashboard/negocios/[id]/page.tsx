@@ -396,9 +396,9 @@ export default function BusinessDetailPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
+          <p className="mt-4 text-ink-2 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -407,11 +407,11 @@ export default function BusinessDetailPage() {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-white mb-4">Negocio no encontrado</h2>
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-ink mb-4">Negocio no encontrado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -423,24 +423,24 @@ export default function BusinessDetailPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-gray-900/10 backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-white/10">
+      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 shadow-sm border-b-2 border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 hover:bg-black/5 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                <h1 className="text-2xl sm:text-3xl font-bold text-ink">
                   {business.name}
                 </h1>
-                <p className="text-sm text-gray-300 mt-1">
+                <p className="text-sm text-ink-2 mt-1">
                   {business.category || "Negocio"}
                 </p>
               </div>
@@ -450,7 +450,7 @@ export default function BusinessDetailPage() {
             {isOwner && (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/gestionar`}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full hover:shadow-xl transition-all font-semibold text-sm"
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-all font-semibold text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -466,10 +466,10 @@ export default function BusinessDetailPage() {
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 sm:p-8 mb-8">
+        <div className="surface rounded-3xl shadow-sm p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 flex-shrink-0 ring-1 ring-gray-700 shadow-lg">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-blue-50 flex-shrink-0 ring-1 ring-black/5 shadow-sm">
               {business.logo_url ? (
                 <Image
                   src={business.logo_url}
@@ -490,13 +490,13 @@ export default function BusinessDetailPage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">{business.name}</h2>
+              <h2 className="text-2xl font-bold text-ink mb-2">{business.name}</h2>
               {business.description && (
-                <p className="text-gray-300 mb-3">{business.description}</p>
+                <p className="text-ink-2 mb-3">{business.description}</p>
               )}
               {business.category && (
-                <p className="text-gray-300 flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p className="text-ink-2 flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                   {business.category}
@@ -512,14 +512,14 @@ export default function BusinessDetailPage() {
                     longitude={business.longitude}
                     showIcon={true}
                     variant="detailed"
-                    className="text-gray-300"
+                    className="text-ink-2"
                   />
                 </div>
               )}
               
               {ownerHasFullContact && (business.phone || business.whatsapp) && (
-                <p className="text-gray-300 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p className="text-ink-2 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   {business.phone || business.whatsapp}
@@ -530,7 +530,7 @@ export default function BusinessDetailPage() {
 
           {/* Botones de Contacto — debajo de toda la información */}
           {!isOwner && (
-            <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-black/8">
               {ownerHasFullContact && business.whatsapp && (
                 <a
                   href={`https://wa.me/${business.whatsapp}`}
@@ -547,7 +547,7 @@ export default function BusinessDetailPage() {
               {ownerHasFullContact && business.phone && (
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
+                  className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold flex-1"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -563,7 +563,7 @@ export default function BusinessDetailPage() {
                     type="button"
                     onClick={() => setShowChatDisabledModal(true)}
                     title="Chat no disponible"
-                    className="flex items-center justify-center gap-2 bg-gray-600/50 text-gray-400 px-6 py-3 rounded-full cursor-not-allowed opacity-60 font-semibold flex-1 border border-white/10"
+                    className="flex items-center justify-center gap-2 bg-black/5 text-ink-2 px-6 py-3 rounded-full cursor-not-allowed opacity-60 font-semibold flex-1 border border-black/8"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -597,7 +597,7 @@ export default function BusinessDetailPage() {
               {user && !isOwner && (
                 <button
                   onClick={() => setShowReportBusinessModal(true)}
-                  className="flex items-center justify-center gap-2 bg-transparent border-2 border-red-500/50 text-red-400 px-6 py-3 rounded-full hover:bg-red-500/10 transition-all font-semibold flex-1"
+                  className="flex items-center justify-center gap-2 bg-white border-2 border-red-200 text-red-600 px-6 py-3 rounded-full hover:bg-red-50 transition-all font-semibold flex-1"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -613,7 +613,7 @@ export default function BusinessDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Galería de Fotos */}
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:border-white/30 transition-all">
+          <div className="surface rounded-3xl shadow-sm p-6 hover:border-black/15 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -621,13 +621,13 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Galería de Fotos</h3>
-                <p className="text-sm text-gray-300">
+                <h3 className="text-lg font-bold text-ink">Galería de Fotos</h3>
+                <p className="text-sm text-ink-2">
                   {galleryUrls.length} fotos
                 </p>
               </div>
             </div>
-            <p className="text-gray-300 text-sm mb-4">
+            <p className="text-ink-2 text-sm mb-4">
               {canManage 
                 ? "Gestiona las imágenes de tu negocio. Puedes agregar, eliminar o reordenar fotos."
                 : "Explora las imágenes del negocio y conoce más sobre sus productos y servicios."
@@ -669,7 +669,7 @@ export default function BusinessDetailPage() {
             {canManage ? (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/galeria`}
-                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30"
+                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200"
               >
                 Gestionar Galería
               </Link>
@@ -679,7 +679,7 @@ export default function BusinessDetailPage() {
                   setCurrentImageIndex(0)
                   setShowGallery(true)
                 }}
-                className="w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-600/30"
+                className="w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm bg-black/5 text-ink-2 hover:bg-black/10 border border-black/10"
                 disabled={galleryUrls.length === 0}
               >
                 {galleryUrls.length > 0 ? 'Ver Galería Completa' : 'Sin imágenes'}
@@ -688,7 +688,7 @@ export default function BusinessDetailPage() {
           </div>
 
           {/* Horarios */}
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:border-white/30 transition-all">
+          <div className="surface rounded-3xl shadow-sm p-6 hover:border-black/15 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -696,11 +696,11 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Horarios</h3>
-                <p className="text-sm text-gray-300">Disponibilidad</p>
+                <h3 className="text-lg font-bold text-ink">Horarios</h3>
+                <p className="text-sm text-ink-2">Disponibilidad</p>
               </div>
             </div>
-            <p className="text-gray-300 text-sm mb-4">
+            <p className="text-ink-2 text-sm mb-4">
               {canManage 
                 ? "Configura los días y horarios de atención de tu negocio."
                 : "Consulta los horarios de atención del negocio."
@@ -709,26 +709,26 @@ export default function BusinessDetailPage() {
 
             {/* Mostrar horarios si existen */}
             {formattedSchedule && formattedSchedule.length > 0 ? (
-              <div className="bg-orange-500/10 backdrop-blur-sm rounded-2xl p-4 mb-4 space-y-2 border border-orange-500/20">
+              <div className="bg-orange-50 rounded-2xl p-4 mb-4 space-y-2 border border-orange-200">
                 {formattedSchedule.map((schedule: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-orange-500/20 last:border-0">
-                    <span className={`font-semibold text-sm ${schedule.isOpen ? 'text-white' : 'text-gray-400'}`}>
+                  <div key={idx} className="flex items-center justify-between py-2 border-b border-orange-200 last:border-0">
+                    <span className={`font-semibold text-sm ${schedule.isOpen ? 'text-ink' : 'text-ink-2/60'}`}>
                       {schedule.day}
                     </span>
                     {schedule.isOpen ? (
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-orange-300">{schedule.openTime}</span>
-                        <span className="text-gray-400">—</span>
-                        <span className="font-medium text-orange-300">{schedule.closeTime}</span>
+                        <span className="font-medium text-orange-700">{schedule.openTime}</span>
+                        <span className="text-ink-2/60">—</span>
+                        <span className="font-medium text-orange-700">{schedule.closeTime}</span>
                       </div>
                     ) : (
-                      <span className="text-gray-500 text-sm italic">Cerrado</span>
+                      <span className="text-ink-2/60 text-sm italic">Cerrado</span>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm italic mb-4 bg-gray-700/30 rounded-xl p-3 text-center border border-gray-600/20">
+              <p className="text-ink-2 text-sm italic mb-4 bg-black/5 rounded-xl p-3 text-center border border-black/8">
                 No se han configurado horarios aún
               </p>
             )}
@@ -736,7 +736,7 @@ export default function BusinessDetailPage() {
             {canManage && (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/horarios`}
-                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 border border-orange-500/30"
+                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200"
               >
                 {formattedSchedule ? 'Actualizar Horarios' : 'Configurar Horarios'}
               </Link>
@@ -744,7 +744,7 @@ export default function BusinessDetailPage() {
           </div>
 
           {/* Promociones */}
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 hover:border-white/30 transition-all">
+          <div className="surface rounded-3xl shadow-sm p-6 hover:border-black/15 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -752,8 +752,8 @@ export default function BusinessDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Promociones</h3>
-                <p className="text-sm text-gray-300">{promotions.length} activa{promotions.length !== 1 ? 's' : ''}</p>
+                <h3 className="text-lg font-bold text-ink">Promociones</h3>
+                <p className="text-sm text-ink-2">{promotions.length} activa{promotions.length !== 1 ? 's' : ''}</p>
               </div>
             </div>
             
@@ -761,7 +761,7 @@ export default function BusinessDetailPage() {
             {promotions.length > 0 && (
               <div className="space-y-3 mb-4">
                 {promotions.slice(0, 2).map((promo) => (
-                  <div key={promo.id} className="bg-pink-500/10 backdrop-blur-sm rounded-2xl p-4 border border-pink-500/20">
+                  <div key={promo.id} className="bg-purple-50 rounded-2xl p-4 border border-purple-200">
                     <div className="flex items-start gap-3">
                       {promo.image_url && (
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
@@ -774,11 +774,11 @@ export default function BusinessDetailPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-white text-sm mb-1 truncate">{promo.name}</h4>
+                        <h4 className="font-bold text-ink text-sm mb-1 truncate">{promo.name}</h4>
                         {promo.price && (
-                          <p className="text-lg font-bold text-pink-300">${promo.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-purple-700">${promo.price.toFixed(2)}</p>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-ink-2 mt-1">
                           Válida hasta {new Date(promo.end_date).toLocaleDateString('es-ES')}
                         </p>
                       </div>
@@ -786,14 +786,14 @@ export default function BusinessDetailPage() {
                   </div>
                 ))}
                 {promotions.length > 2 && (
-                  <p className="text-xs text-center text-gray-500 font-medium">
+                  <p className="text-xs text-center text-ink-2/70 font-medium">
                     +{promotions.length - 2} promoción{promotions.length - 2 !== 1 ? 'es' : ''} más
                   </p>
                 )}
               </div>
             )}
 
-            <p className="text-gray-300 text-sm mb-4">
+            <p className="text-ink-2 text-sm mb-4">
               {canManage 
                 ? "Crea ofertas especiales y promociones para atraer más clientes."
                 : promotions.length === 0 
@@ -805,14 +805,14 @@ export default function BusinessDetailPage() {
             {canManage ? (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/promociones`}
-                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 border border-pink-500/30"
+                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200"
               >
                 Gestionar Promociones
               </Link>
             ) : (
               <Link
                 href={`/app/dashboard/negocios/${business.id}/promociones/ver`}
-                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-pink-500/20 text-pink-300 hover:bg-pink-500/30 border border-pink-500/30"
+                className="block w-full px-4 py-2 rounded-xl transition-colors font-semibold text-sm text-center bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200"
               >
                 Ver Todas las Promociones
               </Link>
@@ -825,10 +825,10 @@ export default function BusinessDetailPage() {
         <div className="mt-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-2">
+              <h2 className="text-3xl font-bold text-ink mb-2">
                 Reseñas y Calificaciones
               </h2>
-              <p className="text-gray-300">
+              <p className="text-ink-2">
                 Descubre qué opinan los clientes sobre este negocio
               </p>
             </div>
@@ -837,7 +837,7 @@ export default function BusinessDetailPage() {
             {user && !isOwner && !userReview && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -850,7 +850,7 @@ export default function BusinessDetailPage() {
             {user && !isOwner && userReview && isAdmin && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
+                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full transition-all font-semibold"
                 title="Solo administradores pueden editar reseñas"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -862,7 +862,7 @@ export default function BusinessDetailPage() {
             
             {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
             {user && !isOwner && userReview && !isAdmin && (
-              <div className="flex items-center gap-2 text-gray-100 bg-gray-70 px-4 py-2 rounded-full border border-gray-200">
+              <div className="flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -900,7 +900,7 @@ export default function BusinessDetailPage() {
 
           {/* Lista de Reviews */}
           <div>
-            <h3 className="text-2xl font-bold text-white mb-6">
+            <h3 className="text-2xl font-bold text-ink mb-6">
               Lo que dicen nuestros clientes
             </h3>
             <ReviewList reviews={reviews} loading={reviewsLoading} />
@@ -908,23 +908,23 @@ export default function BusinessDetailPage() {
 
           {/* Mensaje si el usuario no está logueado */}
           {!user && (
-            <div className="mt-8 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-6 border-2 border-teal-100">
+            <div className="mt-8 bg-blue-50 rounded-2xl p-6 border-2 border-blue-100">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-bold text-white mb-1">
+                  <h4 className="text-lg font-bold text-ink mb-1">
                     ¿Compraste en este negocio?
                   </h4>
-                  <p className="text-gray-300 mb-3">
+                  <p className="text-ink-2 mb-3">
                     Inicia sesión para dejar tu reseña y ayudar a otros clientes
                   </p>
                   <Link
                     href="/app/auth/login"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-2 rounded-full hover:shadow-lg transition-all font-semibold text-sm"
+                    className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition-all font-semibold text-sm"
                   >
                     Iniciar sesión
                   </Link>
@@ -1075,24 +1075,24 @@ export default function BusinessDetailPage() {
         open={showChatDisabledModal}
         onClose={() => setShowChatDisabledModal(false)}
         aria-label="Chat no disponible"
-        panelClassName="max-w-md w-full bg-ink-3/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl"
+        panelClassName="max-w-md w-full bg-white border border-black/10 rounded-3xl p-6 shadow-xl"
       >
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">Chat no disponible</h3>
-            <p className="text-sm text-gray-300">
+            <h3 className="text-lg font-semibold text-ink mb-1">Chat no disponible</h3>
+            <p className="text-sm text-ink-2">
               Este negocio no cuenta con la función de chat activa por el momento.
             </p>
           </div>
         </div>
         <button
           onClick={() => setShowChatDisabledModal(false)}
-          className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition-colors"
+          className="w-full bg-black/5 hover:bg-black/10 text-ink font-semibold py-2.5 rounded-xl transition-colors"
         >
           Entendido
         </button>

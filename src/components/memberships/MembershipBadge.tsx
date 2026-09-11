@@ -17,7 +17,7 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
   if (!type || type === "none") {
     return (
       <span
-        className={`${baseClasses} border border-sky-500/40 text-sky-200 bg-sky-500/10 ${className}`}
+        className={`${baseClasses} border border-sky-200 text-sky-700 bg-sky-50 ${className}`}
       >
         <span>Básico</span>
       </span>
@@ -28,7 +28,7 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
   if (type === "member") {
     return (
       <span
-        className={`${baseClasses} bg-blue-500/15 text-blue-200 border border-blue-400/60 shadow-sm shadow-blue-500/30 ${className}`}
+        className={`${baseClasses} bg-blue-50 text-blue-700 border border-blue-200 ${className}`}
       >
         <Zap className="w-3 h-3" />
         <span>Conecta</span>
@@ -36,11 +36,12 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
     )
   }
 
-  // Tier 2 – Destaca
+  // Tier 2 – Destaca — mismo tema plata que tier-silver-glow en las
+  // tarjetas de negocio (BusinessFeedCard), consistente en toda la app.
   if (type === "bronze_shield" || type === "silver_star") {
     return (
       <span
-        className={`${baseClasses} bg-gradient-to-r from-slate-600/70 via-purple-600/70 to-slate-300/70 text-slate-50 border border-slate-300/70 shadow-sm shadow-purple-500/40 ${className}`}
+        className={`${baseClasses} bg-slate-100 text-slate-700 border border-slate-300 ${className}`}
       >
         <Rocket className="w-3 h-3" />
         <span>Destaca</span>
@@ -48,11 +49,13 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
     )
   }
 
-  // Tier 3 – Patrocina
+  // Tier 3 – Patrocina — antes dorado con glow; el magenta es ahora la
+  // puntuación de marca reservada para este tier (mismo criterio que
+  // tier-patrocina-glow en BusinessFeedCard).
   if (type === "gold_crown") {
     return (
       <span
-        className={`${baseClasses} bg-gradient-to-r from-yellow-400 via-amber-300 to-orange-400 text-yellow-950 border border-yellow-300/90 shadow-[0_0_15px_rgba(250,204,21,0.6)] animate-pulse ${className}`}
+        className={`${baseClasses} bg-purple-50 text-purple-700 border border-purple-300 ${className}`}
       >
         <Crown className="w-3 h-3" />
         <span className="font-bold">Patrocina</span>
@@ -63,7 +66,7 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
   // Fallback genérico (por si se agrega un nuevo tipo en el futuro)
   return (
     <span
-      className={`${baseClasses} bg-emerald-500/10 text-emerald-300 border border-emerald-500/40 ${className}`}
+      className={`${baseClasses} bg-green-50 text-green-700 border border-green-200 ${className}`}
     >
       <CheckCircle className="w-3 h-3" />
       <span>Membresía</span>

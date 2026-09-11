@@ -146,9 +146,9 @@ export default function PromocionesPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
+          <p className="mt-4 text-ink-2 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -157,11 +157,11 @@ export default function PromocionesPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-ink mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -175,27 +175,27 @@ export default function PromocionesPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 shadow-sm border-b-2 border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 hover:bg-black/5 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-ink flex items-center gap-2">
                   <svg className="w-7 h-7 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                   </svg>
                   Promociones
                 </h1>
-                <p className="text-sm text-gray-300 mt-1">
+                <p className="text-sm text-ink-2 mt-1">
                   {business.name} • {activePromotions.length} activa{activePromotions.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -218,12 +218,12 @@ export default function PromocionesPage() {
         
         {/* Lista de Promociones */}
         {promotions.length === 0 ? (
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-12 text-center">
-            <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="surface rounded-3xl shadow-sm p-12 text-center">
+            <svg className="w-24 h-24 text-black/15 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <h3 className="text-2xl font-bold text-white mb-2">No hay promociones creadas</h3>
-            <p className="text-gray-300 mb-6">Comienza creando promociones para atraer más clientes</p>
+            <h3 className="text-2xl font-bold text-ink mb-2">No hay promociones creadas</h3>
+            <p className="text-ink-2 mb-6">Comienza creando promociones para atraer más clientes</p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold"
@@ -292,7 +292,7 @@ function PromotionCard({
   const canReactivate = !promotion.is_active || isExpired
 
   return (
-    <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 overflow-hidden hover:shadow-2xl transition-all group">
+    <div className="surface rounded-3xl shadow-sm overflow-hidden hover:shadow-md transition-all group">
       {/* Imagen */}
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-pink-100 to-pink-200">
         {promotion.image_url ? (
@@ -334,7 +334,7 @@ function PromotionCard({
 
       {/* Contenido */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-white mb-2 truncate">{promotion.name}</h3>
+        <h3 className="text-xl font-bold text-ink mb-2 truncate">{promotion.name}</h3>
         
         {promotion.price && (
           <p className="text-2xl font-bold text-pink-600 mb-3">
@@ -342,7 +342,7 @@ function PromotionCard({
           </p>
         )}
 
-        <div className="space-y-2 text-sm text-gray-300 mb-4">
+        <div className="space-y-2 text-sm text-ink-2 mb-4">
           <p className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -446,7 +446,7 @@ function RenewPromotionModal({
       open={open}
       onClose={closeWithAnimation}
       aria-label="Reactivar o renovar promoción"
-      panelClassName="bg-ink-2/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 w-full max-w-md flex flex-col overflow-hidden"
+      panelClassName="bg-white rounded-3xl shadow-2xl border-2 border-black/10 w-full max-w-md flex flex-col overflow-hidden"
     >
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white rounded-t-3xl flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -459,18 +459,18 @@ function RenewPromotionModal({
           </div>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <p className="text-gray-300 text-sm">
-            <span className="font-semibold text-white">{promotion.name}</span>
+          <p className="text-ink-2 text-sm">
+            <span className="font-semibold text-ink">{promotion.name}</span>
             — Elige la nueva fecha de finalización. La promoción se activará automáticamente.
           </p>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Fecha de finalización *</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Fecha de finalización *</label>
             <input
               type="date"
               value={endDate}
               min={today}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 text-white rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all [color-scheme:dark]"
+              className="w-full px-4 py-3 bg-white border-2 border-black/15 text-ink rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all"
               required
             />
           </div>
@@ -479,7 +479,7 @@ function RenewPromotionModal({
               type="button"
               onClick={closeWithAnimation}
               disabled={saving}
-              className="flex-1 px-4 py-3 border-2 border-white/20 text-gray-300 rounded-2xl hover:bg-white/5 font-semibold disabled:opacity-50"
+              className="flex-1 px-4 py-3 border-2 border-black/15 text-ink-2 rounded-2xl hover:bg-black/5 font-semibold disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -627,7 +627,7 @@ function CreatePromotionModal({
       open={open}
       onClose={closeWithAnimation}
       aria-label="Nueva promoción"
-      panelClassName="bg-white rounded-3xl shadow-2xl border-2 border-white/20 w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col overflow-hidden"
+      panelClassName="bg-white rounded-3xl shadow-2xl border-2 border-black/10 w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col overflow-hidden"
     >
         {/* Header — nota: el cuerpo del formulario usa fondo claro (inputs
             blancos, etiquetas oscuras); antes el panel era `bg-transparent`,
