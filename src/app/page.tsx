@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import WaveMasonryCarousel from "@/components/WaveMasonryCarousel";
+import BusinessShowcase from "@/components/landing/BusinessShowcase";
 import PhoneMockup from "@/components/PhoneMockup";
 import useUser from "@/hooks/useUser";
 import PromotionsCarousel from "@/components/dashboard/PromotionsCarousel";
@@ -317,9 +317,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Carrusel de Negocios */}
+        {/* Negocios: vista previa ahora, catálogo real al crecer */}
         <section className="w-full py-12">
-          <WaveMasonryCarousel />
+          <BusinessShowcase />
         </section>
 
         {/* BLOQUE 4 — PARA PERSONAS */}
