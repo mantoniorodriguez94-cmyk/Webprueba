@@ -9,7 +9,6 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft } from "lucide-react"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import { alertModal } from "@/lib/alertModal"
 
@@ -580,14 +579,6 @@ function ChatInner() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
-          <Link
-            href="/app/dashboard"
-            className="p-2 hover:bg-black/5 rounded-full transition-colors text-ink-2 hover:text-ink flex-shrink-0"
-            aria-label="Volver al inicio"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-
           {selectedConversation && (
             <button
               onClick={() => { setSelectedConversation(null); setMessages([]) }}
