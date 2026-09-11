@@ -1,6 +1,8 @@
 // src/app/dashboard/negocios/[id]/page.tsx
 "use client"
 import React, { useEffect, useState, useCallback, useRef } from "react"
+import { MoreVertical } from "lucide-react"
+import { Popover } from "@/components/ui/Overlay"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -55,6 +57,7 @@ export default function BusinessDetailPage() {
   const [reviewsLoading, setReviewsLoading] = useState(true)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [showReportBusinessModal, setShowReportBusinessModal] = useState(false)
+  const [menuNegocioAbierto, setMenuNegocioAbierto] = useState(false)
   const [showUpgradeSuggestion, setShowUpgradeSuggestion] = useState(false)
   const [showChatDisabledModal, setShowChatDisabledModal] = useState(false)
 
@@ -446,6 +449,46 @@ export default function BusinessDetailPage() {
               </div>
             </div>
 
+            <div className="flex items-center gap-2">
+              {/* Reportar vive acá y no entre las acciones principales: un
+                  botón rojo grande y visible sugiere que reportar es algo
+                  esperado, e invita a hacerlo sin motivo. Detrás de un menú
+                  sigue estando a un toque para quien lo busca. */}
+              {user && !isOwner && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMenuNegocioAbierto((v) => !v)}
+                    aria-label="Más opciones"
+                    aria-haspopup="menu"
+                    aria-expanded={menuNegocioAbierto}
+                    className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                  >
+                    <MoreVertical className="w-5 h-5 text-ink-2" />
+                  </button>
+
+                  <Popover
+                    open={menuNegocioAbierto}
+                    onClose={() => setMenuNegocioAbierto(false)}
+                    align="right"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuNegocioAbierto(false)
+                        setShowReportBusinessModal(true)
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Reportar negocio
+                    </button>
+                  </Popover>
+                </div>
+              )}
+
             {/* Botón Gestionar (solo para dueño) */}
             {isOwner && (
               <Link
@@ -459,6 +502,7 @@ export default function BusinessDetailPage() {
                 Panel de Gestión
               </Link>
             )}
+            </div>
           </div>
         </div>
       </header>
@@ -466,41 +510,34 @@ export default function BusinessDetailPage() {
       {/* Contenido Principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info del Negocio - Card Principal */}
-        <div className="surface rounded-3xl shadow-sm p-6 sm:p-8 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+        <div className="surface rounded-3xl shadow-sm p-5 sm:p-6 mb-6">
+          <div className="flex items-start gap-4">
             {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-blue-50 flex-shrink-0 ring-1 ring-black/5 shadow-sm">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-blue-50 flex-shrink-0 ring-1 ring-black/5">
               {business.logo_url ? (
                 <Image
                   src={business.logo_url}
                   alt={business.name}
-                  width={96}
-                  height={96}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover"
                   placeholder="blur"
                   blurDataURL={BLUR_DATA_URL}
-                  sizes="96px"
+                  sizes="80px"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-3xl">
+                <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-2xl">
                   {business.name[0]}
                 </div>
               )}
             </div>
 
-            {/* Info */}
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-ink mb-2">{business.name}</h2>
+            {/* El nombre y la categoría ya están en el encabezado fijo de
+                arriba: repetirlos acá era la mitad del desorden de esta
+                pantalla. Queda lo que aporta información nueva. */}
+            <div className="flex-1 min-w-0">
               {business.description && (
                 <p className="text-ink-2 mb-3">{business.description}</p>
-              )}
-              {business.category && (
-                <p className="text-ink-2 flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                  {business.category}
-                </p>
               )}
               
               {/* Ubicación con lógica inteligente */}
@@ -593,18 +630,6 @@ export default function BusinessDetailPage() {
                 )
               )}
 
-              {/* Botón Reportar (solo para usuarios no dueños) */}
-              {user && !isOwner && (
-                <button
-                  onClick={() => setShowReportBusinessModal(true)}
-                  className="flex items-center justify-center gap-2 bg-white border-2 border-red-200 text-red-600 px-6 py-3 rounded-full hover:bg-red-50 transition-all font-semibold flex-1"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  Reportar
-                </button>
-              )}
             </div>
           )}
         </div>

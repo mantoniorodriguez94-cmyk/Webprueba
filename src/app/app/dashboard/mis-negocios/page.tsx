@@ -208,13 +208,6 @@ export default function MisNegociosPage() {
               </p>
             </div>
 
-            <Link href="/app/dashboard">
-              <button className="p-2 bg-black/5 rounded-full text-ink-2 hover:text-ink hover:bg-black/10 transition-all">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </Link>
           </div>
         </div>
       </header>

@@ -8,7 +8,7 @@ import { getBadgeTypeForTier, getLabelForTier, getPlanByTier } from "@/lib/membe
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import MembershipTierGrid from "@/components/memberships/MembershipTierGrid"
 import MembershipPaymentModal from "@/components/memberships/MembershipPaymentModal"
-import { ArrowLeft, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import PromotionsManager from "@/components/dashboard/PromotionsManager"
 import { toast } from "sonner"
@@ -153,14 +153,6 @@ export default function MembresiaPage() {
       {/* Header sticky */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-1 rounded-full bg-black/5 px-3 py-1 text-xs text-ink-2 hover:bg-black/10"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            Atrás
-          </button>
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
             <div className="inline-flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-purple-600" />
