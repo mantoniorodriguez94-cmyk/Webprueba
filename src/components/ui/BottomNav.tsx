@@ -14,7 +14,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
 import { Home, MessageCircle, User, Store, Crown, Search, Bookmark } from "lucide-react"
 
 interface BottomNavProps {
@@ -44,13 +43,6 @@ export default function BottomNav({
   miNegocioHref,
 }: BottomNavProps) {
   const pathname = usePathname()
-  const [montado, setMontado] = useState(false)
-
-  useEffect(() => {
-    setMontado(true)
-  }, [])
-
-  if (!montado) return null
 
   const hrefMensajes = messagesHref || "/app/dashboard/chat"
 
@@ -123,7 +115,7 @@ export default function BottomNav({
       ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/90 backdrop-blur-md border-t border-black/10 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden transform-gpu bg-white/90 backdrop-blur-md border-t border-black/10 safe-bottom">
       <div className="flex items-stretch justify-around px-1 py-1.5">
         {destinos.map(({ href, label, Icono, activo, badge }) => (
           <Link

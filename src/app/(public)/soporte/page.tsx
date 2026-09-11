@@ -11,7 +11,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import useUser from "@/hooks/useUser"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 
@@ -63,22 +62,7 @@ export default function SoportePage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-black/10 bg-white/80 backdrop-blur-md">
-        <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/brand/encuentra-mark.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="w-8 h-8"
-              unoptimized
-            />
-            <span className="font-display text-lg font-bold text-ink">App Encuentra</span>
-          </Link>
-        </div>
-      </header>
+    <div>
 
       <main className="max-w-2xl mx-auto px-4 py-10">
         {estado === "enviado" ? (
@@ -90,7 +74,7 @@ export default function SoportePage() {
             </div>
             <h1 className="font-display text-2xl font-bold text-ink mb-2">Mensaje recibido</h1>
             <p className="text-ink-2 mb-6">
-              Te respondemos al correo que dejaste. Si tu consulta es sobre un pago, incluí el
+              Te respondemos al correo que dejaste. Si tu consulta es sobre un pago, incluye el
               comprobante en la respuesta para resolverlo más rápido.
             </p>
             <Link
@@ -104,7 +88,7 @@ export default function SoportePage() {
           <>
             <h1 className="font-display text-3xl font-bold text-ink mb-2">¿Necesitas ayuda?</h1>
             <p className="text-ink-2 mb-8">
-              Escribinos y te respondemos por correo. Contanos con el mayor detalle posible:
+              Escríbenos y te respondemos por correo. Cuéntanos con el mayor detalle posible:
               qué intentabas hacer y qué pasó.
             </p>
 
