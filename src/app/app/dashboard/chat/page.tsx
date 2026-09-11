@@ -584,7 +584,7 @@ function ChatInner() {
           el mismo de las otras secciones. */}
       {selectedConversation ? (
         <header className="sticky top-0 z-40 flex-shrink-0 border-b border-black/10 bg-white/85 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-4 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4">
             <button
               onClick={() => { setSelectedConversation(null); setMessages([]) }}
               className="rounded-full p-2 text-ink-2 transition-colors hover:bg-black/5 lg:hidden"
@@ -614,7 +614,6 @@ function ChatInner() {
               </svg>
             }
             ancho="7xl"
-            variante="portada"
           />
         </div>
       )}

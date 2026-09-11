@@ -200,7 +200,6 @@ export default function MisNegociosPage() {
         }
         acciones={!tierLoading ? <MembershipBadge type={currentBadgeType} /> : undefined}
         ancho="7xl"
-        variante="portada"
       />
 
       {/* Main Content */}

@@ -159,7 +159,6 @@ export default function MembresiaPage() {
         acciones={
           hasActiveSubscription ? <MembershipBadge type={currentBadgeType} /> : undefined
         }
-        variante="portada"
       />
 
       <main className="max-w-7xl mx-auto mt-6 px-4 space-y-6">
