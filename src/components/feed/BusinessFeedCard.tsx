@@ -211,23 +211,26 @@ export default function BusinessFeedCard({
   }, [business.owner_id, business.profiles?.subscription_tier, business.owner?.subscription_tier])
 
   // ── Card border / glow style derived from authoritative profiles data ───────
+  // Tarjeta blanca siempre — el tier se marca con borde/glow, nunca con un
+  // campo de color grande. El magenta (Patrocina) es la única puntuación de
+  // marca que aparece acá.
   const getTierStyles = () => {
     if (ownerHasGoldenBorder) {
-      // Tier 3 (Patrocina)
-      return 'border-2 tier-gold-glow bg-gradient-to-br from-yellow-500/10 to-orange-500/5'
+      // Tier 3 (Patrocina) — antes dorado, ahora magenta
+      return 'border-2 tier-patrocina-glow bg-white'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
-      return 'border-2 tier-silver-glow bg-gradient-to-br from-slate-400/5 to-slate-500/5'
+      return 'border-2 tier-silver-glow bg-white'
     } else if (isPremiumActive) {
       // Legacy is_premium flag on the business row (may lag the profile)
-      return 'border-2 border-yellow-500/70 hover:border-yellow-400/90 shadow-xl shadow-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5'
+      return 'border-2 border-purple-300 hover:border-purple-400 shadow-md shadow-purple-500/10 bg-white'
     } else {
-      return 'border border-white/20 hover:border-white/30 bg-transparent'
+      return 'border border-black/8 hover:border-black/15 bg-white'
     }
   }
 
   return (
-    <div className={`backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative ${getTierStyles()}`}>
+    <div className={`rounded-3xl overflow-hidden transition-all duration-300 animate-fade-in relative shadow-sm ${getTierStyles()}`}>
       {/* Banner Premium */}
       {isPremiumActive && <PremiumBanner />}
       
@@ -237,9 +240,9 @@ export default function BusinessFeedCard({
           {/* Logo del negocio */}
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
             <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
-              isPremiumActive 
-                ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/70 shadow-lg shadow-yellow-500/30' 
-                : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600'
+              isPremiumActive
+                ? 'bg-purple-50 border-2 border-purple-300 shadow-sm'
+                : 'bg-blue-50 border-2 border-black/10'
             }`}>
               {business.logo_url && !imageError ? (
                 <Image
@@ -255,23 +258,23 @@ export default function BusinessFeedCard({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
               )}
             </div>
           </Link>
-          
+
           {/* Info del negocio */}
           <div className="flex-1 min-w-0">
             <Link href={`/app/dashboard/negocios/${business.id}`}>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white truncate hover:text-blue-400 transition-colors">
+                <h3 className="text-lg font-bold text-ink truncate hover:text-blue-600 transition-colors">
                   {business.name}
                 </h3>
                 {isTier3 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 text-[10px] font-bold shadow-lg shadow-yellow-500/40">
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500 text-white text-[10px] font-bold">
                     <Crown className="w-3 h-3" />
                     <span>Verificado</span>
                   </div>
@@ -281,7 +284,7 @@ export default function BusinessFeedCard({
             </Link>
             <div className="flex items-center gap-2 mt-1">
               {business.category && (
-                <span className="text-sm text-gray-400 flex items-center gap-1">
+                <span className="text-sm text-ink-2 flex items-center gap-1">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
@@ -290,10 +293,10 @@ export default function BusinessFeedCard({
               )}
               {business.total_reviews && business.total_reviews > 0 && (
                 <>
-                  {business.category && <span className="text-gray-600">•</span>}
+                  {business.category && <span className="text-black/20">•</span>}
                   <div className="flex items-center gap-1">
                     <StarRating rating={business.average_rating || 0} size="sm" />
-                    <span className="text-sm text-gray-400 font-semibold">
+                    <span className="text-sm text-ink-2 font-semibold">
                       {business.average_rating?.toFixed(1)}
                     </span>
                   </div>
@@ -304,7 +307,7 @@ export default function BusinessFeedCard({
 
           {/* Badge "Nuevo" */}
           {business.created_at && isRecent(business.created_at) && (
-            <span className="px-2.5 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold rounded-full">
+            <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
               Nuevo
             </span>
           )}
@@ -313,13 +316,13 @@ export default function BusinessFeedCard({
           {canEdit && (
             <div className="flex items-center gap-1">
               {isAdmin && !isOwner && (
-                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-bold rounded-full border border-amber-500/30">
+                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200">
                   Admin
                 </span>
               )}
               <Link
                 href={`/app/dashboard/negocios/${business.id}/editar`}
-                className="p-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded-full transition-all"
+                className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-all"
                 title="Editar"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,7 +332,7 @@ export default function BusinessFeedCard({
               {canDelete && onDelete && (
                 <button
                   onClick={() => onDelete(business.id)}
-                  className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-full transition-all"
+                  className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-all"
                   title="Eliminar"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -363,10 +366,10 @@ export default function BusinessFeedCard({
               </div>
             ))}
             {gallery.length > 3 && (
-              <div className="flex-shrink-0 w-32 h-32 bg-ink-3/50 rounded-xl flex items-center justify-center">
+              <div className="flex-shrink-0 w-32 h-32 bg-black/5 rounded-xl flex items-center justify-center">
                 <button
                   onClick={handleGalleryView}
-                  className="text-white text-center"
+                  className="text-ink text-center"
                 >
                   <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -382,13 +385,13 @@ export default function BusinessFeedCard({
       {/* Descripción */}
       {business.description && (
         <div className="px-4 py-3">
-          <p className={`text-gray-300 leading-relaxed text-sm ${showFullDescription ? '' : 'line-clamp-3'}`}>
+          <p className={`text-ink-2 leading-relaxed text-sm ${showFullDescription ? '' : 'line-clamp-3'}`}>
             {business.description}
           </p>
           {business.description.length > 150 && (
             <button
               onClick={() => setShowFullDescription(!showFullDescription)}
-              className="text-blue-400 hover:text-blue-300 text-sm font-semibold mt-2 transition-colors"
+              className="text-blue-600 hover:text-blue-700 text-sm font-semibold mt-2 transition-colors"
             >
               {showFullDescription ? "Ver menos" : "Ver más"}
             </button>
@@ -397,7 +400,7 @@ export default function BusinessFeedCard({
       )}
 
       {/* Información de contacto */}
-      <div className="px-4 py-3 space-y-2 border-t border-white/10">
+      <div className="px-4 py-3 space-y-2 border-t border-black/8">
         {/* Ubicación con lógica inteligente */}
         {(business.address || (business.latitude && business.longitude)) && (
           <div className="flex items-center gap-2 flex-wrap">
@@ -420,22 +423,22 @@ export default function BusinessFeedCard({
 
         {ownerHasFullContact && (business.phone || business.whatsapp) && (
           <div className="flex items-center gap-2 text-sm">
-            <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            <span className="text-gray-400">{business.phone || business.whatsapp}</span>
+            <span className="text-ink-2">{business.phone || business.whatsapp}</span>
           </div>
         )}
       </div>
 
       {/* Barra de Acciones */}
-      <div className="px-4 py-3 border-t border-white/10 flex items-center justify-between gap-2">
+      <div className="px-4 py-3 border-t border-black/8 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {/* Me gusta */}
           <button
             onClick={handleLike}
             className={`p-2 rounded-full transition-all ${
-              liked ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:bg-white/10"
+              liked ? "bg-red-50 text-red-600" : "text-ink-2 hover:bg-black/5"
             }`}
           >
             <svg
@@ -457,7 +460,7 @@ export default function BusinessFeedCard({
           {currentUser && !isOwner && (
             <button
               onClick={handleMessage}
-              className="p-2 rounded-full transition-all text-gray-400 hover:bg-white/10 hover:text-blue-400"
+              className="p-2 rounded-full transition-all text-ink-2 hover:bg-black/5 hover:text-blue-600"
               title="Enviar mensaje"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -467,7 +470,7 @@ export default function BusinessFeedCard({
           )}
 
           {/* Compartir */}
-          <button onClick={handleShare} className="p-2 rounded-full text-gray-400 hover:bg-white/10 hover:text-green-400 transition-all">
+          <button onClick={handleShare} className="p-2 rounded-full text-ink-2 hover:bg-black/5 hover:text-green-600 transition-all">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
@@ -478,7 +481,7 @@ export default function BusinessFeedCard({
         <button
           onClick={handleSave}
           className={`p-2 rounded-full transition-all ${
-            saved ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:bg-white/10"
+            saved ? "bg-blue-50 text-blue-600" : "text-ink-2 hover:bg-black/5"
           }`}
         >
           <svg
@@ -517,7 +520,7 @@ export default function BusinessFeedCard({
           <a
             href={`tel:${business.phone}`}
             onClick={handlePhone}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -525,9 +528,9 @@ export default function BusinessFeedCard({
             Llamar
           </a>
         )}
-        <Link 
+        <Link
           href={`/app/dashboard/negocios/${business.id}`}
-          className="flex-1 bg-ink-3 hover:bg-ink-4 border-2 border-ink-4 text-white hover:border-white/20 font-bold py-3 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
+          className="flex-1 bg-black/5 hover:bg-black/10 border-2 border-black/8 text-ink font-bold py-3 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

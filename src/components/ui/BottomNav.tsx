@@ -92,7 +92,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
       ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-transparent backdrop-blur-sm border-t border-white/20 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/90 backdrop-blur-sm border-t border-black/8 safe-bottom">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item, index) => (
           <Link
@@ -100,8 +100,8 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
             href={item.href}
             className={`relative flex flex-col items-center justify-center flex-1 py-2 px-3 rounded-2xl transition-all duration-300 ${
               item.active
-                ? "bg-blue-500/20"
-                : "hover:bg-gray-800/50"
+                ? "bg-blue-50"
+                : "hover:bg-black/5"
             }`}
           >
             {/* Badge de notificaciones */}
@@ -114,7 +114,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
             {/* Icono */}
             <div
               className={`transition-all duration-300 ${
-                item.active ? "text-blue-400 scale-110" : "text-gray-400"
+                item.active ? "text-blue-600 scale-110" : "text-ink-2"
               }`}
             >
               {item.icon}
@@ -123,7 +123,7 @@ export default function BottomNav({ isCompany = false, unreadCount = 0, messages
             {/* Label */}
             <span
               className={`text-xs font-semibold mt-1 transition-colors ${
-                item.active ? "text-blue-400" : "text-gray-400"
+                item.active ? "text-blue-600" : "text-ink-2"
               }`}
             >
               {item.label}

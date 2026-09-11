@@ -124,33 +124,33 @@ export default function ActivePromotions() {
 
   if (loading) {
     return (
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-2xl">
+      <div className="surface rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 bg-white/10 rounded animate-pulse" />
-          <div className="h-6 w-32 bg-white/10 rounded animate-pulse" />
+          <div className="w-6 h-6 bg-black/5 rounded animate-pulse" />
+          <div className="h-6 w-32 bg-black/5 rounded animate-pulse" />
         </div>
-        <div className="h-[120px] rounded-xl bg-white/5 animate-pulse" />
+        <div className="h-[120px] rounded-xl bg-black/5 animate-pulse" />
       </div>
     )
   }
 
   if (promotions.length === 0) {
     return (
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-2xl">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="surface rounded-2xl p-5 shadow-sm">
+        <h3 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
           </svg>
           Promociones
         </h3>
         <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center mx-auto mb-3">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-sm text-gray-400">No hay promociones de Patrocina activas</p>
-          <p className="text-xs text-gray-500 mt-2">Solo negocios Patrocina aparecen aquí.</p>
+          <p className="text-sm text-ink-2">No hay promociones de Patrocina activas</p>
+          <p className="text-xs text-ink-2/70 mt-2">Solo negocios Patrocina aparecen aquí.</p>
         </div>
       </div>
     )
@@ -160,13 +160,13 @@ export default function ActivePromotions() {
   const businessName = current.businesses?.name || "Negocio"
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-2xl hover:border-white/20 transition-all duration-300">
-      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="surface rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
+      <h3 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
+        <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
         </svg>
         Promociones
-        <span className="ml-auto text-xs font-normal px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
+        <span className="ml-auto text-xs font-normal px-2 py-1 rounded-full bg-purple-50 text-purple-700">
           {promotions.length}
         </span>
       </h3>
@@ -178,20 +178,18 @@ export default function ActivePromotions() {
           className="block"
         >
           <div
-            className={`relative p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-orange-500/10 border border-yellow-500/30 hover:border-yellow-400/50 transition-all duration-300 group overflow-hidden ${
+            className={`relative p-4 rounded-xl bg-purple-50/60 border border-purple-200 hover:border-purple-300 transition-all duration-300 group overflow-hidden ${
               isTransitioning ? "opacity-0 transition-opacity duration-200" : "opacity-100 transition-opacity duration-300"
             }`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 opacity-0 group-hover:opacity-10 blur-xl transition-opacity" />
-
             <div className="relative min-h-[88px] flex flex-col">
-              <h4 className="font-bold text-white text-sm mb-1 line-clamp-2 group-hover:text-yellow-300 transition-colors">
+              <h4 className="font-bold text-ink text-sm mb-1 line-clamp-2 group-hover:text-purple-700 transition-colors">
                 {current.name}
               </h4>
-              <p className="text-xs text-yellow-300/90 font-medium mb-3 truncate">
+              <p className="text-xs text-purple-700/90 font-medium mb-3 truncate">
                 {businessName}
               </p>
-              <div className="mt-auto flex items-center gap-1 text-yellow-400 text-xs group-hover:gap-2 transition-all">
+              <div className="mt-auto flex items-center gap-1 text-purple-600 text-xs group-hover:gap-2 transition-all">
                 <span>Ver más</span>
                 <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -212,14 +210,14 @@ export default function ActivePromotions() {
               aria-label={`Promoción ${i + 1}`}
               onClick={() => setCurrentIndex(i)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === currentIndex ? "w-4 bg-yellow-400" : "w-1.5 bg-white/30 hover:bg-white/50"
+                i === currentIndex ? "w-4 bg-purple-500" : "w-1.5 bg-black/10 hover:bg-black/20"
               }`}
             />
           ))}
         </div>
       )}
 
-      <p className="mt-3 text-center text-xs text-gray-500">
+      <p className="mt-3 text-center text-xs text-ink-2/70">
         Ofertas exclusivas Patrocina
       </p>
     </div>
