@@ -197,33 +197,38 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
         </div>
       </section>
 
-      {/* Sección B: Círculo de Patrocinadores */}
+      {/* Sección B: Círculo de Patrocinadores
+          Grafito en vez del magenta de marca, a pedido del cliente: el nivel
+          apunta a dueños de negocio y el magenta se leía demasiado dulce.
+          Además los otros dos niveles ya ocupan violeta (Conecta) y plateado
+          (Destaca), así que el grafito los distingue — y "tarjeta negra" es
+          el código universal de nivel máximo, sin necesidad de color. */}
       {founderTier && (
         <section className="mt-8 space-y-3">
-          <h2 className="text-sm font-semibold text-purple-700 uppercase tracking-wide flex items-center gap-2">
-            <Crown className="w-4 h-4 text-purple-600" />
+          <h2 className="text-sm font-semibold text-ink uppercase tracking-wide flex items-center gap-2">
+            <Crown className="w-4 h-4 text-ink" />
             Círculo de Patrocinadores
           </h2>
           <p className="text-xs text-ink-2 leading-relaxed max-w-xl">
             ¿Quieres apoyar nuestra causa? Conviértete en{" "}
-            <span className="font-semibold text-purple-700">Patrocinador</span>. Tu negocio
+            <span className="font-semibold text-ink">Patrocinador</span>. Tu negocio
             portará la insignia de verificación oficial y destacará sobre el resto.
           </p>
 
           <button
             type="button"
             onClick={() => onSelectTier(founderTier.tier)}
-            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-purple-300 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-ink/70 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
             <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center">
-                  <Crown className="w-6 h-6 text-purple-600" />
+                <div className="w-11 h-11 rounded-2xl bg-ink/5 border border-ink/15 flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-ink" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-ink">Patrocina</h3>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-500 text-white text-[10px] font-semibold px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white text-[10px] font-semibold px-2 py-0.5">
                       <HeartHandshake className="w-3 h-3" />
                       Special
                     </span>
@@ -257,7 +262,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Crown className="w-4 h-4 text-purple-600 mt-0.5" />
+                <Crown className="w-4 h-4 text-ink mt-0.5" />
                 <div>
                   <p className="font-semibold text-ink">Marco Distintivo Exclusivo</p>
                   <p className="text-[11px] text-ink-2">
@@ -266,7 +271,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-purple-600 mt-0.5" />
+                <Sparkles className="w-4 h-4 text-ink mt-0.5" />
                 <div>
                   <p className="font-semibold text-ink">Módulo de Promociones</p>
                   <p className="text-[11px] text-ink-2">

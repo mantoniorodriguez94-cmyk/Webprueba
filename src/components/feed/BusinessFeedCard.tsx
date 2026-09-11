@@ -216,14 +216,14 @@ export default function BusinessFeedCard({
   // marca que aparece acá.
   const getTierStyles = () => {
     if (ownerHasGoldenBorder) {
-      // Tier 3 (Patrocina) — antes dorado, ahora magenta
+      // Tier 3 (Patrocina) — grafito, igual que la tarjeta del plan
       return 'border-2 tier-patrocina-glow bg-white'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
       return 'border-2 tier-silver-glow bg-white'
     } else if (isPremiumActive) {
       // Legacy is_premium flag on the business row (may lag the profile)
-      return 'border-2 border-purple-300 hover:border-purple-400 shadow-md shadow-purple-500/10 bg-white'
+      return 'border-2 border-ink/40 hover:border-ink/60 shadow-md shadow-ink/10 bg-white'
     } else {
       return 'border border-black/8 hover:border-black/15 bg-white'
     }
@@ -274,7 +274,7 @@ export default function BusinessFeedCard({
                   {business.name}
                 </h3>
                 {isTier3 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500 text-white text-[10px] font-bold">
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-ink text-white text-[10px] font-bold">
                     <Crown className="w-3 h-3" />
                     <span>Verificado</span>
                   </div>

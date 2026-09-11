@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Solo admite rutas internas. Un `next` sin validar permitiría que un enlace
+ * malicioso mande al usuario a otro dominio después de iniciar sesión
+ * (redirección abierta). "//evil.com" es protocolo-relativo: también se rechaza.
+ */
+function destinoSeguro(valor: string | null): string {
+  if (valor && valor.startsWith("/") && !valor.startsWith("//")) return valor;
+  return "/app/dashboard";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,7 +61,11 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/app/dashboard");
+    // Navegación dura a propósito: signInWithPassword deja la cookie de sesión
+    // recién escrita, y un router.push del lado del cliente llega al destino
+    // antes de que el servidor la vea, así que la página se renderiza como si
+    // no hubiera sesión y rebota al inicio.
+    window.location.href = destinoSeguro(searchParams.get("next"));
   };
 
   const handleGoogleLogin = async () => {

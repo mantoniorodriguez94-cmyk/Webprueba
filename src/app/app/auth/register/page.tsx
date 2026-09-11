@@ -6,9 +6,22 @@ import Link from "next/link";
 import { getReferralId, clearReferralCookie } from "@/lib/utils/referral";
 import { Dialog } from "@/components/ui/Overlay";
 
+/**
+ * Solo admite rutas internas. Un `next` sin validar permitiría que un enlace
+ * malicioso mande al usuario a otro dominio después de iniciar sesión
+ * (redirección abierta). "//evil.com" es protocolo-relativo: también se rechaza.
+ */
+function destinoSeguro(valor: string | null): string {
+  if (valor && valor.startsWith("/") && !valor.startsWith("//")) return valor;
+  return "/app/dashboard";
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Se arrastra el destino original para que, tras registrarse e iniciar
+  // sesión, la persona aterrice donde quería ir y no en el inicio.
+  const siguiente = searchParams.get("next");
   const refParam = searchParams.get('ref'); // Capturar parámetro ref
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -162,7 +175,7 @@ export default function RegisterPage() {
       // 2. Si hay sesión activa, redirigir inmediatamente
       if (data.session) {
         // Usuario registrado exitosamente con sesión activa
-        router.push("/app/dashboard");
+        window.location.href = destinoSeguro(searchParams.get("next"));
         return;
       }
   
@@ -181,10 +194,10 @@ export default function RegisterPage() {
   useEffect(() => {
     if (!showSuccessModal) return;
     const timer = setTimeout(() => {
-      router.push("/app/auth/login?registered=1");
+      router.push(`/app/auth/login?registered=1${siguiente ? `&next=${encodeURIComponent(siguiente)}` : ""}`);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [showSuccessModal, router]);
+  }, [showSuccessModal, router, siguiente]);
 
   const handleGoogleSignup = async () => {
     setGoogleLoading(true);
@@ -616,7 +629,7 @@ export default function RegisterPage() {
         <p className="text-sm text-gray-500">Te redirigiremos al inicio de sesión en unos segundos.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => router.push("/app/auth/login?registered=1")}
+            onClick={() => router.push(`/app/auth/login?registered=1${siguiente ? `&next=${encodeURIComponent(siguiente)}` : ""}`)}
             className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-colors"
           >
             Ir al inicio de sesión

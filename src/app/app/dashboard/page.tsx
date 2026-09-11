@@ -1,6 +1,7 @@
 // src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
 import React, { useEffect, useState, useCallback, useRef } from "react"
+import AuthGate from "@/components/auth/AuthGate"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -721,25 +722,7 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
-          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
-          <p className="text-ink-2 mb-6">Debes iniciar sesión para continuar</p>
-          <Link
-            href="/app/auth/login"
-            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
-          >
-            Iniciar Sesión
-          </Link>
-        </div>
-      </div>
-    )
+    return <AuthGate accion="ver los negocios" />
   }
 
   // DESTACADOS: Negocios con interacciones reales O premium activo

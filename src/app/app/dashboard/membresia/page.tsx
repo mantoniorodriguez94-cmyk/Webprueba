@@ -71,6 +71,16 @@ export default function MembresiaPage() {
   }, [user, userLoading])
 
   const handleSelectTier = (tierId: MembershipTier) => {
+    // Los planes se ven sin cuenta a propósito: el precio es la primera
+    // pregunta de cualquiera y la landing ya lo publica. La cuenta se pide
+    // recién al momento de suscribirse, que es cuando hace falta de verdad.
+    if (!user) {
+      router.push(
+        `/app/auth/register?next=${encodeURIComponent("/app/dashboard/membresia")}`
+      )
+      return
+    }
+
     // 1. Obtener plan exacto por ID
     const plan = getPlanByTier(tierId)
 
@@ -124,37 +134,15 @@ export default function MembresiaPage() {
         })
     : null
 
-  if (userLoading || loadingProfile) {
+  // Solo esperamos el perfil cuando hay alguien con sesión: un visitante sin
+  // cuenta no tiene perfil que cargar, y bloquearlo tras un cargador le
+  // esconde justamente lo que vino a ver (los precios).
+  if (userLoading || (user && loadingProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-blue-500" />
           <p className="text-sm text-ink-2">Cargando membresía...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md surface-elevated rounded-3xl p-8 text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h1 className="mb-2 text-2xl font-bold text-ink">Sesión requerida</h1>
-          <p className="mb-4 text-sm text-ink-2">
-            Debes iniciar sesión para gestionar tu membresía.
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push("/app/auth/login")}
-            className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-all"
-          >
-            Ir a iniciar sesión
-          </button>
         </div>
       </div>
     )
@@ -197,12 +185,14 @@ export default function MembresiaPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-blue-600">
-                Estado de tu suscripción
+                {user ? "Estado de tu suscripción" : "Planes de apoyo"}
               </p>
               <h2 className="mt-1 text-lg font-bold text-ink">
-                {hasActiveSubscription
-                  ? `Plan ${currentPlanLabel}`
-                  : "Sin suscripción activa"}
+                {!user
+                  ? "Elegí el nivel que quieras"
+                  : hasActiveSubscription
+                    ? `Plan ${currentPlanLabel}`
+                    : "Sin suscripción activa"}
               </h2>
               <p className="mt-1 text-xs text-ink-2">
                 Tu apoyo ayuda a mantener el proyecto, mejorar el directorio y lanzar nuevas
@@ -237,7 +227,9 @@ export default function MembresiaPage() {
                 </>
               ) : (
                 <p className="text-[11px] text-ink-2">
-                  Elige un nivel de apoyo para obtener tu badge.
+                  {user
+                    ? "Elige un nivel de apoyo para obtener tu badge."
+                    : "Podés ver todos los planes y sus precios. La cuenta se pide al suscribirte."}
                 </p>
               )}
             </div>
