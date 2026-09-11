@@ -42,11 +42,22 @@
     scroll-behavior: smooth;
   }
 
-  /* Anchor scroll offset for sticky header (~80px) */
-  #inicio,
-  #como-funciona,
-  #para-personas,
-  #para-negocios {
+  /* Espacio que el scroll a una sección le deja al header pegajoso (~80px),
+     que si no se le monta encima al título.
+
+     Esto era una lista de cuatro `id` escritos a mano y las secciones ya son
+     seis: "precios" y "preguntas-frecuentes" quedaron fuera, sin margen, y el
+     header les tapaba el título. Las dos están en el menú.
+
+     Ahora aplica a toda <section> con id, así que cubre las seis y las que se
+     agreguen después sin tener que acordarse de volver acá.
+
+     Se mantiene `scroll-margin` (en el destino) y NO `scroll-padding` (en el
+     contenedor), aunque en teoría sean equivalentes: Safari no respeta
+     scroll-padding cuando el scroll viene de scrollIntoView(), que es
+     exactamente como navega el menú de la landing. Ya se probó al revés y el
+     resultado fue perder el margen en las cuatro que funcionaban. */
+  section[id] {
     scroll-margin-top: 5rem;
   }
 
