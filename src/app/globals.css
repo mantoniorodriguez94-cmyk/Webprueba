@@ -96,13 +96,24 @@
   /* Brillo animado para "Patrocina" (Tier 3) — antes dorado, ahora magenta:
      el magenta es la puntuación de marca (promo activa / tier tope), nunca
      un campo de color grande, así que se usa solo en este borde/anillo. */
+  /* Patrocina (tier 3) — grafito, el mismo código que usa el plan en la
+     página de membresía. Es el nivel máximo, así que se distingue por
+     CONTRASTE y no por color: entre tarjetas de borde claro, un marco
+     oscuro salta de inmediato, que es justo la "prioridad visual" que el
+     plan promete.
+
+     Antes usaba `animation: magenta-pulse`, cuyos keyframes no existían en
+     ninguna parte: el borde nunca pulsó. Se reemplaza por un realce estático,
+     que además no distrae en un feed que se recorre. */
   .tier-patrocina-glow {
-    @apply border-purple-500/90 ring-2 ring-purple-300/70;
-    animation: magenta-pulse 3s infinite ease-in-out;
+    @apply border-ink/80 ring-2 ring-ink/15;
+    box-shadow: 0 6px 20px rgba(14, 14, 22, 0.13);
+    transition: all 0.3s ease;
   }
 
   .tier-patrocina-glow:hover {
-    @apply border-purple-400 ring-purple-300;
+    @apply border-ink ring-ink/25;
+    box-shadow: 0 10px 28px rgba(14, 14, 22, 0.18);
   }
 }
 
