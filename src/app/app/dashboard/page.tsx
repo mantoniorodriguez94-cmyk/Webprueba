@@ -2,6 +2,7 @@
 "use client"
 import React, { useEffect, useState, useCallback, useRef } from "react"
 import AuthGate from "@/components/auth/AuthGate"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -810,7 +811,16 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
               <Link href="/" className="inline-block cursor-pointer">
                 <h1 className="text-xl lg:text-2xl font-bold text-ink flex items-center gap-2">
-                  <span className="text-2xl">📍</span>
+                  {/* La marca real, no el emoji 📍 que había quedado acá: la
+                      landing ya usaba el SVG y el dashboard no. */}
+                  <Image
+                    src="/brand/encuentra-mark.svg"
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 lg:w-9 lg:h-9"
+                    unoptimized
+                  />
                   App Encuentra
                 </h1>
               </Link>
