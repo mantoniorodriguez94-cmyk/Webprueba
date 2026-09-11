@@ -65,7 +65,16 @@ export default function SectionHeader({
           </button>
         )}
 
-        {icono && <span className="flex-shrink-0 text-blue-600">{icono}</span>}
+        {/* El tamaño del ícono lo fija el encabezado, no cada pantalla. Once
+            pasaban className="w-5 h-5" en el svg y una se lo olvidó: un svg sin
+            alto dentro de un flex colapsa a cero, así que Mensajes se quedó sin
+            ícono sin que nada se rompiera de forma visible. Acá vale para todas
+            y para las que vengan. */}
+        {icono && (
+          <span className="flex-shrink-0 text-blue-600 [&>svg]:h-5 [&>svg]:w-5">
+            {icono}
+          </span>
+        )}
 
         <div className="min-w-0 flex-1">
           <h1 className="font-display truncate text-xl font-bold leading-tight text-ink">
