@@ -19,6 +19,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
+import useUser from "@/hooks/useUser"
 import DistanceBadge from "@/components/ui/DistanceBadge"
 
 const MIN_REALES = 6
@@ -220,6 +221,7 @@ function Tarjeta({
 
 export default function BusinessShowcase() {
   const [reales, setReales] = useState<Negocio[] | null>(null)
+  const { user } = useUser()
 
   useEffect(() => {
     let vigente = true
@@ -282,7 +284,7 @@ export default function BusinessShowcase() {
 
       <div className="text-center mt-10">
         <Link
-          href="/app/dashboard"
+          href={user ? "/app/dashboard" : `/app/auth/register?next=${encodeURIComponent("/app/dashboard")}`}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-ink text-white font-semibold hover:bg-ink/90 transition-colors"
         >
           {hayCatalogo ? "Ver todos los negocios" : "Explorar el directorio"}

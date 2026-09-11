@@ -2,6 +2,7 @@
 // Unified chat inbox — "Mis Consultas" (as client) + "Mi Negocio" (as business owner)
 "use client"
 import React, { useEffect, useState, useRef, useCallback, Suspense } from "react"
+import AuthGate from "@/components/auth/AuthGate"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -513,18 +514,10 @@ function ChatInner() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
-          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
-          <p className="text-ink-2 mb-6">Debes iniciar sesión para ver tus mensajes</p>
-          <Link
-            href="/app/auth/login"
-            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
-          >
-            Iniciar Sesión
-          </Link>
-        </div>
-      </div>
+      <AuthGate
+        accion="chatear con los negocios"
+        detalle="Con tu cuenta podés escribirle directamente a cualquier negocio y seguir la conversación desde acá."
+      />
     )
   }
 

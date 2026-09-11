@@ -17,6 +17,13 @@ export default function Home() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
 
+  // El directorio requiere cuenta. A quien no la tiene lo mandamos directo a
+  // crearla (arrastrando su destino) en vez de hacerlo rebotar contra una
+  // pantalla de bloqueo, que es un paso extra y se lee como un rechazo.
+  const irANegocios = user
+    ? "/app/dashboard"
+    : `/app/auth/register?next=${encodeURIComponent("/app/dashboard")}`;
+
   // Función para scroll suave a sección (cierra menú primero, luego scroll)
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false);
@@ -65,7 +72,7 @@ export default function Home() {
                   Inicio
                 </button>
                 <Link
-                  href="/app/dashboard"
+                  href={irANegocios}
                   className="text-ink-2 hover:text-ink transition"
                 >
                   Negocios
@@ -100,7 +107,7 @@ export default function Home() {
               <div className="hidden sm:flex items-center space-x-2 sm:space-x-3">
                 {!userLoading && (
                   user ? (
-                    <Link href="/app/dashboard">
+                    <Link href={irANegocios}>
                       <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-all text-sm sm:text-base font-semibold">
                         Mi cuenta
                       </button>
@@ -152,7 +159,7 @@ export default function Home() {
               Inicio
             </button>
             <Link
-              href="/app/dashboard"
+              href={irANegocios}
               className="block text-ink-2 hover:text-ink hover:bg-black/5 transition rounded-xl px-3 py-3"
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -186,7 +193,7 @@ export default function Home() {
           <div className="mt-auto pt-6 border-t border-black/8">
             {!userLoading && (
               user ? (
-                <Link href="/app/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={irANegocios} onClick={() => setMobileMenuOpen(false)}>
                   <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-full transition-all font-semibold">
                     Mi cuenta
                   </button>
@@ -228,7 +235,7 @@ export default function Home() {
 
                 {/* Botones de Acción - Máximo 2 (mobile: full width, min 48px tap target) */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-slide-up animation-delay-600 w-full sm:w-auto">
-                  <Link href="/app/dashboard" className="w-full sm:w-auto">
+                  <Link href={irANegocios} className="w-full sm:w-auto">
                     <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40">
                       <span className="flex items-center justify-center gap-2">
                         Buscar negocios
@@ -383,7 +390,7 @@ export default function Home() {
 
             {/* CTA Para Personas */}
             <div className="text-center mt-8">
-              <Link href="/app/dashboard" className="inline-block w-full sm:w-auto">
+              <Link href={irANegocios} className="inline-block w-full sm:w-auto">
                 <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/25">
                   Explorar negocios
                 </button>
@@ -534,7 +541,7 @@ export default function Home() {
               Empieza hoy con App Encuentra
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md sm:max-w-none mx-auto">
-              <Link href="/app/dashboard" className="w-full sm:w-auto">
+              <Link href={irANegocios} className="w-full sm:w-auto">
                 <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/25">
                   Buscar negocios
                 </button>
@@ -570,12 +577,12 @@ export default function Home() {
                 <h4 className="text-white font-semibold mb-4">Explorar</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link href="/app/dashboard" className="hover:text-white transition">
+                    <Link href={irANegocios} className="hover:text-white transition">
                       Negocios
                     </Link>
                   </li>
                   <li>
-                    <Link href="/app/dashboard" className="hover:text-white transition">
+                    <Link href={irANegocios} className="hover:text-white transition">
                       Buscar negocios
                     </Link>
                   </li>
@@ -619,7 +626,7 @@ export default function Home() {
                     </button>
                   </li>
                   <li>
-                    <Link href="/app/dashboard" className="hover:text-white transition">
+                    <Link href={irANegocios} className="hover:text-white transition">
                       Panel de control
                     </Link>
                   </li>
