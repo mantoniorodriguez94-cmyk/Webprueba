@@ -800,7 +800,7 @@ export default function DashboardPage() {
 
   // ========== NUEVO UI MOBILE-FIRST ==========
   return (
-    <div className="min-h-screen pb-20 lg:pb-0">
+    <div className="min-h-screen lg:pb-0">
       {/* Header Móvil Moderno */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/8 shadow-sm">
         <div className="px-4 py-4 lg:px-6">
@@ -1253,18 +1253,6 @@ export default function DashboardPage() {
         cancelLabel="No, mantener negocio"
       />
 
-      <BottomNav 
-        isCompany={isCompany} 
-        unreadCount={isCompany 
-          ? Object.values(unreadMessagesByBusiness).reduce((sum, count) => sum + count, 0)
-          : unreadMessagesPersonCount
-        }
-        messagesHref={
-          isCompany
-            ? "/app/dashboard/chat?tab=negocio"
-            : "/app/dashboard/chat"
-        }
-      />
     </div>
   )
 }

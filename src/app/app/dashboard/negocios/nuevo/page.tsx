@@ -356,7 +356,7 @@ export default function NuevoNegocioPage() {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
                 rows={4}
-                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500 resize-none pb-20 sm:pb-3"
+                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500 resize-none sm:pb-3"
                 disabled={loading}
               />
             </div>

@@ -8,7 +8,6 @@ import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tier
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import BottomNav from "@/components/ui/BottomNav"
 import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
@@ -278,7 +277,7 @@ export default function PerfilPage() {
   // CONTENIDO PRINCIPAL
   // ============================================================
   return (
-    <div className="min-h-screen pb-24 lg:pb-8">
+    <div className="min-h-screen lg:pb-8">
       {/* HEADER */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -586,11 +585,6 @@ export default function PerfilPage() {
       )}
 
       {/* FOOTER NAV */}
-      <BottomNav
-        isCompany={isCompany}
-        unreadCount={unreadMessagesCount}
-        messagesHref="/app/dashboard/chat"
-      />
     </div>
   )
 }

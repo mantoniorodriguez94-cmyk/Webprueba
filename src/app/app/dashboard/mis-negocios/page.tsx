@@ -10,7 +10,6 @@ import { getMaxBusinessesForTier } from "@/lib/memberships/tiers"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
-import BottomNav from "@/components/ui/BottomNav"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
@@ -163,7 +162,7 @@ export default function MisNegociosPage() {
 
   if (!isCompany) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 pb-24">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,17 +178,12 @@ export default function MisNegociosPage() {
             Volver al inicio
           </Link>
         </div>
-        <BottomNav 
-          isCompany={isCompany} 
-          unreadCount={unreadMessagesCount}
-          messagesHref="/app/dashboard/chat"
-        />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen pb-24 lg:pb-8">
+    <div className="min-h-screen lg:pb-8">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -372,15 +366,6 @@ export default function MisNegociosPage() {
         </div>
       </button>
 
-      <BottomNav 
-        isCompany={isCompany} 
-        unreadCount={unreadMessagesCount}
-        messagesHref={
-          negocios.length === 1 
-            ? `/app/dashboard/negocios/${negocios[0].id}/mensajes`
-            : "/app/dashboard/mis-negocios"
-        }
-      />
     </div>
   )
 }

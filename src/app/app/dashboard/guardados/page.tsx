@@ -15,7 +15,6 @@ import { Bookmark } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import AuthGate from "@/components/auth/AuthGate"
-import BottomNav from "@/components/ui/BottomNav"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { Business } from "@/types/business"
 
@@ -88,7 +87,7 @@ export default function GuardadosPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 lg:pb-10">
+    <div className="min-h-screen lg:pb-10">
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
@@ -138,7 +137,6 @@ export default function GuardadosPage() {
         )}
       </main>
 
-      <BottomNav />
     </div>
   )
 }

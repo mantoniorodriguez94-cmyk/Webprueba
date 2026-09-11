@@ -9,7 +9,6 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
-import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import { alertModal } from "@/lib/alertModal"
 
@@ -1015,7 +1014,6 @@ function ChatInner() {
         </div>
       </div>
 
-      <BottomNav isCompany={isCompany} unreadCount={totalUnread} />
     </div>
   )
 }

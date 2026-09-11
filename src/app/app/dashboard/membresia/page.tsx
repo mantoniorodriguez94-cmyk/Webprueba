@@ -149,7 +149,7 @@ export default function MembresiaPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 lg:pb-10">
+    <div className="min-h-screen lg:pb-10">
       {/* Header sticky */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
