@@ -6,7 +6,6 @@ import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 import AlertModalHost from "@/components/ui/AlertModalHost";
 import ConfirmModalHost from "@/components/ui/ConfirmModalHost";
-import ScrollToTop from "@/components/ui/ScrollToTop";
 
 // Tipografía: se revisó a conciencia si Fraunces/Sora/JetBrains Mono
 // seguían sirviendo al registro "Luz" (claro, sobrio, "serio, cuerdo") y se
@@ -125,9 +124,6 @@ export default function RootLayout({
             Reemplaza el mapa nocturno + degradado de tinta de la versión
             oscura. El pastel vive SOLO acá — nunca en componentes. */}
         <div className="fixed inset-0 z-0 bg-mesh" />
-
-        {/* Cada pantalla abre desde arriba, no por la mitad. */}
-        <ScrollToTop />
 
         {/* Contenido */}
         <div className="relative z-10">

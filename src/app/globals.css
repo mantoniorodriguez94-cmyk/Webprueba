@@ -38,31 +38,16 @@
     font-family: var(--font-display), Georgia, serif;
   }
 
-  /* Nada de `scroll-behavior: smooth` acá.
-     No había una sola ancla `href="#..."` en el proyecto que lo aprovechara
-     —el único scroll suave es el de la landing, que lo pide explícito desde
-     JS—, y en cambio convertía en animación TODO desplazamiento programado,
-     incluido el que lleva la vista arriba al cambiar de sección. Esa animación
-     se interrumpe cuando llegan los datos y cambia el alto de la página, y la
-     sección terminaba abriendo por la mitad. */
-
-  /* Espacio que todo desplazamiento a una sección debe dejar para el header
-     pegajoso, que si no se le monta encima al contenido.
-
-     Antes esto era una lista de cuatro `id` con `scroll-margin-top`, y las
-     secciones se volvieron seis: "precios" y "preguntas-frecuentes" quedaron
-     fuera de la lista, sin margen ninguno, y el header les tapaba el título.
-     Las dos están en el menú, así que se llegaba a ellas de la forma más
-     normal posible.
-
-     `scroll-padding-top` va sobre el contenedor que desplaza en vez de sobre
-     cada destino: vale para todas las secciones a la vez, incluidas las que se
-     agreguen después, que es justo el error que había que dejar de cometer.
-
-     5.5rem = 88px. El header mide 65px en móvil y 77px de `sm` en adelante, así
-     que sobra un respiro en ambos casos. */
   html {
-    scroll-padding-top: 5.5rem;
+    scroll-behavior: smooth;
+  }
+
+  /* Anchor scroll offset for sticky header (~80px) */
+  #inicio,
+  #como-funciona,
+  #para-personas,
+  #para-negocios {
+    scroll-margin-top: 5rem;
   }
 
   ::selection {
@@ -176,14 +161,6 @@
       radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
       radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
       rgb(var(--paper));
-  }
-
-  /* La barra inferior la venía pidiendo desde hace rato, pero no existía en
-     ningún lado: era una clase inventada que el navegador ignoraba en
-     silencio. En iPhone eso deja los botones debajo de la raya del gesto de
-     inicio, que es justo lo que la clase debía evitar. */
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .scrollbar-none::-webkit-scrollbar {
