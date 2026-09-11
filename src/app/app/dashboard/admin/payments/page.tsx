@@ -6,7 +6,11 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { requireAdmin } from '@/utils/admin-auth'
 import AdminPaymentsClient from './AdminPaymentsClient'
+
+// Usa cookies para autenticar, así que no puede renderizarse de forma estática.
+export const dynamic = 'force-dynamic'
 
 // Cliente de Supabase para Server Components
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -53,6 +57,12 @@ async function loadSubmissions(status: 'pending' | 'approved' | 'rejected' = 'pe
 }
 
 export default async function AdminPaymentsPage() {
+  // Esta página consulta con la service role key, que ignora las reglas de
+  // seguridad de la base: sin esta verificación, cualquiera que escribiera la
+  // URL veía los pagos de todos los usuarios con sus nombres y comprobantes.
+  // requireAdmin() redirige al dashboard si no hay sesión de administrador.
+  await requireAdmin()
+
   // Cargar datos iniciales en el servidor (pendientes por defecto)
   const initialSubmissions = await loadSubmissions('pending')
 
