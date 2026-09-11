@@ -30,14 +30,14 @@ export default function PremiumBadge({
   return (
     <div className={`inline-flex items-center gap-1.5 ${className}`}>
       <svg 
-        className={`${sizes[variant]} text-yellow-400`} 
+        className={`${sizes[variant]} text-amber-600`} 
         fill="currentColor" 
         viewBox="0 0 20 20"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
       {showText && (
-        <span className={`font-semibold text-yellow-400 ${textSizes[variant]}`}>
+        <span className={`font-semibold text-amber-600 ${textSizes[variant]}`}>
           Premium
         </span>
       )}
@@ -52,8 +52,8 @@ export default function PremiumBadge({
 export function PremiumBorder({ children, className = '' }: { children: React.ReactNode, className?: string }) {
   return (
     <div className={`relative ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 rounded-lg opacity-75 blur-sm"></div>
-      <div className="relative bg-gray-800 rounded-lg border-2 border-yellow-400/50">
+      <div className="absolute inset-0 bg-amber-400 rounded-lg opacity-50 blur-sm"></div>
+      <div className="relative bg-white rounded-lg border-2 border-amber-300">
         {children}
       </div>
     </div>
@@ -65,7 +65,7 @@ export function PremiumBorder({ children, className = '' }: { children: React.Re
  */
 export function PremiumBanner() {
   return (
-    <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-lg">
+    <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm">
       ⭐ PREMIUM
     </div>
   )

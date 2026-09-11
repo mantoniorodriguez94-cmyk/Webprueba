@@ -4,14 +4,14 @@ export default function MisNegociosLoading() {
   return (
     <div className="min-h-screen pb-24 lg:pb-8">
       {/* Header Skeleton */}
-      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse" />
+              <div className="w-8 h-8 bg-black/8 rounded-full animate-pulse" />
               <div>
-                <div className="h-7 w-48 bg-white/10 rounded animate-pulse mb-2" />
-                <div className="h-4 w-64 bg-white/10 rounded animate-pulse" />
+                <div className="h-7 w-48 bg-black/8 rounded animate-pulse mb-2" />
+                <div className="h-4 w-64 bg-black/8 rounded animate-pulse" />
               </div>
             </div>
           </div>
@@ -21,12 +21,12 @@ export default function MisNegociosLoading() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Bar Skeleton */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl border-2 border-white/20 p-6 mb-8 animate-pulse">
+        <div className="bg-white backdrop-blur-sm rounded-3xl border-2 border-black/8 p-6 mb-8 animate-pulse">
           <div className="flex items-center justify-between mb-4">
-            <div className="h-5 w-40 bg-white/10 rounded" />
-            <div className="h-5 w-24 bg-white/10 rounded" />
+            <div className="h-5 w-40 bg-black/8 rounded" />
+            <div className="h-5 w-24 bg-black/8 rounded" />
           </div>
-          <div className="h-3 bg-white/10 rounded-full w-full" />
+          <div className="h-3 bg-black/8 rounded-full w-full" />
         </div>
 
         {/* Create Button Skeleton */}
@@ -39,28 +39,28 @@ export default function MisNegociosLoading() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-transparent backdrop-blur-sm rounded-3xl border-2 border-white/20 overflow-hidden animate-pulse"
+              className="bg-white backdrop-blur-sm rounded-3xl border-2 border-black/8 overflow-hidden animate-pulse"
             >
               {/* Image skeleton */}
-              <div className="h-48 bg-white/10" />
+              <div className="h-48 bg-black/8" />
 
               {/* Content */}
               <div className="p-6">
                 {/* Title */}
-                <div className="h-6 bg-white/10 rounded mb-3 w-3/4" />
+                <div className="h-6 bg-black/8 rounded mb-3 w-3/4" />
 
                 {/* Category */}
-                <div className="h-4 bg-white/10 rounded mb-4 w-1/2" />
+                <div className="h-4 bg-black/8 rounded mb-4 w-1/2" />
 
                 {/* Stats */}
                 <div className="flex gap-4 mb-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-white/10 rounded" />
-                    <div className="h-4 w-12 bg-white/10 rounded" />
+                    <div className="w-5 h-5 bg-black/8 rounded" />
+                    <div className="h-4 w-12 bg-black/8 rounded" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-white/10 rounded" />
-                    <div className="h-4 w-12 bg-white/10 rounded" />
+                    <div className="w-5 h-5 bg-black/8 rounded" />
+                    <div className="h-4 w-12 bg-black/8 rounded" />
                   </div>
                 </div>
 
@@ -76,12 +76,12 @@ export default function MisNegociosLoading() {
       </main>
 
       {/* Bottom Nav Skeleton - Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-transparent backdrop-blur-sm border-t border-white/20">
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/80 backdrop-blur-sm border-t border-black/8">
         <div className="flex items-center justify-around px-4 py-3">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className="w-6 h-6 bg-white/10 rounded animate-pulse" />
-              <div className="w-12 h-3 bg-white/10 rounded animate-pulse" />
+              <div className="w-6 h-6 bg-black/8 rounded animate-pulse" />
+              <div className="w-12 h-3 bg-black/8 rounded animate-pulse" />
             </div>
           ))}
         </div>

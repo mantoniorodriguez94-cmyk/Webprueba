@@ -112,8 +112,8 @@ export default function LocationSelector({
     <div className="space-y-4">
       {/* Mensaje informativo - Solo mostrar si es requerido (formulario de creación) */}
       {required && (
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3">
-          <p className="text-sm text-blue-300 flex items-start gap-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+          <p className="text-sm text-blue-700 flex items-start gap-2">
             <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -126,15 +126,15 @@ export default function LocationSelector({
 
       {/* Error message */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3">
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {/* Selector de Estado */}
       <div>
-        <label htmlFor="state" className="block text-sm font-semibold text-white mb-2">
-          Estado {required && <span className="text-red-400">*</span>}
+        <label htmlFor="state" className="block text-sm font-semibold text-ink mb-2">
+          Estado {required && <span className="text-red-600">*</span>}
         </label>
         <select
           id="state"
@@ -145,7 +145,7 @@ export default function LocationSelector({
           }}
           disabled={disabled || loadingStates}
           required={required}
-          className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">Selecciona un estado</option>
           {states.map((state) => (
@@ -161,8 +161,8 @@ export default function LocationSelector({
 
       {/* Selector de Municipio */}
       <div>
-        <label htmlFor="municipality" className="block text-sm font-semibold text-white mb-2">
-          Municipio {required && <span className="text-red-400">*</span>}
+        <label htmlFor="municipality" className="block text-sm font-semibold text-ink mb-2">
+          Municipio {required && <span className="text-red-600">*</span>}
         </label>
         <select
           id="municipality"
@@ -173,7 +173,7 @@ export default function LocationSelector({
           }}
           disabled={disabled || loadingMunicipalities || !selectedStateId}
           required={required}
-          className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">
             {!selectedStateId 

@@ -6,12 +6,12 @@ export default function LegalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen text-ink">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Botón de Volver al Inicio */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-8 group"
+          className="inline-flex items-center gap-2 text-ink-2 hover:text-ink transition-colors mb-8 group"
         >
           <svg
             className="w-4 h-4 transition-transform group-hover:-translate-x-1"
@@ -30,7 +30,7 @@ export default function LegalLayout({
         </Link>
 
         {/* Contenedor del contenido legal */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/10 p-6 sm:p-8 lg:p-10">
+        <div className="surface rounded-3xl shadow-sm p-6 sm:p-8 lg:p-10">
           {children}
         </div>
       </div>

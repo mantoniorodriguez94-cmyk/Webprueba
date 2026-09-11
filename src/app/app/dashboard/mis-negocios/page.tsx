@@ -134,7 +134,7 @@ export default function MisNegociosPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Cargando...</p>
+          <p className="mt-4 text-ink-2">Cargando...</p>
         </div>
       </div>
     )
@@ -143,14 +143,14 @@ export default function MisNegociosPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-8 max-w-md">
+        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Acceso restringido</h2>
-          <p className="text-gray-400 mb-6">Debes iniciar sesión para continuar</p>
+          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
+          <p className="text-ink-2 mb-6">Debes iniciar sesión para continuar</p>
           <Link 
             href="/app/auth/login"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
@@ -165,14 +165,14 @@ export default function MisNegociosPage() {
   if (!isCompany) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 pb-24">
-        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-8 max-w-md">
+        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Cuenta de Persona</h2>
-          <p className="text-gray-400 mb-6">Para crear y gestionar negocios, necesitas una cuenta tipo Empresa</p>
+          <h2 className="text-2xl font-bold text-ink mb-3">Cuenta de Persona</h2>
+          <p className="text-ink-2 mb-6">Para crear y gestionar negocios, necesitas una cuenta tipo Empresa</p>
           <Link 
             href="/app/dashboard"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
@@ -192,13 +192,13 @@ export default function MisNegociosPage() {
   return (
     <div className="min-h-screen pb-24 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                   Mis Negocios
@@ -207,7 +207,7 @@ export default function MisNegociosPage() {
                   <MembershipBadge type={currentBadgeType} className="shrink-0" />
                 )}
               </div>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-ink-2 mt-1">
                 {isAdmin 
                   ? `${negocios.length} negocio${negocios.length !== 1 ? 's' : ''} • Ilimitado (Admin)` 
                   : `${negocios.length} de ${allowedBusinesses} negocios creados`
@@ -216,7 +216,7 @@ export default function MisNegociosPage() {
             </div>
 
             <Link href="/app/dashboard">
-              <button className="p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-all">
+              <button className="p-2 bg-black/5 rounded-full text-ink-2 hover:text-ink hover:bg-black/10 transition-all">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -230,23 +230,23 @@ export default function MisNegociosPage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Progress Bar - Solo si NO es admin */}
         {!isAdmin && (
-          <div className="bg-transparent rounded-3xl border border-white/20 p-5 mb-6">
+          <div className="surface rounded-3xl p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-300">Límite de negocios</span>
-              <span className="font-mono text-sm font-bold text-blue-400">{negocios.length}/{allowedBusinesses}</span>
+              <span className="text-sm font-semibold text-ink-2">Límite de negocios</span>
+              <span className="font-mono text-sm font-bold text-blue-600">{negocios.length}/{allowedBusinesses}</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-black/8 rounded-full h-3 overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${
                   negocios.length >= allowedBusinesses 
-                    ? 'bg-gradient-to-r from-amber-500 to-red-500'
-                    : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                    ? 'bg-amber-500'
+                    : 'bg-blue-500'
                 }`}
                 style={{ width: `${(negocios.length / allowedBusinesses) * 100}%` }}
               />
             </div>
             {!canCreateMore && !tierLoading && limitMessage && (
-              <p className="text-xs text-amber-400 mt-2 flex items-center gap-1 flex-wrap">
+              <p className="text-xs text-amber-600 mt-2 flex items-center gap-1 flex-wrap">
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -260,22 +260,22 @@ export default function MisNegociosPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-400">Cargando negocios...</p>
+            <p className="mt-4 text-ink-2">Cargando negocios...</p>
           </div>
         ) : negocios.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-12 h-12 text-ink-2/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No tienes negocios aún</h3>
-            <p className="text-gray-400 mb-6">Crea tu primer negocio y comienza a recibir clientes</p>
+            <h3 className="text-xl font-bold text-ink mb-2">No tienes negocios aún</h3>
+            <p className="text-ink-2 mb-6">Crea tu primer negocio y comienza a recibir clientes</p>
             <button 
               onClick={handleCreateBusiness}
               disabled={!canCreateMore}
               title={limitMessage ?? undefined}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold px-6 py-3 rounded-full transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-full transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -283,7 +283,7 @@ export default function MisNegociosPage() {
               Crear mi primer negocio
             </button>
             {!canCreateMore && !tierLoading && limitMessage && (
-              <p className="text-sm text-amber-400 mt-3 max-w-sm">{limitMessage}</p>
+              <p className="text-sm text-amber-600 mt-3 max-w-sm">{limitMessage}</p>
             )}
           </div>
         ) : (
@@ -291,13 +291,13 @@ export default function MisNegociosPage() {
             {negocios.map((negocio) => (
               <div
                 key={negocio.id}
-                className="bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-all"
+                className="surface rounded-3xl overflow-hidden hover:border-black/15 transition-all"
                 style={{ contentVisibility: "auto", containIntrinsicSize: "320px" }}
               >
                 {/* Logo/Header */}
-                <div className="p-5 border-b border-gray-700">
+                <div className="p-5 border-b border-black/8">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-gray-600 flex-shrink-0">
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-blue-50 border-2 border-black/8 flex-shrink-0">
                       {negocio.logo_url ? (
                         <Image
                           src={negocio.logo_url}
@@ -311,15 +311,15 @@ export default function MisNegociosPage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-blue-400 font-bold text-xl">
+                        <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-xl">
                           {negocio.name[0]}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white truncate text-lg">{negocio.name}</h3>
+                      <h3 className="font-bold text-ink truncate text-lg">{negocio.name}</h3>
                       {negocio.category && (
-                        <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
+                        <p className="text-sm text-ink-2 flex items-center gap-1 mt-1">
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                           </svg>
@@ -332,8 +332,8 @@ export default function MisNegociosPage() {
 
                 {/* Descripción */}
                 {negocio.description && (
-                  <div className="px-5 py-4 border-b border-gray-700">
-                    <p className="text-sm text-gray-400 line-clamp-2">{negocio.description}</p>
+                  <div className="px-5 py-4 border-b border-black/8">
+                    <p className="text-sm text-ink-2 line-clamp-2">{negocio.description}</p>
                   </div>
                 )}
 
@@ -349,7 +349,7 @@ export default function MisNegociosPage() {
                     </button>
                   </Link>
                   <Link href={`/app/dashboard/negocios/${negocio.id}`}>
-                    <button className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-2xl transition-all">
+                    <button className="w-full flex items-center justify-center gap-2 bg-black/5 hover:bg-black/10 text-ink font-bold py-3 rounded-2xl transition-all">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -364,11 +364,11 @@ export default function MisNegociosPage() {
                   <button
                     onClick={() => setPendingDelete(negocio)}
                     disabled={deletingId === negocio.id}
-                    className="w-full flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2.5 rounded-2xl transition-all border border-red-500/30 disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2.5 rounded-2xl transition-all border border-red-200 disabled:opacity-50"
                   >
                     {deletingId === negocio.id ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
                         Eliminando...
                       </>
                     ) : (
@@ -413,12 +413,12 @@ export default function MisNegociosPage() {
         onClick={handleCreateBusiness}
         disabled={!canCreateMore}
         title={limitMessage ?? undefined}
-        className="fixed bottom-24 lg:bottom-8 right-6 z-40 w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-blue-500/50"
+        className="fixed bottom-24 lg:bottom-8 right-6 z-40 w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-blue-500/50"
       >
         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
         </svg>
-        <div className="absolute bottom-20 right-0 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-xl pointer-events-none">
+        <div className="absolute bottom-20 right-0 bg-ink-3 text-paper px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-xl pointer-events-none">
           {canCreateMore ? "Crear negocio" : (limitMessage ?? "Límite alcanzado")}
         </div>
       </button>

@@ -1,15 +1,16 @@
 export default function PublicTermsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100">
+    <main className="min-h-screen text-ink">
       <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white">
+        <div className="surface rounded-3xl shadow-sm p-6 sm:p-10">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-ink">
           Términos y Condiciones de Uso
         </h1>
-        <p className="text-white/60 text-sm mb-8">
+        <p className="text-ink-2/70 text-sm mb-8">
           Última actualización: Febrero 2026
         </p>
 
-        <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-a:text-blue-300 prose-a:no-underline hover:prose-a:underline prose-li:text-white/90">
+        <article className="prose max-w-none prose-headings:text-ink prose-p:text-ink-2 prose-strong:text-ink prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-li:text-ink-2">
           <section className="space-y-6">
             <div>
               <h2 className="text-2xl font-semibold mb-3">1. Introducción y Aceptación</h2>
@@ -191,6 +192,7 @@ export default function PublicTermsPage() {
             </div>
           </section>
         </article>
+        </div>
       </div>
     </main>
   )

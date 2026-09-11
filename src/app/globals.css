@@ -53,12 +53,12 @@
      sombra, hairline un poco más presente para separarse de lo que hay
      debajo. */
   .surface-elevated {
-    @apply bg-white border border-black/8 shadow-lg shadow-ink/5;
+    @apply bg-white border border-black/10 shadow-lg shadow-ink/5;
   }
 
   /* Divisor sutil reutilizable donde antes había border-white/10. */
   .hairline {
-    @apply border-black/8;
+    @apply border-black/10;
   }
 
   /* Vidrio esmerilado — antes era vidrio oscuro sobre el mapa nocturno
@@ -69,7 +69,7 @@
   }
 
   .glass-strong {
-    @apply bg-white/85 backdrop-blur-xl border border-black/8 shadow-md;
+    @apply bg-white/85 backdrop-blur-xl border border-black/10 shadow-md;
   }
 
   .card-elegant {

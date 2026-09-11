@@ -505,7 +505,7 @@ function ChatInner() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto" />
-          <p className="mt-4 text-gray-300">Cargando mensajes...</p>
+          <p className="mt-4 text-ink-2">Cargando mensajes...</p>
         </div>
       </div>
     )
@@ -514,9 +514,9 @@ function ChatInner() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center bg-white/5 backdrop-blur-xl rounded-3xl border border-gray-700 p-8 max-w-md">
-          <h2 className="text-2xl font-bold text-white mb-3">Acceso restringido</h2>
-          <p className="text-gray-400 mb-6">Debes iniciar sesión para ver tus mensajes</p>
+        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
+          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
+          <p className="text-ink-2 mb-6">Debes iniciar sesión para ver tus mensajes</p>
           <Link
             href="/app/auth/login"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
@@ -547,11 +547,11 @@ function ChatInner() {
   return (
     <div className="min-h-screen w-full flex flex-col pb-0">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-xl border-b border-white/10 flex-shrink-0">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/8 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
           <Link
             href="/app/dashboard"
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white flex-shrink-0"
+            className="p-2 hover:bg-black/5 rounded-full transition-colors text-ink-2 hover:text-ink flex-shrink-0"
             aria-label="Volver al inicio"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -560,7 +560,7 @@ function ChatInner() {
           {selectedConversation && (
             <button
               onClick={() => { setSelectedConversation(null); setMessages([]) }}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-300 lg:hidden"
+              className="p-2 hover:bg-black/5 rounded-full transition-colors text-ink-2 lg:hidden"
               aria-label="Volver a la lista"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -569,8 +569,8 @@ function ChatInner() {
             </button>
           )}
 
-          <h1 className="text-xl font-bold text-white flex items-center gap-2 truncate min-w-0">
-            <svg className="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h1 className="text-xl font-bold text-ink flex items-center gap-2 truncate min-w-0">
+            <svg className="w-6 h-6 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <span className="truncate">
@@ -593,10 +593,10 @@ function ChatInner() {
         <div
           className={`${
             selectedConversation ? "hidden lg:flex" : "flex"
-          } w-full lg:w-96 flex-col border-r border-white/10 bg-gray-900/50 min-h-0`}
+          } w-full lg:w-96 flex-col border-r border-black/8 bg-white/60 min-h-0`}
         >
           {/* Tabs */}
-          <div className="flex border-b border-white/10 flex-shrink-0">
+          <div className="flex border-b border-black/8 flex-shrink-0">
             {/* Tab: Mis Consultas */}
             <button
               onClick={() => {
@@ -606,8 +606,8 @@ function ChatInner() {
               }}
               className={`flex-1 py-3 px-3 text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === "consultas"
-                  ? "text-blue-400 border-b-2 border-blue-400 bg-blue-500/10"
-                  : "text-gray-400 hover:text-gray-300 hover:bg-white/5"
+                  ? "text-blue-600 border-b-2 border-blue-500 bg-blue-50"
+                  : "text-ink-2 hover:text-ink hover:bg-black/5"
               }`}
             >
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -630,8 +630,8 @@ function ChatInner() {
               }}
               className={`flex-1 py-3 px-3 text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === "negocio"
-                  ? "text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10"
-                  : "text-gray-400 hover:text-gray-300 hover:bg-white/5"
+                  ? "text-green-600 border-b-2 border-green-500 bg-green-50"
+                  : "text-ink-2 hover:text-ink hover:bg-black/5"
               }`}
             >
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -648,8 +648,8 @@ function ChatInner() {
 
           {/* ── Business context switcher (only when owning 2+ businesses) ── */}
           {activeTab === "negocio" && userBusinesses.length > 1 && (
-            <div className="flex-shrink-0 px-3 py-2.5 border-b border-white/10 bg-gray-900/60">
-              <label className="text-xs text-gray-400 mb-1.5 block font-medium tracking-wide">
+            <div className="flex-shrink-0 px-3 py-2.5 border-b border-black/8 bg-black/[0.02]">
+              <label className="text-xs text-ink-2 mb-1.5 block font-medium tracking-wide">
                 Viendo mensajes de:
               </label>
               <div className="relative">
@@ -660,16 +660,16 @@ function ChatInner() {
                     setSelectedConversation(null)
                     setMessages([])
                   }}
-                  className="w-full appearance-none bg-gray-800 border border-white/10 text-white text-sm font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 cursor-pointer transition-colors hover:border-white/20"
+                  className="w-full appearance-none bg-white border border-black/15 text-ink text-sm font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-400/40 cursor-pointer transition-colors hover:border-black/25"
                 >
                   {userBusinesses.map((biz) => (
-                    <option key={biz.id} value={biz.id} className="bg-gray-800 text-white font-normal">
+                    <option key={biz.id} value={biz.id} className="bg-white text-ink font-normal">
                       {biz.name}
                     </option>
                   ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -682,21 +682,21 @@ function ChatInner() {
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto" />
-                <p className="mt-3 text-white/50 text-sm">Cargando...</p>
+                <p className="mt-3 text-ink-2 text-sm">Cargando...</p>
               </div>
             </div>
           ) : activeConversations.length === 0 ? (
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center max-w-xs">
-                <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-ink-2/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">
+                <h3 className="text-base font-semibold text-ink mb-2">
                   {activeTab === "consultas" ? "Sin consultas" : "Sin mensajes"}
                 </h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-ink-2">
                   {activeTab === "consultas"
                     ? "Contacta un negocio para iniciar una conversación"
                     : userBusinesses.length === 0
@@ -724,11 +724,11 @@ function ChatInner() {
                 return (
                   <div
                     key={conv.conversation_id}
-                    className={`group relative w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-white/5 ${
+                    className={`group relative w-full p-4 flex items-center gap-3 hover:bg-black/[0.03] transition-colors border-b border-black/5 ${
                       isSelected
                         ? isClient
-                          ? "bg-blue-600/10 border-l-2 border-l-blue-500"
-                          : "bg-emerald-600/10 border-l-2 border-l-emerald-500"
+                          ? "bg-blue-50 border-l-2 border-l-blue-500"
+                          : "bg-green-50 border-l-2 border-l-green-500"
                         : ""
                     }`}
                   >
@@ -742,8 +742,8 @@ function ChatInner() {
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg ${
                         isClient
-                          ? "bg-gradient-to-br from-blue-600 to-purple-600"
-                          : "bg-gradient-to-br from-emerald-600 to-teal-600"
+                          ? "bg-blue-500"
+                          : "bg-green-600"
                       }`}
                     >
                       {isClient && conv.business_logo ? (
@@ -765,14 +765,14 @@ function ChatInner() {
                     {/* Text */}
                     <div className="flex-1 min-w-0 text-left">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-white truncate">
+                        <h3 className="font-semibold text-ink truncate">
                           {displayName}
                         </h3>
-                        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                        <span className="text-xs text-ink-2 flex-shrink-0 ml-2">
                           {formatTime(conv.last_message_at)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-400 truncate">
+                      <p className="text-sm text-ink-2 truncate">
                         {conv.last_message_sender_id === user.id && "Tú: "}
                         {conv.last_message}
                       </p>
@@ -800,18 +800,18 @@ function ChatInner() {
                               : conv.conversation_id
                           )
                         }}
-                        className="p-2 hover:bg-gray-600 rounded-full transition-colors"
+                        className="p-2 hover:bg-black/10 rounded-full transition-colors"
                         aria-label="Opciones"
                       >
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
                       </button>
                       {openMenuId === conv.conversation_id && (
-                        <div className="absolute right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
+                        <div className="absolute right-0 mt-1 bg-white border border-black/10 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
                           <button
                             onClick={(e) => handleDeleteConversation(conv, e)}
-                            className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -832,35 +832,35 @@ function ChatInner() {
         <div
           className={`${
             selectedConversation ? "flex" : "hidden lg:flex"
-          } flex-1 flex-col bg-gray-900/30 min-h-0`}
+          } flex-1 flex-col min-h-0`}
         >
           {selectedConversation ? (
             <>
               {/* ── Context identity bar ── */}
               {selectedConversation.mode === "business" ? (
                 /* Business owner context — highly visible */
-                <div className="flex-shrink-0 px-4 py-3 border-b border-emerald-500/30 bg-emerald-950/60 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 px-4 py-3 border-b border-green-200 bg-green-50 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] uppercase tracking-widest text-emerald-500/70 font-semibold leading-none mb-0.5">
+                    <p className="text-[10px] uppercase tracking-widest text-green-700/80 font-semibold leading-none mb-0.5">
                       Respondiendo en nombre de
                     </p>
-                    <p className="text-sm font-bold text-emerald-200 truncate">
+                    <p className="text-sm font-bold text-green-800 truncate">
                       🏢 {selectedBusinessName || selectedConversation.business_name}
                     </p>
                   </div>
                 </div>
               ) : (
                 /* Client context — subtle blue bar */
-                <div className="flex-shrink-0 px-4 py-2 border-b border-white/10 bg-blue-900/20 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 px-4 py-2 border-b border-black/8 bg-blue-50 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span className="text-xs font-medium text-blue-300 truncate">
+                  <span className="text-xs font-medium text-blue-700 truncate">
                     Conversación con: {selectedConversation.business_name}
                   </span>
                 </div>
@@ -880,14 +880,14 @@ function ChatInner() {
                           msg.status === "sending" ? "opacity-70" : "opacity-100"
                         } ${
                           isOwn
-                            ? "bg-blue-600 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
-                            : "bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-bl-sm"
+                            ? "bg-blue-500 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
+                            : "bg-white border border-black/10 text-ink rounded-bl-sm shadow-sm"
                         }`}
                       >
                         <p className="text-sm sm:text-base break-words">{msg.content}</p>
                         <div
                           className={`text-xs mt-1 flex items-center justify-end gap-1 ${
-                            isOwn ? "text-blue-200" : "text-white/50"
+                            isOwn ? "text-blue-100" : "text-ink-2/70"
                           }`}
                         >
                           {msg.status === "sending" && isOwn && (
@@ -921,22 +921,22 @@ function ChatInner() {
               </div>
 
               {/* Input */}
-              <div className="flex-shrink-0 bg-gray-900/95 backdrop-blur-xl border-t border-white/10 p-3 pb-4 mb-16 lg:mb-0">
+              <div className="flex-shrink-0 bg-white/90 backdrop-blur-xl border-t border-black/8 p-3 pb-4 mb-16 lg:mb-0">
                 <form onSubmit={handleSendMessage}>
-                  <div className="flex flex-row bg-gray-800/80 rounded-full p-1.5 items-center gap-2 shadow-lg">
+                  <div className="flex flex-row bg-black/[0.04] rounded-full p-1.5 items-center gap-2 shadow-sm">
                     <input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onClick={enableNotifications}
                       placeholder="Escribe un mensaje..."
-                      className="flex-1 bg-transparent text-white px-4 py-2.5 rounded-full focus:outline-none placeholder:text-gray-500"
+                      className="flex-1 bg-transparent text-ink px-4 py-2.5 rounded-full focus:outline-none placeholder:text-ink-2/50"
                       disabled={sending}
                     />
                     <button
                       type="submit"
                       disabled={sending || !newMessage.trim()}
-                      className="w-11 h-11 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg"
+                      className="w-11 h-11 bg-blue-500 hover:bg-blue-600 disabled:bg-black/10 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg"
                     >
                       {sending ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
@@ -954,13 +954,13 @@ function ChatInner() {
             /* Empty state — no conversation selected */
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center max-w-md">
-                <svg className="w-16 h-16 text-gray-600 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-16 h-16 text-ink-2/50 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                <h3 className="text-xl font-bold text-white mb-3">
+                <h3 className="text-xl font-bold text-ink mb-3">
                   Selecciona una conversación
                 </h3>
-                <p className="text-gray-400">
+                <p className="text-ink-2">
                   {activeTab === "consultas"
                     ? "Elige un negocio de la lista para ver tu conversación"
                     : "Elige un cliente de la lista para responderle"}
