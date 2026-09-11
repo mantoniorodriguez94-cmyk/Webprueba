@@ -36,7 +36,6 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
   }
 
   const handleRegenerate = async (businessId: string) => {
-    // TODO: Implementar regeneración de código
     if (confirm("¿Estás seguro de que quieres regenerar este código? El código anterior quedará inválido.")) {
       try {
         const response = await fetch("/api/admin/business/generate-claim-code", {

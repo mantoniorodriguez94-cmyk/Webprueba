@@ -507,7 +507,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-ink">Negocios verificados</h3>
-                <p className="text-ink-2 text-sm">Cada negocio pasa por un proceso de verificación.</p>
+                <p className="text-ink-2 text-sm">Los negocios verificados llevan una insignia que puedes reconocer en su ficha.</p>
               </div>
 
               <div className="flex flex-col items-center space-y-3">

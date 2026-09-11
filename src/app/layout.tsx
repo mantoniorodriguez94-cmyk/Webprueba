@@ -40,9 +40,37 @@ const fontMono = JetBrains_Mono({
   display: "swap",
 });
 
+const SITIO = "https://appencuentra.com"
+const TITULO = "App Encuentra — Encuentra negocios locales en los que puedes confiar"
+const DESCRIPCION =
+  "La distancia exacta a cada negocio, reseñas reales y chat directo con el dueño. Descubre negocios cerca de ti en Venezuela."
+
 export const metadata: Metadata = {
-  title: "App Encuentra - Conecta negocios y personas",
-  description: "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
+  // metadataBase es necesario para que las URLs relativas de las imágenes de
+  // vista previa se resuelvan como absolutas: sin esto, WhatsApp y las redes
+  // no encuentran la imagen.
+  metadataBase: new URL(SITIO),
+  title: TITULO,
+  description: DESCRIPCION,
+
+  // Sin esto, un enlace compartido por WhatsApp se ve como texto pelado.
+  // Es el canal principal de invitaciones del producto, así que la vista
+  // previa es parte del embudo de registro, no un adorno.
+  openGraph: {
+    type: "website",
+    locale: "es_VE",
+    url: SITIO,
+    siteName: "App Encuentra",
+    title: TITULO,
+    description: DESCRIPCION,
+    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "App Encuentra" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO,
+    description: DESCRIPCION,
+    images: ["/brand/og.png"],
+  },
   applicationName: "App Encuentra",
   appleWebApp: {
     capable: true,
