@@ -183,7 +183,7 @@ export default function PhoneMockup() {
                 transition={{ delay: 0.5 }}
                 className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
               >
-                <div className="h-32 bg-gradient-to-br from-blue-300 via-cyan-400 to-teal-400 relative">
+                <div className="h-32 bg-gradient-to-br from-[#C9D9F6] via-[#C3CFE0] to-[#DAD3F5] relative">
                   <div className="absolute inset-0 bg-black/10" />
                 </div>
                 <div className="p-3">

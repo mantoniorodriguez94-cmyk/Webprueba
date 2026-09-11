@@ -104,10 +104,31 @@ const config: Config = {
         // Superficie — fondos claros. Antes era un crema tibio sin uso real
         // en el código (0 referencias en `src`); ahora es el par de la
         // tinta: fondo de página y superficie de tarjeta.
+        // `orange` NO se remapea a propósito: sus usos son semánticos (pagos
+        // pendientes, acciones de precaución, avisos), y el ámbar para
+        // "pendiente" es convención correcta. Está confinado a estados, no a
+        // superficies de marca, así que no compite con el violeta.
+
+        // El blanco puro se reemplaza por un blanco TINTADO. El blanco puro
+        // (#FFFFFF) no tiene matiz: no pertenece a ninguna paleta, y por eso
+        // se lee plano. Este lleva un sesgo mínimo hacia el violeta del
+        // acento (R250 G249 B253), suficiente para que las superficies
+        // pertenezcan al sistema sin que se perciban como "grises".
+        //
+        // Se redefine el token `white` a propósito: las ~215 superficies de
+        // la app usan `bg-white` / `border-white`, así que el cambio hereda
+        // en todas de una sola vez. El texto sobre el botón violeta o sobre
+        // foto también queda tintado, que es preferible — el blanco puro
+        // sobre color saturado es innecesariamente duro.
+        white: '#FAF9FD',
+
         paper: {
-          DEFAULT: '#FBFAFC', // fondo de página
-          2: '#FFFFFF',        // superficie / tarjetas
-          dim: '#F1EFF5',      // superficie elevada / hover, lavado sutil
+          // El fondo baja de #FBFAFC a un gris tenue: antes había 4 puntos
+          // de diferencia con las tarjetas, prácticamente nada, y esa falta
+          // de separación era la otra mitad de la sensación de planitud.
+          DEFAULT: '#F1F0F6', // fondo de página
+          2: '#FAF9FD',       // superficie / tarjetas (= white tintado)
+          dim: '#E9E7F0',     // superficie elevada / hover, lavado sutil
         },
       },
       fontFamily: {

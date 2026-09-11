@@ -6,7 +6,7 @@
   body {
     @apply text-ink;
     font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-    background-color: #FBFAFC;
+    background-color: #F1F0F6;
   }
 
   h1, h2, h3, h4 {
@@ -27,7 +27,7 @@
 
   ::selection {
     background-color: #5B4FE8;
-    color: #FBFAFC;
+    color: #FAF9FD;
   }
 }
 
@@ -124,7 +124,7 @@
       radial-gradient(54% 44% at 86% 14%, #C9D9F6 0%, transparent 72%),
       radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
       radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
-      #FBFAFC;
+      #F1F0F6;
   }
 
   .scrollbar-none::-webkit-scrollbar {
