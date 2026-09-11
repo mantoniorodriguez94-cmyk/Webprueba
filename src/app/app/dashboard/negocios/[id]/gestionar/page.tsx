@@ -10,6 +10,9 @@ import Image from "next/image"
 import type { Business } from "@/types/business"
 import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
 import { alertModal } from "@/lib/alertModal"
+import { Popover } from "@/components/ui/Overlay"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { MoreVertical, Trash2 } from "lucide-react"
 
 type Promotion = {
   id: string
@@ -26,6 +29,26 @@ export default function GestionarNegocioPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [loading, setLoading] = useState(true)
+
+  // Eliminar vivía en la lista de negocios como un botón rojo a todo el ancho,
+  // a un solo toque. Borrar el único negocio de una cuenta es irreversible, así
+  // que acá queda detrás de un menú y de una confirmación.
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const [confirmarBorrado, setConfirmarBorrado] = useState(false)
+  const [borrando, setBorrando] = useState(false)
+
+  const eliminarNegocio = async () => {
+    if (!business) return
+    setBorrando(true)
+    const { error } = await supabase.from("businesses").delete().eq("id", business.id)
+    setBorrando(false)
+    setConfirmarBorrado(false)
+    if (error) {
+      alertModal.error("No se pudo eliminar", { description: error.message })
+      return
+    }
+    router.push("/app/dashboard/mis-negocios")
+  }
   const businessId = params?.id as string
 
   const { tier, loading: tierLoading } = useMembershipAccess()
@@ -176,6 +199,33 @@ export default function GestionarNegocioPage() {
                   {business.name}
                 </p>
               </div>
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuAbierto((v) => !v)}
+                aria-label="Más opciones"
+                aria-haspopup="menu"
+                aria-expanded={menuAbierto}
+                className="p-2 rounded-full hover:bg-black/5 transition-colors"
+              >
+                <MoreVertical className="w-5 h-5 text-ink-2" />
+              </button>
+
+              <Popover open={menuAbierto} onClose={() => setMenuAbierto(false)} align="right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuAbierto(false)
+                    setConfirmarBorrado(true)
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Eliminar negocio
+                </button>
+              </Popover>
             </div>
           </div>
         </div>
@@ -431,7 +481,23 @@ export default function GestionarNegocioPage() {
 
         </div>
       </div>
+
+      <ConfirmationModal
+        open={confirmarBorrado}
+        title="¿Eliminar este negocio?"
+        description={`Esta acción es permanente y borra toda la información, galería y estadísticas de "${business.name}".`}
+        loading={borrando}
+        onClose={() => {
+          if (borrando) return
+          setConfirmarBorrado(false)
+        }}
+        onConfirm={() => {
+          if (borrando) return
+          void eliminarNegocio()
+        }}
+        confirmLabel="Eliminar definitivamente"
+        cancelLabel="Cancelar"
+      />
     </div>
   )
 }
-

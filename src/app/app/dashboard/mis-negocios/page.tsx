@@ -1,6 +1,7 @@
 // src/app/dashboard/mis-negocios/page.tsx - REDISEÑO MOBILE PREMIUM
 "use client"
 import React, { useEffect, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import AuthGate from "@/components/auth/AuthGate"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -16,6 +17,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { toast } from "sonner"
 
 export default function MisNegociosPage() {
+  const router = useRouter()
   const { user, loading: userLoading } = useUser()
   const { tier, loading: tierLoading, extraBusinessLimit = 0 } = useMembershipAccess()
   const [negocios, setNegocios] = useState<Business[]>([])
@@ -105,6 +107,15 @@ export default function MisNegociosPage() {
       fetchNegocios()
     }
   }, [user, isCompany, fetchNegocios])
+
+  // Con un negocio por cuenta, esta lista es una pantalla de un solo elemento
+  // que solo agrega un toque de por medio. Si hay exactamente uno se va directo
+  // a gestionarlo; con cero (estado vacío para crear) o varios (admin), se
+  // queda como estaba.
+  useEffect(() => {
+    if (loading || isAdmin || negocios.length !== 1) return
+    router.replace(`/app/dashboard/negocios/${negocios[0].id}/gestionar`)
+  }, [loading, isAdmin, negocios, router])
 
   const handleDelete = async (id: string) => {
     try {
@@ -319,28 +330,6 @@ export default function MisNegociosPage() {
                   </Link>
                 </div>
 
-                {/* Botón Eliminar */}
-                <div className="px-4 pb-4">
-                  <button
-                    onClick={() => setPendingDelete(negocio)}
-                    disabled={deletingId === negocio.id}
-                    className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2.5 rounded-2xl transition-all border border-red-200 disabled:opacity-50"
-                  >
-                    {deletingId === negocio.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
-                        Eliminando...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Eliminar
-                      </>
-                    )}
-                  </button>
-                </div>
               </div>
             ))}
           </div>
