@@ -166,24 +166,24 @@ export default function ManageLimitsModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-        <div className="bg-gray-900 border border-white/20 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="bg-white border border-black/10 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
           <div className="p-6">
-            <h3 className="text-xl font-bold text-white mb-1">Gestionar límites y tier</h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <h3 className="text-xl font-bold text-ink mb-1">Gestionar límites y tier</h3>
+            <p className="text-sm text-ink-2 mb-4">
               {profileName}
               {businessName ? ` · ${businessName}` : ""}
             </p>
 
             {loadingData ? (
-              <div className="py-8 text-center text-gray-400">Cargando...</div>
+              <div className="py-8 text-center text-ink-2">Cargando...</div>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Tier de suscripción</label>
+                  <label className="block text-sm font-medium text-ink-2 mb-1">Tier de suscripción</label>
                   <select
                     value={tier}
                     onChange={(e) => setTier(Number(e.target.value))}
-                    className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                    className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink"
                   >
                     {([0, 1, 2, 3] as const).map((t) => (
                       <option key={t} value={t}>
@@ -193,26 +193,26 @@ export default function ManageLimitsModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Límite extra de negocios</label>
+                  <label className="block text-sm font-medium text-ink-2 mb-1">Límite extra de negocios</label>
                   <input
                     type="number"
                     min={0}
                     value={extraBusinessLimit}
                     onChange={(e) => setExtraBusinessLimit(Number(e.target.value) || 0)}
-                    className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                    className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink"
                   />
                 </div>
 
                 {businessId && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Fotos extra permitidas</label>
+                      <label className="block text-sm font-medium text-ink-2 mb-1">Fotos extra permitidas</label>
                       <input
                         type="number"
                         min={0}
                         value={extraPhotoLimit}
                         onChange={(e) => setExtraPhotoLimit(Number(e.target.value) || 0)}
-                        className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                        className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -221,22 +221,22 @@ export default function ManageLimitsModal({
                         id="searchBoost"
                         checked={searchPriorityBoost}
                         onChange={(e) => setSearchPriorityBoost(e.target.checked)}
-                        className="rounded border-white/20"
+                        className="rounded border-black/20"
                       />
-                      <label htmlFor="searchBoost" className="text-sm text-gray-300">
+                      <label htmlFor="searchBoost" className="text-sm text-ink-2">
                         Prioridad en búsqueda (arriba)
                       </label>
                     </div>
-                    <div className="border-t border-white/10 pt-4">
+                    <div className="border-t border-black/8 pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <input
                           type="checkbox"
                           id="infraction"
                           checked={infractionStatus}
                           onChange={(e) => setInfractionStatus(e.target.checked)}
-                          className="rounded border-white/20"
+                          className="rounded border-black/20"
                         />
-                        <label htmlFor="infraction" className="text-sm font-medium text-amber-300">
+                        <label htmlFor="infraction" className="text-sm font-medium text-amber-700">
                           Marcar infracción
                         </label>
                       </div>
@@ -246,33 +246,33 @@ export default function ManageLimitsModal({
                           value={infractionReason}
                           onChange={(e) => setInfractionReason(e.target.value)}
                           rows={2}
-                          className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
+                          className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink placeholder-ink-2/50 text-sm"
                         />
                       )}
                     </div>
                   </>
                 )}
 
-                <div className="border-t border-white/10 pt-4 space-y-3">
+                <div className="border-t border-black/8 pt-4 space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Notificación directa al usuario</label>
+                    <label className="block text-sm font-medium text-ink-2 mb-1">Notificación directa al usuario</label>
                     <textarea
                       placeholder="Mensaje que verá en un modal al iniciar sesión (opcional)"
                       value={notificationMessage}
                       onChange={(e) => setNotificationMessage(e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm"
+                      className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink placeholder-ink-2/50 text-sm"
                     />
                   </div>
-                  <div className="mt-3 p-3 rounded-xl border border-red-500/40 bg-red-500/10">
-                    <p className="text-xs text-red-200 font-semibold mb-2">Reset Total de Usuario</p>
-                    <p className="text-xs text-red-100 mb-3">
+                  <div className="mt-3 p-3 rounded-xl border border-red-200 bg-red-50">
+                    <p className="text-xs text-red-700 font-semibold mb-2">Reset Total de Usuario</p>
+                    <p className="text-xs text-red-600 mb-3">
                       Esta acción elimina TODOS los beneficios y vuelve al usuario al plan gratuito (Tier 0) para todos sus negocios.
                     </p>
                     <button
                       type="button"
                       onClick={() => setShowResetModal(true)}
-                      className="w-full px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors"
+                      className="w-full px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition-colors"
                     >
                       Resetear Usuario a Plan Gratis
                     </button>
@@ -285,7 +285,7 @@ export default function ManageLimitsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium"
+                className="flex-1 py-2.5 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10"
               >
                 Cancelar
               </button>
@@ -293,7 +293,7 @@ export default function ManageLimitsModal({
                 type="button"
                 onClick={saveLimits}
                 disabled={loading || loadingData}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
               >
                 {loading ? "Guardando..." : "Guardar"}
               </button>

@@ -40,18 +40,18 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
     <div className="space-y-4">
       {/* Search bar */}
       <div className="relative max-w-md">
-        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+        <Search className="w-4 h-4 text-ink-2 absolute left-3 top-2.5" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar negocios por nombre o ID..."
-          className="w-full pl-9 pr-3 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-black/10 text-sm text-ink placeholder-ink-2/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">No hay negocios que coincidan con la búsqueda</p>
           <p className="text-sm">Ajusta el término de búsqueda o filtros.</p>
         </div>
@@ -63,16 +63,16 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
             const businessName = b.name || "Negocio"
 
             return (
-              <div key={b.id} className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+              <div key={b.id} className="rounded-2xl border border-black/8 bg-white overflow-hidden">
                 {/* Header row */}
                 <button
                   type="button"
                   onClick={() => handleToggle(b.id)}
-                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-black/[0.02] transition-colors"
                 >
                   {/* Logo */}
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-blue-50 flex items-center justify-center">
                       {b.logo_url ? (
                         <Image
                           src={b.logo_url}
@@ -83,7 +83,7 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                           unoptimized
                         />
                       ) : (
-                        <span className="text-blue-400 text-lg font-bold">
+                        <span className="text-blue-600 text-lg font-bold">
                           {businessName[0]?.toUpperCase() || "N"}
                         </span>
                       )}
@@ -93,19 +93,19 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                   {/* Name + badges */}
                   <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{businessName}</p>
-                      <p className="text-[11px] text-gray-400 truncate">
-                        ID: <span className="font-mono text-gray-300">{b.id.slice(0, 8)}...</span>
+                      <p className="text-sm font-semibold text-ink truncate">{businessName}</p>
+                      <p className="text-[11px] text-ink-2 truncate">
+                        ID: <span className="font-mono text-ink-2">{b.id.slice(0, 8)}...</span>
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       {b.is_premium && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                           Premium
                         </span>
                       )}
                       {b.is_verified && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
                           Verificado
                         </span>
                       )}
@@ -113,10 +113,10 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                         <span
                           className={`text-[10px] px-2 py-0.5 rounded-full border ${
                             daysLeft <= 7
-                              ? "bg-red-500/10 text-red-300 border-red-500/40"
+                              ? "bg-red-50 text-red-700 border-red-200"
                               : daysLeft <= 30
-                              ? "bg-yellow-500/10 text-yellow-200 border-yellow-500/40"
-                              : "bg-emerald-500/10 text-emerald-200 border-emerald-500/40"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : "bg-green-50 text-green-700 border-green-200"
                           }`}
                         >
                           {daysLeft <= 0 ? "Expirado" : `${daysLeft} días`}
@@ -128,7 +128,7 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                   {/* Chevron */}
                   <div className="flex-shrink-0 pl-1">
                     <ChevronDown
-                      className={`w-4 h-4 text-gray-400 transition-transform ${
+                      className={`w-4 h-4 text-ink-2 transition-transform ${
                         isOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -143,7 +143,7 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.22 }}
-                      className="overflow-hidden border-t border-white/10 bg-black/40"
+                      className="overflow-hidden border-t border-black/8 bg-black/[0.02]"
                     >
                       <div className="px-3 pb-3 pt-2">
                         {/* On mobile, we want big tap targets: AdminQuickActions already uses compact rows/buttons */}

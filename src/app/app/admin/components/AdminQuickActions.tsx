@@ -98,7 +98,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     suspender: "Suspensión",
     delete: "Eliminación",
     reset: "Reset de fotos",
-    golden: "Borde dorado",
+    golden: "Borde Patrocina",
     searchBoost: "Destacar negocio",
   }
 
@@ -164,7 +164,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const resetPhotos = (resetLogo: boolean) => call("reset", { businessId: business.id, resetLogo }, "/api/admin/business/reset-photos", "Reset de fotos")
 
   const toggleGoldenBorder = () =>
-    call("golden", { businessId: business.id }, "/api/admin/business/toggle-golden-border", "Borde dorado")
+    call("golden", { businessId: business.id }, "/api/admin/business/toggle-golden-border", "Borde Patrocina")
 
   const toggleSearchPriority = () =>
     call(
@@ -215,7 +215,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     const isOpen = openTooltipId === id
     const safeDescription = description ?? ""
     return (
-      <div className="flex items-center gap-2 py-3 first:pt-0 border-b border-white/10 last:border-b-0">
+      <div className="flex items-center gap-2 py-3 first:pt-0 border-b border-black/8 last:border-b-0">
         <div className="flex-shrink-0 w-[140px] sm:w-[160px]">{button}</div>
         <div className="relative flex-shrink-0 pt-0.5">
           <button
@@ -223,7 +223,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
             data-tooltip-trigger
             aria-label="Ver descripción"
             onClick={() => setOpenTooltipId(isOpen ? null : id)}
-            className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="p-1 rounded-full text-ink-2 hover:text-ink hover:bg-black/5 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Info className="w-4 h-4" aria-hidden />
           </button>
@@ -231,7 +231,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
             <div
               key={`tooltip-${id}`}
               data-tooltip-popover
-              className="animate-fade-in absolute left-0 top-full mt-1 z-50 min-w-[200px] max-w-[280px] rounded-lg bg-gray-900 border border-white/20 p-3 shadow-xl text-xs text-white leading-relaxed"
+              className="animate-fade-in absolute left-0 top-full mt-1 z-50 min-w-[200px] max-w-[280px] rounded-lg bg-ink border border-black/20 p-3 shadow-xl text-xs text-white leading-relaxed"
               role="tooltip"
             >
               {safeDescription}
@@ -289,7 +289,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   if (softDeleted) {
     // Mantener el componente montado para permitir "Deshacer" pero ocultar la tarjeta
     return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-xs text-red-200">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
         Negocio marcado para eliminación. Puedes deshacer desde la notificación durante unos segundos.
       </div>
     )
@@ -298,28 +298,28 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   return (
     <>
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-700 flex-shrink-0">
+        <div className="w-16 h-16 rounded-xl overflow-hidden bg-blue-50 flex-shrink-0">
           {business.logo_url ? (
             <Image src={business.logo_url} width={64} height={64} unoptimized alt={businessName} className="object-cover w-full h-full" />
           ) : (
-            <div className="flex items-center justify-center text-blue-400 text-3xl font-bold w-full h-full">{businessName[0]?.toUpperCase() || "N"}</div>
+            <div className="flex items-center justify-center text-blue-600 text-3xl font-bold w-full h-full">{businessName[0]?.toUpperCase() || "N"}</div>
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold truncate">{businessName}</h3>
+          <h3 className="text-lg font-bold truncate text-ink">{businessName}</h3>
           <div className="flex flex-wrap gap-2 mt-1">
             {business.is_premium && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">Premium</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Premium</span>
             )}
             {business.is_verified && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300 border border-green-500/40">Verificado</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">Verificado</span>
             )}
             {inSpotlight && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">Spotlight</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">Spotlight</span>
             )}
           </div>
           {business.premium_until && daysLeft !== null && (
-            <p className={`text-xs mt-1 ${daysLeft <= 7 ? "text-red-400" : daysLeft <= 30 ? "text-yellow-400" : "text-green-400"}`}>
+            <p className={`text-xs mt-1 ${daysLeft <= 7 ? "text-red-600" : daysLeft <= 30 ? "text-amber-600" : "text-green-600"}`}>
               {daysLeft <= 0 ? "Expirado" : `${daysLeft} días`}
             </p>
           )}
@@ -329,14 +329,14 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       <div className="flex flex-col gap-3">
         <Link
           href={`/app/admin/negocios/${business.id}/gestionar`}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-center text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
         >
           Gestionar
         </Link>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 mt-1">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Acciones rápidas</p>
-          <p className="text-[11px] text-gray-500 mb-3">Haz clic en el icono (i) para ver la guía de cada acción.</p>
+        <div className="rounded-2xl border border-black/8 bg-black/[0.015] p-4 mt-1">
+          <p className="text-xs font-semibold text-ink-2 uppercase tracking-wide mb-1">Acciones rápidas</p>
+          <p className="text-[11px] text-ink-2/70 mb-3">Haz clic en el icono (i) para ver la guía de cada acción.</p>
           <div className="space-y-0">
             <ActionRow
               id="verificar"
@@ -345,7 +345,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={toggleVerification}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/40 hover:bg-green-500/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {loading === "verification" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
                   {loading === "verification" ? "..." : business.is_verified ? "Quitar ✓" : "Verificado"}
@@ -357,7 +357,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               id="tier"
               button={
                 <select
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-white border border-black/15 text-ink focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={selectedTier}
                   onChange={(e) => {
                     const v = e.target.value
@@ -384,10 +384,10 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => ensureUnlocked(toggleGoldenBorder)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-yellow-500/15 text-yellow-200 border border-yellow-500/40 hover:bg-yellow-500/25 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {loading === "golden" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "golden" ? "..." : hasGoldenBorder ? "Quitar Borde Dorado" : "Borde Dorado"}
+                  {loading === "golden" ? "..." : hasGoldenBorder ? "Quitar Borde Patrocina" : "Borde Patrocina"}
                 </button>
               }
               description="Activa el aura visual de Plan Patrocina independientemente del pago."
@@ -399,7 +399,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={toggleSpotlight}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {loading === "spotlight" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
                   {loading === "spotlight" ? "..." : inSpotlight ? "Quitar Spotlight" : "Spotlight"}
@@ -414,7 +414,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => setShowVerifyModal(true)}
                   disabled={!!loading || business.is_premium}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-500/30 disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 disabled:opacity-50"
                 >
                   {business.is_premium ? "✓ Premium" : "Activar Premium"}
                 </button>
@@ -428,7 +428,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={suspendPremium}
                   disabled={!!loading || !business.is_premium}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-gray-500/20 text-gray-300 border border-gray-500/40 hover:bg-gray-500/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-black/5 text-ink-2 border border-black/10 hover:bg-black/10 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {loading === "suspender" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
                   {loading === "suspender" ? "..." : "Suspender"}
@@ -443,7 +443,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => setShowPhotosModal(true)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-slate-500/20 text-slate-300 border border-slate-500/40 hover:bg-slate-500/30 disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-black/5 text-ink-2 border border-black/10 hover:bg-black/10 disabled:opacity-50"
                 >
                   Fotos ({business.max_photos ?? 5})
                 </button>
@@ -457,7 +457,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => ensureUnlocked(toggleSearchPriority)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {loading === "searchPriority" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
                   {loading === "searchPriority" ? "..." : hasSearchPriority ? "Quitar prioridad" : "Destacar negocio"}
@@ -470,7 +470,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               button={
                 <Link
                   href={`/app/dashboard/negocios/${business.id}/promociones`}
-                  className="w-full inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-medium bg-pink-500/20 text-pink-200 border border-pink-500/40 hover:bg-pink-500/30 disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50"
                 >
                   Ver promos
                 </Link>
@@ -484,7 +484,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => setShowResetPhotosModal(true)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/40 hover:bg-orange-500/30 disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 disabled:opacity-50"
                 >
                   Reset fotos
                 </button>
@@ -499,7 +499,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     type="button"
                     onClick={() => setShowLimitsModal(true)}
                     disabled={!!loading}
-                    className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 disabled:opacity-50"
+                    className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
                   >
                     Gestionar Usuario
                   </button>
@@ -519,7 +519,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     setShowBadgesModal(true)
                   }}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50"
                 >
                   Gestionar badges
                 </button>
@@ -533,7 +533,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50"
                 >
                   Eliminar
                 </button>
@@ -541,7 +541,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               description="Borra permanentemente el registro. Acción irreversible."
             />
           </div>
-          {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
+          {error && <p className="text-xs text-red-600 mt-3">{error}</p>}
         </div>
       </div>
 
@@ -597,21 +597,21 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
 
       {showAlertModal && business.owner_id && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-gray-900 border border-blue-500/30 rounded-2xl p-6 max-w-md w-full">
-            <h4 className="text-lg font-bold text-white mb-1">Enviar Alerta al usuario</h4>
-            <p className="text-xs text-gray-400 mb-3">El mensaje se mostrará en un pop-up al iniciar sesión.</p>
+          <div className="bg-white border border-blue-200 shadow-xl rounded-2xl p-6 max-w-md w-full">
+            <h4 className="text-lg font-bold text-ink mb-1">Enviar Alerta al usuario</h4>
+            <p className="text-xs text-ink-2 mb-3">El mensaje se mostrará en un pop-up al iniciar sesión.</p>
             <textarea
               value={alertMessage}
               onChange={(e) => setAlertMessage(e.target.value)}
               placeholder="Escribe el mensaje (infracciones, mantenimiento, promociones…)"
               rows={4}
-              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm resize-none"
+              className="w-full px-4 py-3 rounded-xl bg-white border border-black/15 text-ink placeholder-ink-2/50 text-sm resize-none"
             />
             <div className="flex gap-2 mt-4">
               <button
                 type="button"
                 onClick={() => { setShowAlertModal(false); setAlertMessage("") }}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium"
+                className="flex-1 py-2.5 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10"
               >
                 Cancelar
               </button>
@@ -619,7 +619,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 type="button"
                 onClick={sendAlert}
                 disabled={sendingAlert || !alertMessage.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
               >
                 {sendingAlert ? "Enviando..." : "Enviar"}
               </button>
@@ -630,15 +630,15 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
 
       {showResetPhotosModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => { setShowResetPhotosModal(false); setResetPhotosConfirmStep(1) }}>
-          <div className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h4 className="text-lg font-bold text-white mb-2">
+          <div className="bg-white border border-black/10 rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-lg font-bold text-ink mb-2">
               {resetPhotosConfirmStep === 1 ? "Restablecer fotos" : "Última confirmación"}
             </h4>
             {resetPhotosConfirmStep === 1 ? (
               <>
-                <p className="text-sm text-gray-400 mb-4">¿Vaciar galería y opcionalmente logo de &quot;{businessName}&quot;?</p>
+                <p className="text-sm text-ink-2 mb-4">¿Vaciar galería y opcionalmente logo de &quot;{businessName}&quot;?</p>
                 <div className="flex flex-col gap-2 mb-4">
-                  <label className="flex items-center gap-2 text-sm text-white">
+                  <label className="flex items-center gap-2 text-sm text-ink">
                     <input type="checkbox" id="resetLogo" defaultChecked={false} />
                     Incluir logo
                   </label>
@@ -647,7 +647,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   <button
                     type="button"
                     onClick={() => { setShowResetPhotosModal(false); setResetPhotosConfirmStep(1) }}
-                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium"
+                    className="flex-1 py-2 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10"
                   >
                     Cancelar
                   </button>
@@ -657,7 +657,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                       setResetLogoChoice((document.getElementById("resetLogo") as HTMLInputElement)?.checked ?? false)
                       setResetPhotosConfirmStep(2)
                     }}
-                    className="flex-1 py-2 rounded-xl bg-orange-600 text-white text-sm font-medium hover:bg-orange-700"
+                    className="flex-1 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600"
                   >
                     Continuar
                   </button>
@@ -665,12 +665,12 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               </>
             ) : (
               <>
-                <p className="text-sm text-gray-400 mb-4">¿Estás seguro? Se eliminará todo el contenido visual del negocio.</p>
+                <p className="text-sm text-ink-2 mb-4">¿Estás seguro? Se eliminará todo el contenido visual del negocio.</p>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => { setShowResetPhotosModal(false); setResetPhotosConfirmStep(1) }}
-                    className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium"
+                    className="flex-1 py-2 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10"
                   >
                     Cancelar
                   </button>
@@ -682,7 +682,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                       resetPhotos(resetLogoChoice)
                     }}
                     disabled={!!loading}
-                    className="flex-1 py-2 rounded-xl bg-orange-600 text-white text-sm font-medium hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading === "reset" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     Sí, restablecer
@@ -697,22 +697,22 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       {showPinModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => { if (!pinLoading) { setShowPinModal(false); setPin(""); setPendingAction(null) } }}>
           <div
-            className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            className="bg-white border border-black/10 rounded-2xl p-6 max-w-sm w-full shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-9 h-9 rounded-2xl bg-blue-600/20 border border-blue-500/50 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-400" />
+              <div className="w-9 h-9 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white">Acción Crítica</h4>
-                <p className="text-xs text-gray-400">
+                <h4 className="text-lg font-bold text-ink">Acción Crítica</h4>
+                <p className="text-xs text-ink-2">
                   Ingrese su PIN Maestro para autorizar este cambio.
                 </p>
               </div>
             </div>
             <div className="mt-3 mb-4">
-              <label className="block text-xs font-medium text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-ink-2 mb-1">
                 PIN Maestro (6 dígitos)
               </label>
               <input
@@ -722,7 +722,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 maxLength={6}
                 value={pin}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="w-full rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••"
               />
             </div>
@@ -731,7 +731,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 type="button"
                 disabled={pinLoading}
                 onClick={() => { if (!pinLoading) { setShowPinModal(false); setPin(""); setPendingAction(null) } }}
-                className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10 disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -777,7 +777,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     setPinLoading(false)
                   }
                 }}
-                className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
               >
                 {pinLoading ? "Verificando..." : "Autorizar"}
               </button>
@@ -788,18 +788,18 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       {showBadgesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowBadgesModal(false)}>
           <div
-            className="bg-gray-900 border border-emerald-500/40 rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            className="bg-white border border-green-200 rounded-2xl p-6 max-w-sm w-full shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="text-lg font-bold text-white mb-2">Gestor de Badges</h4>
-            <p className="text-xs text-gray-400 mb-4">
+            <h4 className="text-lg font-bold text-ink mb-2">Gestor de Badges</h4>
+            <p className="text-xs text-ink-2 mb-4">
               Selecciona las etiquetas especiales que quieres aplicar a este negocio.
             </p>
             <div className="space-y-2 mb-4">
               {["Verificado", "Pet Friendly", "Oferta", "Nuevo"].map((label) => {
                 const checked = selectedBadges.includes(label)
                 return (
-                  <label key={label} className="flex items-center gap-2 text-sm text-white">
+                  <label key={label} className="flex items-center gap-2 text-sm text-ink">
                     <input
                       type="checkbox"
                       checked={checked}
@@ -818,7 +818,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               <button
                 type="button"
                 onClick={() => setShowBadgesModal(false)}
-                className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-medium"
+                className="flex-1 py-2 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10"
               >
                 Cancelar
               </button>
@@ -853,7 +853,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   }
                   ensureUnlocked(execute)
                 }}
-                className="flex-1 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
               >
                 {badgesLoading ? "Guardando..." : "Guardar"}
               </button>

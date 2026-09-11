@@ -68,7 +68,7 @@ function daysLeft(iso: string | null): number | null {
 // ─── Section divider ─────────────────────────────────────────────────────────
 function SectionTitle({ label }: { label: string }) {
   return (
-    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-5 first:mt-0">
+    <p className="text-[10px] font-bold text-ink-2/70 uppercase tracking-widest mb-2 mt-5 first:mt-0">
       {label}
     </p>
   )
@@ -265,12 +265,12 @@ export default function AdminUserManagementModal({
           if (e.target === e.currentTarget) onClose()
         }}
       >
-        <div className="bg-[#0d1117] border border-white/10 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+        <div className="bg-white border border-black/10 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-black/8 flex-shrink-0">
             <div>
-              <h3 className="text-base font-semibold text-white">Gestionar Usuario</h3>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <h3 className="text-base font-semibold text-ink">Gestionar Usuario</h3>
+              <p className="text-xs text-ink-2 mt-0.5">
                 {profileName}
                 {businessName ? ` · ${businessName}` : ""}
               </p>
@@ -278,7 +278,7 @@ export default function AdminUserManagementModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-black/5 text-ink-2 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -287,7 +287,7 @@ export default function AdminUserManagementModal({
           {/* Scrollable body */}
           <div className="overflow-y-auto flex-1 px-6 py-4">
             {loadingData ? (
-              <div className="py-12 flex items-center justify-center text-gray-400 gap-2">
+              <div className="py-12 flex items-center justify-center text-ink-2 gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-sm">Cargando datos del usuario…</span>
               </div>
@@ -298,12 +298,12 @@ export default function AdminUserManagementModal({
 
                 {/* Current plan pill */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs text-gray-400">Plan actual:</span>
-                  <span className="text-xs font-semibold text-white px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30">
+                  <span className="text-xs text-ink-2">Plan actual:</span>
+                  <span className="text-xs font-semibold text-blue-700 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200">
                     {TIER_LABELS[perks?.subscription_tier ?? 0]}
                   </span>
                   {perks?.subscription_end_date && (
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] text-ink-2/70">
                       vence en {daysLeft(perks.subscription_end_date) ?? 0} día(s)
                     </span>
                   )}
@@ -317,7 +317,7 @@ export default function AdminUserManagementModal({
                     onClick={() =>
                       onEnsureUnlocked(() => handleResetPlan())
                     }
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors"
                   >
                     {busy.reset_plan ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -331,7 +331,7 @@ export default function AdminUserManagementModal({
                   <button
                     type="button"
                     onClick={() => setShowAssignForm((v) => !v)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:bg-blue-500/20 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
                   >
                     <CalendarCheck className="w-3.5 h-3.5" />
                     Asignar Plan
@@ -340,14 +340,14 @@ export default function AdminUserManagementModal({
 
                 {/* Assign plan form */}
                 {showAssignForm && (
-                  <div className="mt-2 p-3 rounded-xl border border-blue-500/20 bg-blue-500/5 space-y-2">
+                  <div className="mt-2 p-3 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="block text-[10px] text-gray-400 mb-1">Plan</label>
+                        <label className="block text-[10px] text-ink-2 mb-1">Plan</label>
                         <select
                           value={assignTier}
                           onChange={(e) => setAssignTier(Number(e.target.value))}
-                          className="w-full px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-black/15 text-ink text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                           {([0, 1, 2, 3] as const).map((t) => (
                             <option key={t} value={t}>
@@ -357,13 +357,13 @@ export default function AdminUserManagementModal({
                         </select>
                       </div>
                       <div className="w-24">
-                        <label className="block text-[10px] text-gray-400 mb-1">Días</label>
+                        <label className="block text-[10px] text-ink-2 mb-1">Días</label>
                         <input
                           type="number"
                           min={1}
                           value={assignDays}
                           onChange={(e) => setAssignDays(Math.max(1, Number(e.target.value)))}
-                          className="w-full px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-black/15 text-ink text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -376,7 +376,7 @@ export default function AdminUserManagementModal({
                           setShowAssignForm(false)
                         })
                       }
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
                     >
                       {busy.assign_plan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                       Confirmar asignación
@@ -387,12 +387,12 @@ export default function AdminUserManagementModal({
                 {/* ── ENVIAR ALERTA ──────────────────────────────────── */}
                 <SectionTitle label="Comunicación" />
 
-                <div className="p-3 rounded-xl border border-white/10 bg-white/[0.02]">
+                <div className="p-3 rounded-xl border border-black/8 bg-black/[0.015]">
                   <div className="flex items-center gap-1.5 mb-2">
-                    <Bell className="w-3.5 h-3.5 text-blue-400" />
-                    <span className="text-xs font-medium text-gray-300">Enviar Alerta al Usuario</span>
+                    <Bell className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-xs font-medium text-ink-2">Enviar Alerta al Usuario</span>
                   </div>
-                  <p className="text-[10px] text-gray-500 mb-2">
+                  <p className="text-[10px] text-ink-2/70 mb-2">
                     El mensaje aparecerá en un modal al iniciar sesión. Se descarta al hacer clic en &quot;Entendido&quot;.
                   </p>
                   <textarea
@@ -400,13 +400,13 @@ export default function AdminUserManagementModal({
                     onChange={(e) => setAlertMessage(e.target.value)}
                     placeholder="Escribe el mensaje de alerta…"
                     rows={3}
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white placeholder-gray-600 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-black/15 text-ink placeholder-ink-2/50 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                   <button
                     type="button"
                     disabled={!!busy.alert || !alertMessage.trim()}
                     onClick={handleSendAlert}
-                    className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+                    className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
                   >
                     {busy.alert ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                     Enviar Alerta
@@ -417,10 +417,10 @@ export default function AdminUserManagementModal({
                 {businessId && (
                   <>
                     <SectionTitle label="Configuración de Fotos" />
-                    <div className="p-3 rounded-xl border border-white/10 bg-white/[0.02]">
+                    <div className="p-3 rounded-xl border border-black/8 bg-black/[0.015]">
                       <div className="flex items-center gap-1.5 mb-2">
-                        <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="text-xs font-medium text-gray-300">Límite de Fotos</span>
+                        <ImageIcon className="w-3.5 h-3.5 text-ink-2" />
+                        <span className="text-xs font-medium text-ink-2">Límite de Fotos</span>
                       </div>
                       <div className="flex gap-2">
                         <input
@@ -428,7 +428,7 @@ export default function AdminUserManagementModal({
                           min={0}
                           value={photosLimit}
                           onChange={(e) => setPhotosLimit(Math.max(0, Number(e.target.value)))}
-                          className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-black/15 text-ink text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                           placeholder="Ej: 20"
                         />
                         <button
@@ -437,7 +437,7 @@ export default function AdminUserManagementModal({
                           onClick={() =>
                             onEnsureUnlocked(() => handleSetPhotos())
                           }
-                          className="px-4 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-semibold disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                          className="px-4 py-1.5 rounded-lg bg-ink hover:bg-ink/90 text-white text-xs font-semibold disabled:opacity-50 transition-colors flex items-center gap-1.5"
                         >
                           {busy.photos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                           Actualizar
@@ -450,12 +450,12 @@ export default function AdminUserManagementModal({
                 {/* ── ZONA DE PELIGRO ────────────────────────────────── */}
                 <SectionTitle label="Zona de Peligro" />
 
-                <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/5">
+                <div className="p-3 rounded-xl border border-red-200 bg-red-50">
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-xs font-semibold text-red-300">Eliminar Usuario</span>
+                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                    <span className="text-xs font-semibold text-red-700">Eliminar Usuario</span>
                   </div>
-                  <p className="text-[10px] text-red-200/70 mb-2">
+                  <p className="text-[10px] text-red-700/70 mb-2">
                     Elimina al usuario de auth y de la base de datos. Sus negocios quedarán huérfanos o serán eliminados por cascada. Acción irreversible.
                   </p>
                   <button
@@ -464,7 +464,7 @@ export default function AdminUserManagementModal({
                     onClick={() =>
                       onEnsureUnlocked(() => setShowDeleteConfirm(true))
                     }
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
                   >
                     {busy.delete_user ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                     Eliminar Usuario
@@ -478,11 +478,11 @@ export default function AdminUserManagementModal({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-white/10 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-black/8 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-medium transition-colors"
+              className="w-full py-2 rounded-xl bg-black/5 hover:bg-black/10 text-ink text-sm font-medium transition-colors"
             >
               Cerrar
             </button>

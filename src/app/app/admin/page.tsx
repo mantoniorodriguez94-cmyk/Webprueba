@@ -13,10 +13,10 @@ export default async function AdminDashboardPage() {
   await requireAdmin()
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Panel Administrativo</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           Gestión centralizada del sistema
         </p>
       </div>

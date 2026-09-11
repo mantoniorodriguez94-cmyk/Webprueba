@@ -103,7 +103,7 @@ export default function ManageLimitsButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 text-xs font-medium transition-colors"
+        className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs font-medium transition-colors"
       >
         Gestionar
       </button>
@@ -130,22 +130,22 @@ export default function ManageLimitsButton({
           onClick={closePinModal}
         >
           <div
-            className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            className="bg-white border border-black/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-5 h-5 text-blue-400" />
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h4 className="text-base font-bold text-white">Acción Crítica</h4>
-                <p className="text-xs text-gray-400">
+                <h4 className="text-base font-bold text-ink">Acción Crítica</h4>
+                <p className="text-xs text-ink-2">
                   Ingresa el PIN Maestro para autorizar este cambio.
                 </p>
               </div>
             </div>
 
-            <label className="block text-xs font-medium text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-ink-2 mb-1">
               PIN Maestro (6 dígitos)
             </label>
             <input
@@ -156,7 +156,7 @@ export default function ManageLimitsButton({
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
               onKeyDown={(e) => e.key === "Enter" && void handlePinSubmit()}
-              className="w-full rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+              className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
               placeholder="••••••"
               autoFocus
             />
@@ -166,7 +166,7 @@ export default function ManageLimitsButton({
                 type="button"
                 disabled={pinLoading}
                 onClick={closePinModal}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium hover:bg-white/15 disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-black/5 text-ink text-sm font-medium hover:bg-black/10 disabled:opacity-50 transition-colors"
               >
                 Cancelar
               </button>
@@ -174,7 +174,7 @@ export default function ManageLimitsButton({
                 type="button"
                 disabled={pinLoading || pin.length !== 6}
                 onClick={() => void handlePinSubmit()}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {pinLoading ? (
                   <>

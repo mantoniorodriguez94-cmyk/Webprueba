@@ -68,10 +68,10 @@ export default async function AdminReportesPage() {
   const pendingReviewReports = reviewReports?.filter(r => r.status === 'pending') || []
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Gestión de Reportes</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {pendingBusinessReports.length + pendingReviewReports.length} pendientes • {businessReports?.length || 0} reportes de negocios • {reviewReports?.length || 0} reportes de reseñas
         </p>
       </div>
@@ -86,10 +86,10 @@ export default async function AdminReportesPage() {
                 const business = Array.isArray(report.businesses) ? report.businesses[0] : report.businesses
                 const reporter = profilesMap.get(report.reporter_id)
                 const statusColors = {
-                  pending: "border-yellow-500/40 bg-yellow-500/10",
-                  reviewed: "border-blue-500/40 bg-blue-500/10",
-                  resolved: "border-green-500/40 bg-green-500/10",
-                  dismissed: "border-gray-500/40 bg-gray-500/10"
+                  pending: "border-amber-200 bg-amber-50",
+                  reviewed: "border-blue-200 bg-blue-50",
+                  resolved: "border-green-200 bg-green-50",
+                  dismissed: "border-black/10 bg-black/[0.02]"
                 }
                 const statusLabels = {
                   pending: "Pendiente",
@@ -101,33 +101,33 @@ export default async function AdminReportesPage() {
                 return (
                   <div
                     key={report.id}
-                    className={`bg-white/10 backdrop-blur-md p-4 rounded-2xl border-2 ${statusColors[report.status as keyof typeof statusColors] || "border-white/20"}`}
+                    className={`bg-white p-4 rounded-2xl border-2 shadow-sm ${statusColors[report.status as keyof typeof statusColors] || "border-black/10"}`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="font-bold text-white mb-1">
+                        <h3 className="font-bold text-ink mb-1">
                           {business?.name || "Negocio desconocido"}
                         </h3>
-                        <p className="text-xs text-gray-400 mb-2">
+                        <p className="text-xs text-ink-2 mb-2">
                           Reportado por: {reporter?.full_name || reporter?.email || report.reporter_id.substring(0, 8)}
                         </p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        report.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                        report.status === 'resolved' ? 'bg-green-500/20 text-green-300' :
-                        'bg-gray-500/20 text-gray-300'
+                        report.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                        report.status === 'resolved' ? 'bg-green-50 text-green-700' :
+                        'bg-black/5 text-ink-2'
                       }`}>
                         {statusLabels[report.status as keyof typeof statusLabels]}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-300 mb-2">{report.reason}</p>
+                    <p className="text-sm text-ink-2 mb-2">{report.reason}</p>
                     {report.admin_notes && (
-                      <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                        <p className="text-xs text-blue-300 font-semibold mb-1">Notas del admin:</p>
-                        <p className="text-xs text-blue-200">{report.admin_notes}</p>
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-700 font-semibold mb-1">Notas del admin:</p>
+                        <p className="text-xs text-blue-700/80">{report.admin_notes}</p>
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-ink-2/70 mt-2">
                       {new Date(report.created_at).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "short",
@@ -138,7 +138,7 @@ export default async function AdminReportesPage() {
                     </p>
                     <Link
                       href={`/app/admin/reportes/${report.id}?type=business`}
-                      className="mt-3 inline-block text-sm text-blue-400 hover:text-blue-300"
+                      className="mt-3 inline-block text-sm text-blue-600 hover:text-blue-700"
                     >
                       Gestionar →
                     </Link>
@@ -147,7 +147,7 @@ export default async function AdminReportesPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-ink-2">
               <p>No hay reportes de negocios</p>
             </div>
           )}
@@ -162,10 +162,10 @@ export default async function AdminReportesPage() {
                 const review = Array.isArray(report.reviews) ? report.reviews[0] : report.reviews
                 const reporter = profilesMap.get(report.reporter_id)
                 const statusColors = {
-                  pending: "border-yellow-500/40 bg-yellow-500/10",
-                  reviewed: "border-blue-500/40 bg-blue-500/10",
-                  resolved: "border-green-500/40 bg-green-500/10",
-                  dismissed: "border-gray-500/40 bg-gray-500/10"
+                  pending: "border-amber-200 bg-amber-50",
+                  reviewed: "border-blue-200 bg-blue-50",
+                  resolved: "border-green-200 bg-green-50",
+                  dismissed: "border-black/10 bg-black/[0.02]"
                 }
                 const statusLabels = {
                   pending: "Pendiente",
@@ -177,39 +177,39 @@ export default async function AdminReportesPage() {
                 return (
                   <div
                     key={report.id}
-                    className={`bg-white/10 backdrop-blur-md p-4 rounded-2xl border-2 ${statusColors[report.status as keyof typeof statusColors] || "border-white/20"}`}
+                    className={`bg-white p-4 rounded-2xl border-2 shadow-sm ${statusColors[report.status as keyof typeof statusColors] || "border-black/10"}`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-yellow-400">{"⭐".repeat(review?.rating || 0)}</span>
-                          <span className="text-xs text-gray-400">Reseña reportada</span>
+                          <span className="text-amber-500">{"⭐".repeat(review?.rating || 0)}</span>
+                          <span className="text-xs text-ink-2">Reseña reportada</span>
                         </div>
                         {review?.comment && (
-                          <p className="text-xs text-gray-400 italic mb-2 line-clamp-2">
+                          <p className="text-xs text-ink-2 italic mb-2 line-clamp-2">
                             &ldquo;{review.comment.substring(0, 100)}{review.comment.length > 100 ? '...' : ''}&rdquo;
                           </p>
                         )}
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-ink-2">
                           Reportado por: {reporter?.full_name || reporter?.email || report.reporter_id.substring(0, 8)}
                         </p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        report.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                        report.status === 'resolved' ? 'bg-green-500/20 text-green-300' :
-                        'bg-gray-500/20 text-gray-300'
+                        report.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                        report.status === 'resolved' ? 'bg-green-50 text-green-700' :
+                        'bg-black/5 text-ink-2'
                       }`}>
                         {statusLabels[report.status as keyof typeof statusLabels]}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-300 mb-2">{report.reason}</p>
+                    <p className="text-sm text-ink-2 mb-2">{report.reason}</p>
                     {report.admin_notes && (
-                      <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                        <p className="text-xs text-blue-300 font-semibold mb-1">Notas del admin:</p>
-                        <p className="text-xs text-blue-200">{report.admin_notes}</p>
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-700 font-semibold mb-1">Notas del admin:</p>
+                        <p className="text-xs text-blue-700/80">{report.admin_notes}</p>
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-ink-2/70 mt-2">
                       {new Date(report.created_at).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "short",
@@ -220,7 +220,7 @@ export default async function AdminReportesPage() {
                     </p>
                     <Link
                       href={`/app/admin/reportes/${report.id}?type=review`}
-                      className="mt-3 inline-block text-sm text-blue-400 hover:text-blue-300"
+                      className="mt-3 inline-block text-sm text-blue-600 hover:text-blue-700"
                     >
                       Gestionar →
                     </Link>
@@ -229,7 +229,7 @@ export default async function AdminReportesPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-ink-2">
               <p>No hay reportes de reseñas</p>
             </div>
           )}

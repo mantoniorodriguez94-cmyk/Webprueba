@@ -116,13 +116,13 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
 
   if (!showForm) {
     return (
-      <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 overflow-hidden">
+      <div className="surface rounded-3xl shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-start gap-4 flex-1">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 border border-green-200">
                 <svg
-                  className="w-6 h-6 text-emerald-400"
+                  className="w-6 h-6 text-green-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -136,17 +136,17 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xl font-bold text-white mb-1">
+                <h3 className="text-xl font-bold text-ink mb-1">
                   Crear Negocio con Código de Reclamación
                 </h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <p className="text-sm text-ink-2 leading-relaxed">
                   Crea un negocio sin dueño y genera un código único para que el dueño real lo reclame cuando se registre
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 flex-shrink-0"
+              className="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all flex items-center gap-2 flex-shrink-0"
             >
               <svg
                 className="w-5 h-5"
@@ -170,14 +170,14 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-lg border border-white/20 overflow-hidden">
+    <div className="surface rounded-3xl shadow-sm overflow-hidden">
       {/* Card Header */}
-      <div className="p-6 pb-4 border-b border-white/10">
+      <div className="p-6 pb-4 border-b border-black/8">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-4 flex-1">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 border border-green-200">
               <svg
-                className="w-6 h-6 text-emerald-400"
+                className="w-6 h-6 text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -191,10 +191,10 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold text-ink mb-1">
                 Crear Negocio con Código de Reclamación
               </h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <p className="text-sm text-ink-2 leading-relaxed">
                 Completa la información del negocio. Se generará automáticamente un código único para reclamación
               </p>
             </div>
@@ -206,10 +206,10 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
               setSuccess("")
               setGeneratedCode("")
             }}
-            className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 flex items-center justify-center transition-all flex-shrink-0 ml-4"
+            className="w-10 h-10 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 hover:border-black/15 flex items-center justify-center transition-all flex-shrink-0 ml-4"
             title="Cerrar formulario"
           >
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -219,7 +219,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
       {/* Card Content */}
       <div className="p-6 space-y-5">
         {success && (
-          <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-300 flex items-start gap-3">
+          <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 flex items-start gap-3">
             <svg
               className="w-5 h-5 flex-shrink-0 mt-0.5"
               fill="none"
@@ -236,20 +236,20 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
             <div className="flex-1 space-y-2">
               <p className="font-semibold">{success}</p>
               {generatedCode && (
-                <div className="flex items-center gap-3 p-3 bg-black/30 rounded-lg border border-green-500/20">
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-green-200">
                   <div className="flex-1">
-                    <p className="text-xs text-gray-400 mb-1">Código generado</p>
-                    <p className="text-xl font-mono font-bold text-green-300 tracking-wider">
+                    <p className="text-xs text-ink-2 mb-1">Código generado</p>
+                    <p className="text-xl font-mono font-bold text-green-700 tracking-wider">
                       {generatedCode}
                     </p>
                   </div>
                   <button
                     onClick={handleCopyCode}
-                    className="w-10 h-10 rounded-lg bg-green-500/20 hover:bg-green-500/30 border border-green-500/40 flex items-center justify-center transition-all"
+                    className="w-10 h-10 rounded-lg bg-green-100 hover:bg-green-200 border border-green-200 flex items-center justify-center transition-all"
                     title="Copiar código"
                   >
                     <svg
-                      className="w-5 h-5 text-green-300"
+                      className="w-5 h-5 text-green-700"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -269,7 +269,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
         )}
 
         {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm flex items-start gap-3">
+          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
             <svg
               className="w-5 h-5 flex-shrink-0 mt-0.5"
               fill="none"
@@ -290,14 +290,14 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ink-2 mb-2">
                 Nombre del Negocio *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
                 placeholder="Ej: Café Aromas"
                 required
                 disabled={loading}
@@ -305,14 +305,14 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ink-2 mb-2">
                 Categoría
               </label>
               <input
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
                 placeholder="Ej: Restaurante, Tienda..."
                 disabled={loading}
               />
@@ -320,14 +320,14 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-ink-2 mb-2">
               Descripción
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
               placeholder="Descripción del negocio..."
               disabled={loading}
             />
@@ -335,7 +335,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
 
           {/* Ubicación */}
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-ink-2 mb-2">
               Ubicación *
             </label>
             <LocationSelector
@@ -349,28 +349,28 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-ink-2 mb-2">
               Dirección Detallada
             </label>
             <input
               type="text"
               value={addressDetails}
               onChange={(e) => setAddressDetails(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
               placeholder="Punto de referencia, sector, etc."
               disabled={loading}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-ink-2 mb-2">
               Dirección (Opcional)
             </label>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
               placeholder="Dirección completa"
               disabled={loading}
             />
@@ -378,28 +378,28 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ink-2 mb-2">
                 Teléfono
               </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
                 placeholder="04121234567"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ink-2 mb-2">
                 WhatsApp
               </label>
               <input
                 type="tel"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-white/20 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
                 placeholder="04121234567"
                 disabled={loading}
               />
@@ -410,7 +410,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -445,7 +445,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
                 setGeneratedCode("")
               }}
               disabled={loading}
-              className="px-6 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-gray-300 hover:text-white font-medium transition-all disabled:opacity-50"
+              className="px-6 py-3.5 rounded-xl bg-black/5 hover:bg-black/10 border border-black/10 hover:border-black/15 text-ink-2 hover:text-ink font-medium transition-all disabled:opacity-50"
             >
               Cancelar
             </button>
