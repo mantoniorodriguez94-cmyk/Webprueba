@@ -1,6 +1,7 @@
 // src/app/dashboard/negocios/[id]/estadisticas/page.tsx - PREMIUM REDESIGN
 "use client"
 import React, { useEffect, useState } from "react"
+import SectionHeader from "@/components/ui/SectionHeader"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -191,36 +192,17 @@ export default function EstadisticasPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header Premium */}
-      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 border-b border-black/8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-black/5 rounded-full transition-colors"
-                title="Volver"
-              >
-                <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-ink flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  Estadísticas
-                </h1>
-                <p className="text-sm text-ink-2 mt-1">
-                  {business.name} • Métricas y Análisis
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SectionHeader
+        titulo="Estadísticas"
+        subtitulo={business?.name}
+        ancho="7xl"
+        onVolver={() => router.back()}
+        icono={
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        }
+      />
 
       {/* Contenido */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

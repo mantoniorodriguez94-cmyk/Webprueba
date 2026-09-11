@@ -29,6 +29,11 @@ interface SectionHeaderProps {
    * móvil no cambia nada: ahí todo ocupa el ancho completo.
    */
   ancho?: "5xl" | "7xl"
+  /**
+   * Acción de volver, para pantallas anidadas. Las secciones que son destino
+   * de la barra inferior no la usan: ahí la barra ya es la navegación.
+   */
+  onVolver?: () => void
 }
 
 const ANCHOS = {
@@ -42,10 +47,24 @@ export default function SectionHeader({
   icono,
   acciones,
   ancho = "5xl",
+  onVolver,
 }: SectionHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
       <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 px-4 py-4`}>
+        {onVolver && (
+          <button
+            type="button"
+            onClick={onVolver}
+            aria-label="Volver"
+            className="-ml-2 flex-shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-black/5 hover:text-ink"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
         {icono && <span className="flex-shrink-0 text-blue-600">{icono}</span>}
 
         <div className="min-w-0 flex-1">

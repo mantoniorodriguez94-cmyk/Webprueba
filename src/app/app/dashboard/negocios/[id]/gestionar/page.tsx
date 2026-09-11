@@ -1,6 +1,7 @@
 // src/app/dashboard/negocios/[id]/gestionar/page.tsx
 "use client"
 import React, { useEffect, useState } from "react"
+import SectionHeader from "@/components/ui/SectionHeader"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -178,58 +179,50 @@ export default function GestionarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 shadow-sm border-b-2 border-blue-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-black/5 rounded-full transition-colors"
-                title="Volver"
-              >
-                <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-ink">
-                  Gestionar Negocio
-                </h1>
-                <p className="text-sm text-ink-2 mt-1">
-                  {business.name}
-                </p>
-              </div>
-            </div>
+      {/* Desde que "Mi negocio" de la barra inferior enlaza directo acá, esta
+          pantalla dejó de ser anidada y pasó a ser un destino más. Usa el
+          mismo encabezado que el resto: antes tenía título más grande, otro
+          desenfoque, sombra y un borde azul de 2px, así que se veía distinta
+          de todas las demás. */}
+      <SectionHeader
+        titulo="Gestionar negocio"
+        subtitulo={business.name}
+        ancho="7xl"
+        icono={
+          <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        }
+        acciones={
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuAbierto((v) => !v)}
+              aria-label="Más opciones"
+              aria-haspopup="menu"
+              aria-expanded={menuAbierto}
+              className="p-2 rounded-full hover:bg-black/5 transition-colors"
+            >
+              <MoreVertical className="w-5 h-5 text-ink-2" />
+            </button>
 
-            <div className="relative">
+            <Popover open={menuAbierto} onClose={() => setMenuAbierto(false)} align="right">
               <button
                 type="button"
-                onClick={() => setMenuAbierto((v) => !v)}
-                aria-label="Más opciones"
-                aria-haspopup="menu"
-                aria-expanded={menuAbierto}
-                className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                onClick={() => {
+                  setMenuAbierto(false)
+                  setConfirmarBorrado(true)
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
               >
-                <MoreVertical className="w-5 h-5 text-ink-2" />
+                <Trash2 className="w-4 h-4" />
+                Eliminar negocio
               </button>
-
-              <Popover open={menuAbierto} onClose={() => setMenuAbierto(false)} align="right">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuAbierto(false)
-                    setConfirmarBorrado(true)
-                  }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Eliminar negocio
-                </button>
-              </Popover>
-            </div>
+            </Popover>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Banner de infracción (visible para el dueño) */}
       {business.infraction_status && (
