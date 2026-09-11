@@ -2,6 +2,7 @@
 // Unified chat inbox — "Mis Consultas" (as client) + "Mi Negocio" (as business owner)
 "use client"
 import React, { useEffect, useState, useRef, useCallback, Suspense } from "react"
+import SectionHeader from "@/components/ui/SectionHeader"
 import { confirmModal } from "@/lib/confirmModal"
 import AuthGate from "@/components/auth/AuthGate"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -577,36 +578,46 @@ function ChatInner() {
   return (
     <div className="min-h-screen w-full flex flex-col pb-0">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/10 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
-          {selectedConversation && (
+      {/* Con una conversación abierta hace falta una barra: el nombre de con
+          quién hablás y el botón para volver a la lista tienen que quedar a
+          la vista mientras se lee. Sin conversación abierta, el encabezado es
+          el mismo de las otras secciones. */}
+      {selectedConversation ? (
+        <header className="sticky top-0 z-40 flex-shrink-0 border-b border-black/10 bg-white/85 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-4 sm:px-6 lg:px-8">
             <button
               onClick={() => { setSelectedConversation(null); setMessages([]) }}
-              className="p-2 hover:bg-black/5 rounded-full transition-colors text-ink-2 lg:hidden"
+              className="rounded-full p-2 text-ink-2 transition-colors hover:bg-black/5 lg:hidden"
               aria-label="Volver a la lista"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-          )}
 
-          <h1 className="text-xl font-bold text-ink flex items-center gap-2 truncate min-w-0">
-            <svg className="w-6 h-6 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="truncate">
-              {selectedConversation
-                ? selectedConversation.mode === "client"
-                  ? selectedConversation.business_name
-                  : selectedConversation.user_name ||
-                    selectedConversation.user_email ||
-                    "Cliente"
-                : "Mensajes"}
-            </span>
-          </h1>
+            <h1 className="min-w-0 truncate text-xl font-bold text-ink">
+              {selectedConversation.mode === "client"
+                ? selectedConversation.business_name
+                : selectedConversation.user_name ||
+                  selectedConversation.user_email ||
+                  "Cliente"}
+            </h1>
+          </div>
+        </header>
+      ) : (
+        <div className="flex-shrink-0">
+          <SectionHeader
+            titulo="Mensajes"
+            icono={
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            }
+            ancho="7xl"
+            variante="portada"
+          />
         </div>
-      </header>
+      )}
 
       {/* ── Body ── */}
       <div className="flex-1 flex overflow-hidden min-h-0">

@@ -29,6 +29,14 @@ interface SectionHeaderProps {
    * móvil no cambia nada: ahí todo ocupa el ancho completo.
    */
   ancho?: "5xl" | "7xl"
+  /**
+   * "barra"   — barra fija con vidrio y línea divisoria.
+   * "portada" — el tratamiento de Inicio: título grande y centrado sobre la
+   *             malla, sin barra ni división. Se va con el desplazamiento,
+   *             así que conviene donde el encabezado no necesita estar
+   *             siempre a mano.
+   */
+  variante?: "barra" | "portada"
 }
 
 const ANCHOS = {
@@ -42,7 +50,35 @@ export default function SectionHeader({
   icono,
   acciones,
   ancho = "5xl",
+  variante = "barra",
 }: SectionHeaderProps) {
+  if (variante === "portada") {
+    return (
+      <div className={`mx-auto ${ANCHOS[ancho]} px-4 pt-8 lg:px-6`}>
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center gap-3">
+            {icono && (
+              // El ícono se agranda desde acá para que las pantallas puedan
+              // seguir pasándolo con su tamaño de barra sin duplicar código.
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 sm:h-16 sm:w-16 [&>svg]:h-7 [&>svg]:w-7">
+                {icono}
+              </span>
+            )}
+            <h1 className="text-3xl font-bold text-ink sm:text-4xl">{titulo}</h1>
+          </div>
+
+          {subtitulo && (
+            <p className="mx-auto mt-3 max-w-sm text-sm text-ink-2">{subtitulo}</p>
+          )}
+
+          {acciones && (
+            <div className="mt-4 flex items-center justify-center gap-2">{acciones}</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
       <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 px-4 py-4`}>

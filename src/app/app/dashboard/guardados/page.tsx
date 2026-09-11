@@ -97,6 +97,7 @@ export default function GuardadosPage() {
             : `${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} guardado${negocios.length !== 1 ? "s" : ""}`
         }
         icono={<Bookmark className="w-5 h-5" />}
+        variante="portada"
       />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
