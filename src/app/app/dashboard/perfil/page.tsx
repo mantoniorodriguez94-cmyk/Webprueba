@@ -505,6 +505,15 @@ export default function PerfilPage() {
               pantalla de la app. */}
           <div className="surface rounded-3xl divide-y divide-black/5 overflow-hidden">
             <Link
+              href="/soporte"
+              className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"
+            >
+              <span className="flex-1 text-sm font-medium text-ink">Soporte y contacto</span>
+              <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <Link
               href="/terminos"
               className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"
             >

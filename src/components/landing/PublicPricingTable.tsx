@@ -153,13 +153,6 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                 <p className="text-[11px] text-ink-2">Tus promociones serán destacadas para impulsar tus ventas.</p>
               </div>
             </div>
-            <div className="flex items-start gap-2">
-              <HeartHandshake className="w-4 h-4 text-green-600 mt-0.5" />
-              <div>
-                <p className="font-semibold text-ink">Soporte VIP Prioritario</p>
-                <p className="text-[11px] text-ink-2">Canal de soporte preferente para resolver tus dudas más rápido.</p>
-              </div>
-            </div>
           </div>
         </Link>
       </div>

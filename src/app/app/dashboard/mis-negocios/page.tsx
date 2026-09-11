@@ -32,7 +32,7 @@ export default function MisNegociosPage() {
   const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier) + (extraBusinessLimit ?? 0)
   const canCreateMore = isAdmin ? true : (businessCount < allowedBusinesses)
   const limitMessage = !isAdmin && businessCount >= allowedBusinesses
-    ? "Límite de 1 negocio por cuenta alcanzado. Contacta a soporte si necesitas gestionar más."
+    ? "Límite de 1 negocio por cuenta alcanzado. Escríbenos desde /soporte si necesitas gestionar más."
     : null
   
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)

@@ -643,6 +643,11 @@ export default function Home() {
                     </Link>
                   </li>
                   <li>
+                    <Link href="/soporte" className="hover:text-white transition">
+                      Soporte y contacto
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/terminos" className="hover:text-white transition">
                       Términos y condiciones
                     </Link>
