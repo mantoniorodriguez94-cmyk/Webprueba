@@ -319,8 +319,8 @@ export default function PerfilPage() {
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold ${
                         isCompany
-                          ? "bg-purple-500/30 text-purple-100 border border-purple-300/30"
-                          : "bg-green-500/30 text-green-100 border border-green-300/30"
+                          ? "bg-white/20 text-white border border-white/30"
+                          : "bg-white/20 text-white border border-white/30"
                       }`}
                     >
                       {isCompany ? "👔 Cuenta Negocio" : "👤 Cuenta Personal"}
@@ -353,109 +353,45 @@ export default function PerfilPage() {
         {isAdmin && <ClaimBusinessForm />}
 
         {/* ============================================
-            OPCIONES PARA USUARIOS PERSONALES
+            TU CUENTA
+            Ya no hay enlaces a Membresía, Mi negocio ni Mensajes: los tres
+            viven en la barra inferior, y repetirlos acá convertía el perfil
+            en un segundo menú de navegación en vez de un lugar donde
+            controlás tu cuenta.
         ============================================ */}
         {!isCompany && (
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-ink px-2">Opciones de Cuenta</h3>
+            <h3 className="text-lg font-bold text-ink px-2">Tu cuenta</h3>
 
-            {/* Mensajes */}
-            <Link href="/app/dashboard/chat">
-              <div className="surface rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-ink">Mensajes</h4>
-                  <p className="text-sm text-ink-2">Ver tus conversaciones</p>
-                </div>
-                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Convertirse en Empresa */}
             <button
               onClick={() => setShowConvertModal(true)}
-              className="w-full bg-blue-50 rounded-3xl border-2 border-blue-200 p-5 hover:border-blue-400 transition-all flex items-center gap-4"
+              className="w-full surface rounded-3xl p-5 hover:border-black/15 transition-all flex items-center gap-4 text-left"
             >
-              <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 9.5h17v10a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-10ZM3 9.5 5 4h14l2 5.5M9.5 21v-5h5v5" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-ink">Convertirme en Usuario Negocio</h4>
-                <p className="text-sm text-ink-2">Crea y gestiona negocios</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-ink">Convertir en cuenta de negocio</h4>
+                <p className="text-sm text-ink-2">Publicá tu negocio y recibí clientes</p>
               </div>
-              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-5 h-5 text-ink-2 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
         )}
 
         {/* ============================================
-            OPCIONES PARA USUARIOS NEGOCIO
+            INVITACIONES
+            Sube desde el fondo de la pantalla: es lo único de esta página
+            que no vive en ningún otro lado, y encima es el motor de
+            crecimiento del producto. Estaba enterrado bajo tres enlaces que
+            solo repetían la barra inferior.
         ============================================ */}
-        {isCompany && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-ink px-2">Gestión de Negocios</h3>
-
-            {/* Membresía (primera opción) */}
-            <Link href="/app/dashboard/membresia">
-              <div className="mt-2 mb-2 rounded-3xl border border-purple-200 bg-purple-50 p-5 hover:border-purple-300 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
-                  <Star className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-purple-700">Membresía</h4>
-                  <p className="text-sm text-ink-2">Conecta, Destaca, Patrocina</p>
-                </div>
-                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Mis Negocios */}
-            <Link href="/app/dashboard/mis-negocios">
-              <div className="surface mt-2 mb-2 rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-ink">Mis Negocios</h4>
-                  <p className="text-sm text-ink-2">Ver y gestionar tus negocios</p>
-                </div>
-                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Mensajes — Unified inbox */}
-            <Link href="/app/dashboard/chat">
-              <div className="surface mt-2 mb-2 rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-ink">Mensajes</h4>
-                  <p className="text-sm text-ink-2">Consultas y conversaciones</p>
-                </div>
-                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
+        <div className="space-y-4 pt-2">
+          <h3 className="text-lg font-bold text-ink px-2">Invitaciones</h3>
 
             {/* Sección Invitaciones / Referidos */}
             <div className="surface rounded-3xl p-5 mb-6">
@@ -468,7 +404,7 @@ export default function PerfilPage() {
                 <div className="flex-1">
                   <h4 className="font-semibold text-ink">Invita a tus amigos</h4>
                   <p className="text-sm text-ink-2">
-                    Invita a 3 negocios y obtén <span className="font-semibold text-purple-700">1 mes de Plan Patrocina GRATIS.</span>
+                    Invita a 3 negocios y obtén <span className="font-semibold text-amber-600">1 mes de Plan Patrocina GRATIS.</span>
                   </p>
                   <p className="text-xs text-ink-2/80 mt-1">
                     Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Patrocina).
@@ -509,7 +445,7 @@ export default function PerfilPage() {
                       const url = `https://wa.me/?text=${encodeURIComponent(message)}`
                       window.open(url, "_blank", "noopener,noreferrer")
                     }}
-                    className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-semibold"
+                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold"
                   >
                     WhatsApp
                   </button>
@@ -533,8 +469,8 @@ export default function PerfilPage() {
               </div>
             </div>
             </div>
-          </div>
-        )}
+        </div>
+
 
         {/* ============================================
             SECCIÓN CONFIGURACIÓN (BOTÓN ADMIN AQUÍ)
@@ -571,26 +507,30 @@ export default function PerfilPage() {
             </Link>
           )}
 
-          {/* Tarjeta Preferencias -> Redirige a gestión de negocios */}
-          <Link href="/app/dashboard/mis-negocios">
-            <div className="surface rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-black/5 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-ink">Preferencias</h4>
-                  <p className="text-sm text-ink-2">Ir a la gestión de negocios</p>
-                </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          </Link>
+          {/* Antes había acá una tarjeta "Preferencias" que en realidad
+              llevaba a la gestión de negocios: decía una cosa y hacía otra.
+              La reemplazan los legales, que no tenían lugar en ninguna
+              pantalla de la app. */}
+          <div className="surface rounded-3xl divide-y divide-black/5 overflow-hidden">
+            <Link
+              href="/terminos"
+              className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"
+            >
+              <span className="flex-1 text-sm font-medium text-ink">Términos y condiciones</span>
+              <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <Link
+              href="/privacidad"
+              className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"
+            >
+              <span className="flex-1 text-sm font-medium text-ink">Política de privacidad</span>
+              <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
         </div>
 
         {/* CERRAR SESIÓN */}
