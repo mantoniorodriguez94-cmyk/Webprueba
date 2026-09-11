@@ -183,7 +183,7 @@ export default function BusinessFeedCard({
   const ownerHasFullContact = ownerTier >= 2
 
   const isTier2 = ownerTier >= 2
-  const isTier3 = ownerTier >= 3 // used for Crown badge only
+  const isTier3 = ownerTier >= 3 // badge de Patrocinador (NO es verificación: eso es is_verified, lo otorga un admin)
 
   // ── Heal: lazy profile fetch when join data was absent ────────────────────
   // This covers edge cases where the batch join hadn't populated yet (e.g., new card).
@@ -276,7 +276,7 @@ export default function BusinessFeedCard({
                 {isTier3 && (
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
                     <Crown className="w-3 h-3" />
-                    <span>Verificado</span>
+                    <span>Patrocinador</span>
                   </div>
                 )}
                 {isPremiumActive && <PremiumBadge variant="small" showText={false} />}

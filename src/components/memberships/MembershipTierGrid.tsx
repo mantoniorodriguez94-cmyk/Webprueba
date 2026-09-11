@@ -211,7 +211,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
           <p className="text-xs text-ink-2 leading-relaxed max-w-xl">
             ¿Quieres apoyar nuestra causa? Conviértete en{" "}
             <span className="font-semibold text-ink">Patrocinador</span>. Tu negocio
-            portará la insignia de verificación oficial y destacará sobre el resto.
+            portará la insignia de Patrocinador y destacará sobre el resto.
           </p>
 
           <button
@@ -254,9 +254,9 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
               <div className="flex items-start gap-2">
                 <BadgeCheck className="w-4 h-4 text-green-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-ink">Badge de Verificado Oficial</p>
+                  <p className="font-semibold text-ink">Insignia de Patrocinador</p>
                   <p className="text-[11px] text-ink-2">
-                    Check de verificación, igual que en redes sociales, para negocios verificados.
+                    Distintivo visible en tu tarjeta que muestra que apoyás la plataforma.
                   </p>
                 </div>
               </div>
