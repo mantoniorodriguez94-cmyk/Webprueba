@@ -1,6 +1,7 @@
 // src/app/dashboard/negocios/[id]/galeria/page.tsx
 "use client"
 import React, { useEffect, useState } from "react"
+import { confirmModal } from "@/lib/confirmModal"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -173,7 +174,11 @@ export default function GaleriaPage() {
   // Eliminar imagen
   const handleDeleteImage = async (imageUrl: string) => {
     if (!business) return
-    if (!confirm("¿Estás seguro de eliminar esta imagen?")) return
+    const confirmado = await confirmModal("¿Eliminar esta imagen?", {
+      description: "Se quitará de la galería de tu negocio y no se puede recuperar.",
+      confirmLabel: "Eliminar",
+    })
+    if (!confirmado) return
 
     try {
       // Extraer el path del storage desde la URL

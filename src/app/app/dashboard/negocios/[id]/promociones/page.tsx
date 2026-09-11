@@ -1,6 +1,7 @@
 // src/app/dashboard/negocios/[id]/promociones/page.tsx
 "use client"
 import React, { useEffect, useState } from "react"
+import { confirmModal } from "@/lib/confirmModal"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -87,7 +88,11 @@ export default function PromocionesPage() {
 
   // Eliminar promoción
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return
+    const confirmado = await confirmModal("¿Eliminar esta promoción?", {
+      description: "Dejará de mostrarse a los clientes. Esta acción no se puede deshacer.",
+      confirmLabel: "Eliminar",
+    })
+    if (!confirmado) return
 
     try {
       const { error } = await supabase

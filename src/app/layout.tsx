@@ -5,6 +5,7 @@ import InstallPWA from "@/components/InstallPWA";
 import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 import AlertModalHost from "@/components/ui/AlertModalHost";
+import ConfirmModalHost from "@/components/ui/ConfirmModalHost";
 
 // Tipografía: se revisó a conciencia si Fraunces/Sora/JetBrains Mono
 // seguían sirviendo al registro "Luz" (claro, sobrio, "serio, cuerdo") y se
@@ -132,6 +133,7 @@ export default function RootLayout({
         {/* Toast Notifications */}
         <Toaster theme="light" richColors position="top-center" />
         <AlertModalHost />
+        <ConfirmModalHost />
 
         {/* Admin direct message modal (when show_admin_modal is true) */}
         <AdminMessageModal />

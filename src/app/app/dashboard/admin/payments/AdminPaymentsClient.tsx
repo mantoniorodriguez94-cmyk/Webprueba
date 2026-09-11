@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from "react"
+import { confirmModal } from "@/lib/confirmModal"
 import type { ManualPaymentSubmission } from "@/types/subscriptions"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
@@ -285,7 +286,11 @@ export default function AdminPaymentsClient({
   }
 
   const handleApprove = async (submissionId: string) => {
-    if (!confirm('¿Estás seguro de que deseas aprobar este pago? Esto activará la membresía del usuario.')) {
+    const confirmado = await confirmModal("¿Aprobar este pago?", {
+      description: "Se activará la membresía del usuario de inmediato.",
+      confirmLabel: "Aprobar pago",
+    })
+    if (!confirmado) {
       return
     }
 
@@ -356,7 +361,11 @@ export default function AdminPaymentsClient({
       return
     }
 
-    if (!confirm('¿Estás seguro de que deseas rechazar este pago?')) {
+    const confirmado = await confirmModal("¿Rechazar este pago?", {
+      description: "El usuario no recibirá la membresía y deberá enviar un comprobante nuevo.",
+      confirmLabel: "Rechazar pago",
+    })
+    if (!confirmado) {
       return
     }
 

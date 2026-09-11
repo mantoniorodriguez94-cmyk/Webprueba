@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { confirmModal } from "@/lib/confirmModal"
 import Link from "next/link"
 import type { InvitationData } from "../page"
 import { alertModal } from "@/lib/alertModal"
@@ -36,7 +37,11 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
   }
 
   const handleRegenerate = async (businessId: string) => {
-    if (confirm("¿Estás seguro de que quieres regenerar este código? El código anterior quedará inválido.")) {
+    const confirmado = await confirmModal("¿Regenerar este código?", {
+      description: "El código anterior quedará inválido de inmediato.",
+      confirmLabel: "Regenerar",
+    })
+    if (confirmado) {
       try {
         const response = await fetch("/api/admin/business/generate-claim-code", {
           method: "POST",

@@ -2,6 +2,7 @@
 // Unified chat inbox — "Mis Consultas" (as client) + "Mi Negocio" (as business owner)
 "use client"
 import React, { useEffect, useState, useRef, useCallback, Suspense } from "react"
+import { confirmModal } from "@/lib/confirmModal"
 import AuthGate from "@/components/auth/AuthGate"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
@@ -493,12 +494,11 @@ function ChatInner() {
     e: React.MouseEvent
   ) => {
     e.stopPropagation()
-    if (
-      !confirm(
-        "¿Eliminar esta conversación? Todos los mensajes se borrarán permanentemente."
-      )
-    )
-      return
+    const confirmado = await confirmModal("¿Eliminar esta conversación?", {
+      description: "Todos los mensajes se borrarán de forma permanente.",
+      confirmLabel: "Eliminar",
+    })
+    if (!confirmado) return
 
     try {
       let query = supabase
