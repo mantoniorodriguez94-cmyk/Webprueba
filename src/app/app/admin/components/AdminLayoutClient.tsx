@@ -55,7 +55,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   }, [pathname])
 
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col">
+    <div className="min-h-screen text-ink flex flex-col">
       {/* HEADER SUPERIOR */}
       <header className="w-full border-b border-black/8 bg-white/80 backdrop-blur-xl z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

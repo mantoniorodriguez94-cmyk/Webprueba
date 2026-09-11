@@ -75,8 +75,8 @@ export function useChatNotifications() {
       try {
         const notification = new Notification(title, {
           body,
-          icon: '/assets/logotipo.png',
-          badge: '/assets/logotipo.png',
+          icon: '/icons/icon-192-maskable.png',
+          badge: '/icons/icon-192-maskable.png',
           tag: 'chat-message',
           requireInteraction: false,
           silent: false
@@ -123,7 +123,7 @@ export function useChatNotifications() {
             // Mostrar notificación de prueba
             new Notification('Notificaciones activadas', {
               body: 'Recibirás notificaciones de nuevos mensajes',
-              icon: '/assets/logotipo.png',
+              icon: '/icons/icon-192-maskable.png',
               tag: 'welcome'
             })
           }
