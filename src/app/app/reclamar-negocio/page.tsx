@@ -34,10 +34,10 @@ export default function ReclamarNegocioPage() {
 
   if (userLoading || checkingAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="min-h-screen flex items-center justify-center text-ink">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
-          <p className="mt-4 text-gray-400">Verificando permisos...</p>
+          <p className="mt-4 text-ink-2">Verificando permisos...</p>
         </div>
       </div>
     )
@@ -45,10 +45,10 @@ export default function ReclamarNegocioPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        <div className="max-w-md mx-auto px-4 py-8 bg-gray-900/70 backdrop-blur-xl rounded-3xl border border-white/10 text-center">
+      <div className="min-h-screen flex items-center justify-center text-ink">
+        <div className="max-w-md mx-auto px-4 py-8 surface-elevated rounded-3xl text-center">
           <h1 className="text-2xl font-bold mb-3">Acceso restringido</h1>
-          <p className="text-gray-400 mb-6">
+          <p className="text-ink-2 mb-6">
             La funcionalidad de reclamar negocios está disponible solo para administradores.
           </p>
           <Link
@@ -66,13 +66,13 @@ export default function ReclamarNegocioPage() {
   }
 
   return (
-    <div className="min-h-screen pb-12 text-white">
+    <div className="min-h-screen pb-12 text-ink">
       <div className="max-w-2xl mx-auto px-4 pt-8">
         {/* Header */}
         <div className="mb-8 text-center">
           <Link
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-ink-2 hover:text-ink transition-colors mb-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -80,7 +80,7 @@ export default function ReclamarNegocioPage() {
             Volver al Dashboard
           </Link>
           <h1 className="text-4xl font-bold mb-2">Reclamar Mi Negocio</h1>
-          <p className="text-gray-400">
+          <p className="text-ink-2">
             Si recibiste un código de invitación, ingrésalo aquí para reclamar tu negocio
           </p>
         </div>

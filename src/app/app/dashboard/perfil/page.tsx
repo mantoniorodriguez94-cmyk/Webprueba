@@ -263,7 +263,7 @@ export default function PerfilPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Cargando perfil...</p>
+          <p className="mt-4 text-ink-2">Cargando perfil...</p>
         </div>
       </div>
     )
@@ -272,14 +272,14 @@ export default function PerfilPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center bg-transparent/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 max-w-md">
+        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Acceso restringido</h2>
-          <p className="text-gray-400 mb-6">Debes iniciar sesión para continuar</p>
+          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
+          <p className="text-ink-2 mb-6">Debes iniciar sesión para continuar</p>
           <Link 
             href="/app/auth/login"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
@@ -297,18 +297,18 @@ export default function PerfilPage() {
   return (
     <div className="min-h-screen pb-24 lg:pb-8">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               Mi Perfil
             </h1>
 
             <Link href="/app/dashboard">
-              <button className="p-2 bg-transparent rounded-full text-gray-400 hover:text-white hover:bg-transparent transition-all">
+              <button className="p-2 rounded-full text-ink-2 hover:text-ink hover:bg-black/5 transition-all">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -374,21 +374,21 @@ export default function PerfilPage() {
         ============================================ */}
         {!isCompany && (
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white px-2">Opciones de Cuenta</h3>
+            <h3 className="text-lg font-bold text-ink px-2">Opciones de Cuenta</h3>
 
             {/* Mensajes */}
             <Link href="/app/dashboard/chat">
-              <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="surface rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mensajes</h4>
-                  <p className="text-sm text-gray-400">Ver tus conversaciones</p>
+                  <h4 className="font-semibold text-ink">Mensajes</h4>
+                  <p className="text-sm text-ink-2">Ver tus conversaciones</p>
                 </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
@@ -397,18 +397,18 @@ export default function PerfilPage() {
             {/* Convertirse en Empresa */}
             <button
               onClick={() => setShowConvertModal(true)}
-              className="w-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl border-2 border-purple-500/40 p-5 hover:border-purple-400 transition-all flex items-center gap-4"
+              className="w-full bg-blue-50 rounded-3xl border-2 border-blue-200 p-5 hover:border-blue-400 transition-all flex items-center gap-4"
             >
-              <div className="w-12 h-12 bg-purple-500/30 rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white">Convertirme en Usuario Negocio</h4>
-                <p className="text-sm text-gray-400">Crea y gestiona negocios</p>
+                <h4 className="font-semibold text-ink">Convertirme en Usuario Negocio</h4>
+                <p className="text-sm text-ink-2">Crea y gestiona negocios</p>
               </div>
-              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -420,19 +420,19 @@ export default function PerfilPage() {
         ============================================ */}
         {isCompany && (
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white px-2">Gestión de Negocios</h3>
+            <h3 className="text-lg font-bold text-ink px-2">Gestión de Negocios</h3>
 
             {/* Membresía (primera opción) */}
             <Link href="/app/dashboard/membresia">
-              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-yellow-400/40 p-5 hover:border-yellow-300/70 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-yellow-500/15 rounded-2xl flex items-center justify-center">
-                  <Star className="w-6 h-6 text-yellow-300" />
+              <div className="mt-2 mb-2 rounded-3xl border border-purple-200 bg-purple-50 p-5 hover:border-purple-300 transition-all cursor-pointer flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
+                  <Star className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-yellow-300">Membresía</h4>
-                  <p className="text-sm text-gray-300">Conecta, Destaca, Patrocina</p>
+                  <h4 className="font-semibold text-purple-700">Membresía</h4>
+                  <p className="text-sm text-ink-2">Conecta, Destaca, Patrocina</p>
                 </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
@@ -440,17 +440,17 @@ export default function PerfilPage() {
 
             {/* Mis Negocios */}
             <Link href="/app/dashboard/mis-negocios">
-              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="surface mt-2 mb-2 rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mis Negocios</h4>
-                  <p className="text-sm text-gray-400">Ver y gestionar tus negocios</p>
+                  <h4 className="font-semibold text-ink">Mis Negocios</h4>
+                  <p className="text-sm text-ink-2">Ver y gestionar tus negocios</p>
                 </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
@@ -458,48 +458,48 @@ export default function PerfilPage() {
 
             {/* Mensajes — Unified inbox */}
             <Link href="/app/dashboard/chat">
-              <div className="bg-transparent mt-2 mb-2 backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="surface mt-2 mb-2 rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Mensajes</h4>
-                  <p className="text-sm text-gray-400">Consultas y conversaciones</p>
+                  <h4 className="font-semibold text-ink">Mensajes</h4>
+                  <p className="text-sm text-ink-2">Consultas y conversaciones</p>
                 </div>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
             </Link>
 
             {/* Sección Invitaciones / Referidos */}
-            <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 mb-6">
+            <div className="surface rounded-3xl p-5 mb-6">
               <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-500/20">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-50">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Invita a tus amigos</h4>
-                  <p className="text-sm text-gray-400">
-                    Invita a 3 negocios y obtén <span className="font-semibold text-yellow-300">1 mes de Plan Patrocina GRATIS.</span>
+                  <h4 className="font-semibold text-ink">Invita a tus amigos</h4>
+                  <p className="text-sm text-ink-2">
+                    Invita a 3 negocios y obtén <span className="font-semibold text-purple-700">1 mes de Plan Patrocina GRATIS.</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-ink-2/80 mt-1">
                     Para que un invitado sea válido, debe adquirir cualquier plan premium (Conecta, Destaca o Patrocina).
                   </p>
                 </div>
             </div>
             
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row items-stretch gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex flex-col sm:flex-row items-stretch gap-2 p-3 bg-black/[0.03] rounded-xl border border-black/10">
                 <input
                   type="text"
                   readOnly
                   value={`https://appencuentra.com/register?ref=${user?.id || ""}`}
-                  className="flex-1 bg-transparent text-white text-sm outline-none"
+                  className="flex-1 bg-transparent text-ink text-sm outline-none"
                 />
                 <div className="flex gap-2">
                   <button
@@ -514,7 +514,7 @@ export default function PerfilPage() {
                         toast.error("No se pudo copiar el enlace. Intenta de nuevo.")
                       }
                     }}
-                    className="flex-1 px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors text-sm font-semibold"
+                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold"
                   >
                     Copiar
                   </button>
@@ -526,24 +526,24 @@ export default function PerfilPage() {
                       const url = `https://wa.me/?text=${encodeURIComponent(message)}`
                       window.open(url, "_blank", "noopener,noreferrer")
                     }}
-                    className="flex-1 px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-colors text-sm font-semibold"
+                    className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-semibold"
                   >
                     WhatsApp
                   </button>
                 </div>
               </div>
-              <div className="space-y-1 text-xs text-gray-300 text-center">
+              <div className="space-y-1 text-xs text-ink-2 text-center">
                 <p>
-                  Registrados: <span className="font-semibold text-white">{invitedCount}</span>
+                  Registrados: <span className="font-semibold text-ink">{invitedCount}</span>
                 </p>
                 <p>
                   Invitados válidos:{" "}
-                  <span className="font-semibold text-white">{qualifiedInvitedCount}</span>
-                  <span className="text-gray-400"> / 3</span>
+                  <span className="font-semibold text-ink">{qualifiedInvitedCount}</span>
+                  <span className="text-ink-2"> / 3</span>
                 </p>
-                <div className="mt-2 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="mt-2 h-2 w-full bg-black/8 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 rounded-full transition-all duration-500"
+                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, (qualifiedInvitedCount / 3) * 100)}%` }}
                   />
                 </div>
@@ -557,28 +557,28 @@ export default function PerfilPage() {
             SECCIÓN CONFIGURACIÓN (BOTÓN ADMIN AQUÍ)
         ============================================ */}
         <div className="space-y-4 pt-4">
-          <h3 className="text-lg font-bold text-white px-2">Configuración</h3>
+          <h3 className="text-lg font-bold text-ink px-2">Configuración</h3>
 
           {/* 🔥 BOTÓN PANEL ADMIN — SOLO PARA ADMINISTRADORES */}
           {isAdmin && (
             <Link href="/app/admin">
               <div className="
-                bg-gradient-to-br from-red-500/20 to-orange-500/20 
-                rounded-3xl border border-red-500/40 
+                bg-red-50
+                rounded-3xl border border-red-200
                 p-5 cursor-pointer
-                hover:border-red-400 hover:shadow-xl hover:shadow-red-500/10
+                hover:border-red-300 hover:shadow-md
                 transition-all flex items-center gap-4
               ">
                 
-                <div className="w-12 h-12 bg-red-500/30 rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
                   </svg>
                 </div>
 
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Panel de Control Admin</h4>
-                  <p className="text-sm text-gray-300">Administración interna del sistema</p>
+                  <h4 className="font-semibold text-ink">Panel de Control Admin</h4>
+                  <p className="text-sm text-ink-2">Administración interna del sistema</p>
                 </div>
 
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -590,17 +590,17 @@ export default function PerfilPage() {
 
           {/* Tarjeta Preferencias -> Redirige a gestión de negocios */}
           <Link href="/app/dashboard/mis-negocios">
-            <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-5 hover:border-white/40 transition-all cursor-pointer">
+            <div className="surface rounded-3xl p-5 hover:border-black/15 transition-all cursor-pointer">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-transparent rounded-2xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-black/5 rounded-2xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white">Preferencias</h4>
-                  <p className="text-sm text-gray-400">Ir a la gestión de negocios</p>
+                  <h4 className="font-semibold text-ink">Preferencias</h4>
+                  <p className="text-sm text-ink-2">Ir a la gestión de negocios</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -614,7 +614,7 @@ export default function PerfilPage() {
         <div className="pt-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-3 bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 text-red-400 font-bold py-4 rounded-3xl transition-all"
+            className="w-full flex items-center justify-center gap-3 bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-600 font-bold py-4 rounded-3xl transition-all"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -629,14 +629,14 @@ export default function PerfilPage() {
       {showConvertModal && (
         <>
           <div
-            className="fixed inset-0 bg-black/70 z-50"
+            className="fixed inset-0 bg-ink/40 z-50"
             onClick={() => setShowConvertModal(false)}
           />
           <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-            <div className="bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-white mb-4">Convertir a Cuenta Negocio</h3>
+            <div className="surface-elevated rounded-3xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-ink mb-4">Convertir a Cuenta Negocio</h3>
 
-              <p className="text-gray-300 text-sm mb-6">
+              <p className="text-ink-2 text-sm mb-6">
                 Convertirás tu cuenta personal en una cuenta de negocio. Podrás crear y gestionar negocios propios.
               </p>
 
@@ -644,7 +644,7 @@ export default function PerfilPage() {
                 <button
                   onClick={handleConvertToCompany}
                   disabled={converting}
-                  className="w-full bg-purple-500 hover:bg-purple-600 py-3 rounded-xl text-white font-semibold disabled:opacity-50"
+                  className="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-xl text-white font-semibold disabled:opacity-50"
                 >
                   {converting ? "Convirtiendo..." : "Convertir ahora"}
                 </button>
@@ -652,7 +652,7 @@ export default function PerfilPage() {
                 <button
                   onClick={() => setShowConvertModal(false)}
                   disabled={converting}
-                  className="w-full bg-gray-600/40 hover:bg-gray-600/60 py-3 rounded-xl text-white font-semibold"
+                  className="w-full bg-black/5 hover:bg-black/10 py-3 rounded-xl text-ink font-semibold"
                 >
                   Cancelar
                 </button>

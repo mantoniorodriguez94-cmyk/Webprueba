@@ -65,20 +65,20 @@ function getTierBadgeVisual(tier: MembershipTier): TierBadgeVisual | null {
     case 1:
       return {
         label: "Conecta",
-        bgClass: "bg-orange-500/10",
-        textClass: "text-orange-200",
-        borderClass: "border border-orange-500/40",
+        bgClass: "bg-blue-50",
+        textClass: "text-blue-700",
+        borderClass: "border border-blue-200",
         Icon: MessageCircle,
-        iconClass: "text-orange-300"
+        iconClass: "text-blue-600"
       }
     case 2:
       return {
         label: "Destaca",
-        bgClass: "bg-slate-400/10",
-        textClass: "text-slate-200",
-        borderClass: "border border-slate-400/40",
+        bgClass: "bg-slate-100",
+        textClass: "text-slate-700",
+        borderClass: "border border-slate-300",
         Icon: TrendingUp,
-        iconClass: "text-slate-200"
+        iconClass: "text-slate-600"
       }
     default:
       return null
@@ -94,7 +94,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
       {/* Sección A: Planes Comerciales */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-200 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-ink-2 uppercase tracking-wide">
             Planes Comerciales
           </h2>
         </div>
@@ -114,17 +114,17 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 }}
                 className={[
                   "relative flex flex-col items-stretch rounded-3xl border p-5 text-left transition-all duration-300",
-                  "bg-transparent backdrop-blur-sm",
-                  "hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40",
+                  "bg-white",
+                  "hover:-translate-y-1 hover:shadow-lg",
                   isCurrent
-                    ? "border-emerald-400/80 shadow-lg shadow-emerald-500/30"
-                    : "border-white/10 shadow-md shadow-black/30"
+                    ? "border-green-300 shadow-md"
+                    : "border-black/8 shadow-sm"
                 ].join(" ")}
               >
                 <div className="mb-4 flex items-center justify-between gap-2">
                   <div>
-                    <h3 className="text-lg font-bold text-white">{t.title}</h3>
-                    <p className="text-xs text-gray-400 mt-1">{t.label}</p>
+                    <h3 className="text-lg font-bold text-ink">{t.title}</h3>
+                    <p className="text-xs text-ink-2 mt-1">{t.label}</p>
                   </div>
                   {(() => {
                     const visual = getTierBadgeVisual(t.tier)
@@ -148,19 +148,19 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
 
                 <div className="mb-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="font-mono text-3xl font-extrabold text-white">
+                    <span className="font-mono text-3xl font-extrabold text-ink">
                       ${t.price}
                     </span>
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-ink-2">
                       {t.tier === 0 ? "siempre" : "/mes"}
                     </span>
                   </div>
                   {isCurrent && (
-                    <p className="mt-1 text-xs text-emerald-400">Ya tienes este nivel o superior</p>
+                    <p className="mt-1 text-xs text-green-600">Ya tienes este nivel o superior</p>
                   )}
                 </div>
 
-                <ul className="mt-auto space-y-1 text-xs text-gray-300">
+                <ul className="mt-auto space-y-1 text-xs text-ink-2">
                   {t.tier === 0 && (
                     <>
                       <li>📍 Acceso a tu Localización en el Mapa con un click </li>
@@ -172,7 +172,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                   )}
                   {t.tier === 1 && (
                     <>
-                      <li className="text-[11px] text-gray-400">
+                      <li className="text-[11px] text-ink-2/80">
                         ✅ <span className="italic">Todo lo del plan Básico más:</span>
                       </li>
                       <li>💬 Sistema de Chat en vivo</li>
@@ -182,7 +182,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                   )}
                   {t.tier === 2 && (
                     <>
-                      <li className="text-[11px] text-gray-400">
+                      <li className="text-[11px] text-ink-2/80">
                         ✅ <span className="italic">Todo lo del plan Conecta más:</span>
                       </li>
                       <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
@@ -200,36 +200,35 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
       {/* Sección B: Círculo de Patrocinadores */}
       {founderTier && (
         <section className="mt-8 space-y-3">
-          <h2 className="text-sm font-semibold text-yellow-300 uppercase tracking-wide flex items-center gap-2">
-            <Crown className="w-4 h-4 text-yellow-300" />
+          <h2 className="text-sm font-semibold text-purple-700 uppercase tracking-wide flex items-center gap-2">
+            <Crown className="w-4 h-4 text-purple-600" />
             Círculo de Patrocinadores
           </h2>
-          <p className="text-xs text-gray-300 leading-relaxed max-w-xl">
+          <p className="text-xs text-ink-2 leading-relaxed max-w-xl">
             ¿Quieres apoyar nuestra causa? Conviértete en{" "}
-            <span className="font-semibold text-yellow-300">Patrocinador</span>. Tu negocio
+            <span className="font-semibold text-purple-700">Patrocinador</span>. Tu negocio
             portará la insignia de verificación oficial y destacará sobre el resto.
           </p>
 
           <button
             type="button"
             onClick={() => onSelectTier(founderTier.tier)}
-            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-yellow-400/80 bg-gradient-to-br from-yellow-500/15 via-amber-500/10 to-orange-500/15 backdrop-blur-xl shadow-xl shadow-yellow-500/30 p-6 md:p-7 transition-all duration-300 hover:shadow-yellow-500/50 hover:-translate-y-1"
+            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-purple-300 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
-            <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_top,_#facc15_0,_transparent_50%),radial-gradient(circle_at_bottom,_#fb923c_0,_transparent_55%)]" />
             <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-yellow-500/25 border border-yellow-300/70 flex items-center justify-center">
-                  <Crown className="w-6 h-6 text-yellow-200" />
+                <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-white">Patrocina</h3>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500 text-yellow-950 text-[10px] font-semibold px-2 py-0.5 shadow-sm shadow-yellow-500/40">
+                    <h3 className="text-lg font-bold text-ink">Patrocina</h3>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-500 text-white text-[10px] font-semibold px-2 py-0.5">
                       <HeartHandshake className="w-3 h-3" />
                       Special
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-yellow-100/90 max-w-md">
+                  <p className="mt-1 text-xs text-ink-2 max-w-md">
                     Tu negocio formará parte del círculo interno de apoyo a la plataforma y tendrá
                     prioridad visual frente al resto, ademas de otros beneficios.
                   </p>
@@ -238,48 +237,48 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
 
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className="font-mono text-3xl font-extrabold text-white">${founderTier.price}</span>
-                  <span className="text-sm text-yellow-100">/mes</span>
+                  <span className="font-mono text-3xl font-extrabold text-ink">${founderTier.price}</span>
+                  <span className="text-sm text-ink-2">/mes</span>
                 </div>
-                <p className="mt-1 text-[11px] text-yellow-100">
-                  Incluye insignia de verificación, borde dorado y promociones destacadas.
+                <p className="mt-1 text-[11px] text-ink-2">
+                  Incluye insignia de verificación, marco distintivo y promociones destacadas.
                 </p>
               </div>
             </div>
 
-            <div className="relative mt-4 grid gap-3 md:grid-cols-2 text-xs text-yellow-50">
+            <div className="relative mt-4 grid gap-3 md:grid-cols-2 text-xs text-ink-2">
               <div className="flex items-start gap-2">
-                <BadgeCheck className="w-4 h-4 text-emerald-200 mt-0.5" />
+                <BadgeCheck className="w-4 h-4 text-green-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Badge de Verificado Oficial</p>
-                  <p className="text-[11px] text-yellow-100/90">
-                    Check azul/dorado similar a Instagram/Facebook para negocios verificados.
+                  <p className="font-semibold text-ink">Badge de Verificado Oficial</p>
+                  <p className="text-[11px] text-ink-2">
+                    Check de verificación, igual que en redes sociales, para negocios verificados.
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Crown className="w-4 h-4 text-yellow-200 mt-0.5" />
+                <Crown className="w-4 h-4 text-purple-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Borde Dorado Exclusivo</p>
-                  <p className="text-[11px] text-yellow-100/90">
-                    Marco dorado exclusivo alrededor de tu tarjeta de negocio.
+                  <p className="font-semibold text-ink">Marco Distintivo Exclusivo</p>
+                  <p className="text-[11px] text-ink-2">
+                    Borde exclusivo alrededor de tu tarjeta de negocio en el feed.
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-yellow-100 mt-0.5" />
+                <Sparkles className="w-4 h-4 text-purple-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Módulo de Promociones</p>
-                  <p className="text-[11px] text-yellow-100/90">
+                  <p className="font-semibold text-ink">Módulo de Promociones</p>
+                  <p className="text-[11px] text-ink-2">
                     Tus promociones serán destacadas para impulsar tus ventas.
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <HeartHandshake className="w-4 h-4 text-emerald-200 mt-0.5" />
+                <HeartHandshake className="w-4 h-4 text-green-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Soporte VIP Prioritario</p>
-                  <p className="text-[11px] text-yellow-100/90">
+                  <p className="font-semibold text-ink">Soporte VIP Prioritario</p>
+                  <p className="text-[11px] text-ink-2">
                     Canal de soporte preferente para resolver tus dudas más rápido.
                   </p>
                 </div>

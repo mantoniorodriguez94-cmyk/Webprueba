@@ -37,11 +37,11 @@ export default async function AdminDestacadosPage() {
 
   // Función para determinar el estado (color del badge)
   const getStatusColor = (days: number | null): string => {
-    if (days === null) return "bg-gray-500/20 text-gray-300 border-gray-500/40"
-    if (days <= 0) return "bg-red-500/20 text-red-300 border-red-500/40"
-    if (days <= 3) return "bg-orange-500/20 text-orange-300 border-orange-500/40"
-    if (days <= 7) return "bg-yellow-500/20 text-yellow-300 border-yellow-500/40"
-    return "bg-green-500/20 text-green-300 border-green-500/40"
+    if (days === null) return "bg-black/5 text-ink-2 border-black/10"
+    if (days <= 0) return "bg-red-50 text-red-700 border-red-200"
+    if (days <= 3) return "bg-orange-50 text-orange-700 border-orange-200"
+    if (days <= 7) return "bg-amber-50 text-amber-700 border-amber-200"
+    return "bg-green-50 text-green-700 border-green-200"
   }
 
   // Filtrar solo los que aún están activos (featured_until > NOW)
@@ -52,10 +52,10 @@ export default async function AdminDestacadosPage() {
   }) || []
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Negocios Destacados</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {negociosActivos.length} {negociosActivos.length === 1 ? "negocio destacado" : "negocios destacados"} activos
         </p>
       </div>
@@ -76,11 +76,11 @@ export default async function AdminDestacadosPage() {
             return (
               <div
                 key={b.id}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:border-purple-500 transition-all"
+                className="surface rounded-2xl p-6 hover:border-purple-300 hover:shadow-md transition-all"
               >
                 {/* Header con logo y nombre */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex-shrink-0 border-2 border-purple-500/40">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-purple-50 flex-shrink-0 border-2 border-purple-200">
                     {b.logo_url ? (
                       <Image 
                         src={b.logo_url} 
@@ -91,15 +91,15 @@ export default async function AdminDestacadosPage() {
                         className="object-cover w-full h-full"
                       />
                     ) : (
-                      <div className="flex items-center justify-center text-purple-400 text-3xl font-bold w-full h-full">
+                      <div className="flex items-center justify-center text-purple-600 text-3xl font-bold w-full h-full">
                         {b.name?.[0]?.toUpperCase() || "N"}
                       </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold truncate">{b.name || "Sin nombre"}</h3>
+                    <h3 className="text-lg font-bold truncate text-ink">{b.name || "Sin nombre"}</h3>
                     {b.category && (
-                      <p className="text-sm text-gray-400 truncate">{b.category}</p>
+                      <p className="text-sm text-ink-2 truncate">{b.category}</p>
                     )}
                   </div>
                 </div>
@@ -125,28 +125,28 @@ export default async function AdminDestacadosPage() {
                 </div>
 
                 {/* Fecha de expiración */}
-                <div className="mb-4 text-sm text-gray-400">
-                  <p>Expira el: <span className="text-white font-medium">{expiryDate}</span></p>
+                <div className="mb-4 text-sm text-ink-2">
+                  <p>Expira el: <span className="text-ink font-medium">{expiryDate}</span></p>
                 </div>
 
                 {/* Descripción (si existe) */}
                 {b.description && (
-                  <p className="text-sm text-gray-300 mb-4 line-clamp-2">
+                  <p className="text-sm text-ink-2 mb-4 line-clamp-2">
                     {b.description}
                   </p>
                 )}
 
                 {/* Acciones */}
-                <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+                <div className="flex flex-col gap-2 pt-4 border-t border-black/8">
                   <Link
                     href={`/app/admin/negocios/${b.id}`}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-center text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
                   >
                     Ver Detalles
                   </Link>
                   <Link
                     href={`/app/admin/negocios/${b.id}/gestionar`}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl text-center text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
                   >
                     Gestionar Negocio
                   </Link>
@@ -156,15 +156,15 @@ export default async function AdminDestacadosPage() {
           })}
         </div>
       ) : (
-        <div className="text-center py-12 text-gray-400">
-          <svg className="mx-auto h-16 w-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center py-12 text-ink-2">
+          <svg className="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>
           <p className="text-lg mb-2">No hay negocios destacados activos</p>
           <p className="text-sm">Los negocios destacados aparecerán aquí cuando un administrador los destaque usando el botón &ldquo;Destacar&rdquo; en la página de negocios.</p>
           <Link
             href="/app/admin/negocios"
-            className="inline-block mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-colors"
+            className="inline-block mt-4 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
           >
             Ir a Negocios
           </Link>

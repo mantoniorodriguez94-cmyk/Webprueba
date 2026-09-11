@@ -68,19 +68,19 @@ export default async function AdminInvitacionesPage() {
   }
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Gestión de Invitaciones</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {invitations.length} {invitations.length === 1 ? "invitación" : "invitaciones"} registradas
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
+        <div className="mb-6 p-5 bg-red-50 border border-red-200 rounded-xl">
           <div className="flex items-start gap-3">
             <svg
-              className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5"
+              className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -93,8 +93,8 @@ export default async function AdminInvitacionesPage() {
               />
             </svg>
             <div className="flex-1">
-              <p className="text-red-400 font-semibold mb-1">❌ Error al cargar invitaciones</p>
-              <p className="text-red-300 text-sm">
+              <p className="text-red-700 font-semibold mb-1">❌ Error al cargar invitaciones</p>
+              <p className="text-red-700 text-sm">
                 {error.message || "Error desconocido"}
               </p>
             </div>

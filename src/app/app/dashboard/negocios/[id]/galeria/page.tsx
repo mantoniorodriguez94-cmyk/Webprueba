@@ -216,9 +216,9 @@ export default function GaleriaPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
+          <p className="mt-4 text-ink-2 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -227,11 +227,11 @@ export default function GaleriaPage() {
   if (!business || !canManage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-ink mb-4">Acceso denegado</h2>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -243,27 +243,27 @@ export default function GaleriaPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 shadow-sm border-b-2 border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 hover:bg-black/5 rounded-full transition-colors"
                 title="Volver"
               >
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-ink flex items-center gap-2">
                   <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   Gestionar Galería
                 </h1>
-                <p className="text-sm text-gray-300 mt-1">
+                <p className="text-sm text-ink-2 mt-1">
                   {business.name} • {galleryUrls.length} foto{galleryUrls.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -276,26 +276,26 @@ export default function GaleriaPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Botón para agregar imagen */}
-        <div className={`bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 p-6 mb-8 ${
-          isPremiumActive ? 'border-yellow-500/40' : 'border-white/20'
+        <div className={`surface rounded-3xl shadow-sm p-6 mb-8 ${
+          isPremiumActive ? 'border-amber-300' : ''
         }`}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-xl font-bold text-white">Agregar Nueva Imagen</h2>
+                <h2 className="text-xl font-bold text-ink">Agregar Nueva Imagen</h2>
                 {isPremiumActive && (
-                  <span className="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">⭐ Premium</span>
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">⭐ Premium</span>
                 )}
               </div>
-              <p className="text-sm text-gray-300 mb-2">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
+              <p className="text-sm text-ink-2 mb-2">Tamaño máximo: 5MB • Formatos: JPG, PNG, GIF, WebP</p>
               
               {/* Contador de imágenes */}
               <div className={`inline-flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full ${
                 galleryUrls.length >= maxImages 
-                  ? 'bg-red-500/20 text-red-300' 
+                  ? 'bg-red-50 text-red-700' 
                   : isPremiumActive 
-                    ? 'bg-yellow-500/20 text-yellow-300'
-                    : 'bg-blue-500/20 text-blue-300'
+                    ? 'bg-amber-50 text-amber-700'
+                    : 'bg-blue-50 text-blue-700'
               }`}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -306,8 +306,8 @@ export default function GaleriaPage() {
               
               {/* Mensaje de upgrade para usuarios gratuitos */}
               {!isPremiumActive && galleryUrls.length > 0 && (
-                <div className="mt-2 text-xs text-gray-400">
-                  ⭐ <Link href="/app/dashboard/perfil" className="text-yellow-400 hover:text-yellow-300 underline">
+                <div className="mt-2 text-xs text-ink-2">
+                  ⭐ <Link href="/app/dashboard/perfil" className="text-amber-600 hover:text-amber-700 underline">
                     Mejora a Premium
                   </Link> para subir hasta {MAX_IMAGES_PREMIUM} imágenes
                 </div>
@@ -323,8 +323,8 @@ export default function GaleriaPage() {
               />
               <div className={`flex items-center gap-2 text-white px-6 py-3 rounded-full transition-all font-semibold ${
                 uploading || galleryUrls.length >= maxImages
-                  ? 'bg-gray-600 opacity-50 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:shadow-xl hover:scale-105'
+                  ? 'bg-black/20 opacity-50 cursor-not-allowed' 
+                  : 'bg-blue-500 hover:bg-blue-600 hover:scale-105'
               }`}>
                 {uploading ? (
                   <>
@@ -353,17 +353,17 @@ export default function GaleriaPage() {
 
         {/* Galería de Imágenes */}
         {galleryUrls.length === 0 ? (
-          <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-12 text-center">
-            <svg className="w-24 h-24 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="surface rounded-3xl shadow-sm p-12 text-center">
+            <svg className="w-24 h-24 text-black/15 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <h3 className="text-2xl font-bold text-white mb-2">No hay imágenes en la galería</h3>
-            <p className="text-gray-300 mb-6">Comienza agregando fotos de tu negocio para atraer más clientes</p>
+            <h3 className="text-2xl font-bold text-ink mb-2">No hay imágenes en la galería</h3>
+            <p className="text-ink-2 mb-6">Comienza agregando fotos de tu negocio para atraer más clientes</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {galleryUrls.map((url: string, idx: number) => (
-              <div key={idx} className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 overflow-hidden hover:shadow-2xl transition-all group">
+              <div key={idx} className="surface rounded-3xl shadow-sm overflow-hidden hover:shadow-md transition-all group">
                 <div className="relative aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedImage(url)}>
                   <Image
                     src={url}
@@ -381,7 +381,7 @@ export default function GaleriaPage() {
                     </svg>
                   </div>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-gray-50 to-white">
+                <div className="p-4 bg-white">
                   <button
                     onClick={() => handleDeleteImage(url)}
                     className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl hover:bg-red-100 transition-colors font-semibold text-sm"
@@ -407,7 +407,7 @@ export default function GaleriaPage() {
           <div className="max-w-5xl w-full relative">
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute -top-12 right-0 p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="absolute -top-12 right-0 p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

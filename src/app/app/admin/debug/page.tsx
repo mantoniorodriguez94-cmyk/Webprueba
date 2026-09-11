@@ -27,13 +27,13 @@ export default async function AdminDebugPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 text-white">
+    <div className="min-h-screen p-8 text-ink">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">🔍 Diagnóstico de Acceso Admin</h1>
         
         <div className="space-y-6">
           {/* Estado de Autenticación */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="surface rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-bold mb-4">Estado de Autenticación</h2>
             <div className="space-y-2">
               <p><strong>Usuario autenticado:</strong> {user ? "✅ Sí" : "❌ No"}</p>
@@ -47,25 +47,25 @@ export default async function AdminDebugPage() {
           </div>
 
           {/* Estado de Admin */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="surface rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-bold mb-4">Estado de Permisos Admin</h2>
             <div className="space-y-2">
               <p><strong>Resultado de checkAdminAuth:</strong></p>
-              <pre className="bg-black/30 p-4 rounded-lg overflow-auto text-sm">
+              <pre className="bg-black/5 text-ink p-4 rounded-lg overflow-auto text-sm">
                 {JSON.stringify(authResult, null, 2)}
               </pre>
-              <p className={`text-lg font-bold ${authResult.user?.isAdmin ? 'text-green-400' : 'text-red-400'}`}>
+              <p className={`text-lg font-bold ${authResult.user?.isAdmin ? 'text-green-600' : 'text-red-600'}`}>
                 {authResult.user?.isAdmin ? "✅ Tienes permisos de admin" : "❌ NO tienes permisos de admin"}
               </p>
               {authResult.error && (
-                <p className="text-red-400"><strong>Error:</strong> {authResult.error}</p>
+                <p className="text-red-600"><strong>Error:</strong> {authResult.error}</p>
               )}
             </div>
           </div>
 
           {/* Información del Perfil */}
           {profile && (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="surface rounded-2xl p-6 shadow-sm">
               <h2 className="text-xl font-bold mb-4">Información del Perfil</h2>
               <div className="space-y-2">
                 <p><strong>is_admin (raw):</strong> {String(profile.is_admin)}</p>
@@ -76,8 +76,8 @@ export default async function AdminDebugPage() {
                 <p><strong>Rol:</strong> {profile.role || "N/A"}</p>
                 <p><strong>Nombre completo:</strong> {profile.full_name || "N/A"}</p>
                 <details className="mt-4">
-                  <summary className="cursor-pointer text-blue-400">Ver perfil completo (JSON)</summary>
-                  <pre className="bg-black/30 p-4 rounded-lg overflow-auto text-sm mt-2">
+                  <summary className="cursor-pointer text-blue-600">Ver perfil completo (JSON)</summary>
+                  <pre className="bg-black/5 text-ink p-4 rounded-lg overflow-auto text-sm mt-2">
                     {JSON.stringify(profile, null, 2)}
                   </pre>
                 </details>
@@ -86,12 +86,12 @@ export default async function AdminDebugPage() {
           )}
 
           {/* Instrucciones */}
-          <div className="bg-blue-500/20 backdrop-blur-md rounded-2xl p-6 border border-blue-500/40">
+          <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
             <h2 className="text-xl font-bold mb-4">📋 Instrucciones</h2>
             <ol className="list-decimal list-inside space-y-2">
               <li>Verifica que el email mostrado sea <strong>mantoniorodriguez94@gmail.com</strong></li>
-              <li>Verifica que <strong>is_admin</strong> sea <code className="bg-black/30 px-2 py-1 rounded">true</code> (no &quot;true&quot; como string)</li>
-              <li>Si <strong>is_admin</strong> es <code className="bg-black/30 px-2 py-1 rounded">null</code> o <code className="bg-black/30 px-2 py-1 rounded">false</code>, necesitas ejecutar el script SQL para otorgar permisos</li>
+              <li>Verifica que <strong>is_admin</strong> sea <code className="bg-black/10 px-2 py-1 rounded">true</code> (no &quot;true&quot; como string)</li>
+              <li>Si <strong>is_admin</strong> es <code className="bg-black/10 px-2 py-1 rounded">null</code> o <code className="bg-black/10 px-2 py-1 rounded">false</code>, necesitas ejecutar el script SQL para otorgar permisos</li>
               <li>Si todo está correcto pero aún no puedes acceder, revisa los logs del servidor en la consola</li>
             </ol>
           </div>
@@ -100,13 +100,13 @@ export default async function AdminDebugPage() {
           <div className="flex gap-4">
             <a 
               href="/app/admin" 
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold transition"
+              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition"
             >
               Intentar acceder al panel admin
             </a>
             <a 
               href="/app/dashboard" 
-              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-xl font-semibold transition"
+              className="px-6 py-3 bg-black/10 hover:bg-black/15 text-ink rounded-xl font-semibold transition"
             >
               Volver al dashboard
             </a>

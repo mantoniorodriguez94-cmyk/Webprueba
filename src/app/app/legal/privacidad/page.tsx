@@ -1,8 +1,8 @@
 export default function PrivacyPage() {
   return (
-    <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-ul:text-white/90 prose-li:text-white/90">
-      <h1 className="text-4xl font-bold mb-4">Política de Privacidad</h1>
-      <p className="text-white/60 text-sm mb-8">Última actualización: Diciembre 2025</p>
+    <article className="prose max-w-none prose-headings:text-ink prose-p:text-ink-2 prose-strong:text-ink prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-ul:text-ink-2 prose-li:text-ink-2">
+      <h1 className="text-4xl font-bold mb-4 text-ink">Política de Privacidad</h1>
+      <p className="text-ink-2/70 text-sm mb-8">Última actualización: Diciembre 2025</p>
 
       <section className="space-y-6">
         <div>

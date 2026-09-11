@@ -129,7 +129,7 @@ function ReceiptImage({
   return (
     <div>
       <div 
-        className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+        className="relative aspect-video bg-black/5 border border-black/10 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
         onClick={() => displayUrl && onImageClick(displayUrl)}
       >
         {isLoading ? (
@@ -137,7 +137,7 @@ function ReceiptImage({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         ) : error || !displayUrl ? (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+          <div className="absolute inset-0 flex items-center justify-center text-ink-2">
             <div className="text-center">
               <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -170,7 +170,7 @@ function ReceiptImage({
             }
           }}
           disabled={!hasUrl}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title={hasUrl ? "Descargar comprobante" : "No hay imagen disponible"}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +185,7 @@ function ReceiptImage({
             if (url) onImageClick(url)
           }}
           disabled={!hasUrl}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-black/5 hover:bg-black/10 text-ink rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title={hasUrl ? "Ver en pantalla completa" : "No hay imagen disponible"}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,12 +426,12 @@ export default function AdminPaymentsClient({
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20">
+    <div className="min-h-screen pb-20 text-ink">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
+      <div className="bg-white/85 backdrop-blur-md border-b border-black/8 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-white">Admin - Pagos Manuales</h1>
-          <p className="text-gray-400 text-sm">Gestiona las verificaciones de pagos manuales</p>
+          <h1 className="text-2xl font-bold text-ink">Admin - Pagos Manuales</h1>
+          <p className="text-ink-2 text-sm">Gestiona las verificaciones de pagos manuales</p>
         </div>
       </div>
 
@@ -443,7 +443,7 @@ export default function AdminPaymentsClient({
             className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
               filter === 'pending'
                 ? 'bg-yellow-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                : 'bg-black/5 text-ink-2 hover:bg-black/10'
             }`}
           >
             Pendientes
@@ -453,7 +453,7 @@ export default function AdminPaymentsClient({
             className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
               filter === 'approved'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                : 'bg-black/5 text-ink-2 hover:bg-black/10'
             }`}
           >
             Aprobados
@@ -463,7 +463,7 @@ export default function AdminPaymentsClient({
             className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
               filter === 'rejected'
                 ? 'bg-red-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                : 'bg-black/5 text-ink-2 hover:bg-black/10'
             }`}
           >
             Rechazados
@@ -474,61 +474,61 @@ export default function AdminPaymentsClient({
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-400">Cargando pagos...</p>
+            <p className="mt-4 text-ink-2">Cargando pagos...</p>
           </div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-400">No hay pagos {filter === 'pending' ? 'pendientes' : filter}</p>
+            <p className="text-ink-2">No hay pagos {filter === 'pending' ? 'pendientes' : filter}</p>
           </div>
         ) : (
           <div className="space-y-4">
             {submissions.map((submission) => (
-              <div key={submission.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <div key={submission.id} className="surface-elevated rounded-lg p-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Información */}
                   <div className="space-y-3">
                     <div>
-                      <h3 className="text-lg font-bold text-white">{submission.user?.full_name || 'Usuario'}</h3>
+                      <h3 className="text-lg font-bold text-ink">{submission.user?.full_name || 'Usuario'}</h3>
                       {submission.business?.name && (
-                        <p className="text-gray-400 text-sm">Negocio: {submission.business.name}</p>
+                        <p className="text-ink-2 text-sm">Negocio: {submission.business.name}</p>
                       )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-gray-400">Membresía</p>
-                        <p className="text-white font-semibold">{formatMembership(submission)}</p>
+                        <p className="text-ink-2">Membresía</p>
+                        <p className="text-ink font-semibold">{formatMembership(submission)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Monto</p>
-                        <p className="text-white font-semibold">
+                        <p className="text-ink-2">Monto</p>
+                        <p className="text-ink font-semibold">
                           Bruto: ${submission.amount_usd.toFixed(2)}
                         </p>
-                        <p className="text-[11px] text-gray-400">
+                        <p className="text-[11px] text-ink-2/80">
                           Neto: ${getNetAmount(submission.amount_usd).toFixed(2)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Método</p>
-                        <p className="text-white">{submission.payment_method}</p>
+                        <p className="text-ink-2">Método</p>
+                        <p className="text-ink">{submission.payment_method}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Fecha</p>
-                        <p className="text-white">{formatDate(submission.created_at)}</p>
+                        <p className="text-ink-2">Fecha</p>
+                        <p className="text-ink">{formatDate(submission.created_at)}</p>
                       </div>
                     </div>
 
                     {submission.reference && (
                       <div>
-                        <p className="text-gray-400 text-sm">Referencia</p>
-                        <p className="text-white">{submission.reference}</p>
+                        <p className="text-ink-2 text-sm">Referencia</p>
+                        <p className="text-ink">{submission.reference}</p>
                       </div>
                     )}
 
                     {submission.admin_notes && (
                       <div>
-                        <p className="text-gray-400 text-sm">Notas del Admin</p>
-                        <p className="text-white">{submission.admin_notes}</p>
+                        <p className="text-ink-2 text-sm">Notas del Admin</p>
+                        <p className="text-ink">{submission.admin_notes}</p>
                       </div>
                     )}
 
@@ -562,7 +562,7 @@ export default function AdminPaymentsClient({
 
                   {/* Captura de pantalla */}
                   <div>
-                    <p className="text-gray-400 text-sm mb-2">Comprobante de Pago</p>
+                    <p className="text-ink-2 text-sm mb-2">Comprobante de Pago</p>
                     <ReceiptImage 
                       submission={submission}
                       onImageClick={(url) => setSelectedImage(url)}

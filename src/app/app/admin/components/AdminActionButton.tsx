@@ -81,16 +81,16 @@ export default function AdminActionButton({
         <button
           onClick={handleClick}
           disabled={loading || disabled}
-          className={`px-4 py-2 rounded-xl text-sm transition-colors ${
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
             loading || disabled
-              ? "bg-gray-700 cursor-not-allowed opacity-50"
-              : "bg-gray-800 hover:bg-gray-700"
+              ? "bg-black/5 text-ink-2 cursor-not-allowed opacity-50"
+              : "bg-black/5 text-ink hover:bg-black/10"
           }`}
         >
           {loading ? "Procesando..." : label}
         </button>
         {error && (
-          <p className="text-xs text-red-400">{error}</p>
+          <p className="text-xs text-red-600">{error}</p>
         )}
       </div>
 

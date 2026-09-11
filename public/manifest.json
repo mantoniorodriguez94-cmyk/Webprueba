@@ -4,13 +4,13 @@
   "description": "Descubre y contacta negocios locales confiables directamente desde tu teléfono",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1512",
-  "theme_color": "#1a1512",
+  "background_color": "#FBFAFC",
+  "theme_color": "#FBFAFC",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
     {
-      "src": "/icons/icon-192-maskable.png",  
+      "src": "/icons/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
@@ -45,8 +45,8 @@
       "url": "/app/dashboard",
       "icons": [
         {
-          "src": "/assets/logotipo.png",
-          "sizes": "96x96"
+          "src": "/icons/icon-192-maskable.png",
+          "sizes": "192x192"
         }
       ]
     },
@@ -57,8 +57,8 @@
       "url": "/app/dashboard/mis-negocios",
       "icons": [
         {
-          "src": "/assets/logotipo.png",
-          "sizes": "96x96"
+          "src": "/icons/icon-192-maskable.png",
+          "sizes": "192x192"
         }
       ]
     },
@@ -69,8 +69,8 @@
       "url": "/app/dashboard/mis-mensajes",
       "icons": [
         {
-          "src": "/assets/logotipo.png",
-          "sizes": "96x96"
+          "src": "/icons/icon-192-maskable.png",
+          "sizes": "192x192"
         }
       ]
     }

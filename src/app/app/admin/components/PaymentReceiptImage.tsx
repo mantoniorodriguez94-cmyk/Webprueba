@@ -126,11 +126,11 @@ export default function PaymentReceiptImage({
   return (
     <>
       <div>
-        <p className="text-xs text-gray-400 mb-2">Comprobante de pago:</p>
-        
+        <p className="text-xs text-ink-2 mb-2">Comprobante de pago:</p>
+
         {/* Contenedor de la imagen */}
-        <div 
-          className="rounded-xl overflow-hidden border border-white/10 cursor-pointer hover:opacity-90 transition-opacity relative bg-black/40"
+        <div
+          className="rounded-xl overflow-hidden border border-black/10 cursor-pointer hover:opacity-90 transition-opacity relative bg-black/5"
           onClick={() => displayUrl && setIsModalOpen(true)}
         >
           {isLoading ? (
@@ -138,7 +138,7 @@ export default function PaymentReceiptImage({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           ) : error || !displayUrl ? (
-            <div className="w-full aspect-video flex items-center justify-center text-gray-500">
+            <div className="w-full aspect-video flex items-center justify-center text-ink-2">
               <div className="text-center p-4">
                 <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -167,7 +167,7 @@ export default function PaymentReceiptImage({
               handleDownload()
             }}
             disabled={!displayUrl || isLoading}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -180,7 +180,7 @@ export default function PaymentReceiptImage({
               if (displayUrl) setIsModalOpen(true)
             }}
             disabled={!displayUrl || isLoading}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-black/5 hover:bg-black/10 text-ink rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -217,7 +217,7 @@ export default function PaymentReceiptImage({
             <div className="absolute top-4 right-4 flex gap-2">
               <button
                 onClick={handleDownload}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                 title="Descargar imagen"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

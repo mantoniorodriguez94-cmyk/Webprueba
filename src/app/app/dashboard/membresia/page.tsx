@@ -129,7 +129,7 @@ export default function MembresiaPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-blue-500" />
-          <p className="text-sm text-gray-300">Cargando membresía...</p>
+          <p className="text-sm text-ink-2">Cargando membresía...</p>
         </div>
       </div>
     )
@@ -138,14 +138,14 @@ export default function MembresiaPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-8 text-center">
+        <div className="max-w-md surface-elevated rounded-3xl p-8 text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-white">Sesión requerida</h1>
-          <p className="mb-4 text-sm text-gray-400">
+          <h1 className="mb-2 text-2xl font-bold text-ink">Sesión requerida</h1>
+          <p className="mb-4 text-sm text-ink-2">
             Debes iniciar sesión para gestionar tu membresía.
           </p>
           <button
@@ -163,24 +163,24 @@ export default function MembresiaPage() {
   return (
     <div className="min-h-screen pb-24 lg:pb-10">
       {/* Header sticky */}
-      <header className="sticky top-0 z-40 bg-gray-900/10 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/8">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1 rounded-full bg-white/5 px-3 py-1 text-xs text-gray-200 hover:bg-white/10"
+            className="inline-flex items-center gap-1 rounded-full bg-black/5 px-3 py-1 text-xs text-ink-2 hover:bg-black/10"
           >
             <ArrowLeft className="h-3 w-3" />
             Atrás
           </button>
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
             <div className="inline-flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-yellow-400" />
-              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              <Sparkles className="h-4 w-4 text-purple-600" />
+              <h1 className="text-lg sm:text-xl font-bold text-ink tracking-tight">
                 Membresía App Encuentra
               </h1>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-ink-2">
               Apoya el proyecto y obtén un badge especial en tu perfil
             </p>
           </div>
@@ -193,29 +193,29 @@ export default function MembresiaPage() {
 
       <main className="max-w-7xl mx-auto mt-6 px-4 space-y-6">
         {/* Estado actual */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-5 md:p-6 shadow-lg shadow-black/40 animate-fade-in">
+        <div className="surface-elevated rounded-3xl p-5 md:p-6 animate-fade-in">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-blue-300">
+              <p className="text-xs uppercase tracking-wide text-blue-600">
                 Estado de tu suscripción
               </p>
-              <h2 className="mt-1 text-lg font-bold text-white">
+              <h2 className="mt-1 text-lg font-bold text-ink">
                 {hasActiveSubscription
                   ? `Plan ${currentPlanLabel}`
                   : "Sin suscripción activa"}
               </h2>
-              <p className="mt-1 text-xs text-blue-100">
+              <p className="mt-1 text-xs text-ink-2">
                 Tu apoyo ayuda a mantener el proyecto, mejorar el directorio y lanzar nuevas
                 funciones para la comunidad.
               </p>
               {hasActiveSubscription && formattedEndDate && (
-                <p className="mt-1 text-xs text-blue-200">
+                <p className="mt-1 text-xs text-ink-2">
                   {formattedEndDate === "Acceso permanente" ? (
-                    <span className="font-semibold text-emerald-300">✓ {formattedEndDate}</span>
+                    <span className="font-semibold text-green-600">✓ {formattedEndDate}</span>
                   ) : (
                     <>
                       Vence el{" "}
-                      <span className="font-semibold">{formattedEndDate}</span>
+                      <span className="font-semibold text-ink">{formattedEndDate}</span>
                     </>
                   )}
                 </p>
@@ -228,15 +228,15 @@ export default function MembresiaPage() {
               {hasActiveSubscription ? (
                 <>
                   <MembershipBadge type={currentBadgeType} />
-                  <p className="text-[11px] text-blue-100">
+                  <p className="text-[11px] text-ink-2">
                     Nivel actual:{" "}
-                    <span className="font-semibold">
+                    <span className="font-semibold text-ink">
                       {currentPlanLabel} (Tier {currentTier})
                     </span>
                   </p>
                 </>
               ) : (
-                <p className="text-[11px] text-blue-100">
+                <p className="text-[11px] text-ink-2">
                   Elige un nivel de apoyo para obtener tu badge.
                 </p>
               )}
@@ -248,14 +248,14 @@ export default function MembresiaPage() {
         <MembershipTierGrid currentTier={currentTier} onSelectTier={handleSelectTier} />
 
         {/* Métodos de pago disponibles para cualquier nivel */}
-        <div className="rounded-3xl border border-white/10 bg-transparent p-4 text-center backdrop-blur-sm">
-          <p className="text-xs text-gray-300">
+        <div className="surface rounded-3xl p-4 text-center">
+          <p className="text-xs text-ink-2">
             Elige un nivel y paga con{" "}
-            <span className="font-semibold text-white">PayPal</span>,{" "}
-            <span className="font-semibold text-white">Binance Pay</span> o por{" "}
-            <span className="font-semibold text-white">transferencia / pago móvil</span>.
+            <span className="font-semibold text-ink">PayPal</span>,{" "}
+            <span className="font-semibold text-ink">Binance Pay</span> o por{" "}
+            <span className="font-semibold text-ink">transferencia / pago móvil</span>.
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-ink-2">
             Con transferencia subes el comprobante y un administrador lo verifica (hasta 24 horas).
           </p>
         </div>

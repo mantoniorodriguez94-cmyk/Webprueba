@@ -70,7 +70,7 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
-            className="w-5 h-5 text-gray-400"
+            className="w-5 h-5 text-ink-2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -88,7 +88,7 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar por nombre del negocio..."
-          className="w-full pl-12 pr-4 py-3 bg-black/30 border-2 border-white/20 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+          className="w-full pl-12 pr-4 py-3 bg-white border-2 border-black/15 rounded-xl text-ink placeholder-ink-2/50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
         />
       </div>
 
@@ -97,20 +97,20 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">
+              <tr className="border-b border-black/10">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
                   Negocio
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
                   Código
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
                   Estado
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
                   Fecha de Creación
                 </th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">
+                <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">
                   Acciones
                 </th>
               </tr>
@@ -119,13 +119,13 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
               {filteredInvitations.map((invitation) => (
                 <tr
                   key={invitation.id}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                  className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
                 >
                   {/* Negocio */}
                   <td className="py-4 px-4">
                     <Link
                       href={`/app/admin/negocios/${invitation.business_id}/gestionar`}
-                      className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                      className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                     >
                       {invitation.business_name}
                     </Link>
@@ -133,8 +133,8 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
 
                   {/* Código */}
                   <td className="py-4 px-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/40 rounded-lg border border-white/20">
-                      <code className="font-mono text-sm font-semibold text-blue-300 tracking-wider">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-lg border border-black/10">
+                      <code className="font-mono text-sm font-semibold text-blue-700 tracking-wider">
                         {invitation.code}
                       </code>
                     </div>
@@ -143,18 +143,18 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
                   {/* Estado */}
                   <td className="py-4 px-4">
                     {invitation.is_claimed ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-300 border border-gray-500/40">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-black/5 text-ink-2 border border-black/10">
                         Reclamado
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-300 border border-green-500/40">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
                         Pendiente
                       </span>
                     )}
                   </td>
 
                   {/* Fecha de Creación */}
-                  <td className="py-4 px-4 text-sm text-gray-400">
+                  <td className="py-4 px-4 text-sm text-ink-2">
                     {new Date(invitation.created_at).toLocaleDateString("es-ES", {
                       day: "numeric",
                       month: "short",
@@ -170,12 +170,12 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
                       {/* Botón Copiar */}
                       <button
                         onClick={() => handleCopyCode(invitation.code)}
-                        className="w-9 h-9 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 hover:border-blue-400/60 flex items-center justify-center transition-all group"
+                        className="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-300 flex items-center justify-center transition-all group"
                         title={copiedCode === invitation.code ? "Copiado!" : "Copiar código"}
                       >
                         {copiedCode === invitation.code ? (
                           <svg
-                            className="w-5 h-5 text-green-400"
+                            className="w-5 h-5 text-green-600"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -189,7 +189,7 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
                           </svg>
                         ) : (
                           <svg
-                            className="w-5 h-5 text-blue-300 group-hover:text-blue-200"
+                            className="w-5 h-5 text-blue-600 group-hover:text-blue-700"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -208,11 +208,11 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
                       {!invitation.is_claimed && (
                         <button
                           onClick={() => handleRegenerate(invitation.business_id)}
-                          className="w-9 h-9 rounded-lg bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 hover:border-yellow-400/60 flex items-center justify-center transition-all group"
+                          className="w-9 h-9 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 hover:border-amber-300 flex items-center justify-center transition-all group"
                           title="Regenerar código"
                         >
                           <svg
-                            className="w-5 h-5 text-yellow-300 group-hover:text-yellow-200"
+                            className="w-5 h-5 text-amber-600 group-hover:text-amber-700"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -234,7 +234,7 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
           </table>
         </div>
       ) : (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">
             {searchQuery
               ? "No se encontraron invitaciones con ese nombre"

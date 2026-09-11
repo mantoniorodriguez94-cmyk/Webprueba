@@ -216,12 +216,12 @@ export default function RegisterPage() {
   return (
     <>
       {/* Tarjeta de formulario */}
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
+      <div className="surface-elevated rounded-3xl p-6 sm:p-8 lg:p-10">
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink">
               Crear cuenta
             </h2>
-            <p className="text-gray-300 mt-2 text-sm sm:text-base">
+            <p className="text-ink-2 mt-2 text-sm sm:text-base">
               Empieza tu viaje con App Encuentra
             </p>
           </div>
@@ -281,10 +281,10 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/20"></div>
+              <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-white font-medium">
+              <span className="px-4 bg-white text-ink font-medium">
                 O regístrate con tu email
               </span>
             </div>
@@ -294,7 +294,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} className="space-y-5">
             {/* Full Name Input */}
             <div className="space-y-2">
-              <label htmlFor="fullName" className="block text-sm font-semibold text-white">
+              <label htmlFor="fullName" className="block text-sm font-semibold text-ink">
                 Nombre completo
               </label>
               <div className="relative">
@@ -317,7 +317,7 @@ export default function RegisterPage() {
 
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-white">
+              <label htmlFor="email" className="block text-sm font-semibold text-ink">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -340,7 +340,7 @@ export default function RegisterPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-white">
+              <label htmlFor="password" className="block text-sm font-semibold text-ink">
                 Contraseña
               </label>
               <div className="relative">
@@ -350,7 +350,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 text-gray-800 placeholder-gray-500text-gray-800 placeholder-gray-500 text-sm sm:text-base"
+                  className="w-full px-4 py-3 sm:py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 text-gray-800 placeholder-gray-500 text-sm sm:text-base"
                   disabled={loading}
                 />
                 <button
@@ -386,7 +386,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-white">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-ink">
                 Confirmar contraseña
               </label>
               <div className="relative">
@@ -442,7 +442,7 @@ export default function RegisterPage() {
 
             {/* Selector de tipo de usuario */}
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-white">
+              <label className="block text-sm font-semibold text-ink">
                 ¿Cómo te quieres registrar?
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -452,27 +452,27 @@ export default function RegisterPage() {
                   onClick={() => setRole("person")}
                   className={`p-4 border-2 rounded-2xl transition-all duration-300 text-left ${
                     role === "person"
-                      ? "border-blue-500 bg-blue-500/10 shadow-md scale-[1.02]"
+                      ? "border-blue-500 bg-blue-50 shadow-md scale-[1.02]"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                   disabled={loading}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`mt-1 ${role === "person" ? "text-blue-400" : "text-gray-400"}`}>
+                    <div className={`mt-1 ${role === "person" ? "text-blue-600" : "text-gray-400"}`}>
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className={`font-semibold text-sm ${role === "person" ? "text-blue-400" : "text-white"}`}>
+                      <h3 className={`font-semibold text-sm ${role === "person" ? "text-blue-600" : "text-ink"}`}>
                         Persona
                       </h3>
-                      <p className="text-xs text-gray-300 mt-1">
+                      <p className="text-xs text-ink-2 mt-1">
                         Explora y descubre negocios
                       </p>
                     </div>
                     {role === "person" && (
-                      <div className="text-blue-400">
+                      <div className="text-blue-600">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -487,27 +487,27 @@ export default function RegisterPage() {
                   onClick={() => setRole("company")}
                   className={`p-4 border-2 rounded-2xl transition-all duration-300 text-left ${
                     role === "company"
-                      ? "border-blue-500 bg-blue-500/10 shadow-md scale-[1.02]"
+                      ? "border-blue-500 bg-blue-50 shadow-md scale-[1.02]"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                   disabled={loading}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`mt-1 ${role === "company" ? "text-blue-400" : "text-gray-400"}`}>
+                    <div className={`mt-1 ${role === "company" ? "text-blue-600" : "text-gray-400"}`}>
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className={`font-semibold text-sm ${role === "company" ? "text-blue-400" : "text-white"}`}>
+                      <h3 className={`font-semibold text-sm ${role === "company" ? "text-blue-600" : "text-ink"}`}>
                         Empresa
                       </h3>
-                      <p className="text-xs text-gray-300 mt-1">
+                      <p className="text-xs text-ink-2 mt-1">
                         Crea y gestiona negocios
                       </p>
                     </div>
                     {role === "company" && (
-                      <div className="text-blue-400">
+                      <div className="text-blue-600">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -525,16 +525,16 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-blue-400 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer transition-colors"
+                  className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer transition-colors"
                   disabled={loading}
                 />
-                <span className="text-sm text-white/90 group-hover:text-white transition-colors">
+                <span className="text-sm text-ink-2 group-hover:text-ink transition-colors">
                   Acepto los{" "}
                   <Link
                     href="/terminos"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline font-medium"
+                    className="text-blue-600 hover:text-blue-700 underline font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Términos y Condiciones
@@ -544,7 +544,7 @@ export default function RegisterPage() {
                     href="/privacidad"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline font-medium"
+                    className="text-blue-600 hover:text-blue-700 underline font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Política de Privacidad
@@ -557,7 +557,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !isPasswordValid || password !== confirmPassword || !acceptedTerms}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base mt-6"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base mt-6"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -576,10 +576,10 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full margin-top-10 p-4 border-t border-white/20"></div>
+              <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-white font-medium">
+              <span className="px-4 bg-white text-ink font-medium">
                 ¿Ya tienes cuenta?
               </span>
             </div>
@@ -587,10 +587,10 @@ export default function RegisterPage() {
 
           {/* Login Link */}
           <div className="text-center">
-            <p className="text-gray-300 text-sm sm:text-base">
-              <Link 
-                href="/app/auth/login" 
-                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors hover:underline"
+            <p className="text-ink-2 text-sm sm:text-base">
+              <Link
+                href="/app/auth/login"
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline"
               >
                 Inicia sesión aquí
               </Link>
@@ -642,11 +642,11 @@ function PasswordRequirement({ met, text }: { met: boolean; text: string }) {
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
       ) : (
-        <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
         </svg>
       )}
-      <span className={`text-xs ${met ? "text-green-700 font-medium" : "text-gray-300"}`}>
+      <span className={`text-xs ${met ? "text-green-700 font-medium" : "text-gray-400"}`}>
         {text}
       </span>
     </div>

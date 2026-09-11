@@ -89,9 +89,9 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
   }
 
   const statusColors = {
-    pending: "border-yellow-500/40 bg-yellow-500/10",
-    approved: "border-green-500/40 bg-green-500/10",
-    rejected: "border-red-500/40 bg-red-500/10"
+    pending: "border-amber-200 bg-amber-50",
+    approved: "border-green-200 bg-green-50",
+    rejected: "border-red-200 bg-red-50"
   }
 
   const statusLabels = {
@@ -109,26 +109,26 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
         const rejectedCount = grupo.pagos.filter(p => p.status === 'rejected').length
 
         return (
-          <div key={grupo.fechaDisplay} className="border border-white/10 rounded-2xl overflow-hidden bg-white/5">
+          <div key={grupo.fechaDisplay} className="border border-black/8 rounded-2xl overflow-hidden bg-white shadow-sm">
             {/* Header del grupo - Clickeable para expandir/colapsar */}
             <button
               onClick={() => toggleGrupo(grupo.fechaDisplay)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+              className="w-full px-6 py-4 flex items-center justify-between hover:bg-black/[0.02] transition-colors"
             >
               <div className="flex items-center gap-4">
                 {/* Icono de expandir/colapsar */}
                 <div className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
 
                 {/* Fecha */}
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-ink">
                     📅 {grupo.fechaDisplay}
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-ink-2 mt-1">
                     {grupo.pagos.length} {grupo.pagos.length === 1 ? 'pago' : 'pagos'}
                     {pendingCount > 0 && ` • ${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''}`}
                     {approvedCount > 0 && ` • ${approvedCount} aprobado${approvedCount !== 1 ? 's' : ''}`}
@@ -140,11 +140,11 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
               {/* Badge con contador */}
               <div className="flex items-center gap-2">
                 {pendingCount > 0 && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                     {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
                   </span>
                 )}
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-ink-2/70">
                   {isExpanded ? 'Minimizar' : 'Expandir'}
                 </span>
               </div>
@@ -166,33 +166,33 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                     return (
                       <div
                         key={pago.id}
-                        className={`bg-white/10 backdrop-blur-md p-6 rounded-2xl border-2 ${statusColors[pago.status]} hover:border-blue-500 transition-all`}
+                        className={`bg-white p-6 rounded-2xl border-2 ${statusColors[pago.status]} hover:border-blue-300 transition-all shadow-sm`}
                       >
                         <div className="mb-4">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <h3 className="text-xl font-bold mb-1">
+                              <h3 className="text-xl font-bold mb-1 text-ink">
                                 {heading}
                               </h3>
-                              <p className="text-gray-300 text-sm mb-1">
+                              <p className="text-ink-2 text-sm mb-1">
                                 Membresía: {tierLabel ?? "N/A"}
                                 {months > 0 && ` · ${months} ${months === 1 ? "mes" : "meses"}`}
                               </p>
                               {business?.name && (
-                                <p className="text-xs text-gray-400 mb-2">
+                                <p className="text-ink-2 text-xs mb-2">
                                   Negocio: {business.name}
                                 </p>
                               )}
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                              pago.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                              pago.status === 'approved' ? 'bg-green-500/20 text-green-300' :
-                              'bg-red-500/20 text-red-300'
+                              pago.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                              pago.status === 'approved' ? 'bg-green-50 text-green-700' :
+                              'bg-red-50 text-red-700'
                             }`}>
                               {statusLabels[pago.status]}
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-2">
+                          <div className="flex flex-wrap gap-2 text-xs text-ink-2 mb-2">
                             <span>💰 Monto: ${pago.amount_usd || "0"} USD</span>
                             <span>•</span>
                             <span>💳 Método: {pago.payment_method || "N/A"}</span>
@@ -204,7 +204,7 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                             )}
                           </div>
                           {pago.created_at && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-ink-2/70">
                               🕐 {new Date(pago.created_at).toLocaleTimeString("es-ES", {
                                 hour: "2-digit",
                                 minute: "2-digit"
@@ -212,9 +212,9 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                             </p>
                           )}
                           {pago.admin_notes && (
-                            <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                              <p className="text-xs text-blue-300 font-semibold mb-1">📝 Notas del Admin:</p>
-                              <p className="text-xs text-blue-200">{pago.admin_notes}</p>
+                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <p className="text-xs text-blue-700 font-semibold mb-1">📝 Notas del Admin:</p>
+                              <p className="text-xs text-blue-700/80">{pago.admin_notes}</p>
                             </div>
                           )}
                         </div>
@@ -248,7 +248,7 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                           </div>
                         )}
                         {pago.status !== 'pending' && (
-                          <div className="mt-4 text-xs text-gray-400">
+                          <div className="mt-4 text-xs text-ink-2">
                             Este pago ya fue procesado ({pago.status === 'approved' ? 'aprobado' : 'rechazado'})
                           </div>
                         )}

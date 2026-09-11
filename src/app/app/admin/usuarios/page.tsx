@@ -86,19 +86,19 @@ export default async function AdminUsuariosPage() {
   }
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Gestión de Usuarios</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {usuarios?.length || 0} {usuarios?.length === 1 ? "usuario" : "usuarios"} registrados
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
+        <div className="mb-6 p-5 bg-red-50 border border-red-200 rounded-xl">
           <div className="flex items-start gap-3">
             <svg
-              className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5"
+              className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -111,11 +111,11 @@ export default async function AdminUsuariosPage() {
               />
             </svg>
             <div className="flex-1">
-              <p className="text-red-400 font-semibold mb-1">❌ Error al cargar usuarios</p>
-              <p className="text-red-300 text-sm">
+              <p className="text-red-700 font-semibold mb-1">❌ Error al cargar usuarios</p>
+              <p className="text-red-700 text-sm">
                 {error.message || 'Error desconocido'}
               </p>
-              <p className="text-red-200 text-xs mt-2">
+              <p className="text-red-600/80 text-xs mt-2">
                 Si el problema persiste, verifica que las variables de entorno estén configuradas correctamente.
               </p>
             </div>
@@ -127,20 +127,20 @@ export default async function AdminUsuariosPage() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Usuario</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Email</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Rol</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Estado</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Registro</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">Acciones</th>
+              <tr className="border-b border-black/10">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Usuario</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Email</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Rol</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Estado</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Registro</th>
+                <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.map((usuario) => (
                 <tr 
                   key={usuario.id}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                  className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
                 >
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default async function AdminUsuariosPage() {
                           unoptimized
                         />  
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold">
                           {(usuario.full_name?.[0] || usuario.email?.[0] || "U").toUpperCase()}
                         </div>
                       )}
@@ -163,26 +163,26 @@ export default async function AdminUsuariosPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-300">
+                  <td className="py-4 px-4 text-sm text-ink-2">
                     {usuario.email || "N/A"}
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                       {usuario.role || "person"}
                     </span>
                   </td>
                   <td className="py-4 px-4">
                     {usuario.is_admin ? (
-                      <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                      <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                         Admin
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-500/20 text-gray-300 border border-gray-500/40">
+                      <span className="text-xs px-2 py-1 rounded-full bg-black/5 text-ink-2 border border-black/10">
                         Usuario
                       </span>
                     )}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-400">
+                  <td className="py-4 px-4 text-sm text-ink-2">
                     {usuario.created_at 
                       ? new Date(usuario.created_at).toLocaleDateString("es-ES", {
                           day: "numeric",
@@ -210,7 +210,7 @@ export default async function AdminUsuariosPage() {
           </table>
         </div>
       ) : !error ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">No hay usuarios registrados</p>
           <p className="text-sm">Los usuarios aparecerán aquí cuando se registren en el sistema.</p>
         </div>

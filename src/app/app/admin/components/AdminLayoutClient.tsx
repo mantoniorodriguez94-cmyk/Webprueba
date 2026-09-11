@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Drawer } from "@/components/ui/Overlay"
 
@@ -54,15 +55,15 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   }, [pathname])
 
   return (
-    <div className="min-h-screen bg-ink text-white flex flex-col">
+    <div className="min-h-screen bg-paper text-ink flex flex-col">
       {/* HEADER SUPERIOR */}
-      <header className="w-full border-b border-white/10 bg-ink-2/60 backdrop-blur-xl z-30">
+      <header className="w-full border-b border-black/8 bg-white/80 backdrop-blur-xl z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Izquierda: botón menú móvil + logo / título */}
           <div className="flex items-center gap-3">
             {/* Botón para abrir sidebar en mobile */}
             <button
-              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition"
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-black/8 bg-black/5 hover:bg-black/10 transition"
               onClick={() => setSidebarOpen((prev) => !prev)}
               aria-label="Abrir menú de administración"
             >
@@ -71,22 +72,19 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
             {/* Logo / Marca */}
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center shadow-lg">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M10.5 4a6.5 6.5 0 015.18 10.46l3.43 3.43-1.41 1.41-3.43-3.43A6.5 6.5 0 1110.5 4z" />
-                </svg>
-              </div>
+              <Image
+                src="/brand/encuentra-mark.svg"
+                alt="App Encuentra"
+                width={36}
+                height={36}
+                className="w-9 h-9"
+                unoptimized
+              />
               <div className="flex flex-col leading-tight">
-                <span className="text-sm font-semibold text-gray-200">
+                <span className="text-sm font-semibold text-ink">
                   App Encuentra
                 </span>
-                <span className="text-xs text-blue-400 font-medium tracking-wide">
+                <span className="text-xs text-blue-600 font-medium tracking-wide">
                   Panel Administrativo
                 </span>
               </div>
@@ -95,8 +93,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
           {/* Derecha: estado admin + acciones rápidas */}
           <div className="flex items-center gap-3">
-            <span className="group hidden sm:inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse group-hover:animate-radar-pulse" />
+            <span className="group hidden sm:inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse group-hover:animate-radar-pulse" />
               Admin activo
             </span>
 
@@ -114,7 +112,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
                   }
                 }
               }}
-              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-200 transition"
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-full border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition"
             >
               <span className="text-sm leading-none">🔒</span>
               <span className="hidden sm:inline">Bloquear Panel</span>
@@ -123,7 +121,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
             <Link
               href="/app/dashboard"
-              className="inline-flex items-center gap-2 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"
+              className="inline-flex items-center gap-2 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full bg-black/5 border border-black/8 hover:bg-black/10 text-ink-2 hover:text-ink transition"
             >
               <span className="hidden sm:inline">Volver al Dashboard</span>
               <span className="sm:hidden">Dashboard</span>
@@ -136,14 +134,14 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       {/* CONTENEDOR PRINCIPAL */}
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 gap-4">
         {/* SIDEBAR DESKTOP */}
-        <aside className="hidden md:flex flex-col w-64 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 mt-1 h-[calc(100vh-5rem)] sticky top-20">
+        <aside className="hidden md:flex flex-col w-64 surface rounded-3xl p-4 mt-1 h-[calc(100vh-5rem)] sticky top-20 shadow-sm">
           <NavGroupsList groups={navGroups} pathname={pathname} />
 
           {/* Footer sidebar */}
-          <div className="mt-auto pt-4 text-[10px] text-gray-500 border-t border-white/10">
+          <div className="mt-auto pt-4 text-[10px] text-ink-2/70 border-t border-black/8">
             © {new Date().getFullYear()} App Encuentra
             <br />
-            <span className="text-gray-400">Panel interno de administración</span>
+            <span className="text-ink-2/70">Panel interno de administración</span>
           </div>
         </aside>
 
@@ -153,15 +151,15 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
           onClose={() => setSidebarOpen(false)}
           className="md:hidden"
           aria-label="Menú de administración"
-          panelClassName="h-full w-64 bg-ink border-r border-white/10 shadow-2xl p-4 flex flex-col"
+          panelClassName="h-full w-64 bg-white border-r border-black/8 shadow-2xl p-4 flex flex-col"
         >
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold text-gray-100">
+            <span className="text-sm font-semibold text-ink">
               Menú admin
             </span>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-black/5 hover:bg-black/10 border border-black/8"
               aria-label="Cerrar menú"
             >
               <CloseIcon />
@@ -183,7 +181,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
                 }
               }
             }}
-            className="mt-4 inline-flex items-center justify-center gap-2 text-xs px-3 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 transition"
+            className="mt-4 inline-flex items-center justify-center gap-2 text-xs px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition"
           >
             <span className="text-sm leading-none">🔒</span>
             <span>Bloquear Panel</span>
@@ -192,7 +190,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
 
         {/* CONTENIDO */}
         <main className="flex-1 mt-1">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sm:p-6 md:p-8 min-h-[calc(100vh-7rem)] shadow-[0_18px_45px_rgba(0,0,0,0.55)]">
+          <div className="surface rounded-3xl p-4 sm:p-6 md:p-8 min-h-[calc(100vh-7rem)] shadow-sm">
             {children}
           </div>
         </main>
@@ -210,7 +208,7 @@ function NavGroupsList({ groups, pathname }: { groups: NavGroup[]; pathname: str
       {groups.map((group, i) => (
         <div key={group.title ?? `group-${i}`} className="flex flex-col gap-1">
           {group.title && (
-            <span className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            <span className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-ink-2/70">
               {group.title}
             </span>
           )}
@@ -255,8 +253,8 @@ function SidebarLink({
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
         active
-          ? "bg-blue-500/20 border border-blue-500/60 text-white shadow-lg shadow-blue-500/30"
-          : "bg-transparent text-gray-300 hover:bg-white/10 hover:text-white border border-transparent"
+          ? "bg-blue-50 border border-blue-200 text-blue-700"
+          : "bg-transparent text-ink-2 hover:bg-black/5 hover:text-ink border border-transparent"
       }`}
     >
       <div className="w-5 h-5 text-current">{icon}</div>

@@ -21,31 +21,31 @@ const STYLES: Record<
 > = {
   success: {
     icon: CheckCircle2,
-    iconWrap: "bg-emerald-500/20 border-emerald-500/50",
-    iconColor: "text-emerald-400",
-    ring: "border-emerald-500/30 shadow-emerald-500/25",
-    button: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/40",
+    iconWrap: "bg-green-50 border-green-200",
+    iconColor: "text-green-600",
+    ring: "border-green-200",
+    button: "bg-green-600 hover:bg-green-700",
   },
   error: {
     icon: XCircle,
-    iconWrap: "bg-red-500/20 border-red-500/50",
-    iconColor: "text-red-400",
-    ring: "border-red-500/30 shadow-red-500/25",
-    button: "bg-red-600 hover:bg-red-500 shadow-red-600/40",
+    iconWrap: "bg-red-50 border-red-200",
+    iconColor: "text-red-600",
+    ring: "border-red-200",
+    button: "bg-red-500 hover:bg-red-600",
   },
   warning: {
     icon: AlertTriangle,
-    iconWrap: "bg-yellow-500/20 border-yellow-500/50",
-    iconColor: "text-yellow-400",
-    ring: "border-yellow-500/30 shadow-yellow-500/25",
-    button: "bg-yellow-600 hover:bg-yellow-500 shadow-yellow-600/40",
+    iconWrap: "bg-amber-50 border-amber-200",
+    iconColor: "text-amber-600",
+    ring: "border-amber-200",
+    button: "bg-amber-500 hover:bg-amber-600",
   },
   info: {
     icon: Info,
-    iconWrap: "bg-blue-500/20 border-blue-500/50",
-    iconColor: "text-blue-400",
-    ring: "border-blue-500/30 shadow-blue-500/25",
-    button: "bg-blue-600 hover:bg-blue-500 shadow-blue-600/40",
+    iconWrap: "bg-blue-50 border-blue-200",
+    iconColor: "text-blue-600",
+    ring: "border-blue-200",
+    button: "bg-blue-500 hover:bg-blue-600",
   },
 }
 
@@ -64,7 +64,7 @@ export default function AlertModal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md px-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink/40 backdrop-blur-md px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -75,7 +75,7 @@ export default function AlertModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 16 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`max-w-md w-full bg-gray-950/90 border rounded-3xl shadow-2xl p-6 sm:p-7 ${style.ring}`}
+            className={`max-w-md w-full bg-white border rounded-3xl shadow-2xl p-6 sm:p-7 ${style.ring}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-5">
@@ -83,11 +83,11 @@ export default function AlertModal({
                 <Icon className={`w-5 h-5 ${style.iconColor}`} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-white mb-1">
+                <h2 className="text-lg sm:text-xl font-bold text-ink mb-1">
                   {title}
                 </h2>
                 {description && (
-                  <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">
+                  <p className="text-sm text-ink-2 leading-relaxed whitespace-pre-line">
                     {description}
                   </p>
                 )}
@@ -98,7 +98,7 @@ export default function AlertModal({
               <button
                 type="button"
                 onClick={onClose}
-                className={`w-full sm:w-auto inline-flex items-center justify-center rounded-2xl text-white px-5 py-2.5 text-sm font-semibold shadow-lg transition-colors ${style.button}`}
+                className={`w-full sm:w-auto inline-flex items-center justify-center rounded-2xl text-white px-5 py-2.5 text-sm font-semibold shadow-md transition-colors ${style.button}`}
               >
                 {confirmLabel}
               </button>

@@ -150,27 +150,27 @@ export default function PromotionsManager() {
   // Estado bloqueado para usuarios que no son Patrocina activo
   if (!hasActiveSubscription) {
     return (
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-5 md:p-6 shadow-lg shadow-black/40 animate-fade-in">
+      <div className="surface rounded-3xl p-5 md:p-6 shadow-sm animate-fade-in">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-            <Lock className="w-5 h-5 text-yellow-300" />
+          <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
               Módulo de Promociones
-              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/20 text-yellow-300 text-[10px] font-semibold px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 text-purple-700 text-[10px] font-semibold px-2 py-0.5">
                 <Sparkles className="w-3 h-3" />
                 Exclusivo Patrocinadores
               </span>
             </h3>
-            <p className="mt-1 text-xs text-gray-300">
+            <p className="mt-1 text-xs text-ink-2">
               🔒 Esta función es exclusiva para el plan{" "}
-              <span className="font-semibold text-yellow-300">Patrocina</span>.
+              <span className="font-semibold text-purple-700">Patrocina</span>.
             </p>
             <button
               type="button"
               onClick={() => router.push("/app/dashboard/membresia")}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-yellow-500 px-4 py-2 text-xs font-semibold text-yellow-950 hover:bg-yellow-400 transition-colors"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-purple-500 px-4 py-2 text-xs font-semibold text-white hover:bg-purple-600 transition-colors"
             >
               Mejorar a Patrocina
             </button>
@@ -181,17 +181,17 @@ export default function PromotionsManager() {
   }
 
   return (
-    <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/10 p-5 md:p-6 shadow-lg shadow-black/40 animate-fade-in">
+    <div className="surface rounded-3xl p-5 md:p-6 shadow-sm animate-fade-in">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-emerald-300" />
+          <div className="w-9 h-9 rounded-2xl bg-green-50 border border-green-200 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-ink">
               Promociones Destacadas
             </h3>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-ink-2">
               Crea promociones especiales visibles para todos los usuarios.
             </p>
           </div>
@@ -206,12 +206,12 @@ export default function PromotionsManager() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título de la promoción"
-            className="flex-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+            className="flex-1 rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-400"
           />
           <button
             type="submit"
             disabled={creating}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-emerald-950 shadow-lg shadow-emerald-500/40 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {creating ? (
               <>
@@ -231,18 +231,18 @@ export default function PromotionsManager() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Descripción (opcional)"
           rows={2}
-          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder:text-gray-500 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-xs text-ink placeholder:text-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-400"
         />
       </form>
 
       {/* Lista de promociones */}
       {loading ? (
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-ink-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           Cargando promociones...
         </div>
       ) : promotions.length === 0 ? (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-2">
           Aún no has creado promociones. Usa el formulario de arriba para crear la primera.
         </p>
       ) : (
@@ -250,18 +250,18 @@ export default function PromotionsManager() {
           {promotions.map((promo) => (
             <div
               key={promo.id}
-              className="flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-black/40 px-3 py-2"
+              className="flex items-start justify-between gap-3 rounded-2xl border border-black/8 bg-black/[0.02] px-3 py-2"
             >
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-ink">
                   {promo.title}
                 </p>
                 {promo.description && (
-                  <p className="mt-1 text-xs text-gray-300">
+                  <p className="mt-1 text-xs text-ink-2">
                     {promo.description}
                   </p>
                 )}
-                <p className="mt-1 text-[10px] text-gray-500">
+                <p className="mt-1 text-[10px] text-ink-2/70">
                   Creada el{" "}
                   {new Date(promo.created_at).toLocaleDateString("es-ES", {
                     year: "numeric",
@@ -275,8 +275,8 @@ export default function PromotionsManager() {
                 onClick={() => toggleActive(promo)}
                 className={`text-[11px] font-semibold px-3 py-1 rounded-full border transition-colors ${
                   promo.active
-                    ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
-                    : "border-gray-500 text-gray-300 bg-black/40"
+                    ? "border-green-300 text-green-700 bg-green-50"
+                    : "border-black/15 text-ink-2 bg-black/5"
                 }`}
               >
                 {promo.active ? "Activa" : "Inactiva"}

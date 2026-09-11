@@ -45,13 +45,13 @@ export default async function AdminPagosPage() {
     .in("id", userIds)
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Gestión de Pagos Manuales</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {pagos?.filter(p => p.status === 'pending').length || 0} pendientes • {pagos?.filter(p => p.status === 'approved').length || 0} aprobados • {pagos?.filter(p => p.status === 'rejected').length || 0} rechazados
         </p>
-        <p className="text-gray-500 text-xs mt-2">
+        <p className="text-ink-2/70 text-xs mt-2">
           💡 Los pagos están agrupados por fecha. Haz clic en cada grupo para expandir o minimizar.
         </p>
       </div>
@@ -62,7 +62,7 @@ export default async function AdminPagosPage() {
           profiles={profiles || []} 
         />
       ) : (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">No hay pagos registrados</p>
           <p className="text-sm">Los pagos aparecerán aquí cuando los usuarios envíen comprobantes.</p>
         </div>

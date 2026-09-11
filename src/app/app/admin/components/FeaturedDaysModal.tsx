@@ -79,7 +79,7 @@ export default function FeaturedDaysModal({
       onClick={onClose}
     >
       <div 
-        className="bg-gray-900 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700"
+        className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 border border-black/10 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -87,27 +87,27 @@ export default function FeaturedDaysModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink transition-colors disabled:opacity-50"
             aria-label="Cerrar"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <h2 className="text-xl font-bold text-white mb-2">
+          <h2 className="text-xl font-bold text-ink mb-2">
             Destacar Negocio
           </h2>
-          <p className="text-sm text-gray-400 mb-1">
-            Negocio: <span className="text-white font-medium">{businessName}</span>
+          <p className="text-sm text-ink-2 mb-1">
+            Negocio: <span className="text-ink font-medium">{businessName}</span>
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-ink-2">
             El negocio aparecerá en la sección de destacados por el tiempo especificado
           </p>
         </div>
 
         {/* Input para días */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-gray-300">
+          <label className="block text-sm font-medium mb-2 text-ink-2">
             Número de días
           </label>
           <input
@@ -120,14 +120,14 @@ export default function FeaturedDaysModal({
               setError(null)
             }}
             disabled={loading}
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-white border border-black/15 rounded-xl text-ink text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Ingresa el número de días (1-365)"
           />
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-ink-2/70 mt-2">
             El negocio estará destacado por {days || "0"} {days === "1" ? "día" : "días"}
           </p>
           {days && parseInt(days, 10) > 0 && (
-            <p className="text-xs text-blue-400 mt-1">
+            <p className="text-xs text-blue-600 mt-1">
               Destacado hasta: {new Date(Date.now() + parseInt(days, 10) * 24 * 60 * 60 * 1000).toLocaleDateString("es-ES", {
                 day: "numeric",
                 month: "long",
@@ -139,8 +139,8 @@ export default function FeaturedDaysModal({
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
@@ -149,14 +149,14 @@ export default function FeaturedDaysModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 bg-black/5 hover:bg-black/10 text-ink rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             onClick={handleFeature}
             disabled={loading || !days || parseInt(days, 10) <= 0}
-            className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Destacando..." : "Destacar Negocio"}
           </button>

@@ -234,9 +234,9 @@ export default function EditarNegocioPage() {
   if (userLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
+          <p className="mt-4 text-ink-2 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -245,12 +245,12 @@ export default function EditarNegocioPage() {
   if (!negocio || !canEdit) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-transparent backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-white/20 p-12 animate-fadeIn">
-          <h2 className="text-2xl font-bold text-white mb-4">Acceso denegado</h2>
-          <p className="text-gray-300 mb-6">No tienes permiso para editar este negocio</p>
+        <div className="text-center surface-elevated rounded-3xl p-12 animate-fadeIn">
+          <h2 className="text-2xl font-bold text-ink mb-4">Acceso denegado</h2>
+          <p className="text-ink-2 mb-6">No tienes permiso para editar este negocio</p>
           <Link 
             href="/app/dashboard"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all"
           >
             Volver al Dashboard
           </Link>
@@ -262,27 +262,27 @@ export default function EditarNegocioPage() {
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
-      <header className="bg-transparent backdrop-blur-sm sticky top-0 z-30 shadow-lg border-b-2 border-blue-500/20">
+      <header className="bg-white/85 backdrop-blur-sm sticky top-0 z-30 shadow-sm border-b-2 border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-black/5 rounded-full transition-colors"
               title="Volver"
             >
-              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <div>
-              <h1 className="text-2xl  sm:text-3xl font-bold text-white flex items-center gap-2">
-                <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink flex items-center gap-2">
+                <svg className="w-7 h-7 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Editar Negocio
               </h1>
-              <p className="text-sm text-gray-300 mt-1">
+              <p className="text-sm text-ink-2 mt-1">
                 {negocio.name} • Configuración General
               </p>
             </div>
@@ -293,14 +293,14 @@ export default function EditarNegocioPage() {
       {/* Contenido */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Form Card */}
-        <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
+        <div className="surface rounded-3xl shadow-sm p-6 sm:p-8 lg:p-10">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm text-red-400 font-medium">{error}</p>
+                <p className="text-sm text-red-700 font-medium">{error}</p>
               </div>
             </div>
           )}
@@ -308,7 +308,7 @@ export default function EditarNegocioPage() {
           <form onSubmit={handleSave} className="space-y-6">
             {/* Nombre */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-ink mb-2">
                 Nombre del negocio *
               </label>
               <input
@@ -323,7 +323,7 @@ export default function EditarNegocioPage() {
 
             {/* Descripción */}
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="description" className="block text-sm font-semibold text-ink mb-2">
                 Descripción
               </label>
               <textarea
@@ -338,7 +338,7 @@ export default function EditarNegocioPage() {
 
             {/* Categoría */}
             <div>
-              <label htmlFor="category" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="category" className="block text-sm font-semibold text-ink mb-2">
                 Categoría
               </label>
               <input
@@ -353,21 +353,21 @@ export default function EditarNegocioPage() {
             </div>
 
             {/* Dirección y Ubicación GPS */}
-            <div className="space-y-4 p-4 bg-blue-500/10 rounded-2xl border-2 border-blue-500/30">
+            <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-2">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h3 className="font-bold text-white">Ubicación del Negocio *</h3>
+                <h3 className="font-bold text-ink">Ubicación del Negocio *</h3>
               </div>
-              <p className="text-xs text-gray-300 mb-2">
+              <p className="text-xs text-ink-2 mb-2">
                 ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
               </p>
               
               {/* Opción A: Dirección Manual */}
               <div>
-                <label htmlFor="address" className="block text-sm font-semibold text-white mb-2">
+                <label htmlFor="address" className="block text-sm font-semibold text-ink mb-2">
                   📍 Opción A: Dirección Manual
                 </label>
                 <input
@@ -392,7 +392,7 @@ export default function EditarNegocioPage() {
               {/* Divisor */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-300"></div>
-                <span className="text-xs font-semibold text-gray-500">O</span>
+                <span className="text-xs font-semibold text-ink-2/70">O</span>
                 <div className="flex-1 h-px bg-gray-300"></div>
               </div>
 
@@ -428,7 +428,7 @@ export default function EditarNegocioPage() {
 
             {/* Teléfono */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="phone" className="block text-sm font-semibold text-ink mb-2">
                 Teléfono
               </label>
               <input
@@ -444,7 +444,7 @@ export default function EditarNegocioPage() {
 
             {/* WhatsApp */}
             <div>
-              <label htmlFor="whatsapp" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="whatsapp" className="block text-sm font-semibold text-ink mb-2">
                 WhatsApp
               </label>
               <input
@@ -460,23 +460,23 @@ export default function EditarNegocioPage() {
 
             {/* Logo actual */}
             <div>
-              <label className="block text-sm font-semibold text-white mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Logo actual
               </label>
               {negocio.logo_url ? (
                 <Image 
                   src={negocio.logo_url}
                   alt="Logo actual" 
-                  className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-white/20"
+                  className="w-32 h-32 object-cover rounded-2xl mb-3 border-2 border-black/10"
                   width={128}
                   height={128}
                 />
               ) : (
-                <div className="w-32 h-32 bg-white/10 rounded-2xl mb-3 flex items-center justify-center border-2 border-white/20">
-                  <span className="text-gray-400 text-sm">Sin logo</span>
+                <div className="w-32 h-32 bg-black/5 rounded-2xl mb-3 flex items-center justify-center border-2 border-black/10">
+                  <span className="text-ink-2 text-sm">Sin logo</span>
                 </div>
               )}
-              <label htmlFor="logo" className="block text-sm font-semibold text-white mb-2">
+              <label htmlFor="logo" className="block text-sm font-semibold text-ink mb-2">
                 Subir nuevo logo (opcional)
               </label>
               <input
@@ -491,13 +491,13 @@ export default function EditarNegocioPage() {
 
             {/* Galería */}
             <div>
-              <label className="block text-sm font-semibold text-white mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Galería actual
               </label>
               {galleryUrls.length > 0 ? (
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {galleryUrls.map((url, idx) => (
-                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border-2 border-white/20">
+                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border-2 border-black/10">
                       <Image 
                         src={url} 
                         alt={`Imagen ${idx + 1}`} 
@@ -508,16 +508,16 @@ export default function EditarNegocioPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 mb-3">No hay imágenes en la galería</p>
+                <p className="text-sm text-ink-2/70 mb-3">No hay imágenes en la galería</p>
               )}
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4 mb-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-3">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-sm text-blue-200">
+                  <p className="text-sm text-blue-700">
                     <strong>Tip:</strong> Para gestionar tu galería completa (agregar/eliminar fotos), usa la sección{" "}
-                    <Link href={`/app/dashboard/negocios/${negocio.id}/galeria`} className="underline font-semibold hover:text-blue-100">
+                    <Link href={`/app/dashboard/negocios/${negocio.id}/galeria`} className="underline font-semibold hover:text-blue-800">
                       Gestionar Galería
                     </Link>
                   </p>
@@ -529,14 +529,14 @@ export default function EditarNegocioPage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href={`/app/dashboard/negocios/${negocio.id}`}
-                className="flex-1 text-center border-2 border-white/20 text-gray-100 font-semibold py-3 px-6 rounded-2xl hover:bg-ink-3 transition-colors"
+                className="flex-1 text-center border-2 border-black/15 text-ink-2 font-semibold py-3 px-6 rounded-2xl hover:bg-black/5 transition-colors"
               >
                 Cancelar
               </Link>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>
@@ -563,13 +563,13 @@ export default function EditarNegocioPage() {
         onClose={() => {}}
         closeOnBackdropClick={false}
         aria-label="Cambios guardados"
-        panelClassName="flex flex-col items-center gap-5 bg-ink-2/95 border border-white/10 rounded-3xl px-10 py-10 shadow-2xl mx-4 max-w-sm w-full"
+        panelClassName="flex flex-col items-center gap-5 bg-white border border-black/10 rounded-3xl px-10 py-10 shadow-2xl mx-4 max-w-sm w-full"
       >
         {/* Animated checkmark circle */}
         <div className="relative flex items-center justify-center">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
             <svg
-              className="w-10 h-10 text-emerald-400"
+              className="w-10 h-10 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -583,22 +583,22 @@ export default function EditarNegocioPage() {
             </svg>
           </div>
           {/* Outer pulse ring */}
-          <span className="absolute w-20 h-20 rounded-full border-2 border-emerald-500/30 animate-ping opacity-40" />
+          <span className="absolute w-20 h-20 rounded-full border-2 border-green-300 animate-ping opacity-40" />
         </div>
 
         <div className="text-center">
-          <h3 className="text-xl font-bold text-white mb-1">
+          <h3 className="text-xl font-bold text-ink mb-1">
             ¡Cambios guardados!
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-ink-2">
             Tu negocio ha sido actualizado con éxito.
           </p>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+        <div className="w-full h-1 rounded-full bg-black/10 overflow-hidden">
           <div
-            className="h-full bg-emerald-500 rounded-full"
+            className="h-full bg-green-500 rounded-full"
             style={{ animation: "progress-bar 1.5s linear forwards" }}
           />
         </div>
@@ -616,21 +616,21 @@ export default function EditarNegocioPage() {
         open={showMapModal}
         onClose={() => setShowMapModal(false)}
         aria-label="Actualizar ubicación GPS"
-        panelClassName="bg-ink-2/95 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        panelClassName="bg-white border border-black/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
       >
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">📍 Actualizar Ubicación GPS</h3>
+                <h3 className="text-xl font-bold text-ink">📍 Actualizar Ubicación GPS</h3>
                 <button
                   onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-white/10 rounded-full transition-all"
+                  className="p-2 hover:bg-black/5 rounded-full transition-all"
                 >
-                  <svg className="w-6 h-6 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-ink-2 hover:text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-ink-2">
                 Obtén tu ubicación actual o ingresa las coordenadas manualmente
               </p>
             </div>
@@ -656,7 +656,7 @@ export default function EditarNegocioPage() {
                     toast.error("Tu navegador no soporta geolocalización.")
                   }
                 }}
-                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl"
+                className="w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-sm"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -664,22 +664,22 @@ export default function EditarNegocioPage() {
                 </svg>
                 Usar mi ubicación actual
               </button>
-              <p className="text-xs text-gray-400 mt-2 text-center">
+              <p className="text-xs text-ink-2 mt-2 text-center">
                 La precisión del GPS asegura que los clientes encuentren tu negocio más rápido.
               </p>
             </div>
 
             {/* Divisor (oculto, ya no se muestra la opción manual) */}
             <div className="hidden flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-white/20"></div>
-              <span className="text-xs font-semibold text-gray-300">O ingresa manualmente</span>
-              <div className="flex-1 h-px bg-white/20"></div>
+              <div className="flex-1 h-px bg-black/10"></div>
+              <span className="text-xs font-semibold text-ink-2">O ingresa manualmente</span>
+              <div className="flex-1 h-px bg-black/10"></div>
             </div>
 
             {/* Opción 2: Ingresar coordenadas manualmente (oculta, pero mantiene el binding al estado) */}
             <div className="space-y-4">
               <div className="hidden">
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-ink mb-2">
                   Latitud
                 </label>
                 <input
@@ -692,7 +692,7 @@ export default function EditarNegocioPage() {
                 />
               </div>
               <div className="hidden">
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-ink mb-2">
                   Longitud
                 </label>
                 <input
@@ -707,8 +707,8 @@ export default function EditarNegocioPage() {
 
               {/* Vista previa de Mapa */}
               {latitude && longitude && (
-                <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-white mb-2">Vista previa:</p>
+                <div className="bg-black/[0.02] border border-black/8 rounded-2xl p-4">
+                  <p className="text-sm font-semibold text-ink mb-2">Vista previa:</p>
                   <div className="bg-gray-200 rounded-xl overflow-hidden">
                     <iframe
                       title="Mapa de ubicación"
@@ -719,7 +719,7 @@ export default function EditarNegocioPage() {
                       className="w-full"
                     ></iframe>
                   </div>
-                  <p className="text-xs text-gray-300 mt-2">
+                  <p className="text-xs text-ink-2 mt-2">
                     📍 Lat: {latitude}, Lng: {longitude}
                   </p>
                 </div>
@@ -736,7 +736,7 @@ export default function EditarNegocioPage() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(false)}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white font-semibold rounded-2xl transition-all border border-white/20"
+                  className="px-6 py-3 bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink font-semibold rounded-2xl transition-all border border-black/10"
                 >
                   Cancelar
                 </button>
@@ -744,8 +744,8 @@ export default function EditarNegocioPage() {
             </div>
 
             {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl">
-              <p className="text-xs text-blue-200">
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+              <p className="text-xs text-blue-700">
                 💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps,
                 haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
               </p>

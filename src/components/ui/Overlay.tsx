@@ -59,7 +59,7 @@ interface BaseOverlayProps {
 }
 
 const DEFAULT_PANEL =
-  "bg-ink-3/95 border border-white/10 shadow-2xl text-white"
+  "bg-white border border-black/10 shadow-2xl text-ink"
 
 /* ────────────────────────── Dialog ────────────────────────── */
 
@@ -80,7 +80,7 @@ export function Dialog({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md px-4 ${className}`}
+          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-ink/40 backdrop-blur-md px-4 ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -125,7 +125,7 @@ export function Sheet({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex items-end justify-center bg-black/60 backdrop-blur-sm ${className}`}
+          className={`fixed inset-0 z-[9999] flex items-end justify-center bg-ink/35 backdrop-blur-sm ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -143,7 +143,7 @@ export function Sheet({
             className={panelClassName}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/20" />
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-black/15" />
             {children}
           </motion.div>
         </motion.div>
@@ -175,7 +175,7 @@ export function Drawer({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex ${isLeft ? "justify-start" : "justify-end"} bg-black/60 backdrop-blur-sm ${className}`}
+          className={`fixed inset-0 z-[9999] flex ${isLeft ? "justify-start" : "justify-end"} bg-ink/35 backdrop-blur-sm ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

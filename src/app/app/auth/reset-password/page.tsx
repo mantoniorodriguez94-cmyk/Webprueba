@@ -179,14 +179,14 @@ export default function ResetPasswordPage() {
   return (
     <>
       {/* Tarjeta de formulario */}
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
+      <div className="surface-elevated rounded-3xl p-6 sm:p-8 lg:p-10">
           {!success ? (
             <>
               <div className="mb-6">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-300">
+                <h2 className="text-2xl sm:text-3xl font-bold text-ink">
                   Nueva contraseña
                 </h2>
-                <p className="text-gray-300 mt-2 text-sm sm:text-base">
+                <p className="text-ink-2 mt-2 text-sm sm:text-base">
                   Ingresa tu nueva contraseña a continuación
                 </p>
               </div>
@@ -207,7 +207,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleResetPassword} className="space-y-5">
                 {/* Password Input */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-300">
+                  <label htmlFor="password" className="block text-sm font-semibold text-ink">
                     Nueva contraseña
                   </label>
                   <div className="relative">
@@ -244,7 +244,7 @@ export default function ResetPasswordPage() {
 
                 {/* Confirm Password Input */}
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-300">
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-ink">
                     Confirmar contraseña
                   </label>
                   <div className="relative">
@@ -280,7 +280,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -304,10 +304,10 @@ export default function ResetPasswordPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-ink mb-2">
                 ¡Contraseña actualizada!
               </h3>
-              <p className="text-gray-300 mb-6">
+              <p className="text-ink-2 mb-6">
                 Tu contraseña se ha restablecido exitosamente. Serás redirigido al inicio de sesión...
               </p>
               <div className="flex justify-center">
@@ -319,15 +319,15 @@ export default function ResetPasswordPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-black/10"></div>
             </div>
           </div>
 
           {/* Links */}
           <div className="text-center space-y-3">
-            <Link 
-              href="/app/auth/login" 
-              className="block text-blue-400 hover:text-blue-300 font-semibold transition-colors hover:underline text-sm sm:text-base"
+            <Link
+              href="/app/auth/login"
+              className="block text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline text-sm sm:text-base"
             >
               Volver al inicio de sesión
             </Link>

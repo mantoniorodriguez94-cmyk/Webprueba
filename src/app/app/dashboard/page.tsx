@@ -24,11 +24,11 @@ const FilterSidebar = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl border border-white/20 p-6 animate-pulse">
-        <div className="h-6 w-24 bg-white/10 rounded mb-4" />
+      <div className="surface rounded-3xl p-6 animate-pulse">
+        <div className="h-6 w-24 bg-black/5 rounded mb-4" />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-white/10 rounded-2xl" />
+            <div key={i} className="h-10 bg-black/5 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -43,15 +43,15 @@ const RightSidebar = dynamic(
     loading: () => (
       <div className="space-y-5">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 animate-pulse">
-            <div className="h-6 w-32 bg-white/10 rounded mb-4" />
+          <div key={i} className="surface rounded-2xl p-5 shadow-sm animate-pulse">
+            <div className="h-6 w-32 bg-black/5 rounded mb-4" />
             <div className="space-y-3">
               {[1, 2, 3].map((j) => (
                 <div key={j} className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/10 rounded-full" />
+                  <div className="w-10 h-10 bg-black/5 rounded-full" />
                   <div className="flex-1">
-                    <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
-                    <div className="h-3 bg-white/10 rounded w-1/2" />
+                    <div className="h-4 bg-black/5 rounded mb-2 w-3/4" />
+                    <div className="h-3 bg-black/5 rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -714,7 +714,7 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300 font-medium">Cargando...</p>
+          <p className="mt-4 text-ink-2 font-medium">Cargando...</p>
         </div>
       </div>
     )
@@ -723,15 +723,15 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border border-white/10 p-8 max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="text-center surface-elevated rounded-3xl p-8 max-w-md">
+          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Acceso restringido</h2>
-          <p className="text-gray-400 mb-6">Debes iniciar sesión para continuar</p>
-          <Link 
+          <h2 className="text-2xl font-bold text-ink mb-3">Acceso restringido</h2>
+          <p className="text-ink-2 mb-6">Debes iniciar sesión para continuar</p>
+          <Link
             href="/app/auth/login"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
           >
@@ -808,19 +808,19 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       {/* Header Móvil Moderno */}
-      <header className="sticky top-0 z-40 bg-ink/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-black/8 shadow-sm">
         <div className="px-4 py-4 lg:px-6">
           {/* Top Row - Logo y Acciones (navegación simplificada) */}
           <div className="flex items-center justify-between gap-4 mb-4">
             {/* Logo */}
             <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
               <Link href="/" className="inline-block cursor-pointer">
-                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
+                <h1 className="text-xl lg:text-2xl font-bold text-ink flex items-center gap-2">
                   <span className="text-2xl">📍</span>
                   App Encuentra
                 </h1>
               </Link>
-              <p className="hidden lg:block text-xs lg:text-sm text-gray-400 mt-1 truncate">
+              <p className="hidden lg:block text-xs lg:text-sm text-ink-2 mt-1 truncate">
                 {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
               </p>
             </div>
@@ -833,7 +833,7 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowSearchModal(true)}
                 aria-label="Buscar"
-                className="flex p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white transition-all duration-200 hover:scale-105"
+                className="flex p-2.5 bg-black/5 hover:bg-black/10 border border-black/8 rounded-full text-ink-2 hover:text-ink transition-all duration-200 hover:scale-105"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -844,7 +844,7 @@ export default function DashboardPage() {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-200 hover:scale-105"
+                  className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-200 hover:scale-105"
                 >
                   {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                 </button>
@@ -853,7 +853,7 @@ export default function DashboardPage() {
                   open={showUserMenu}
                   onClose={() => setShowUserMenu(false)}
                   align="right"
-                  panelClassName="w-80 bg-ink-3/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+                  panelClassName="w-80 surface-elevated rounded-3xl overflow-hidden"
                 >
                   {/* Header del perfil */}
                   <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white">
@@ -883,7 +883,7 @@ export default function DashboardPage() {
                           {tierLoading ? (
                             <span className="opacity-40">…</span>
                           ) : (
-                            <span className={effectiveTier > 0 ? "font-semibold text-yellow-200" : "opacity-70"}>
+                            <span className={effectiveTier > 0 ? "font-semibold text-white" : "opacity-70"}>
                               {getLabelForTier(effectiveTier as MembershipTier)}
                             </span>
                           )}
@@ -906,14 +906,14 @@ export default function DashboardPage() {
                         <Link
                           href="/app/dashboard/chat"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
                         >
-                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
                           <div className="flex-1">
-                            <p className="font-semibold text-white">Mensajes</p>
-                            <p className="text-xs text-gray-400">
+                            <p className="font-semibold text-ink">Mensajes</p>
+                            <p className="text-xs text-ink-2">
                               {totalUnread > 0 ? `${totalUnread} sin leer` : "Consultas y mensajes directos"}
                             </p>
                           </div>
@@ -930,16 +930,16 @@ export default function DashboardPage() {
                     <Link
                       href="/app/dashboard/membresia"
                       onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
                     >
-                      <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
                       <div className="flex-1">
-                        <p className="font-semibold text-yellow-300">Membresía</p>
-                        <p className="text-xs text-gray-400">Conecta, Destaca, Patrocina</p>
+                        <p className="font-semibold text-purple-700">Membresía</p>
+                        <p className="text-xs text-ink-2">Conecta, Destaca, Patrocina</p>
                       </div>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
@@ -948,23 +948,23 @@ export default function DashboardPage() {
                     <Link
                       href="/app/dashboard/perfil"
                       onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all"
+                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
                     >
-                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       <div className="flex-1">
-                        <p className="font-semibold text-white">Mi Perfil</p>
-                        <p className="text-xs text-gray-400">Configuración y más</p>
+                        <p className="font-semibold text-ink">Mi Perfil</p>
+                        <p className="text-xs text-ink-2">Configuración y más</p>
                       </div>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
                   </div>
 
                   {/* Logout */}
-                  <div className="p-4 border-t border-white/10">
+                  <div className="p-4 border-t border-black/8">
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-2xl transition-all font-semibold"
@@ -986,8 +986,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("feed")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "feed"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
-                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
               }`}
             >
               Todos {filteredBusinesses.length > 0 && `(${filteredBusinesses.length})`}
@@ -996,8 +996,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("recientes")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "recientes"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
-                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
               }`}
             >
               Recientes {recentBusinesses.length > 0 && `(${recentBusinesses.length})`}
@@ -1006,8 +1006,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("destacados")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "destacados"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
-                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-300 border border-white/10"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
               }`}
             >
               ⭐ Destacados
@@ -1028,10 +1028,10 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {/* Categorías Destacadas (Solo en Tab Feed) */}
             {activeTab === "feed" && topCategories.length > 0 && (
-              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-xl shadow-black/20">
-                <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="surface rounded-3xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-ink mb-5 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                   </div>
@@ -1042,7 +1042,7 @@ export default function DashboardPage() {
                     <button
                       key={category}
                       onClick={() => handleFilterChange({ ...filters, category })}
-                      className="group relative p-5 bg-gradient-to-br from-white/5 to-white/[0.02] rounded-2xl hover:from-blue-500/20 hover:to-purple-500/20 border border-white/10 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                      className="group relative p-5 bg-black/[0.02] rounded-2xl hover:bg-blue-50 border border-black/8 hover:border-blue-200 transition-all duration-300 hover:scale-105"
                     >
                       <div className="text-center">
                         <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
@@ -1057,10 +1057,10 @@ export default function DashboardPage() {
                           {category === "Belleza" && "💄"}
                           {!["Restaurantes", "Tiendas", "Servicios", "Salud", "Educación", "Tecnología", "Entretenimiento", "Deportes", "Belleza"].includes(category) && "📦"}
                         </div>
-                        <p className="font-semibold text-sm text-white truncate group-hover:text-blue-300 transition-colors">
+                        <p className="font-semibold text-sm text-ink truncate group-hover:text-blue-700 transition-colors">
                           {category}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1.5 group-hover:text-gray-300 transition-colors">
+                        <p className="text-xs text-ink-2 mt-1.5 transition-colors">
                           {businesses.length} {businesses.length === 1 ? 'negocio' : 'negocios'}
                         </p>
                       </div>
@@ -1074,23 +1074,23 @@ export default function DashboardPage() {
             <div className="lg:hidden">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="w-full bg-gradient-to-r from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between hover:from-blue-500/20 hover:to-purple-500/20 hover:border-blue-500/50 transition-all duration-300 shadow-lg shadow-black/10"
+                className="w-full surface hover:bg-blue-50 hover:border-blue-200 rounded-2xl px-6 py-4 flex items-center justify-between transition-all duration-300 shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
                   </div>
-                  <span className="text-white font-semibold">Filtra por Categoría, Ubicación o Nombre</span>
+                  <span className="text-ink font-semibold">Filtra por Categoría, Ubicación o Nombre</span>
                   {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
-                    <div className="w-2.5 h-2.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50"></div>
+                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></div>
                   )}
                 </div>
-                <svg 
-                  className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className={`w-5 h-5 text-ink-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1098,12 +1098,12 @@ export default function DashboardPage() {
               </button>
 
               {/* Panel de Filtros Desplegable */}
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
                   showFilters ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl shadow-black/20">
+                <div className="surface rounded-2xl p-5 shadow-sm">
                   <FilterSidebar onFilterChange={handleFilterChange} />
                 </div>
               </div>
@@ -1113,28 +1113,28 @@ export default function DashboardPage() {
             {loading ? (
               <div className="text-center py-16">
                 <div className="relative w-16 h-16 mx-auto mb-6">
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-500/20"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-blue-500/15"></div>
                   <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin"></div>
                 </div>
-                <p className="text-gray-400 font-medium">Cargando negocios...</p>
+                <p className="text-ink-2 font-medium">Cargando negocios...</p>
               </div>
             ) : displayedBusinesses.length === 0 ? (
-              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/10 p-16 text-center shadow-xl shadow-black/20">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center border border-blue-500/30">
-                  <svg className="h-10 w-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="surface rounded-3xl p-16 text-center shadow-sm">
+                <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center border border-blue-100">
+                  <svg className="h-10 w-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h3 className="mt-4 text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  {activeTab === "recientes" 
-                    ? "No hay negocios recientes" 
+                <h3 className="mt-4 text-xl font-bold text-ink">
+                  {activeTab === "recientes"
+                    ? "No hay negocios recientes"
                     : activeTab === "destacados"
                     ? "Aún no hay negocios destacados"
                     : "No se encontraron negocios"}
                 </h3>
-                <p className="mt-3 text-gray-400 max-w-md mx-auto">
-                  {activeTab === "recientes" 
-                    ? "No se han agregado negocios nuevos en los últimos 7 días" 
+                <p className="mt-3 text-ink-2 max-w-md mx-auto">
+                  {activeTab === "recientes"
+                    ? "No se han agregado negocios nuevos en los últimos 7 días"
                     : activeTab === "destacados"
                     ? "Los negocios destacados son asignados manualmente por los administradores"
                     : "Intenta ajustar los filtros de búsqueda"}
@@ -1167,7 +1167,7 @@ export default function DashboardPage() {
                     className="h-20 flex items-center justify-center"
                   >
                     {isLoadingMore && (
-                      <div className="flex items-center gap-3 text-gray-400">
+                      <div className="flex items-center gap-3 text-ink-2">
                         <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         <span className="text-sm">Cargando más negocios...</span>
                       </div>
@@ -1177,7 +1177,7 @@ export default function DashboardPage() {
 
                 {/* Indicador de fin de lista */}
                 {!hasMore && displayedBusinesses.length > 0 && (
-                  <div className="text-center py-8 text-gray-400 text-sm">
+                  <div className="text-center py-8 text-ink-2 text-sm">
                     <p>Has visto todos los negocios disponibles</p>
                   </div>
                 )}
@@ -1197,13 +1197,13 @@ export default function DashboardPage() {
         open={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         aria-label="Filtros"
-        panelClassName="w-full max-h-[85vh] overflow-y-auto bg-ink-2/98 rounded-t-3xl lg:hidden"
+        panelClassName="w-full max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl lg:hidden"
       >
-        <div className="pb-4 border-b border-white/10 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">Filtros</h3>
+        <div className="pb-4 border-b border-black/8 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-ink">Filtros</h3>
           <button
             onClick={() => setShowFilterModal(false)}
-            className="p-2 rounded-full hover:bg-white/10 text-gray-400"
+            className="p-2 rounded-full hover:bg-black/5 text-ink-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1223,14 +1223,14 @@ export default function DashboardPage() {
         open={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         aria-label="Buscar"
-        panelClassName="max-w-2xl w-full bg-ink-2/98 border border-white/20 rounded-3xl p-4 shadow-2xl"
+        panelClassName="max-w-2xl w-full bg-white border border-black/8 rounded-3xl p-4 shadow-2xl"
       >
         <input
           type="text"
           placeholder="Buscar negocios, categorías, ubicación..."
           value={filters.searchTerm}
           onChange={(e) => handleFilterChange({ ...filters, searchTerm: e.target.value })}
-          className="w-full bg-transparent text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+          className="w-full bg-transparent text-ink px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-ink-2/60"
           autoFocus
         />
       </Dialog>

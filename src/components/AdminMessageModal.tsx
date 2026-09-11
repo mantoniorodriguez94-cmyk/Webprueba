@@ -70,17 +70,17 @@ export default function AdminMessageModal() {
       }}
       closeOnBackdropClick={false}
       aria-label="Mensaje del equipo"
-      panelClassName="max-w-md w-full bg-ink-2 border-2 border-amber-500/50 rounded-3xl shadow-2xl p-6"
+      panelClassName="max-w-md w-full bg-white border-2 border-amber-200 rounded-3xl shadow-2xl p-6"
     >
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-amber-400 font-semibold">Mensaje del equipo</span>
+        <span className="text-amber-700 font-semibold">Mensaje del equipo</span>
       </div>
-      <p className="text-white whitespace-pre-wrap text-sm mb-6">{message}</p>
+      <p className="text-ink whitespace-pre-wrap text-sm mb-6">{message}</p>
       <button
         type="button"
         onClick={dismiss}
         disabled={dismissing}
-        className="w-full py-3 rounded-xl bg-amber-500/20 text-amber-200 border border-amber-500/50 font-medium hover:bg-amber-500/30 disabled:opacity-50"
+        className="w-full py-3 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-medium hover:bg-amber-100 disabled:opacity-50"
       >
         {dismissing ? "Cerrando..." : "Entendido"}
       </button>

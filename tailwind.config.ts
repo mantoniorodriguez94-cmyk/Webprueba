@@ -9,37 +9,46 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── Paleta Encuentra v2 — "directorio cálido y confiable" ──────────
-        // Diseñada como sistema, no como intercambio mecánico de tokens.
-        // Sigue remapeando los acentos genéricos de Tailwind (mismo mecanismo
-        // que ya cablea ~1000 clases en 101 archivos), pero con curvas nuevas
-        // elegidas por relación de color, no solo por "parecido al anterior".
+        // ── Paleta Encuentra v3 — dirección "Luz" ───────────────────────────
+        // Decidida visualmente con el cliente ANTES de tocar código, a partir
+        // del logo real de la marca (frío: magenta → violeta → azul), no de
+        // la paleta anterior. Las dos pasadas previas remapearon blue→oro y
+        // purple→terracota partiendo siempre del mapeo de la pasada de antes;
+        // heredaron su ADN y las dos terminaron doradas. Esta vez se parte
+        // del logo, y la paleta pasa de oscura a CLARA.
         //
-        // - Miel/Oro (blue·yellow·amber) y Terracota (purple) son ANÁLOGOS:
-        //   ambos viven en el lado cálido del círculo (ámbar → naranja-rojo),
-        //   así que conviven sin pelear — uno es el metal (Patrocina), el
-        //   otro es el pin de ubicación. Cálidos, nunca neón.
-        // - Verde-Jade (green·cyan, "señal/activo") es su COMPLEMENTARIO: el
-        //   único acento frío del sistema, reservado para estados (en línea,
-        //   verificado, disponible). Al ser el único frío, cuando aparece se
-        //   nota — perfecto para una señal, no para decoración.
-        // - Los tres se apoyan en `ink` (neutro oscuro) y `paper` (neutro
-        //   claro) con temperatura cálida — nada de negros azulados de
-        //   producto SaaS.
+        // Regla cardinal (la que hace que esto no se vea "infantil"): el
+        // pastel vive SOLO en el fondo de página (ver `mesh` + .bg-mesh en
+        // globals.css). La interfaz encima es blanco y casi negro. Hay UN
+        // SOLO color saturado en pantalla — `blue` (violeta-azulado,
+        // #5B4FE8) — reservado para la acción principal. `purple` (magenta,
+        // #E24FD6) es puntuación rara: promoción activa, alerta, tier
+        // "Patrocina". Nunca un campo de color grande.
         blue: {
-          // Miel/Oro — acento primario, brillo de "Patrocina"
-          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
-          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
-          800: '#67400F', 900: '#452A09', 950: '#2A1804',
+          // Acento único — botón principal, focus rings, enlaces activos.
+          50: '#F1EFFE', 100: '#E4E0FD', 200: '#C9C1FB', 300: '#ADA1F8',
+          400: '#8C7BF3', 500: '#5B4FE8', 600: '#4A3ED0', 700: '#3A30AC',
+          800: '#2B2482', 900: '#1D1959', 950: '#120F38',
         },
         purple: {
-          // Terracota — el pin de GPS, segundo acento cálido
-          50: '#FFF2ED', 100: '#FFDFD1', 200: '#FFBBA0', 300: '#FB9873',
-          400: '#F17C55', 500: '#E2603A', 600: '#C1482A', 700: '#9A3820',
-          800: '#712915', 900: '#4C1B0E', 950: '#2E1008',
+          // Magenta — puntuación, NO decoración. Promo activa, alerta, tier
+          // Patrocina. Si aparece en un botón, tarjeta o barra grande, es un
+          // error: revisar la regla cardinal de arriba.
+          50: '#FDF0FC', 100: '#FBE0FA', 200: '#F7C0F4', 300: '#F19EEE',
+          400: '#E96EE3', 500: '#E24FD6', 600: '#C232B3', 700: '#9B2790',
+          800: '#731D6C', 900: '#4D1448', 950: '#2E0C2B',
+        },
+        // Mismo valor que `purple` — evita que un `pink-*` sin auditar
+        // reintroduzca el rosa que el cliente rechazó explícitamente
+        // ("quiero algo más masculino, serio, cuerdo").
+        pink: {
+          50: '#FDF0FC', 100: '#FBE0FA', 200: '#F7C0F4', 300: '#F19EEE',
+          400: '#E96EE3', 500: '#E24FD6', 600: '#C232B3', 700: '#9B2790',
+          800: '#731D6C', 900: '#4D1448', 950: '#2E0C2B',
         },
         green: {
-          // Jade — único acento frío, reservado para "señal/activo"
+          // Jade — semántico "activo/verificado/en línea". Ya era frío y
+          // funciona igual de bien sobre fondo claro: sin cambios de curva.
           50: '#EEFBF3', 100: '#D3F3E1', 200: '#A2E5C4', 300: '#6FD1A7',
           400: '#45B98D', 500: '#2E9973', 600: '#227A5C', 700: '#1C614A',
           800: '#17493A', 900: '#123527', 950: '#081F17',
@@ -51,36 +60,54 @@ const config: Config = {
           800: '#17493A', 900: '#123527', 950: '#081F17',
         },
         yellow: {
-          // mismo miel/oro — ya se usaba como "dorado premium" (Patrocina)
-          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
-          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
-          800: '#67400F', 900: '#452A09', 950: '#2A1804',
+          // Ámbar semántico de AVISO — no es un acento decorativo. El rol de
+          // "dorado premium" que tenía en la pasada anterior lo cierra ahora
+          // el magenta (tier Patrocina); esto es solo la señal de "atención".
+          50: '#FFF8E8', 100: '#FFEEC2', 200: '#FFDD8A', 300: '#FFC94D',
+          400: '#F5AD1F', 500: '#E08E0B', 600: '#BD7207', 700: '#955806',
+          800: '#6E4106', 900: '#4A2B04', 950: '#2E1A02',
         },
         amber: {
-          50: '#FDF6E9', 100: '#FAEACB', 200: '#F3D28E', 300: '#EABB5E',
-          400: '#DFA23E', 500: '#CC8A2C', 600: '#AD6F1F', 700: '#8A5717',
-          800: '#67400F', 900: '#452A09', 950: '#2A1804',
+          50: '#FFF8E8', 100: '#FFEEC2', 200: '#FFDD8A', 300: '#FFC94D',
+          400: '#F5AD1F', 500: '#E08E0B', 600: '#BD7207', 700: '#955806',
+          800: '#6E4106', 900: '#4A2B04', 950: '#2E1A02',
         },
-        // Neutros de marca — fondo de página y superficies.
-        // No reemplazan `gray`: ese sigue igual porque también se usa como
-        // color plano en paneles claros (admin/legal) y remapearlo en bloque
-        // rompería el contraste ahí.
+        // `gray` NO se remapea (igual que en la pasada anterior): sigue
+        // siendo el gris plano de Tailwind. Antes era "la excepción clara"
+        // en paneles de admin/legal; ahora que TODA la app es clara pasa a
+        // ser la norma — por eso el barrido final revisa cada texto
+        // `gray-300/400` que asumía estar sobre fondo oscuro.
         //
-        // `ink` deja de ser negro-azulado (frío, de producto técnico) y pasa
-        // a un carbón cálido con fondo de café/espresso — es lo que hace que
-        // el dashboard oscuro se sienta "cálido y confiable" en vez de
-        // corporativo. `paper` es el correspondiente claro, un crema tibio
-        // en vez de un blanco/gris frío.
-        ink: {
-          DEFAULT: '#1A1512',
-          2: '#241D18',
-          3: '#302620',
-          4: '#3D3129',
+        // Malla del fondo de página — SOLO fondo, nunca en componentes de UI
+        // (botones, tarjetas, barras). Ver el gradiente radial en
+        // globals.css (.bg-mesh). El cliente pidió algo "más masculino,
+        // serio, cuerdo": se descartó el rosa de la malla original y se usa
+        // acero en su lugar, no arena — mantiene la app fría de punta a
+        // punta.
+        mesh: {
+          violet: '#DAD3F5',
+          blue: '#C9D9F6',
+          steel: '#C3CFE0',
+          mint: '#D9EDE7',
         },
+        // Tinta — texto. `ink` deja de ser una superficie oscura cálida
+        // (carbón/café) y pasa a ser la tinta casi negra fría del texto.
+        // Los pasos 3/4 quedan como superficie oscura INTENCIONAL, de uso
+        // puntual (botón principal negro, chip oscuro) — no como fondo de
+        // panel: eso ahora es `paper`.
+        ink: {
+          DEFAULT: '#0E0E16', // tinta principal / superficie oscura intencional
+          2: '#6B6B78',        // tinta secundaria
+          3: '#3A3A46',        // superficie oscura intencional, paso intermedio (uso puntual)
+          4: '#24242C',        // superficie oscura intencional, más profunda (uso puntual)
+        },
+        // Superficie — fondos claros. Antes era un crema tibio sin uso real
+        // en el código (0 referencias en `src`); ahora es el par de la
+        // tinta: fondo de página y superficie de tarjeta.
         paper: {
-          DEFAULT: '#FAF6F0',
-          dim: '#C9BEB0',
-          faint: '#9C8F80',
+          DEFAULT: '#FBFAFC', // fondo de página
+          2: '#FFFFFF',        // superficie / tarjetas
+          dim: '#F1EFF5',      // superficie elevada / hover, lavado sutil
         },
       },
       fontFamily: {
@@ -107,8 +134,8 @@ const config: Config = {
           '50%': { opacity: '0.5' },
         },
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 10px rgba(204, 138, 44, 0.5)' },
-          '50%': { boxShadow: '0 0 20px rgba(204, 138, 44, 0.8)' },
+          '0%, 100%': { boxShadow: '0 0 10px rgba(91, 79, 232, 0.35)' },
+          '50%': { boxShadow: '0 0 20px rgba(91, 79, 232, 0.6)' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },

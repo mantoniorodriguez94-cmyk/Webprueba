@@ -126,31 +126,31 @@ export default function PromotionsCarousel() {
 
   if (loading) {
     return (
-      <section className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-xl rounded-3xl border border-yellow-500/20 p-6 shadow-xl">
+      <section className="surface rounded-3xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-yellow-500/30 rounded-lg animate-pulse" />
-          <div className="h-5 w-40 bg-white/10 rounded animate-pulse" />
+          <div className="w-8 h-8 bg-black/5 rounded-lg animate-pulse" />
+          <div className="h-5 w-40 bg-black/5 rounded animate-pulse" />
         </div>
-        <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
+        <div className="h-40 bg-black/5 rounded-2xl animate-pulse" />
       </section>
     )
   }
 
   if (!items.length) {
     return (
-      <section className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-xl rounded-3xl border border-yellow-500/30 p-6 shadow-xl shadow-yellow-500/10">
+      <section className="surface rounded-3xl p-6 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-1">
+            <h2 className="text-lg md:text-xl font-bold text-ink mb-1">
               Impulsa tu negocio aquí
             </h2>
-            <p className="text-sm text-yellow-100/90">
+            <p className="text-sm text-ink-2">
               Destaca tus promociones frente a miles de clientes potenciales.
             </p>
           </div>
           <Link
             href="/app/dashboard/membresia"
-            className="inline-flex items-center gap-2 rounded-full bg-yellow-400/90 hover:bg-yellow-300 text-gray-900 px-5 py-2 text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 text-sm font-semibold transition-colors"
           >
             Ver Planes
             <svg
@@ -177,16 +177,16 @@ export default function PromotionsCarousel() {
 
   return (
     <section
-      className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-xl rounded-3xl border border-yellow-500/30 p-6 shadow-xl shadow-yellow-500/10"
+      className="surface rounded-3xl p-6 shadow-sm"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg md:text-xl font-bold text-white">
+          <h2 className="text-lg md:text-xl font-bold text-ink">
             Promociones destacadas
           </h2>
-          <p className="text-xs md:text-sm text-yellow-100/80">
+          <p className="text-xs md:text-sm text-ink-2">
             Ofertas activas de negocios Conecta, Destaca y Patrocina
           </p>
         </div>
@@ -198,8 +198,8 @@ export default function PromotionsCarousel() {
               onClick={() => setActiveIndex(i)}
               className={`h-1.5 rounded-full transition-all ${
                 i === activeIndex
-                  ? "w-6 bg-yellow-400"
-                  : "w-2 bg-yellow-400/40 hover:bg-yellow-300/70"
+                  ? "w-6 bg-blue-500"
+                  : "w-2 bg-black/10 hover:bg-black/20"
               }`}
               aria-label={`Ver promoción ${i + 1}`}
             />
@@ -215,10 +215,10 @@ export default function PromotionsCarousel() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -32 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
-            className={`absolute inset-0 flex flex-col md:flex-row gap-4 md:gap-6 rounded-2xl border-2 p-4 md:p-5 bg-black/40 overflow-hidden ${
+            className={`absolute inset-0 flex flex-col md:flex-row gap-4 md:gap-6 rounded-2xl border p-4 md:p-5 bg-white overflow-hidden ${
               isPatrocina
-                ? "border-yellow-400/80 shadow-[0_0_35px_rgba(250,204,21,0.45)]"
-                : "border-yellow-500/40 shadow-yellow-500/20"
+                ? "border-purple-300 shadow-[0_0_28px_rgba(226,79,214,0.18)]"
+                : "border-black/8"
             }`}
           >
             <div className="relative w-full md:w-2/5 h-32 sm:h-40 md:h-full flex-shrink-0">
@@ -234,7 +234,7 @@ export default function PromotionsCarousel() {
                   priority
                 />
               ) : (
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-4xl font-bold text-yellow-300">
+                <div className="w-full h-full rounded-xl bg-blue-50 flex items-center justify-center text-4xl font-bold text-blue-600">
                   {current.business_name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -242,17 +242,17 @@ export default function PromotionsCarousel() {
 
             <div className="flex-1 flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/15 border border-yellow-400/40 text-xs font-semibold text-yellow-200">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-700">
                   {isPatrocina ? "Patrocina" : "Promoción activa"}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-white line-clamp-2">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-ink line-clamp-2">
                   {current.name}
                 </h3>
-                <p className="text-sm text-yellow-100/90 line-clamp-2">
+                <p className="text-sm text-ink-2 line-clamp-2">
                   {current.business_name}
                 </p>
                 {current.price != null && Number(current.price) > 0 && (
-                  <p className="text-lg sm:text-xl font-bold text-yellow-300">
+                  <p className="text-lg sm:text-xl font-bold text-blue-600">
                     ${Number(current.price).toFixed(2)}
                   </p>
                 )}
@@ -261,7 +261,7 @@ export default function PromotionsCarousel() {
               <div className="mt-4 flex items-center justify-between gap-3">
                 <Link
                   href={`/app/dashboard/negocios/${current.business_id}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-400/95 hover:bg-yellow-300 text-gray-900 px-4 py-2 text-sm font-semibold transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm font-semibold transition-colors"
                 >
                   Ver Negocio
                   <svg
@@ -278,7 +278,7 @@ export default function PromotionsCarousel() {
                     />
                   </svg>
                 </Link>
-                <p className="text-[11px] text-yellow-100/70 hidden sm:block">
+                <p className="text-[11px] text-ink-2/70 hidden sm:block">
                   Rotando cada 2 segundos • Pausa al pasar el cursor
                 </p>
               </div>

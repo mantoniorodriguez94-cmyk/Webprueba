@@ -56,16 +56,16 @@ export default function PaymentActionButton({
       <button
         onClick={handleClick}
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+        className={`px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors ${
           loading
-            ? "bg-ink-3 cursor-not-allowed opacity-50"
+            ? "bg-black/15 cursor-not-allowed opacity-50"
             : bgColor
         }`}
       >
         {loading ? "Procesando..." : label}
       </button>
       {error && (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-red-600">{error}</p>
       )}
     </div>
   )

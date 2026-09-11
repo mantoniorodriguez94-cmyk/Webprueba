@@ -83,12 +83,12 @@ export default function LoginPage() {
   return (
     <>
       {/* Tarjeta de formulario */}
-      <div className="bg-transparent backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-white/20 p-6 sm:p-8 lg:p-10">
+      <div className="surface-elevated rounded-3xl p-6 sm:p-8 lg:p-10">
         <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold text-ink">
             Iniciar sesión
           </h2>
-          <p className="text-gray-300 mt-2 text-sm sm:text-base">
+          <p className="text-ink-2 mt-2 text-sm sm:text-base">
             Bienvenido de nuevo a App Encuentra
           </p>
         </div>
@@ -160,10 +160,10 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/20"></div>
+              <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-gray-300 font-medium">
+              <span className="px-4 bg-white text-ink-2 font-medium">
                 O continúa con tu email
               </span>
             </div>
@@ -173,7 +173,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-white">
+              <label htmlFor="email" className="block text-sm font-semibold text-ink">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -196,7 +196,7 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-white">
+              <label htmlFor="password" className="block text-sm font-semibold text-ink">
                 Contraseña
               </label>
               <div className="relative">
@@ -230,9 +230,9 @@ export default function LoginPage() {
 
             {/* Forgot Password Link */}
             <div className="flex justify-end">
-              <Link 
-                href="/app/auth/forgot-password" 
-                className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors hover:underline"
+              <Link
+                href="/app/auth/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -242,7 +242,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -261,10 +261,10 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full margin-top-10 p-4 border-t border-white/20"></div>
+              <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-gray-300 font-medium">
+              <span className="px-4 bg-white text-ink-2 font-medium">
                 ¿Nuevo en App Encuentra?
               </span>
             </div>
@@ -272,11 +272,11 @@ export default function LoginPage() {
 
           {/* Register Link */}
           <div className="text-center">
-            <p className="text-gray-300 text-sm sm:text-base">
+            <p className="text-ink-2 text-sm sm:text-base">
               ¿No tienes cuenta?{" "}
-              <Link 
-                href="/app/auth/register" 
-                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors hover:underline"
+              <Link
+                href="/app/auth/register"
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline"
               >
                 Regístrate gratis
               </Link>

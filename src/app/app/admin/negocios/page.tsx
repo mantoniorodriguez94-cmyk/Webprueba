@@ -74,7 +74,7 @@ export default async function AdminNegociosPage({
 
   // Calcular días restantes para negocios premium
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-ink">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold">
@@ -87,13 +87,13 @@ export default async function AdminNegociosPage({
           {filter && (
             <Link
               href="/app/admin/negocios"
-              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
             >
               Ver todos →
             </Link>
           )}
         </div>
-        <p className="text-gray-400 text-sm">
+        <p className="text-ink-2 text-sm">
           {filter === 'expiring' 
             ? `${negocios?.length || 0} ${negocios?.length === 1 ? "negocio" : "negocios"} con suscripción expirando en 30 días o menos`
             : filter === 'premium'
@@ -122,7 +122,7 @@ export default async function AdminNegociosPage({
           }))}
         />
       ) : (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">No hay negocios registrados</p>
           <p className="text-sm">Los negocios aparecerán aquí cuando se registren en el sistema.</p>
         </div>
