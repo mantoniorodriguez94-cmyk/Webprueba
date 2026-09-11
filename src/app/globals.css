@@ -38,9 +38,13 @@
     font-family: var(--font-display), Georgia, serif;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
+  /* Nada de `scroll-behavior: smooth` acá.
+     No había una sola ancla `href="#..."` en el proyecto que lo aprovechara
+     —el único scroll suave es el de la landing, que lo pide explícito desde
+     JS—, y en cambio convertía en animación TODO desplazamiento programado,
+     incluido el que lleva la vista arriba al cambiar de sección. Esa animación
+     se interrumpe cuando llegan los datos y cambia el alto de la página, y la
+     sección terminaba abriendo por la mitad. */
 
   /* Anchor scroll offset for sticky header (~80px) */
   #inicio,
