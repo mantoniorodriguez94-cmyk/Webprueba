@@ -23,6 +23,10 @@ import BottomNav from "@/components/ui/BottomNav"
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
   const [noLeidos, setNoLeidos] = useState(0)
+  // Identificador del negocio del dueño, para que "Mi negocio" de la barra
+  // vaya DIRECTO a gestionarlo. Antes el botón apuntaba a la lista, que al
+  // cargar redirigía a la gestión: funcionaba, pero se veía el salto.
+  const [negocioId, setNegocioId] = useState<string | null>(null)
 
   const isCompany = (user?.user_metadata?.role ?? "person") === "company"
 
@@ -42,6 +46,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .select("id")
           .eq("owner_id", user.id)
 
+        // Con un negocio por cuenta, el primero es "su" negocio.
+        setNegocioId(negocios?.[0]?.id ?? null)
+
         if (!negocios?.length) {
           setNoLeidos(0)
           return
@@ -56,6 +63,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )
         idsConversacion = (convs ?? []).map((c) => c.id)
       } else {
+        setNegocioId(null)
         // Persona: sus propias conversaciones con negocios.
         const { data: convs } = await supabase
           .from("conversations")
@@ -108,6 +116,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           // conserva al centralizar la barra.
           messagesHref={
             isCompany ? "/app/dashboard/chat?tab=negocio" : "/app/dashboard/chat"
+          }
+          miNegocioHref={
+            negocioId ? `/app/dashboard/negocios/${negocioId}/gestionar` : undefined
           }
         />
       )}

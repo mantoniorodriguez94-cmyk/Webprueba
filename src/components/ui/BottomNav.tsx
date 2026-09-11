@@ -21,6 +21,12 @@ interface BottomNavProps {
   isCompany?: boolean
   unreadCount?: number
   messagesHref?: string
+  /**
+   * Enlace directo a la gestión del negocio del dueño. Sin esto el botón
+   * apunta a la lista, que al cargar redirige a la gestión — funciona, pero
+   * se ve el salto de una pantalla a otra.
+   */
+  miNegocioHref?: string
 }
 
 type Destino = {
@@ -35,6 +41,7 @@ export default function BottomNav({
   isCompany = false,
   unreadCount = 0,
   messagesHref,
+  miNegocioHref,
 }: BottomNavProps) {
   const pathname = usePathname()
   const [montado, setMontado] = useState(false)
@@ -75,10 +82,16 @@ export default function BottomNav({
         // cosas estaban a dos o tres toques de distancia.
         inicio,
         {
-          href: "/app/dashboard/mis-negocios",
+          href: miNegocioHref ?? "/app/dashboard/mis-negocios",
           label: "Mi negocio",
           Icono: Store,
-          activo: Boolean(pathname?.startsWith("/app/dashboard/mis-negocios")),
+          // Se marca activo en las dos rutas: la lista y la gestión del
+          // negocio, porque ambas son "mi negocio" desde el punto de vista
+          // de quien navega.
+          activo: Boolean(
+            pathname?.startsWith("/app/dashboard/mis-negocios") ||
+              pathname?.startsWith("/app/dashboard/negocios/")
+          ),
         },
         mensajes,
         {
