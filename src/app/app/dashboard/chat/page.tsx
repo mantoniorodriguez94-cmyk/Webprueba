@@ -68,6 +68,12 @@ function ChatInner() {
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
   const [selectedConversation, setSelectedConversation] = useState<UnifiedConversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
+  // Se cargan solo los últimos mensajes. Antes se traían TODOS los de la
+  // conversación en cada apertura (select sin limit), así que el costo crecía
+  // con la antigüedad del chat: una conversación de 500 mensajes descargaba
+  // los 500 cada vez que alguien la abría.
+  const [hayAnteriores, setHayAnteriores] = useState(false)
+  const [cargandoAnteriores, setCargandoAnteriores] = useState(false)
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -267,20 +273,53 @@ function ChatInner() {
     return () => { channels.forEach((ch) => supabase.removeChannel(ch)) }
   }, [userBusinesses, fetchBusinessConversations])
 
+  // Cuántos mensajes se traen por tanda. 40 llena de sobra la pantalla inicial
+  // y deja margen para desplazarse sin pedir más enseguida.
+  const MENSAJES_POR_PAGINA = 40
+
+  const cargarAnteriores = async () => {
+    if (!selectedConversation || cargandoAnteriores || messages.length === 0) return
+    setCargandoAnteriores(true)
+    try {
+      const masViejo = messages[0]
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", selectedConversation.conversation_id)
+        .lt("created_at", masViejo.created_at)
+        .order("created_at", { ascending: false })
+        .limit(MENSAJES_POR_PAGINA)
+
+      if (error) throw error
+      const anteriores = (data || []).slice().reverse()
+      setMessages((prev) => [...anteriores, ...prev])
+      setHayAnteriores((data?.length ?? 0) === MENSAJES_POR_PAGINA)
+    } catch (err) {
+      console.error("[chat] No se pudieron cargar mensajes anteriores:", err)
+    } finally {
+      setCargandoAnteriores(false)
+    }
+  }
+
   // ── Load messages ─────────────────────────────────────────────────────────────
 
   const loadMessages = async (conv: UnifiedConversation) => {
     setSelectedConversation(conv)
 
     try {
+      // Se piden los MÁS RECIENTES (descendente + limit) y se invierten para
+      // mostrarlos en orden cronológico.
       const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("conversation_id", conv.conversation_id)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(MENSAJES_POR_PAGINA)
 
       if (error) throw error
-      setMessages(data || [])
+      const recientes = (data || []).slice().reverse()
+      setMessages(recientes)
+      setHayAnteriores((data?.length ?? 0) === MENSAJES_POR_PAGINA)
 
       // Mark as read
       await supabase
@@ -861,6 +900,18 @@ function ChatInner() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {hayAnteriores && (
+                  <div className="flex justify-center pb-1">
+                    <button
+                      type="button"
+                      onClick={cargarAnteriores}
+                      disabled={cargandoAnteriores}
+                      className="rounded-full border border-black/10 bg-white px-4 py-1.5 text-xs font-semibold text-ink-2 hover:bg-black/5 transition-colors disabled:opacity-50"
+                    >
+                      {cargandoAnteriores ? "Cargando…" : "Ver mensajes anteriores"}
+                    </button>
+                  </div>
+                )}
                 {messages.map((msg) => {
                   const isOwn = msg.sender_id === user.id
                   return (
