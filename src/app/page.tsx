@@ -262,7 +262,7 @@ export default function Home() {
             Franja blanca sólida: el pastel de fondo solo vive en la página,
             así que las secciones de contenido denso alternan blanco/malla
             para dar ritmo sin meter color en la UI. */}
-        <section id="como-funciona" className="w-full py-20 bg-white">
+        <section id="como-funciona" className="w-full py-20 bg-ink/[0.04]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-ink mb-4">
@@ -393,7 +393,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5 — PARA NEGOCIOS */}
-        <section id="para-negocios" className="w-full py-20 bg-white">
+        <section id="para-negocios" className="w-full py-20 bg-ink/[0.04]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-ink mb-4">
@@ -478,7 +478,7 @@ export default function Home() {
         </section>
 
         {/* BLOQUE 5.75 — PREGUNTAS FRECUENTES */}
-        <section id="preguntas-frecuentes" className="w-full py-20 bg-white">
+        <section id="preguntas-frecuentes" className="w-full py-20 bg-ink/[0.04]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-extrabold text-ink mb-4">
