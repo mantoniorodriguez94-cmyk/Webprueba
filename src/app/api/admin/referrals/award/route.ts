@@ -57,6 +57,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ── Comprobar ANTES de extender ─────────────────────────────────────────
+    // El registro se hacía después de extender el premium y dentro de un
+    // try/catch que se tragaba el error, así que si la tabla no existía —y no
+    // existía— se podía otorgar el mes gratis a la misma persona tantas veces
+    // como se pulsara el botón, sin que nada lo impidiera ni quedara rastro.
+    const { data: yaOtorgado, error: errorConsulta } = await supabase
+      .from("referral_rewards")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    if (errorConsulta) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No se pudo comprobar si esta persona ya recibió el mes gratis. Ejecuta scripts/referral-rewards-table.sql en Supabase antes de otorgar recompensas.",
+        },
+        { status: 500 }
+      )
+    }
+
+    if (yaOtorgado) {
+      return NextResponse.json(
+        { success: false, error: "Esta persona ya recibió su mes gratis por referidos." },
+        { status: 400 }
+      )
+    }
+
     const business = businesses[0]
     const now = new Date()
     const base = business.premium_until && new Date(business.premium_until) > now
