@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
 import PromotionsSpotlight from "@/components/dashboard/PromotionsSpotlight"
 import AuthGate from "@/components/auth/AuthGate"
-import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -14,7 +13,7 @@ import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
-import BottomNav from "@/components/ui/BottomNav"
+import SectionHeader from "@/components/ui/SectionHeader"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, getLabelForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
@@ -804,38 +803,26 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen lg:pb-0">
 
-      {/* Encabezado con el bloque de marca de las pantallas de registro:
-          sobre la malla, sin barra ni línea divisoria. Deja de ser fijo, así
-          que la marca, la búsqueda y las pestañas se van con el
-          desplazamiento. */}
-      <div className="px-4 pt-8 lg:px-6">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center gap-3 group">
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 transition-transform group-hover:scale-105">
-              <Image
-                src="/brand/encuentra-mark.svg"
-                alt="Logo App Encuentra"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-ink transition-colors group-hover:text-blue-600">
-              App Encuentra
-            </h1>
-          </Link>
-          <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full mt-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            Portal Encuentra · Venezuela
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 mb-4">
-            <p className="text-xs sm:text-sm text-ink-2 truncate">
-              {allBusinesses.length} {allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}
-            </p>
-
-            {/* Acciones (Buscar + Usuario) */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+      {/* Inicio dejó de ser la excepción.
+          Tenía el bloque de marca de las pantallas de registro —logo grande,
+          título centrado, píldora "Portal Encuentra"—, que en móvil se veía
+          bien pero en escritorio hacía que el panel pareciera una landing: el
+          bloque centrado se comía el alto de la pantalla y la fila de acciones
+          se estiraba de borde a borde, desalineada del feed.
+          Ahora usa el mismo encabezado que las otras doce secciones. El conteo
+          de negocios pasa a subtítulo y buscar/avatar a las acciones, que es
+          donde viven en el resto de la app. */}
+      <SectionHeader
+        titulo="Inicio"
+        subtitulo={`${allBusinesses.length} ${allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}`}
+        ancho="feed"
+        icono={
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        }
+        acciones={
+          <>
               {/* Botón de Búsqueda — visible también en móvil: antes era
                   desktop-only y dejaba a los usuarios móviles sin forma de
                   buscar desde el dashboard. */}
@@ -986,11 +973,14 @@ export default function DashboardPage() {
                   </div>
                 </Popover>
               </div>
-            </div>
-          </div>
+          </>
+        }
+      />
 
-          {/* Tabs de Categorías */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+      {/* Pestañas de categorías: salen de la barra y se alinean con el feed,
+          con el mismo ancho y padding que las tarjetas de abajo. */}
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 pt-5">
+        <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
             <button
               onClick={() => setActiveTab("feed")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${

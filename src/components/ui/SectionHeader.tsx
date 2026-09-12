@@ -28,7 +28,7 @@ interface SectionHeaderProps {
    * o el título queda desalineado respecto al contenido en escritorio. En
    * móvil no cambia nada: ahí todo ocupa el ancho completo.
    */
-  ancho?: "5xl" | "7xl"
+  ancho?: "5xl" | "7xl" | "feed"
   /**
    * Acción de volver, para pantallas anidadas. Las secciones que son destino
    * de la barra inferior no la usan: ahí la barra ya es la navegación.
@@ -36,9 +36,15 @@ interface SectionHeaderProps {
   onVolver?: () => void
 }
 
+/* Incluyen el padding lateral, no sólo el ancho, porque el encabezado tiene
+   que alinearse con el contenido de su pantalla. "5xl" y "7xl" llevan el px-4
+   que ya tenían; "feed" existe para Inicio, cuyo contenido usa max-w-[1920px]
+   con padding responsivo — con px-4 fijo el título quedaba corrido respecto a
+   las tarjetas en pantallas grandes. */
 const ANCHOS = {
-  "5xl": "max-w-5xl",
-  "7xl": "max-w-7xl",
+  "5xl": "max-w-5xl px-4",
+  "7xl": "max-w-7xl px-4",
+  feed: "max-w-[1920px] px-4 sm:px-6 lg:px-6 xl:px-8",
 } as const
 
 export default function SectionHeader({
@@ -51,7 +57,7 @@ export default function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
-      <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 px-4 py-4`}>
+      <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 py-4`}>
         {onVolver && (
           <button
             type="button"
