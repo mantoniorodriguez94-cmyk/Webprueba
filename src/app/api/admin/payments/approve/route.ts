@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { registrarAccionAdmin } from "@/lib/auditoria"
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { resend, FROM_EMAIL } from '@/lib/resend'
@@ -154,6 +155,21 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    await registrarAccionAdmin({
+      adminId: user.id,
+      adminEmail: user.email,
+      accion: "payment.approve",
+      objetoTipo: "payment",
+      objetoId: String(submission_id_final),
+      detalle: {
+        usuario_id: submissionData.user_id,
+        monto_usd: amount,
+        nivel: appliedTier,
+        meses: months,
+        notas: admin_notes || null,
+      },
+    })
 
     const tierLabel = getLabelForTier(appliedTier)
     const planLabel = `${tierLabel} · ${months} ${months === 1 ? 'mes' : 'meses'}`

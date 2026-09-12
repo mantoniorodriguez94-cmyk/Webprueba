@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { registrarAccionAdmin } from "@/lib/auditoria"
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { resend, FROM_EMAIL } from '@/lib/resend'
@@ -108,6 +109,25 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Los pagos son la acción más sensible del panel y eran la única que no
+    // quedaba registrada. La fila guarda reviewed_by, pero eso obliga a
+    // consultar la base para saber quién rechazó qué; acá queda a la vista
+    // junto al resto de las acciones.
+    await registrarAccionAdmin({
+      adminId: user.id,
+      adminEmail: user.email,
+      accion: "payment.reject",
+      objetoTipo: "payment",
+      objetoId: String(submission_id_final),
+      detalle: {
+        usuario_id: submissionData.user_id,
+        monto_usd: submissionData.amount_usd,
+        nivel: submissionData.target_tier,
+        meses: submissionData.months,
+        motivo: admin_notes || null,
+      },
+    })
 
     // NOTA: ya no se toca la tabla `payments`. Los pagos manuales dejaron de
     // escribirse ahí (esa tabla es exclusiva de referidos/comisiones).
