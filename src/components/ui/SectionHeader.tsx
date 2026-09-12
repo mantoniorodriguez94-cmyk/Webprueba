@@ -63,7 +63,7 @@ export default function SectionHeader({
   volverSoloEscritorio = false,
 }: SectionHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-black/10 barra-vidrio">
       <div className={`mx-auto flex ${ANCHOS[ancho]} items-center gap-3 py-4`}>
         {onVolver && (
           <button

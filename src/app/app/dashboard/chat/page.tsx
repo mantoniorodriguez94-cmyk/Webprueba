@@ -583,7 +583,7 @@ function ChatInner() {
           la vista mientras se lee. Sin conversación abierta, el encabezado es
           el mismo de las otras secciones. */}
       {selectedConversation ? (
-        <header className="sticky top-0 z-40 flex-shrink-0 border-b border-black/10 bg-white/85 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 flex-shrink-0 border-b border-black/10 barra-vidrio">
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4">
             <button
               onClick={() => { setSelectedConversation(null); setMessages([]) }}

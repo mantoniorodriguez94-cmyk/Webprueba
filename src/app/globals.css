@@ -25,6 +25,18 @@
   --paper-2: 250 249 253; /* #FAF9FD */
   --paper-dim: 233 231 240; /* #E9E7F0 */
   --blanco: 250 249 253; /* #FAF9FD */
+
+  /* ── Cuánto tapan el fondo las superficies ───────────────────────────────
+     El blanco puro dejaba todo plano: los paneles y las barras tapaban por
+     completo la malla pastel del fondo, así que el color de fondo sólo se
+     veía en los márgenes. Con estos dos valores la malla se filtra a través
+     y cada panel toma un tono distinto según dónde caiga sobre ella.
+
+     Menos valor = más cristal. Si queda demasiado transparente (texto
+     secundario flojo) o demasiado plano, estos dos números son la perilla:
+     no hace falta tocar ninguna pantalla. */
+  --superficie-alpha: 0.72;
+  --barra-alpha: 0.70;
 }
 
 @layer base {
@@ -87,9 +99,30 @@
        text-gray-300/400 (sobre oscuro)  → text-ink-2 (sobre claro)
      ──────────────────────────────────────────────────────────────────── */
 
-  /* Tarjeta / panel base: blanco sólido, borde-hairline casi invisible. */
+  /* Tarjeta / panel base. Ya no es blanco sólido: deja pasar la malla del
+     fondo, así que "Mejores calificadas", "Promociones" o "Actividad
+     reciente" toman cada uno el tono de la zona de malla sobre la que caen,
+     en vez de ser tres rectángulos blancos idénticos.
+
+     Sin backdrop-filter a propósito. El fondo que hay detrás es un degradado
+     suave: desenfocarlo no cambia nada de lo que se ve, y son ~128 paneles en
+     la app. El desenfoque se reserva para las barras, que sí pasan por encima
+     de contenido que se desplaza (ver .barra-vidrio). */
   .surface {
-    @apply bg-white border border-black/5;
+    background-color: rgb(var(--blanco) / var(--superficie-alpha));
+    @apply border border-black/5;
+  }
+
+  /* Barra superior pegajosa: encabezados de sección, de la landing y de las
+     páginas públicas. Acá el desenfoque sí trabaja, porque debajo pasa el
+     contenido desplazándose y sin él se leería el texto de atrás.
+
+     Vive en una clase y no repetida en cada archivo porque estaba escrita
+     cuatro veces con tres valores distintos (bg-white/80 blur-md,
+     bg-white/85 blur-xl…), que es como se desemparejaron los encabezados. */
+  .barra-vidrio {
+    background-color: rgb(var(--blanco) / var(--barra-alpha));
+    @apply backdrop-blur-xl;
   }
 
   /* Superficie elevada: modales, dropdowns, popovers — mismo blanco, más

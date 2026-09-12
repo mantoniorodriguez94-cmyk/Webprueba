@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react"
 import PromotionsSpotlight from "@/components/dashboard/PromotionsSpotlight"
 import AuthGate from "@/components/auth/AuthGate"
 import Image from "next/image"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
@@ -19,6 +19,7 @@ import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, getLabelForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
+import { destinosPrincipales } from "@/lib/navegacion"
 import { toast } from "sonner"
 
 // Lazy-load de componentes pesados para mejorar performance
@@ -68,6 +69,7 @@ const RightSidebar = dynamic(
 
 export default function DashboardPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParamsInitial = useSearchParams()
   const { user, loading: userLoading } = useUser()
   const { effectiveTier, loading: tierLoading } = useMembershipAccess()
@@ -132,6 +134,26 @@ export default function DashboardPage() {
     ? (isAdmin ? 999 : (user?.user_metadata?.allowed_businesses ?? 5))
     : 0
   const canCreateMore = isCompany && (isAdmin || negocios.length < allowedBusinesses)
+
+  // Menú del avatar: los MISMOS destinos que la barra inferior.
+  // En escritorio la barra está oculta (`lg:hidden`), así que este menú es la
+  // navegación principal y tiene que ofrecer lo mismo. La lista sale de
+  // src/lib/navegacion.ts, compartida con la barra, para que agregar un
+  // destino en un sitio no deje al otro desactualizado.
+  const totalNoLeidos =
+    unreadMessagesPersonCount +
+    Object.values(unreadMessagesByBusiness).reduce((suma, n) => suma + n, 0)
+
+  const destinosMenu = destinosPrincipales({
+    isCompany,
+    pathname,
+    unreadCount: totalNoLeidos,
+    // Un dueño entra a la bandeja de su negocio, no a la suya como cliente.
+    messagesHref: isCompany ? "/app/dashboard/chat?tab=negocio" : "/app/dashboard/chat",
+    miNegocioHref: negocios[0]?.id
+      ? `/app/dashboard/negocios/${negocios[0].id}/gestionar`
+      : undefined,
+  })
 
   // ============================================================
   // 🔥 DETECTAR SI EL USUARIO ES ADMIN (desde tabla profiles)
@@ -902,75 +924,38 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Opciones */}
-                  <div className="p-4 space-y-2">
-                    {/* Mensajes — Unified inbox for all users */}
-                    {(() => {
-                      const totalUnread =
-                        unreadMessagesPersonCount +
-                        Object.values(unreadMessagesByBusiness).reduce(
-                          (sum, count) => sum + count,
-                          0
-                        )
-                      return (
-                        <Link
-                          href="/app/dashboard/chat"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
-                        >
-                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                          <div className="flex-1">
-                            <p className="font-semibold text-ink">Mensajes</p>
-                            <p className="text-xs text-ink-2">
-                              {totalUnread > 0 ? `${totalUnread} sin leer` : "Consultas y mensajes directos"}
-                            </p>
-                          </div>
-                          {totalUnread > 0 && (
-                            <div className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center animate-pulse">
-                              {totalUnread}
-                            </div>
-                          )}
-                        </Link>
-                      )
-                    })()}
-
-                    {/* Membresía - Conecta, Destaca, Patrocina (primera opción de configuración) */}
-                    <Link
-                      href="/app/dashboard/membresia"
-                      onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
-                    >
-                      <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                      <div className="flex-1">
-                        <p className="font-semibold text-purple-700">Membresía</p>
-                        <p className="text-xs text-ink-2">Conecta, Destaca, Patrocina</p>
-                      </div>
-                      <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-
-                    {/* Perfil - Para todos */}
-                    <Link
-                      href="/app/dashboard/perfil"
-                      onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 transition-all"
-                    >
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <div className="flex-1">
-                        <p className="font-semibold text-ink">Mi Perfil</p>
-                        <p className="text-xs text-ink-2">Configuración y más</p>
-                      </div>
-                      <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                  {/* Opciones — los mismos destinos que la barra inferior.
+                      En escritorio la barra está oculta, así que este menú es
+                      LA navegación, no un atajo. La lista viene de
+                      src/lib/navegacion.ts, compartida con la barra. */}
+                  <div className="p-4 space-y-1">
+                    {destinosMenu.map(({ href, label, Icono, activo, badge }) => (
+                      <Link
+                        key={label}
+                        href={href}
+                        onClick={() => setShowUserMenu(false)}
+                        aria-current={activo ? "page" : undefined}
+                        className={`flex items-center gap-3 p-3 rounded-2xl transition-all ${
+                          activo ? "bg-blue-50" : "hover:bg-black/5"
+                        }`}
+                      >
+                        <Icono
+                          className={`w-5 h-5 flex-shrink-0 ${activo ? "text-blue-600" : "text-ink-2"}`}
+                          strokeWidth={activo ? 2.2 : 1.8}
+                        />
+                        <span className={`flex-1 font-semibold ${activo ? "text-blue-700" : "text-ink"}`}>
+                          {label}
+                        </span>
+                        {Boolean(badge && badge > 0) && (
+                          <span className="bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-2 rounded-full flex items-center justify-center">
+                            {badge}
+                          </span>
+                        )}
+                        <svg className="w-4 h-4 flex-shrink-0 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
                   </div>
 
                   {/* Logout */}

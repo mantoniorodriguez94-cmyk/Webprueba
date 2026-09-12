@@ -14,7 +14,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, MessageCircle, User, Store, Crown, Search, Bookmark } from "lucide-react"
+import { destinosPrincipales } from "@/lib/navegacion"
 
 interface BottomNavProps {
   isCompany?: boolean
@@ -28,14 +28,6 @@ interface BottomNavProps {
   miNegocioHref?: string
 }
 
-type Destino = {
-  href: string
-  label: string
-  Icono: React.ElementType
-  activo: boolean
-  badge?: number
-}
-
 export default function BottomNav({
   isCompany = false,
   unreadCount = 0,
@@ -44,75 +36,15 @@ export default function BottomNav({
 }: BottomNavProps) {
   const pathname = usePathname()
 
-  const hrefMensajes = messagesHref || "/app/dashboard/chat"
-
-  const inicio: Destino = {
-    href: "/app/dashboard",
-    label: "Inicio",
-    Icono: Home,
-    activo: pathname === "/app/dashboard",
-  }
-
-  const mensajes: Destino = {
-    href: hrefMensajes,
-    label: "Mensajes",
-    Icono: MessageCircle,
-    activo: Boolean(pathname?.includes("/chat") || pathname?.includes("/mensajes")),
-    badge: unreadCount,
-  }
-
-  const perfil: Destino = {
-    href: "/app/dashboard/perfil",
-    label: "Perfil",
-    Icono: User,
-    activo: pathname === "/app/dashboard/perfil",
-  }
-
-  const destinos: Destino[] = isCompany
-    ? [
-        // Un dueño entra a gestionar lo suyo y a revisar su plan: antes ambas
-        // cosas estaban a dos o tres toques de distancia.
-        inicio,
-        {
-          href: miNegocioHref ?? "/app/dashboard/mis-negocios",
-          label: "Mi negocio",
-          Icono: Store,
-          // Se marca activo en las dos rutas: la lista y la gestión del
-          // negocio, porque ambas son "mi negocio" desde el punto de vista
-          // de quien navega.
-          activo: Boolean(
-            pathname?.startsWith("/app/dashboard/mis-negocios") ||
-              pathname?.startsWith("/app/dashboard/negocios/")
-          ),
-        },
-        mensajes,
-        {
-          href: "/app/dashboard/membresia",
-          label: "Plan",
-          Icono: Crown,
-          activo: Boolean(pathname?.startsWith("/app/dashboard/membresia")),
-        },
-        perfil,
-      ]
-    : [
-        inicio,
-        {
-          // Abre el buscador del directorio, que vivía escondido en un botón
-          // del encabezado.
-          href: "/app/dashboard?buscar=1",
-          label: "Buscar",
-          Icono: Search,
-          activo: false,
-        },
-        {
-          href: "/app/dashboard/guardados",
-          label: "Guardados",
-          Icono: Bookmark,
-          activo: Boolean(pathname?.startsWith("/app/dashboard/guardados")),
-        },
-        mensajes,
-        perfil,
-      ]
+  // La lista vive en src/lib/navegacion.ts, compartida con el menú del avatar
+  // en escritorio: los dos tienen que ofrecer exactamente los mismos destinos.
+  const destinos = destinosPrincipales({
+    isCompany,
+    pathname,
+    unreadCount,
+    messagesHref,
+    miNegocioHref,
+  })
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden transform-gpu bg-white/90 backdrop-blur-md border-t border-black/10 safe-bottom">

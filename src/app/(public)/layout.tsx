@@ -23,7 +23,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-black/10 barra-vidrio">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-4">
           <button
             type="button"
