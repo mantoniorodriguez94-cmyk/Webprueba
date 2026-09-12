@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
-import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA, isTierActive } from "@/lib/memberships/tiers"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -62,9 +62,12 @@ export default function PromotionsCarousel() {
 
       const ownerIds = [...new Set(businessesData.map((b) => b.owner_id).filter(Boolean))]
 
+      // El filtro por columna (.gte subscription_tier) no distingue un pago
+      // vigente de uno vencido: se trae subscription_end_date y el mapa sólo
+      // guarda a quienes isTierActive confirma como vigentes.
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, subscription_tier")
+        .select("id, subscription_tier, subscription_end_date")
         .in("id", ownerIds as string[])
         .gte("subscription_tier", 2)
 
@@ -75,8 +78,10 @@ export default function PromotionsCarousel() {
       }
 
       const tierByOwner = new Map<string, number>()
-      for (const profile of profilesData) {
-        tierByOwner.set(profile.id, profile.subscription_tier ?? 0)
+      for (const profile of profilesData as any[]) {
+        if (isTierActive(profile.subscription_tier, profile.subscription_end_date)) {
+          tierByOwner.set(profile.id, profile.subscription_tier ?? 0)
+        }
       }
 
       const businessById = new Map(

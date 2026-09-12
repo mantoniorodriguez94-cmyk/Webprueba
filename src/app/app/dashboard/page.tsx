@@ -16,7 +16,7 @@ import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
-import { getBadgeTypeForTier, getLabelForTier, type MembershipTier } from "@/lib/memberships/tiers"
+import { getBadgeTypeForTier, getLabelForTier, isTierActive, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
 import { destinosPrincipales } from "@/lib/navegacion"
@@ -498,8 +498,17 @@ export default function DashboardPage() {
           const bBoost = b.search_priority_boost === true
           if (aBoost && !bBoost) return -1
           if (!aBoost && bBoost) return 1
-          const tierA = (a.owner?.subscription_tier ?? a.profiles?.subscription_tier) ?? 0
-          const tierB = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
+          // Mismo bug que el borde dorado de la tarjeta: el tier crudo puede
+          // estar vencido. Sin isTierActive, una cuenta que dejó de pagar
+          // hace meses seguía ordenándose por encima de un negocio con un
+          // plan menor pero VIGENTE, por el solo hecho de que el número
+          // guardado era más alto.
+          const rawTierA = (a.owner?.subscription_tier ?? a.profiles?.subscription_tier) ?? 0
+          const rawTierB = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
+          const endA = a.owner?.subscription_end_date ?? a.profiles?.subscription_end_date ?? null
+          const endB = b.owner?.subscription_end_date ?? b.profiles?.subscription_end_date ?? null
+          const tierA = isTierActive(rawTierA, endA) ? rawTierA : 0
+          const tierB = isTierActive(rawTierB, endB) ? rawTierB : 0
           if (tierA !== tierB) return tierB - tierA
           if (aIsPremium && !bIsPremium) return -1
           if (!aIsPremium && bIsPremium) return 1

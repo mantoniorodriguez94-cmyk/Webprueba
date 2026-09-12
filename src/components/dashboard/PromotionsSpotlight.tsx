@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import { Crown } from "lucide-react"
-import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA, isTierActive } from "@/lib/memberships/tiers"
 
 export interface SpotlightPromotion {
   id: string
@@ -53,9 +53,13 @@ export default function PromotionsSpotlight() {
         }
 
         const ownerIds = [...new Set(businessesData.map((b) => b.owner_id))]
+        // El filtro por columna (.eq subscription_tier) no distingue un pago
+        // vigente de uno vencido hace meses — se trae también
+        // subscription_end_date y se filtra con isTierActive, la misma
+        // comprobación que usa el resto de la app.
         const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, subscription_tier, subscription_end_date")
           .in("id", ownerIds)
           .eq("subscription_tier", SUBSCRIPTION_TIER_PATROCINA)
 
@@ -65,7 +69,11 @@ export default function PromotionsSpotlight() {
           return
         }
 
-        const founderOwnerIds = new Set((profilesData || []).map((p) => p.id))
+        const founderOwnerIds = new Set(
+          (profilesData || [])
+            .filter((p: any) => isTierActive(p.subscription_tier, p.subscription_end_date))
+            .map((p) => p.id)
+        )
         const businessesMap = new Map(businessesData.map((b) => [b.id, b]))
 
         const founderPromos: SpotlightPromotion[] = promotionsData
