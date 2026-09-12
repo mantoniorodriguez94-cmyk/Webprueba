@@ -274,3 +274,69 @@ Al completar estos pasos, tendrás:
 
 
 
+
+---
+
+## La pantalla de Google dice "continuar a qjtmfywfnmjbiqdotncg.supabase.co"
+
+Al iniciar sesión con Google, la pantalla de elegir cuenta muestra:
+
+> Elige una cuenta para continuar a **qjtmfywfnmjbiqdotncg.supabase.co**
+
+En vez de "continuar a **App Encuentra**".
+
+### Por qué pasa
+
+Ese texto lo pone Google, no la app, y **no se arregla con código**. Google
+muestra el dominio del *redirect URI* que tiene registrado el cliente OAuth.
+Ese redirect es el de Supabase — `https://<project-ref>.supabase.co/auth/v1/callback` —
+porque Supabase es quien intermedia el login.
+
+El `redirectTo` que pasa la app en `signInWithOAuth` (`/auth/callback`) es el
+salto FINAL, después de Google y de Supabase. Google nunca lo ve.
+
+Supabase lo advierte en su propia documentación: sin configurar esto, el
+usuario ve el ID del proyecto, lo cual "no inspira confianza y hace la
+aplicación más susceptible a intentos de phishing exitosos".
+
+### Cómo arreglarlo (gratis)
+
+En **Google Cloud Console**, sobre el proyecto que tiene el cliente OAuth:
+
+1. **Verificar el dominio.** En Google Search Console, verificar la propiedad
+   de `appencuentra.com`. Es el requisito para poder declararlo como dominio
+   autorizado.
+
+2. **Pantalla de consentimiento → Branding:**
+   - *Nombre de la aplicación*: `App Encuentra` — este es el texto que
+     reemplaza al subdominio de Supabase.
+   - *Logo*: mínimo 120x120 px.
+   - *Dominios autorizados*: agregar `appencuentra.com`.
+   - *Enlaces*: política de privacidad (`/privacidad`) y términos
+     (`/terminos`). Ya existen en la app.
+
+3. **Publicar la aplicación.** Pasarla de "Testing" a "En producción". En modo
+   de prueba sólo entran los usuarios de prueba declarados y el branding no se
+   aplica como corresponde.
+
+La verificación de marca por parte de Google puede tardar algunos días
+hábiles. Para los permisos que pide esta app (sólo email y perfil básico) no
+suele requerir revisión extendida.
+
+### La alternativa de pago, y por qué no hace falta
+
+Supabase ofrece un add-on de **Custom Domains** (~10 USD/mes) que mueve el
+callback a `auth.appencuentra.com`. Es la solución más sólida —el usuario
+nunca ve un dominio ajeno— y Supabase la recomienda como primera opción.
+
+Pero **no es necesaria sólo para cambiar el nombre**: configurar el branding
+del paso anterior ya hace que Google muestre "App Encuentra" con su logo.
+La diferencia es que con custom domain también cambia el dominio técnico que
+aparece en la barra durante el salto.
+
+### Qué NO intentar
+
+- Cambiar `redirectTo` en `signInWithOAuth`. No afecta a esta pantalla: Google
+  ni lo ve.
+- Cambiar el nombre del proyecto en Supabase. El subdominio del proyecto no se
+  puede renombrar.
