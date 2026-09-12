@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { sendWelcomeEmail } from '@/lib/emails'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +35,48 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const destino = to.trim().toLowerCase()
+
+    // ── Sólo a quien acaba de registrarse ────────────────────────────────────
+    // Esta ruta no puede exigir sesión: con confirmación de correo activada,
+    // justo después de registrarse todavía no hay ninguna. Pero sin ningún
+    // control aceptaba un `to` arbitrario, así que cualquiera podía hacer que
+    // nuestra cuenta de Resend enviara correo a cualquier dirección, con
+    // nuestro dominio de remitente — cuota quemada y dominio camino a las
+    // listas negras.
+    //
+    // El compromiso: la dirección tiene que corresponder a una cuenta creada
+    // en los últimos 15 minutos. El correo de bienvenida legítimo entra en esa
+    // ventana siempre; para abusar de esto habría que registrar la cuenta
+    // primero, que es justamente lo que hace que deje de ser útil como relay.
+    const VENTANA_MINUTOS = 15
+    let recienRegistrado = false
+
+    try {
+      const { data } = await getAdminClient()
+        .from("profiles")
+        .select("created_at")
+        .eq("email", destino)
+        .single()
+
+      const creado = (data as { created_at?: string } | null)?.created_at
+      if (creado) {
+        const minutos = (Date.now() - new Date(creado).getTime()) / 60000
+        recienRegistrado = minutos >= 0 && minutos <= VENTANA_MINUTOS
+      }
+    } catch {
+      // Sin poder comprobarlo, no se envía. Falla cerrado.
+    }
+
+    if (!recienRegistrado) {
+      // Misma respuesta que el camino feliz: decir "esa cuenta no existe" o
+      // "no es reciente" convierte esta ruta en un detector de direcciones
+      // registradas.
+      return NextResponse.json({ success: true })
+    }
+
     const result = await sendWelcomeEmail({
-      to: to.trim().toLowerCase(),
+      to: destino,
       userName: userName.trim(),
     })
 

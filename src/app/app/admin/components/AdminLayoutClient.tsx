@@ -43,6 +43,21 @@ const navGroups: NavGroup[] = [
     title: "Pagos",
     items: [{ href: "/app/admin/pagos", label: "Pagos manuales", icon: <PaymentsIcon /> }],
   },
+  // Moderación y soporte estaban fuera del menú: la página de reportes existía
+  // y leía reportes reales, pero no se enlazaba desde ningún lado, así que la
+  // cola crecía sin que nadie la viera. La bandeja de soporte directamente no
+  // existía. Un panel sólo cubre lo que se puede alcanzar desde él.
+  {
+    title: "Atención",
+    items: [
+      { href: "/app/admin/reportes", label: "Reportes", icon: <FlagIcon /> },
+      { href: "/app/admin/soporte", label: "Soporte", icon: <LifebuoyIcon /> },
+    ],
+  },
+  {
+    title: "Registro",
+    items: [{ href: "/app/admin/auditoria", label: "Auditoría", icon: <HistoryIcon /> }],
+  },
 ]
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -295,6 +310,35 @@ function DashboardIcon() {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
       <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
+    </svg>
+  )
+}
+
+function FlagIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+      <path d="M4 21V4" />
+      <path d="M4 5h11l-1.5 3L15 11H4" />
+    </svg>
+  )
+}
+
+function LifebuoyIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M5.6 5.6l3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9" />
+    </svg>
+  )
+}
+
+function HistoryIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 4v4h4" />
+      <path d="M12 7v5l3.5 2" />
     </svg>
   )
 }

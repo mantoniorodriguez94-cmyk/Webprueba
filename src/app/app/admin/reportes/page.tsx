@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
-import Link from "next/link"
+import AccionesReporte from "./AccionesReporte"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -136,12 +136,7 @@ export default async function AdminReportesPage() {
                         minute: "2-digit"
                       })}
                     </p>
-                    <Link
-                      href={`/app/admin/reportes/${report.id}?type=business`}
-                      className="mt-3 inline-block text-sm text-blue-600 hover:text-blue-700"
-                    >
-                      Gestionar →
-                    </Link>
+                    <AccionesReporte reportId={report.id} tipo="business" />
                   </div>
                 )
               })}
@@ -218,12 +213,11 @@ export default async function AdminReportesPage() {
                         minute: "2-digit"
                       })}
                     </p>
-                    <Link
-                      href={`/app/admin/reportes/${report.id}?type=review`}
-                      className="mt-3 inline-block text-sm text-blue-600 hover:text-blue-700"
-                    >
-                      Gestionar →
-                    </Link>
+                    <AccionesReporte
+                      reportId={report.id}
+                      tipo="review"
+                      reviewId={report.review_id}
+                    />
                   </div>
                 )
               })}
