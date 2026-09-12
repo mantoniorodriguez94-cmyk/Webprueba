@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
-import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
+import { SUBSCRIPTION_TIER_PATROCINA, isTierActive } from "@/lib/memberships/tiers"
 
 interface Promotion {
   id: string
@@ -60,9 +60,11 @@ export default function ActivePromotions() {
       }
 
       const ownerIds = [...new Set(businessesData.map((b) => b.owner_id))]
+      // El filtro por columna no distingue un pago vigente de uno vencido: se
+      // trae subscription_end_date y se filtra con isTierActive.
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("id")
+        .select("id, subscription_tier, subscription_end_date")
         .in("id", ownerIds)
         .eq("subscription_tier", SUBSCRIPTION_TIER_PATROCINA)
 
@@ -72,7 +74,11 @@ export default function ActivePromotions() {
         return
       }
 
-      const founderOwnerIds = new Set((profilesData || []).map((p) => p.id))
+      const founderOwnerIds = new Set(
+        (profilesData || [])
+          .filter((p: any) => isTierActive(p.subscription_tier, p.subscription_end_date))
+          .map((p) => p.id)
+      )
       const businessesMap = new Map(businessesData.map((b) => [b.id, b]))
       const now = new Date()
 

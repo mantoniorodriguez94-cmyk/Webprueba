@@ -17,6 +17,7 @@ import {
   checkBusinessSaved,
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
+import { isTierActive } from "@/lib/memberships/tiers"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
@@ -44,8 +45,9 @@ export default function BusinessFeedCard({
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
-  /** Healed tier when owner_id exists but join/profile data was missing */
+  /** Healed tier/vencimiento cuando owner_id existe pero el join no trajo perfil */
   const [healedTier, setHealedTier] = useState<number | null>(null)
+  const [healedEndDate, setHealedEndDate] = useState<string | null>(null)
 
   // Verificar si el negocio ya está guardado
   useEffect(() => {
@@ -172,7 +174,25 @@ export default function BusinessFeedCard({
     business?.profiles?.subscription_tier ??
     business?.owner?.subscription_tier ??
     0
-  const ownerTier = healedTier ?? businessTier
+  const businessEndDate =
+    business?.profiles?.subscription_end_date ??
+    business?.owner?.subscription_end_date ??
+    null
+  const rawOwnerTier = healedTier ?? businessTier
+  const rawOwnerEndDate = healedTier != null ? healedEndDate : businessEndDate
+
+  // ── El tier crudo puede estar vencido: no basta con leerlo ─────────────────
+  // Encontrado en producción: una cuenta con subscription_tier=3 pero
+  // subscription_end_date de hace cinco meses seguía mostrando el borde
+  // dorado, el badge de Patrocinador y el contacto completo en el feed — los
+  // mismos beneficios que un pago vigente. El resto de la app resuelve esto
+  // con `effectiveTier` (useMembershipAccess.ts, "arquitectónicamente
+  // imposible" dar acceso con un tier vencido), pero esta tarjeta leía el
+  // valor crudo de la columna y nunca lo pasaba por esa comprobación.
+  // isTierActive es la misma función que usa el resto del sistema: un
+  // subscription_end_date null cuenta como vigencia indefinida (útil para
+  // overrides manuales del panel), cualquier fecha pasada no.
+  const ownerTier = isTierActive(rawOwnerTier, rawOwnerEndDate) ? rawOwnerTier : 0
 
   // ── Golden border: exclusivo del Tier 3 (Patrocina) ───────────────────────
   // Los antiguos perks à-la-carte (golden_border_expires_at / chat_expires_at)
@@ -205,6 +225,7 @@ export default function BusinessFeedCard({
       .then(({ data }) => {
         if (!cancelled) {
           setHealedTier((data as any)?.subscription_tier ?? 0)
+          setHealedEndDate((data as any)?.subscription_end_date ?? null)
         }
       })
     return () => { cancelled = true }

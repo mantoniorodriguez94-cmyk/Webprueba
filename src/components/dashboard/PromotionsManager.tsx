@@ -6,6 +6,7 @@ import useUser from "@/hooks/useUser"
 import { Sparkles, Plus, Lock, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { isTierActive } from "@/lib/memberships/tiers"
 
 interface Promotion {
   id: string
@@ -49,11 +50,15 @@ export default function PromotionsManager() {
     loadSubscription()
   }, [user])
 
+  // Reimplementación local que había divergido de isTierActive en el sentido
+  // contrario al resto de los bugs de este lote: exigía subscriptionEndDate
+  // no nulo, así que un tier 3 otorgado manualmente sin fecha de vencimiento
+  // (p. ej. desde "Cambiar Tier" en el panel) quedaba SIN acceso a este
+  // módulo aunque el resto de la app —borde dorado, orden del feed— ya lo
+  // trate como vigente. isTierActive es la fuente única: null = vigencia
+  // indefinida, una fecha pasada = vencido.
   const isFounder = subscriptionTier >= 3
-  const hasActiveSubscription =
-    isFounder &&
-    subscriptionEndDate !== null &&
-    new Date(subscriptionEndDate) > new Date()
+  const hasActiveSubscription = isTierActive(subscriptionTier, subscriptionEndDate)
 
   useEffect(() => {
     const loadPromotions = async () => {

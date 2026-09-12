@@ -63,14 +63,12 @@ export default function Home() {
                 <h1 className="text-xl sm:text-2xl font-bold text-ink">App Encuentra</h1>
               </button>
 
-              {/* Desktop Navigation - Máximo 5 opciones */}
+              {/* Desktop Navigation.
+                  No lleva "Inicio": esta ES la portada, un enlace que sólo
+                  hace scroll hacia arriba no lleva a ningún lado nuevo. El
+                  logo conserva ese gesto —volver arriba— porque es una
+                  convención distinta y universal, no un destino de menú. */}
               <nav className="hidden lg:flex items-center space-x-6">
-                <button
-                  onClick={scrollToTop}
-                  className="text-ink-2 hover:text-ink transition"
-                >
-                  Inicio
-                </button>
                 <Link
                   href={irANegocios}
                   className="text-ink-2 hover:text-ink transition"
@@ -152,12 +150,6 @@ export default function Home() {
             <span className="text-lg font-bold text-ink">App Encuentra</span>
           </div>
           <nav className="flex flex-col space-y-1">
-            <button
-              onClick={scrollToTop}
-              className="block w-full text-left text-ink-2 hover:text-ink hover:bg-black/5 transition rounded-xl px-3 py-3"
-            >
-              Inicio
-            </button>
             <Link
               href={irANegocios}
               className="block text-ink-2 hover:text-ink hover:bg-black/5 transition rounded-xl px-3 py-3"
