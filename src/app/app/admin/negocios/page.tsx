@@ -28,7 +28,7 @@ export default async function AdminNegociosPage({
     "id, name, logo_url, is_premium, premium_until, created_at, is_verified, max_photos, owner_id, is_featured, featured_until"
   const extendedSelect =
     baseSelect +
-    ", has_gold_border, search_priority_boost, badges"
+    ", has_gold_border, search_priority_boost, badges, hidden_at"
 
   const buildQuery = (select: string) => {
     let q = supabase.from("businesses").select(select)

@@ -226,6 +226,31 @@ export default function GestionarNegocioPage() {
         }
       />
 
+      {/* Oculto del directorio: el dueño sigue viendo su ficha —la política de
+          la base lo exceptúa a propósito— precisamente para poder leer el
+          motivo y corregir. Sin este aviso, su negocio desaparecería del
+          directorio y él no tendría forma de saber por qué. */}
+      {(business as { hidden_at?: string | null }).hidden_at && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-4 flex items-start gap-3">
+            <svg className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            </svg>
+            <div>
+              <h3 className="font-bold text-orange-700">Tu negocio no aparece en el directorio</h3>
+              <p className="text-sm text-orange-700/90 mt-1">
+                {(business as { hidden_reason?: string | null }).hidden_reason ||
+                  "Nuestro equipo lo retiró temporalmente."}
+              </p>
+              <p className="text-xs text-orange-700/80 mt-2">
+                Sigues viendo y pudiendo editar tu ficha. Cuando corrijas lo
+                indicado, escríbenos desde <a href="/soporte" className="font-semibold underline">Soporte</a> para revisarlo.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Banner de infracción (visible para el dueño) */}
       {business.infraction_status && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">

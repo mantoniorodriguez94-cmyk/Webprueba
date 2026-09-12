@@ -10,6 +10,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
 import AdminUserManagementModal from "./AdminUserManagementModal"
 import SuspendUserButton from "@/app/app/admin/usuarios/components/SuspendUserButton"
+import HideBusinessButton from "./HideBusinessButton"
 
 export type AdminBusinessRow = {
   id: string
@@ -26,6 +27,7 @@ export type AdminBusinessRow = {
   has_gold_border?: boolean
   search_priority_boost?: boolean
   badges?: string[]
+  hidden_at?: string | null
 }
 
 const TIER_LABELS: Record<number, string> = {
@@ -94,10 +96,8 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     verification: "Verificación",
     tier: "Tier",
     spotlight: "Spotlight",
-    suspender: "Suspensión",
     delete: "Eliminación",
     reset: "Reset de fotos",
-    golden: "Borde Patrocina",
     searchBoost: "Destacar negocio",
   }
 
@@ -308,6 +308,11 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
             {business.is_verified && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">Verificado</span>
             )}
+            {business.hidden_at && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-semibold">
+                Oculto del directorio
+              </span>
+            )}
             {inSpotlight && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">Spotlight</span>
             )}
@@ -488,6 +493,17 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 </button>
               }
               description="Gestiona sellos de confianza y etiquetas especiales de la comunidad."
+            />
+            <ActionRow
+              id="ocultar"
+              button={
+                <HideBusinessButton
+                  businessId={business.id}
+                  businessName={businessName}
+                  oculto={Boolean(business.hidden_at)}
+                />
+              }
+              description="Lo saca del directorio sin borrar nada: reseñas, chat, fotos e historial quedan intactos y se puede revertir. El dueño sigue viendo su ficha con el motivo, para poder corregir. Para estafas, negocios cerrados o contenido que viola las reglas — antes de llegar a Eliminar."
             />
             <ActionRow
               id="eliminar"
