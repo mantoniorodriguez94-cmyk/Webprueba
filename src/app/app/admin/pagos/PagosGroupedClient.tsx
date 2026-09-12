@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import RevertPaymentButton from "./RevertPaymentButton"
 import PaymentActionButton from "../components/PaymentActionButton"
 import PaymentReceiptImage from "../components/PaymentReceiptImage"
 import { getLabelForTier } from "@/lib/memberships/tiers"
@@ -250,6 +251,11 @@ export default function PagosGroupedClient({ pagos, profiles }: PagosGroupedClie
                         {pago.status !== 'pending' && (
                           <div className="mt-4 text-xs text-ink-2">
                             Este pago ya fue procesado ({pago.status === 'approved' ? 'aprobado' : 'rechazado'})
+                            {/* Sólo lo aprobado se puede revertir: revertir un
+                                rechazo restaría meses que nadie sumó. */}
+                            {pago.status === 'approved' && (
+                              <RevertPaymentButton paymentId={pago.id} />
+                            )}
                           </div>
                         )}
                       </div>

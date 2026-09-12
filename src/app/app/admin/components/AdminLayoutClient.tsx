@@ -52,6 +52,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/app/admin/reportes", label: "Reportes", icon: <FlagIcon /> },
       { href: "/app/admin/soporte", label: "Soporte", icon: <LifebuoyIcon /> },
+      { href: "/app/admin/anuncios", label: "Anuncios", icon: <MegaphoneIcon /> },
     ],
   },
   {
@@ -310,6 +311,15 @@ function DashboardIcon() {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
       <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
+    </svg>
+  )
+}
+
+function MegaphoneIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+      <path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Z" />
+      <path d="M17 9a3.5 3.5 0 0 1 0 6" />
     </svg>
   )
 }

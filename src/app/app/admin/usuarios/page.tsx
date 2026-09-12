@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import DeleteUserButton from "./components/DeleteUserButton"
+import SuspendUserButton from "./components/SuspendUserButton"
 import ManageLimitsButton from "../components/ManageLimitsButton"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -16,6 +17,7 @@ interface UserData {
   is_admin: boolean
   created_at: string
   avatar_url: string | null
+  suspended_at: string | null
 }
 
 /**
@@ -51,6 +53,7 @@ export default async function AdminUsuariosPage() {
           is_admin: user.user_metadata?.is_admin === true,
           created_at: user.created_at,
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+          suspended_at: null,
         }))
       } else {
         throw authError || new Error('No se obtuvieron usuarios')
@@ -61,7 +64,7 @@ export default async function AdminUsuariosPage() {
       
       const { data: profilesData, error: profilesError } = await adminSupabase
         .from('profiles')
-        .select('id, email, full_name, role, is_admin, created_at, avatar_url')
+        .select('id, email, full_name, role, is_admin, created_at, avatar_url, suspended_at')
         .order('created_at', { ascending: false })
 
       if (profilesError) {
@@ -77,8 +80,30 @@ export default async function AdminUsuariosPage() {
           is_admin: profile.is_admin === true,
           created_at: profile.created_at || new Date().toISOString(),
           avatar_url: profile.avatar_url || null,
+          suspended_at: profile.suspended_at ?? null,
         }))
       }
+    }
+
+    // profiles es la fuente de verdad del rol y de la suspensión.
+    // auth.admin.listUsers() sólo devuelve user_metadata, y el metadata dejó
+    // de conceder permisos al cerrar la escalada de privilegios: leerlo acá
+    // haría que un administrador real apareciera como usuario normal, y que
+    // alguien que se puso is_admin en su propio metadata apareciera como
+    // administrador sin serlo.
+    if (usuarios.length > 0) {
+      const { data: perfiles } = await adminSupabase
+        .from('profiles')
+        .select('id, is_admin, suspended_at')
+        .in('id', usuarios.map((u) => u.id))
+
+      const porId = new Map((perfiles ?? []).map((p: any) => [p.id, p]))
+      usuarios = usuarios.map((u) => {
+        const p: any = porId.get(u.id)
+        return p
+          ? { ...u, is_admin: p.is_admin === true, suspended_at: p.suspended_at ?? null }
+          : u
+      })
     }
   } catch (err: any) {
     console.error('❌ Error cargando usuarios:', err)
@@ -172,15 +197,22 @@ export default async function AdminUsuariosPage() {
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    {usuario.is_admin ? (
-                      <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                        Admin
-                      </span>
-                    ) : (
-                      <span className="text-xs px-2 py-1 rounded-full bg-black/5 text-ink-2 border border-black/10">
-                        Usuario
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {usuario.is_admin ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-1 rounded-full bg-black/5 text-ink-2 border border-black/10">
+                          Usuario
+                        </span>
+                      )}
+                      {usuario.suspended_at && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
+                          Suspendido
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-4 text-sm text-ink-2">
                     {usuario.created_at 
@@ -196,6 +228,11 @@ export default async function AdminUsuariosPage() {
                       <ManageLimitsButton
                         profileId={usuario.id}
                         profileName={usuario.full_name || usuario.email || "Usuario"}
+                      />
+                      <SuspendUserButton
+                        profileId={usuario.id}
+                        profileName={usuario.full_name || usuario.email || "Usuario"}
+                        suspendido={Boolean(usuario.suspended_at)}
                       />
                       <DeleteUserButton 
                         userId={usuario.id}
