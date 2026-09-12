@@ -607,6 +607,8 @@ function ChatInner() {
       ) : (
         <div className="flex-shrink-0">
           <SectionHeader
+            onVolver={() => router.back()}
+            volverSoloEscritorio
             titulo="Mensajes"
             icono={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

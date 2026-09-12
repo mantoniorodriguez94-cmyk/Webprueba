@@ -29,11 +29,17 @@ interface SectionHeaderProps {
    * móvil no cambia nada: ahí todo ocupa el ancho completo.
    */
   ancho?: "5xl" | "7xl" | "feed"
-  /**
-   * Acción de volver, para pantallas anidadas. Las secciones que son destino
-   * de la barra inferior no la usan: ahí la barra ya es la navegación.
-   */
+  /** Acción de volver. */
   onVolver?: () => void
+  /**
+   * Muestra el botón de volver sólo de `lg` en adelante.
+   *
+   * Para los destinos de la barra inferior. En móvil la barra ya es la
+   * navegación y un botón de atrás sobra; pero la barra es `lg:hidden`, así
+   * que en escritorio esas mismas pantallas se quedaban sin ninguna forma de
+   * salir. Las pantallas anidadas no lo usan: ahí el botón va siempre.
+   */
+  volverSoloEscritorio?: boolean
 }
 
 /* Incluyen el padding lateral, no sólo el ancho, porque el encabezado tiene
@@ -54,6 +60,7 @@ export default function SectionHeader({
   acciones,
   ancho = "5xl",
   onVolver,
+  volverSoloEscritorio = false,
 }: SectionHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/85 backdrop-blur-xl">
@@ -63,7 +70,9 @@ export default function SectionHeader({
             type="button"
             onClick={onVolver}
             aria-label="Volver"
-            className="-ml-2 flex-shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-black/5 hover:text-ink"
+            className={`-ml-2 flex-shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-black/5 hover:text-ink ${
+              volverSoloEscritorio ? "hidden lg:block" : "block"
+            }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />

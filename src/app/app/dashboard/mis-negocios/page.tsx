@@ -187,6 +187,8 @@ export default function MisNegociosPage() {
     <div className="min-h-screen lg:pb-8">
       {/* Header */}
       <SectionHeader
+        onVolver={() => router.back()}
+        volverSoloEscritorio
         titulo="Mis negocios"
         subtitulo={
           isAdmin

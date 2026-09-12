@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react"
 import SectionHeader from "@/components/ui/SectionHeader"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Bookmark } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -20,6 +21,7 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { Business } from "@/types/business"
 
 export default function GuardadosPage() {
+  const router = useRouter()
   const { user, loading: userLoading } = useUser()
   const [negocios, setNegocios] = useState<Business[]>([])
   const [cargando, setCargando] = useState(true)
@@ -90,6 +92,8 @@ export default function GuardadosPage() {
   return (
     <div className="min-h-screen lg:pb-10">
       <SectionHeader
+        onVolver={() => router.back()}
+        volverSoloEscritorio
         titulo="Guardados"
         subtitulo={
           cargando

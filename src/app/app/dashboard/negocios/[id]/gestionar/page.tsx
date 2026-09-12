@@ -185,6 +185,8 @@ export default function GestionarNegocioPage() {
           desenfoque, sombra y un borde azul de 2px, así que se veía distinta
           de todas las demás. */}
       <SectionHeader
+        onVolver={() => router.back()}
+        volverSoloEscritorio
         titulo="Gestionar negocio"
         subtitulo={business.name}
         ancho="7xl"

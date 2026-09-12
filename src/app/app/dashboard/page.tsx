@@ -813,6 +813,8 @@ export default function DashboardPage() {
           de negocios pasa a subtítulo y buscar/avatar a las acciones, que es
           donde viven en el resto de la app. */}
       <SectionHeader
+        onVolver={() => router.back()}
+        volverSoloEscritorio
         titulo="Inicio"
         subtitulo={`${allBusinesses.length} ${allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}`}
         ancho="feed"

@@ -152,6 +152,8 @@ export default function MembresiaPage() {
   return (
     <div className="min-h-screen lg:pb-10">
       <SectionHeader
+        onVolver={() => router.back()}
+        volverSoloEscritorio
         titulo="Membresía"
         subtitulo="Apoya el proyecto y obtén un badge especial en tu perfil"
         icono={<Sparkles className="h-5 w-5" />}
