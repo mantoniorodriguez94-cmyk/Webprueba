@@ -334,6 +334,39 @@ del paso anterior ya hace que Google muestre "App Encuentra" con su logo.
 La diferencia es que con custom domain también cambia el dominio técnico que
 aparece en la barra durante el salto.
 
+### Lo que costó un rechazo (septiembre 2026)
+
+La verificación de branding rechazó el primer intento con:
+
+> Your privacy policy page at "https://www.appencuentra.com" does not have
+> sufficient content.
+
+La política de privacidad estaba perfecta —1.449 palabras, cubriendo
+recopilación, almacenamiento, compartición y eliminación de datos—. El
+problema era la URL cargada en el formulario: se había puesto la PORTADA
+(`https://www.appencuentra.com`) en el campo de política de privacidad, en vez
+de `https://www.appencuentra.com/privacidad`. Google entró a la landing, buscó
+una política, y con razón dijo que no había.
+
+Dos cosas a tener presentes al llenar ese formulario:
+
+1. **Revisar que cada enlace apunte a su página**, no a la raíz del dominio.
+   El de términos suele tener el mismo error.
+
+2. **Usar la versión con `www`.** El dominio redirige
+   `appencuentra.com` → `www.appencuentra.com` con un 307. Los rastreadores
+   normalmente siguen redirecciones, pero apuntar directo al destino final
+   quita una variable de una verificación automática.
+
+Y un detalle de diagnóstico: `curl https://appencuentra.com/privacidad` sin
+`-L` devuelve 15 bytes con el texto `Redirecting...`. Parece una página vacía
+y no lo es. Si alguna herramienta vuelve a decir que esa página "no tiene
+contenido", lo primero a descartar es que esté leyendo el redirect en vez del
+destino.
+
+Corregidas las URLs, la verificación pasó de forma automática en minutos y la
+pantalla ya muestra "continuar a App Encuentra" con el logo.
+
 ### Qué NO intentar
 
 - Cambiar `redirectTo` en `signInWithOAuth`. No afecta a esta pantalla: Google
