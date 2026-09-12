@@ -22,25 +22,21 @@ import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
 import { destinosPrincipales } from "@/lib/navegacion"
 import { toast } from "sonner"
 
-/* ── Qué se pide al traer el feed ──────────────────────────────────────────
-   Antes era `select("*")`: las ~37 columnas de cada negocio para pintar una
-   tarjeta que usa la mitad. Lo que más pesaba eran `hours` (JSON) y
-   `address_details`, que la tarjeta ni toca.
+/* ── Por qué acá dice `*` y no una lista de columnas ───────────────────────
+   Se intentó pedir sólo las columnas que la tarjeta usa, y dejó el feed vacío
+   en producción. El motivo: varios campos que el tipo `Business` declara
+   —total_reviews, average_rating, views_count, saved_count, shared_count,
+   search_priority_boost, has_gold_border— NO son columnas de `businesses`.
+   Llegan de la vista business_review_stats y de consultas aparte, y se
+   fusionan más abajo. Pedirlos en el select hace que PostgREST rechace la
+   consulta ENTERA, y el catch de abajo la convierte en lista vacía: ningún
+   negocio, sin error visible.
 
-   Quedan fuera además cuatro campos internos que no tienen por qué viajar al
-   navegador de cualquier visitante: `infraction_status` e `infraction_reason`
-   (si penalizaste un negocio y por qué), `verified_by` (qué administrador lo
-   verificó) y `extra_photo_limit`.
-
-   Si agregas un campo a la tarjeta, agrégalo también acá o llegará vacío. */
-const COLUMNAS_FEED = [
-  "id", "owner_id", "name", "description", "category", "address",
-  "state_id", "municipality_id", "phone", "whatsapp",
-  "logo_url", "gallery_urls", "latitude", "longitude", "created_at",
-  "is_premium", "premium_until", "is_featured", "featured_until",
-  "has_gold_border", "is_verified", "search_priority_boost",
-  "total_reviews", "average_rating", "views_count", "saved_count", "shared_count",
-].join(",")
+   Si se vuelve a intentar, hay que sacar la lista del esquema real de la base
+   —no del tipo de TypeScript, que mezcla columnas con campos fusionados— y
+   probarla contra datos reales antes de subirla. El ahorro era del 25-30%; el
+   techo de abajo es lo que de verdad protege. */
+const COLUMNAS_FEED = "*"
 
 /* Techo de seguridad, NO paginación.
 
@@ -338,7 +334,12 @@ export default function DashboardPage() {
         .limit(TECHO_FEED)
 
       if (businessError) {
-        console.error("[CRITICAL DEBUG] businesses fetch failed:", businessError)
+        // Un fallo acá se veía EXACTAMENTE igual que "no hay negocios": lista
+        // vacía y un mensaje en una consola que nadie mira. Así pasó
+        // desapercibido que el feed estaba caído mientras los negocios existían
+        // y se veían en el panel. Ahora se dice en pantalla.
+        console.error("[feed] La consulta de negocios falló:", businessError)
+        toast.error("No se pudieron cargar los negocios. Recarga la página.")
         rawRows = []
       } else {
         // Con una lista de columnas en cadena, Supabase no puede inferir la
