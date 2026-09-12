@@ -22,6 +22,38 @@ import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
 import { destinosPrincipales } from "@/lib/navegacion"
 import { toast } from "sonner"
 
+/* ── Qué se pide al traer el feed ──────────────────────────────────────────
+   Antes era `select("*")`: las ~37 columnas de cada negocio para pintar una
+   tarjeta que usa la mitad. Lo que más pesaba eran `hours` (JSON) y
+   `address_details`, que la tarjeta ni toca.
+
+   Quedan fuera además cuatro campos internos que no tienen por qué viajar al
+   navegador de cualquier visitante: `infraction_status` e `infraction_reason`
+   (si penalizaste un negocio y por qué), `verified_by` (qué administrador lo
+   verificó) y `extra_photo_limit`.
+
+   Si agregas un campo a la tarjeta, agrégalo también acá o llegará vacío. */
+const COLUMNAS_FEED = [
+  "id", "owner_id", "name", "description", "category", "address",
+  "state_id", "municipality_id", "phone", "whatsapp",
+  "logo_url", "gallery_urls", "latitude", "longitude", "created_at",
+  "is_premium", "premium_until", "is_featured", "featured_until",
+  "has_gold_border", "is_verified", "search_priority_boost",
+  "total_reviews", "average_rating", "views_count", "saved_count", "shared_count",
+].join(",")
+
+/* Techo de seguridad, NO paginación.
+
+   El filtrado, el orden y las pestañas se resuelven en memoria sobre la lista
+   completa, así que la lista completa tiene que llegar. Esto sólo evita que el
+   día que el catálogo crezca, cada apertura del dashboard se descargue la
+   tabla entera sin que nadie se entere.
+
+   Cuando se alcance el techo el feed dejaría de mostrar negocios en silencio,
+   así que se avisa por consola. Esa advertencia es la señal de que toca
+   paginar de verdad en el servidor, con los filtros como parámetros. */
+const TECHO_FEED = 300
+
 // Lazy-load de componentes pesados para mejorar performance
 const FilterSidebar = dynamic(
   () => import("@/components/feed/FilterSidebar"),
@@ -297,17 +329,31 @@ export default function DashboardPage() {
 
     try {
       // Fetch businesses directly (no join — more reliable)
-      let query = supabase.from("businesses").select("*")
+      let query = supabase.from("businesses").select(COLUMNAS_FEED)
       if (stateId) query = query.eq("state_id", stateId)
       if (municipalityId) query = query.eq("municipality_id", municipalityId)
 
-      const { data: businesses, error: businessError } = await query.order("created_at", { ascending: false })
+      const { data: businesses, error: businessError } = await query
+        .order("created_at", { ascending: false })
+        .limit(TECHO_FEED)
 
       if (businessError) {
         console.error("[CRITICAL DEBUG] businesses fetch failed:", businessError)
         rawRows = []
       } else {
-        rawRows = (businesses ?? null) as Row[] | null
+        // Con una lista de columnas en cadena, Supabase no puede inferir la
+        // forma de la fila, así que el casteo pasa por unknown.
+        rawRows = (businesses ?? null) as unknown as Row[] | null
+
+        // El techo recorta en silencio: sin este aviso, el día que el catálogo
+        // lo alcance simplemente dejarían de aparecer negocios y nadie sabría
+        // por qué. Es la señal de que toca paginar en el servidor.
+        if (rawRows && rawRows.length >= TECHO_FEED) {
+          console.warn(
+            `[feed] Se alcanzó el techo de ${TECHO_FEED} negocios. ` +
+            `Hay negocios que no se están mostrando: toca paginar en el servidor.`
+          )
+        }
       }
 
     const rows = rawRows ?? []
@@ -350,9 +396,13 @@ export default function DashboardPage() {
 
       try {
         // Obtener estadísticas de reviews
+        // Sólo las tres columnas que se usan, y el mismo techo: esta vista
+        // tiene una fila por negocio con reseñas, así que crece igual que el
+        // feed.
         const { data: stats, error: statsError } = await supabase
           .from("business_review_stats")
-          .select("*")
+          .select("business_id, total_reviews, average_rating")
+          .limit(TECHO_FEED)
         
         // Obtener conteo de visitas por negocio
         // Solo intentar si el usuario está autenticado
