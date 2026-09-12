@@ -45,10 +45,11 @@ const TIER_INFO: Record<SubscriptionTier, { name: string; price: number; bgClass
   3: {
     name: "Patrocina",
     price: 5,
-    bgClass: "bg-purple-50",
-    textClass: "text-purple-700",
-    borderClass: "border-purple-200",
-    buttonClass: "bg-purple-500 text-white hover:bg-purple-600"
+    // Dorado, como el resto de la identidad de Patrocina.
+    bgClass: "bg-amber-50",
+    textClass: "text-amber-700",
+    borderClass: "border-amber-200",
+    buttonClass: "bg-amber-600 text-white hover:bg-amber-700"
   }
 }
 

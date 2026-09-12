@@ -92,23 +92,26 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
         })}
       </div>
 
-      {/* Tier "Patrocina" — la única tarjeta con magenta, la puntuación de
-          marca reservada para este tier tope. Card blanca, no un campo de
-          color grande: el magenta vive en el icono, el pill y el borde. */}
+      {/* Tier "Patrocina" — dorado, igual que el borde de la tarjeta en el
+          feed (tier-patrocina-glow) y que su insignia. Esta tarjeta se quedó
+          en magenta cuando el tier volvió al oro, así que el plan se anunciaba
+          en rosado y después se entregaba en dorado.
+          Card blanca, no un campo de color grande: el oro vive en el icono, el
+          pill y el borde. */}
       <div className="mt-8">
         <Link
           href={ctaHref}
-          className="block relative overflow-hidden rounded-3xl border-2 border-purple-300 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+          className="block relative overflow-hidden rounded-3xl border-2 border-amber-300 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
         >
           <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center">
-                <Crown className="w-6 h-6 text-purple-600" />
+              <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                <Crown className="w-6 h-6 text-amber-600" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-ink">Patrocina</h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-500 text-white text-[10px] font-semibold px-2 py-0.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-600 text-white text-[10px] font-semibold px-2 py-0.5">
                     <HeartHandshake className="w-3 h-3" />
                     Special
                   </span>
@@ -140,14 +143,14 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Crown className="w-4 h-4 text-purple-600 mt-0.5" />
+              <Crown className="w-4 h-4 text-amber-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-ink">Marco Distintivo Exclusivo</p>
                 <p className="text-[11px] text-ink-2">Borde exclusivo alrededor de tu tarjeta de negocio en el feed.</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-amber-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-ink">Módulo de Promociones</p>
                 <p className="text-[11px] text-ink-2">Tus promociones serán destacadas para impulsar tus ventas.</p>

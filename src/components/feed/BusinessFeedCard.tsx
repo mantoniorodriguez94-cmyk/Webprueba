@@ -241,7 +241,7 @@ export default function BusinessFeedCard({
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
             <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
               isPremiumActive
-                ? 'bg-purple-50 border-2 border-purple-300 shadow-sm'
+                ? 'bg-amber-50 border-2 border-amber-300 shadow-sm'
                 : 'bg-blue-50 border-2 border-black/10'
             }`}>
               {business.logo_url && !imageError ? (

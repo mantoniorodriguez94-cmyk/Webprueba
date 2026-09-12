@@ -49,13 +49,13 @@ export function MembershipBadge({ type, className = "" }: MembershipBadgeProps) 
     )
   }
 
-  // Tier 3 – Patrocina — antes dorado con glow; el magenta es ahora la
-  // puntuación de marca reservada para este tier (mismo criterio que
-  // tier-patrocina-glow en BusinessFeedCard).
+  // Tier 3 – Patrocina — dorado, igual que tier-patrocina-glow en
+  // BusinessFeedCard. Este badge se quedó en magenta cuando el tier volvió al
+  // oro: la tarjeta salía con borde dorado y el badge encima en rosado.
   if (type === "gold_crown") {
     return (
       <span
-        className={`${baseClasses} bg-purple-50 text-purple-700 border border-purple-300 ${className}`}
+        className={`${baseClasses} bg-amber-50 text-amber-700 border border-amber-300 ${className}`}
       >
         <Crown className="w-3 h-3" />
         <span className="font-bold">Patrocina</span>
