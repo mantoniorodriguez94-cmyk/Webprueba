@@ -7,9 +7,9 @@ import Image from "next/image"
 import { Info, Loader2, Shield } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
-import VerifyPremiumModal from "./VerifyPremiumModal"
 import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
 import AdminUserManagementModal from "./AdminUserManagementModal"
+import SuspendUserButton from "@/app/app/admin/usuarios/components/SuspendUserButton"
 
 export type AdminBusinessRow = {
   id: string
@@ -47,7 +47,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [showVerifyModal, setShowVerifyModal] = useState(false)
   const [showPhotosModal, setShowPhotosModal] = useState(false)
   const [showFeaturedModal, setShowFeaturedModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -159,12 +158,8 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const toggleVerification = () => call("verification", { businessId: business.id }, "/api/admin/business/toggle-verification")
   const toggleSpotlight = () => call("spotlight", { businessId: business.id }, "/api/admin/business/toggle-spotlight")
   const tierOverride = (tier: number) => call("tier", { businessId: business.id, tier }, "/api/admin/business/tier-override")
-  const suspendPremium = () => call("suspender", { businessId: business.id }, "/api/admin/business/suspender")
   const deleteBusiness = () => call("delete", { businessId: business.id }, "/api/admin/business/delete", "Eliminación")
   const resetPhotos = (resetLogo: boolean) => call("reset", { businessId: business.id, resetLogo }, "/api/admin/business/reset-photos", "Reset de fotos")
-
-  const toggleGoldenBorder = () =>
-    call("golden", { businessId: business.id }, "/api/admin/business/toggle-golden-border", "Borde Patrocina")
 
   const toggleSearchPriority = () =>
     call(
@@ -175,7 +170,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     )
 
   const inSpotlight = business.is_featured && business.featured_until && new Date(business.featured_until) > new Date()
-  const hasGoldenBorder = business.has_gold_border === true
   const hasSearchPriority =
     (business as any).search_priority === true || business.search_priority_boost === true
   const daysLeft = getDaysUntilExpiry(business.premium_until)
@@ -378,21 +372,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               description="Cambia el nivel de acceso. Úsalo para activaciones manuales tras pagos externos."
             />
             <ActionRow
-              id="golden-border"
-              button={
-                <button
-                  type="button"
-                  onClick={() => ensureUnlocked(toggleGoldenBorder)}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {loading === "golden" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "golden" ? "..." : hasGoldenBorder ? "Quitar Borde Patrocina" : "Borde Patrocina"}
-                </button>
-              }
-              description="Activa el aura visual de Plan Patrocina independientemente del pago."
-            />
-            <ActionRow
               id="spotlight"
               button={
                 <button
@@ -406,35 +385,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 </button>
               }
               description="Fuerza la aparición del negocio en el carrusel principal de la pantalla de inicio."
-            />
-            <ActionRow
-              id="premium"
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowVerifyModal(true)}
-                  disabled={!!loading || business.is_premium}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 disabled:opacity-50"
-                >
-                  {business.is_premium ? "✓ Premium" : "Activar Premium"}
-                </button>
-              }
-              description="Habilita funciones de pago. Úsalo para activaciones manuales tras pago externo."
-            />
-            <ActionRow
-              id="suspender"
-              button={
-                <button
-                  type="button"
-                  onClick={suspendPremium}
-                  disabled={!!loading || !business.is_premium}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-black/5 text-ink-2 border border-black/10 hover:bg-black/10 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {loading === "suspender" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "suspender" ? "..." : "Suspender"}
-                </button>
-              }
-              description="Oculta el negocio de la vista pública sin borrar datos. Medida preventiva."
             />
             <ActionRow
               id="fotos"
@@ -507,6 +457,19 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                 description="Panel modular: plan de membresía, alertas, fotos y eliminación de cuenta."
               />
             )}
+            {business.owner_id && (
+              <ActionRow
+                id="suspender-dueno"
+                button={
+                  <SuspendUserButton
+                    profileId={business.owner_id}
+                    profileName={businessName}
+                    suspendido={false}
+                  />
+                }
+                description="Suspende la CUENTA del dueño, no el negocio. Para reseñas abusivas o spam: la cuenta sigue existiendo y se reactiva desde Personas → Usuarios, donde además se ve su estado actual."
+              />
+            )}
             {/* Enviar Alerta está integrado dentro de Gestionar Usuario (AdminUserManagementModal) */}
             <ActionRow
               id="badges"
@@ -545,15 +508,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
         </div>
       </div>
 
-      {showVerifyModal && (
-        <VerifyPremiumModal
-          businessId={business.id}
-          businessName={businessName}
-          isOpen={showVerifyModal}
-          onClose={() => setShowVerifyModal(false)}
-          onSuccess={() => { setShowVerifyModal(false); refresh() }}
-        />
-      )}
       {showPhotosModal && (
         <UpdatePhotosLimitModal
           businessId={business.id}
