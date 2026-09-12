@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // profiles.is_admin es la única fuente de verdad de los permisos.
     await (adminSupabase as any)
       .from('profiles')
       .upsert(
@@ -80,9 +81,10 @@ export async function POST(request: NextRequest) {
         { onConflict: 'id' }
       )
 
-    await adminSupabase.auth.admin.updateUserById(user.id, {
-      user_metadata: { ...user.user_metadata, is_admin: true },
-    })
+    // Ya NO se escribe user_metadata.is_admin. El metadata lo puede modificar
+    // el propio usuario desde el navegador, así que no sirve como permiso; si
+    // además lo escribimos nosotros, parece autoritativo y alguien lo vuelve a
+    // usar para autorizar. Se deja fuera del sistema por completo.
 
     return NextResponse.json({
       success: true,

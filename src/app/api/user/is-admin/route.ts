@@ -62,21 +62,22 @@ export async function GET() {
       }
     }
 
-    // Si no pudimos leer el perfil, retornar error
+    // Sin perfil legible, no hay permiso. Falla cerrado: un error de base de
+    // datos nunca debe traducirse en más permisos de los que corresponden.
+    // Antes acá se caía a user_metadata.is_admin, que lo escribe el propio
+    // usuario desde el navegador — era una escalada de privilegios directa.
     if (dbError || !profile) {
       console.error('❌ API is-admin: Error leyendo perfil:', dbError?.message)
-      
-      // También verificar en user_metadata como fallback
-      const metadataIsAdmin = user.user_metadata?.is_admin === true
-      
+
       return NextResponse.json({
-        isAdmin: metadataIsAdmin,
+        isAdmin: false,
         error: dbError?.message || 'Error leyendo perfil',
-        hasServiceRoleKey: true, // Cliente admin siempre está disponible
       })
     }
 
-    const isAdmin = profile.is_admin === true || user.user_metadata?.is_admin === true
+    // profiles.is_admin es la única fuente de verdad. Se escribe sólo desde el
+    // servidor; user_metadata no cuenta.
+    const isAdmin = profile.is_admin === true
 
     return NextResponse.json({
       isAdmin,

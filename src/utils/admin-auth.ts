@@ -1,9 +1,32 @@
 /**
- * Utilidad para verificar autenticación y permisos de administrador
- * 100% compatible con Next.js 15 + Supabase SSR
+ * Verificación de permisos de administrador.
+ *
+ * ── UNA SOLA FUENTE DE VERDAD: profiles.is_admin ────────────────────────────
+ *
+ * Antes esta función aceptaba también `user_metadata.is_admin`, por dos
+ * caminos distintos:
+ *
+ *   1. Si no encontraba la fila de perfil, aceptaba el metadata.
+ *   2. Al final hacía `profileIsAdmin || metadataIsAdmin`, así que el metadata
+ *      alcanzaba incluso con un perfil que dijera is_admin: false.
+ *
+ * El problema es que `user_metadata` lo escribe el propio usuario: cualquiera
+ * con una cuenta puede llamar a `supabase.auth.updateUser({ data: { is_admin:
+ * true } })` desde el navegador y concederse el panel completo — que a su vez
+ * usa la service-role key y salta RLS. Es una escalada de privilegios directa.
+ *
+ * Ahora sólo cuenta `profiles.is_admin`, que se escribe únicamente desde el
+ * servidor. El metadata no se lee en ningún caso.
+ *
+ * ── FALLA CERRADO ───────────────────────────────────────────────────────────
+ *
+ * Si el perfil no se puede leer, la respuesta es "no autorizado". Antes un
+ * error de lectura abría la puerta al camino del metadata; un fallo de base de
+ * datos nunca debe traducirse en más permisos.
  */
 
 import { createClient } from "@/utils/supabase/server"
+import { getAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 
 export interface AdminAuthResult {
@@ -15,177 +38,82 @@ export interface AdminAuthResult {
   error: string | null
 }
 
-/**
- * Verifica si el usuario actual es administrador (SSR SAFE)
- * 
- * ⚠️ IMPORTANTE: Todos los await son CRUCIALES en Next.js 15
- * - await createClient() - Next.js 15 requiere await para cookies()
- * - await supabase.auth.getUser() - Necesario para verificar sesión
- * - await supabase.from()... - Necesario para queries
- */
 export async function checkAdminAuth(): Promise<AdminAuthResult> {
   try {
-    // 1️⃣ Crear el cliente ESPERANDO la promesa (Next.js 15)
-    // ⚠️ CRUCIAL: await es necesario porque createClient() usa cookies() que es async
+    // 1. Identificar al usuario. getUser() valida el token contra Supabase,
+    //    no se fía de la cookie.
     const supabase = await createClient()
-
-    // 2️⃣ Verificar sesión con getUser()
-    // ⚠️ CRUCIAL: await necesario para getUser()
-    // Nota: getUser valida el token real contra Supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      // No logueamos error 400 (session missing) para no ensuciar la consola, es normal si no hay sesión
+      // "session missing" es lo normal cuando no hay sesión; no ensucia el log.
       if (authError && !authError.message.includes("session missing")) {
-         console.error("⚠️ Error de Auth en admin:", authError.message)
+        console.error("[admin] Error de autenticación:", authError.message)
       }
       return { user: null, error: "No autenticado" }
     }
 
-    // 2.5️⃣ Verificar is_admin en user_metadata como fallback rápido
-    // Esto ayuda cuando is_admin está en metadata pero no en profiles aún
-    const metadataIsAdmin = user.user_metadata?.is_admin === true
+    // 2. Leer profiles.is_admin. Se prefiere el cliente de servicio porque las
+    //    políticas RLS de profiles pueden impedirle al usuario leer su propia
+    //    fila; si no está disponible, se intenta con su propio cliente.
+    let profile: { is_admin: boolean | null; email: string | null } | null = null
 
-    // 3️⃣ Verificar rol en tabla "profiles"
-    // ⚠️ IMPORTANTE: En producción, siempre intentar con service role key primero si está disponible
-    // Esto bypassa problemas de RLS y asegura que funcione correctamente
-    
-    let profile: { is_admin: boolean; email: string | null } | null = null
-    let profileError: any = null
-
-    // Si tenemos service role key, usarlo directamente (más confiable en producción)
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      try {
-        const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-        const serviceSupabase = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY,
-          {
-            auth: {
-              autoRefreshToken: false,
-              persistSession: false
-            }
-          }
-        )
-        
-        const { data: serviceProfile, error: serviceError } = await serviceSupabase
-          .from("profiles")
-          .select("is_admin, email")
-          .eq("id", user.id)
-          .single()
-
-        if (!serviceError && serviceProfile) {
-          profile = serviceProfile
-          profileError = null
-        } else {
-          profileError = serviceError
-        }
-      } catch (err: any) {
-        profileError = err
-      }
-    }
-
-    // Si no funcionó con service role (o no está disponible), intentar con cliente normal
-    if (!profile && !profileError) {
-      const result = await supabase
+    try {
+      const { data } = await getAdminClient()
         .from("profiles")
         .select("is_admin, email")
         .eq("id", user.id)
         .single()
-      
-      profile = result.data
-      profileError = result.error
+      profile = data
+    } catch {
+      // Sin service-role key configurada, o fallo al crearlo.
     }
 
-    // Manejar error de perfil
-    if (profileError || !profile) {
-      // Si es un error de RLS o perfil no encontrado, intentar con service role como fallback final
-      if (profileError && process.env.SUPABASE_SERVICE_ROLE_KEY && !profile) {
-        try {
-          const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-          const serviceSupabase = createServiceClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            {
-              auth: {
-                autoRefreshToken: false,
-                persistSession: false
-              }
-            }
-          )
-          
-          const { data: serviceProfile, error: serviceError } = await serviceSupabase
-            .from("profiles")
-            .select("is_admin, email")
-            .eq("id", user.id)
-            .single()
-
-          if (!serviceError && serviceProfile) {
-            profile = serviceProfile
-            profileError = null
-          }
-        } catch {
-          // Silenciosamente manejar el error - el fallback ya falló
-        }
-      }
-
-      // Si no hay perfil pero tenemos metadataIsAdmin, aceptar como admin
-      if (!profile && metadataIsAdmin) {
-        return {
-          user: {
-            id: user.id,
-            email: user.email || "",
-            isAdmin: true
-          },
-          error: null
-        }
-      }
-
-      if (!profile) {
-        return { user: null, error: `Error al leer perfil: ${profileError?.message || "Perfil no encontrado"}` }
-      }
+    if (!profile) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_admin, email")
+        .eq("id", user.id)
+        .single()
+      profile = data
     }
 
-    // Verificar is_admin de múltiples fuentes para máxima compatibilidad
-    const profileIsAdmin = profile.is_admin === true
-    const isAdmin = profileIsAdmin || metadataIsAdmin
+    // 3. Sin perfil legible no hay permiso. Falla cerrado, a propósito.
+    if (!profile) {
+      return { user: null, error: "No autorizado" }
+    }
+
+    const isAdmin = profile.is_admin === true
 
     return {
       user: {
         id: user.id,
         email: profile.email || user.email || "",
-        isAdmin
+        isAdmin,
       },
-      error: isAdmin ? null : "No autorizado"
+      error: isAdmin ? null : "No autorizado",
     }
-
-  } catch (err: any) {
-    console.error("❌ Error CRÍTICO en checkAdminAuth:", {
-      message: err?.message,
-      stack: err?.stack,
-      name: err?.name
-    })
+  } catch (err) {
+    console.error("[admin] Error verificando permisos:", err)
     return { user: null, error: "Error interno" }
   }
 }
 
 /**
- * Redirige si el usuario no es administrador
- * Úsalo en layouts o page.tsx
- * 
- * ⚠️ IMPORTANTE: Esta función hace redirect() si el usuario no es admin.
- * Next.js maneja automáticamente la excepción de redirect(), así que
- * NO necesitas try-catch alrededor de esta función.
+ * Exige permisos de administrador o redirige. Para usar en layouts y páginas.
+ *
+ * No hace falta envolverla en try/catch: Next maneja la excepción de
+ * redirect() por su cuenta.
  */
 export async function requireAdmin() {
-  // ⚠️ CRUCIAL: await checkAdminAuth() - Next.js 15 requiere await
   const result = await checkAdminAuth()
 
-  // Si falla la autenticación o no es admin, redirigir
   if (!result.user || !result.user.isAdmin) {
     redirect("/app/dashboard")
   }
 
-  // Si llegamos aquí, el usuario es admin
   return result.user
 }
