@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
 import PromotionsSpotlight from "@/components/dashboard/PromotionsSpotlight"
 import AuthGate from "@/components/auth/AuthGate"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
@@ -815,13 +816,24 @@ export default function DashboardPage() {
       <SectionHeader
         onVolver={() => router.back()}
         volverSoloEscritorio
-        titulo="Inicio"
+        titulo="App Encuentra"
         subtitulo={`${allBusinesses.length} ${allBusinesses.length === 1 ? 'negocio disponible' : 'negocios disponibles'}`}
         ancho="feed"
+        /* La marca en vez de un ícono de sección, igual que en el encabezado de
+           la landing: mismo archivo, mismo tamaño. Inicio es la portada de la
+           app, así que acá la marca identifica mejor que la palabra "Inicio"
+           —que además ya está en la barra inferior—.
+           El logo mide 40px, exactamente el alto del bloque título+subtítulo,
+           así que la barra conserva el mismo alto que las demás secciones. */
         icono={
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <Image
+            src="/brand/encuentra-mark.svg"
+            alt="Logo App Encuentra"
+            width={44}
+            height={44}
+            className="w-10 h-10"
+            unoptimized
+          />
         }
         acciones={
           <>
