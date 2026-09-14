@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("businesses")
-      .select("id, owner_id, max_photos, search_priority_boost, infraction_status, infraction_reason, perk_borde_dorado_hasta, perk_promociones_hasta, perk_prioridad_hasta, perk_fotos_extra, perk_fotos_extra_hasta")
+      .select("id, owner_id, search_priority_boost, infraction_status, infraction_reason, perk_borde_dorado_hasta, perk_promociones_hasta, perk_prioridad_hasta, perk_fotos_extra, perk_fotos_extra_hasta")
       .eq("id", businessId)
       .single()
     if (error || !data) {
@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         owner_id: data.owner_id,
-        max_photos: data.max_photos ?? 5,
         search_priority_boost: (data as { search_priority_boost?: boolean }).search_priority_boost ?? false,
         infraction_status: (data as { infraction_status?: boolean }).infraction_status ?? false,
         infraction_reason: (data as { infraction_reason?: string | null }).infraction_reason ?? null,

@@ -7,7 +7,6 @@ import Image from "next/image"
 import { Info, Loader2, Shield } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
-import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
 import AdminUserManagementModal from "./AdminUserManagementModal"
 import SuspendUserButton from "@/app/app/admin/usuarios/components/SuspendUserButton"
 import HideBusinessButton from "./HideBusinessButton"
@@ -20,7 +19,6 @@ export type AdminBusinessRow = {
   premium_until: string | null
   created_at?: string
   is_verified?: boolean
-  max_photos?: number
   owner_id?: string | null
   is_featured?: boolean
   featured_until?: string | null
@@ -49,7 +47,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [showPhotosModal, setShowPhotosModal] = useState(false)
   const [showFeaturedModal, setShowFeaturedModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showResetPhotosModal, setShowResetPhotosModal] = useState(false)
@@ -392,20 +389,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
               description="Fuerza la aparición del negocio en el carrusel principal de la pantalla de inicio."
             />
             <ActionRow
-              id="fotos"
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowPhotosModal(true)}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-black/5 text-ink-2 border border-black/10 hover:bg-black/10 disabled:opacity-50"
-                >
-                  Fotos ({business.max_photos ?? 5})
-                </button>
-              }
-              description="Incrementa el límite de carga de imágenes en 10 unidades como bono especial."
-            />
-            <ActionRow
               id="destacar"
               button={
                 <button
@@ -524,16 +507,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
         </div>
       </div>
 
-      {showPhotosModal && (
-        <UpdatePhotosLimitModal
-          businessId={business.id}
-          businessName={businessName}
-          currentLimit={business.max_photos ?? 5}
-          isOpen={showPhotosModal}
-          onClose={() => setShowPhotosModal(false)}
-          onSuccess={() => { setShowPhotosModal(false); refresh() }}
-        />
-      )}
       <ConfirmationModal
         open={showDeleteModal}
         title="¿Eliminar este negocio permanentemente?"

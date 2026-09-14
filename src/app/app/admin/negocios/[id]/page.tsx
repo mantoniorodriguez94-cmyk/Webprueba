@@ -8,7 +8,8 @@ import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
 import BusinessClaimCodeSection from "@/components/admin/BusinessClaimCodeSection"
-import { getLabelForTier } from "@/lib/memberships/tiers"
+import { getLabelForTier, isTierActive } from "@/lib/memberships/tiers"
+import { topeDeFotos } from "@/lib/memberships/perks"
 import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 // Forzar renderizado dinámico
@@ -32,7 +33,7 @@ export default async function AdminBusinessDetailPage({
     .from("businesses")
     .select(`
       *,
-      profiles:owner_id(full_name, email)
+      profiles:owner_id(id, full_name, email, role, subscription_tier, subscription_end_date, created_at, suspended_at)
     `)
     .eq("id", id)
     .single()
@@ -41,7 +42,15 @@ export default async function AdminBusinessDetailPage({
     notFound()
   }
 
-  const owner = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
+  const owner: any = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
+
+  // El tier guardado puede estar vencido: se pasa por la misma comprobación
+  // que usa el resto de la app para no mostrar un plan que ya no rige.
+  const tierVigenteDueno = isTierActive(owner?.subscription_tier, owner?.subscription_end_date)
+    ? Number(owner?.subscription_tier) || 0
+    : 0
+
+  const topeRealDeFotos = topeDeFotos(business as any, tierVigenteDueno)
 
   // Cargar estadísticas de reviews
   const { data: reviewStats } = await supabase
@@ -138,10 +147,51 @@ export default async function AdminBusinessDetailPage({
                 {business.category && (
                   <p className="text-blue-600 text-lg mb-2">{business.category}</p>
                 )}
+                {/* Antes acá iba `full_name || email`, así que en cuanto el
+                    dueño tenía nombre el correo no se veía nunca — justo el
+                    dato que hace falta para escribirle o para cruzarlo con un
+                    ticket de soporte. El id también: los correos de soporte
+                    llegan identificando al usuario por UUID. */}
                 {owner && (
-                  <p className="text-ink-2 text-sm">
-                    Propietario: {owner.full_name || owner.email || "N/A"}
-                  </p>
+                  <div className="text-ink-2 text-sm space-y-0.5">
+                    <p>
+                      Propietario:{" "}
+                      <span className="text-ink font-medium">
+                        {owner.full_name || "Sin nombre"}
+                      </span>
+                      {owner.role ? ` · ${owner.role}` : ""}
+                    </p>
+                    {owner.email && (
+                      <p>
+                        Correo:{" "}
+                        <a href={`mailto:${owner.email}`} className="text-blue-600 hover:underline">
+                          {owner.email}
+                        </a>
+                      </p>
+                    )}
+                    <p>
+                      Plan: {getLabelForTier(tierVigenteDueno as SubscriptionTier)}
+                      {owner.subscription_tier > 0 && tierVigenteDueno === 0
+                        ? " (vencido)"
+                        : ""}
+                      {owner.subscription_end_date
+                        ? ` · hasta ${new Date(owner.subscription_end_date).toLocaleDateString("es-ES")}`
+                        : owner.subscription_tier > 0
+                        ? " · sin vencimiento"
+                        : ""}
+                    </p>
+                    {owner.created_at && (
+                      <p>Registrado: {new Date(owner.created_at).toLocaleDateString("es-ES")}</p>
+                    )}
+                    {owner.suspended_at && (
+                      <p className="text-red-600 font-medium">
+                        Cuenta suspendida el {new Date(owner.suspended_at).toLocaleDateString("es-ES")}
+                      </p>
+                    )}
+                    <p className="font-mono text-[11px] text-ink-2/70 break-all">
+                      ID: {owner.id}
+                    </p>
+                  </div>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
@@ -206,13 +256,21 @@ export default async function AdminBusinessDetailPage({
                     year: "numeric"
                   })}
                 </p>
-                {business.max_photos && (
-                  <p className="text-sm text-amber-700 mt-1">
-                    Límite de fotos: {business.max_photos}
-                  </p>
-                )}
               </div>
             )}
+
+            {/* El tope real, calculado como lo calcula la app: el del plan más
+                las fotos extra concedidas si siguen vigentes. Acá se mostraba
+                `max_photos`, una columna que ya nadie lee: decía 5 en todas
+                las filas y daba igual lo que pusieras. */}
+            <div className="mt-4 text-xs text-ink-2">
+              <p>
+                Fotos: {galleryUrls.length} de {topeRealDeFotos}
+                {(business as any).perk_fotos_extra_hasta
+                  ? ` · incluye ${(business as any).perk_fotos_extra ?? 0} extra concedidas`
+                  : ""}
+              </p>
+            </div>
 
             {/* Fechas */}
             <div className="mt-4 text-xs text-ink-2 space-y-1">
@@ -237,13 +295,6 @@ export default async function AdminBusinessDetailPage({
             />
             <AdminActionButton id={business.id} type="suspender" label="Suspender Premium" />
             <AdminActionButton id={business.id} type="destacar" label={business.is_featured ? "Quitar Destacado" : "Destacar"} />
-            <AdminActionButton 
-              id={business.id} 
-              type="foto_limite" 
-              label={`+ Fotos (${business.max_photos || 5})`}
-              currentMaxPhotos={business.max_photos || 5}
-              businessName={business.name || "Negocio"}
-            />
           </div>
 
           {/* Pagos pendientes */}

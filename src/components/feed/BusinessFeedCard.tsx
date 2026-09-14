@@ -202,6 +202,12 @@ export default function BusinessFeedCard({
      WhatsApp: Conecta en adelante. Es la conversación cómoda, sin marcar. */
   const ownerHasWhatsApp = ownerTier >= SUBSCRIPTION_TIER_CONECTA
 
+  /* Sin esto el botón de mensaje salía en TODAS las tarjetas, también en las
+     de negocios sin plan, que no pueden recibirlos: se escribía el mensaje
+     entero y el servidor lo rechazaba al enviar. El permiso estaba bien; lo
+     que fallaba era invitar a algo que iba a fallar. */
+  const ownerHasChat = ownerTier >= SUBSCRIPTION_TIER_CONECTA
+
   const isTier2 = ownerTier >= 2
 
   // ── Heal: lazy profile fetch when join data was absent ────────────────────
@@ -314,7 +320,11 @@ export default function BusinessFeedCard({
                   {business.category}
                 </span>
               )}
-              {business.total_reviews && business.total_reviews > 0 && (
+              {/* El paréntesis importa. Escrito como `total_reviews && ...`,
+                  con cero reseñas el && cortaba devolviendo 0 —no false— y
+                  React pinta el número: era el "0" suelto que salía junto a
+                  la categoría en todas las tarjetas sin reseñas. */}
+              {(business.total_reviews ?? 0) > 0 && (
                 <>
                   {business.category && <span className="text-black/20">•</span>}
                   <div className="flex items-center gap-1">
@@ -480,7 +490,7 @@ export default function BusinessFeedCard({
           </button>
 
           {/* Mensaje */}
-          {currentUser && !isOwner && (
+          {currentUser && !isOwner && ownerHasChat && (
             <button
               onClick={handleMessage}
               className="p-2 rounded-full transition-all text-ink-2 hover:bg-black/5 hover:text-blue-600"
@@ -563,7 +573,7 @@ export default function BusinessFeedCard({
       </div>
 
       {/* Modal de enviar mensaje — el negocio es quien paga el chat. */}
-      {showMessageModal && currentUser && (
+      {showMessageModal && currentUser && ownerHasChat && (
         <SendMessageModal
           business={business}
           currentUserId={currentUser.id}
