@@ -76,7 +76,42 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">4. Suscripciones y Planes</h2>
+              <h2 className="text-2xl font-semibold mb-3">4. Fichas creadas por la Plataforma</h2>
+              <p>
+                Para que el directorio resulte útil desde su inicio, Portal Encuentra LLC
+                puede publicar fichas de comercios elaboradas por su propio equipo, sin
+                solicitud previa del comercio. Estas fichas se construyen únicamente con
+                información comercial de acceso público —nombre, categoría, dirección,
+                horario de atención y el teléfono que el propio comercio difunde— y se
+                identifican como fichas no reclamadas mientras nadie las administre.
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>
+                  Una ficha no reclamada no admite reseñas ni valoraciones. Ningún comercio
+                  puede ser calificado en la Plataforma antes de tener la posibilidad de
+                  responder.
+                </li>
+                <li>
+                  El propietario legítimo puede tomar el control de su ficha mediante un
+                  código de reclamación, y a partir de ese momento editarla o eliminarla.
+                </li>
+                <li>
+                  <strong>
+                    El propietario legítimo puede solicitar la retirada de la ficha en
+                    cualquier momento y sin justificación
+                  </strong>
+                  , escribiendo a contacto@appencuentra.com o desde{" "}
+                  <a href="/soporte" className="text-blue-600 hover:underline">
+                    nuestro formulario de soporte
+                  </a>
+                  . La retirada se efectúa dentro de las 48 horas siguientes y no requiere
+                  crear una cuenta.
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-semibold mb-3">5. Suscripciones y Planes</h2>
               <p>
                 La Plataforma ofrece distintos niveles de suscripción para aumentar la
                 visibilidad de los negocios:
@@ -109,7 +144,7 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">5. Política de Reembolsos</h2>
+              <h2 className="text-2xl font-semibold mb-3">6. Política de Reembolsos</h2>
               <p>
                 Debido a la naturaleza digital del servicio y a que la visibilidad se activa
                 de forma inmediata, <strong>no se ofrecen reembolsos parciales</strong> por
@@ -130,7 +165,7 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">6. Propiedad Intelectual</h2>
+              <h2 className="text-2xl font-semibold mb-3">7. Propiedad Intelectual</h2>
               <p>
                 El diseño de la Plataforma, el código fuente, la arquitectura de información,
                 la marca denominativa y gráfica <strong>&quot;App Encuentra&quot;</strong>,
@@ -147,7 +182,7 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">7. Limitación de Responsabilidad</h2>
+              <h2 className="text-2xl font-semibold mb-3">8. Limitación de Responsabilidad</h2>
               <p>
                 En la máxima medida permitida por la ley aplicable, Portal Encuentra LLC no
                 será responsable por:
@@ -169,7 +204,7 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">8. Modificaciones del Servicio</h2>
+              <h2 className="text-2xl font-semibold mb-3">9. Modificaciones del Servicio</h2>
               <p>
                 Portal Encuentra LLC puede actualizar, modificar o descontinuar funciones
                 de la Plataforma en cualquier momento, notificando a los usuarios cuando
@@ -178,7 +213,7 @@ export default function PublicTermsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-3">9. Ley Aplicable y Jurisdicción</h2>
+              <h2 className="text-2xl font-semibold mb-3">10. Ley Aplicable y Jurisdicción</h2>
               <p>
                 Estos Términos y Condiciones se rigen e interpretan de acuerdo con las
                 leyes del <strong>Estado de Texas, Estados Unidos de América</strong>, sin

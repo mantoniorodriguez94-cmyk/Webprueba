@@ -66,6 +66,10 @@ export default function BusinessDetailPage() {
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
+  /* Una ficha sin dueño es una de las cargadas por el equipo para ofrecérsela
+     luego a su dueño con un código. Hasta que alguien la reclame no es de
+     nadie, y no se opina sobre ella. */
+  const fichaReclamada = Boolean(business?.owner_id)
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canManage = isOwner || isAdmin
 
@@ -818,8 +822,10 @@ export default function BusinessDetailPage() {
               </p>
             </div>
             
-            {/* Botón para dejar reseña: Solo si NO tiene review previa */}
-            {user && !isOwner && !userReview && (
+            {/* Sin dueño no se reseña: es una ficha sembrada por el equipo
+                que todavía no es de nadie, y la base rechaza el insert. Si el
+                botón siguiera ahí, ofrecería algo destinado a fallar. */}
+            {user && !isOwner && !userReview && fichaReclamada && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
                 className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"

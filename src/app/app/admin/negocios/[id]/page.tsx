@@ -63,6 +63,25 @@ export default async function AdminBusinessDetailPage({
 
   const topeRealDeFotos = topeDeFotos(business as any, tierVigenteDueno)
 
+  /* El argumento de venta, listo para decirlo en voz alta.
+     Cuando se va a ofrecer una ficha sembrada a su dueño, lo que convence no
+     es explicarle qué es la app sino enseñarle lo que ya le está pasando:
+     "tu negocio lleva 340 visitas y 12 personas pulsaron tu teléfono". Ese
+     número vivía sólo en el panel del dueño, al que todavía no tiene acceso. */
+  const { data: resumenVisitas } = await supabase
+    .from("business_analytics_summary")
+    .select("total_views, unique_viewers, views_last_30_days")
+    .eq("business_id", id)
+    .maybeSingle()
+
+  const { data: interacciones } = await supabase
+    .from("business_interactions_summary")
+    .select("interaction_type, interaction_count")
+    .eq("business_id", id)
+
+  const clics = (tipo: string) =>
+    (interacciones ?? []).find((i: any) => i.interaction_type === tipo)?.interaction_count ?? 0
+
   // Cargar estadísticas de reviews
   const { data: reviewStats } = await supabase
     .from("business_review_stats")
@@ -269,6 +288,42 @@ export default async function AdminBusinessDetailPage({
                 </p>
               </div>
             )}
+
+            {/* Argumento de venta para ofrecer la ficha a su dueño. Sale
+                arriba y con los números grandes porque es lo primero que hay
+                que decir en esa conversación, no un detalle a buscar. */}
+            <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2">
+                {business.owner_id ? "Rendimiento" : "Para ofrecer esta ficha"}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">
+                    {(resumenVisitas?.total_views ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-ink-2">visitas</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">
+                    {(resumenVisitas?.views_last_30_days ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-ink-2">últimos 30 días</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">{clics("phone")}</p>
+                  <p className="text-[11px] text-ink-2">clics al teléfono</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">{clics("whatsapp")}</p>
+                  <p className="text-[11px] text-ink-2">clics a WhatsApp</p>
+                </div>
+              </div>
+              {!business.owner_id && (
+                <p className="mt-3 text-[11px] text-ink-2">
+                  Ficha sin reclamar. No admite reseñas hasta que su dueño la reclame.
+                </p>
+              )}
+            </div>
 
             {/* El tope real, calculado como lo calcula la app: el del plan más
                 las fotos extra concedidas si siguen vigentes. Acá se mostraba
