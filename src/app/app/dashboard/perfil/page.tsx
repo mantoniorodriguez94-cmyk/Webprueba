@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation"
 import ClaimBusinessForm from "@/components/business/ClaimBusinessForm"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
-import { Star } from "lucide-react"
+import { Star, Bookmark } from "lucide-react"
 
 export default function PerfilPage() {
   const { user, loading: userLoading } = useUser()
@@ -370,6 +370,23 @@ export default function PerfilPage() {
               La reemplazan los legales, que no tenían lugar en ninguna
               pantalla de la app. */}
           <div className="surface rounded-3xl divide-y divide-black/5 overflow-hidden">
+            {/* Guardados vive en la barra inferior sólo para cuentas de
+                persona: las de negocio gastan sus cinco espacios en gestionar
+                lo suyo. Pero el botón de guardar sí les aparece en las
+                tarjetas, así que podían guardar negocios y no tener dónde
+                verlos. Acá está su puerta. */}
+            {isCompany && (
+              <Link
+                href="/app/dashboard/guardados"
+                className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"
+              >
+                <Bookmark className="w-4 h-4 text-ink-2" />
+                <span className="flex-1 text-sm font-medium text-ink">Negocios guardados</span>
+                <svg className="w-4 h-4 text-ink-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            )}
             <Link
               href="/soporte"
               className="flex items-center gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors"

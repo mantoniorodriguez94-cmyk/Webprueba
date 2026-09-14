@@ -44,7 +44,6 @@ export default function BusinessFeedCard({
   const [imageError, setImageError] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
-  const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   /** Healed tier/vencimiento cuando owner_id existe pero el join no trajo perfil */
@@ -72,16 +71,12 @@ export default function BusinessFeedCard({
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
   
-  // Handlers con tracking de analytics
-  const handleLike = async () => {
-    const newLikedState = !liked
-    setLiked(newLikedState)
-    
-    if (newLikedState && business.id) {
-      await trackBusinessInteraction(business.id, 'like', currentUser?.id)
-    }
-  }
-  
+  /* El corazón se quitó: prometía recordar y no recordaba. Su estado nacía en
+     false y no se cargaba de ningún sitio, así que al recargar la página
+     volvía a estar vacío — y estaba justo al lado del marcador de guardar,
+     que sí persiste. Dos botones idénticos en peso, uno real y otro
+     decorativo. Guardar ya cubre la misma intención, esa sí de verdad. */
+
   const handleSave = async () => {
     if (!currentUser) {
       toast.error("Debes iniciar sesión para guardar negocios")
@@ -475,28 +470,6 @@ export default function BusinessFeedCard({
       {/* Barra de Acciones */}
       <div className="px-4 py-3 border-t border-black/8 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {/* Me gusta */}
-          <button
-            onClick={handleLike}
-            className={`p-2 rounded-full transition-all ${
-              liked ? "bg-red-50 text-red-600" : "text-ink-2 hover:bg-black/5"
-            }`}
-          >
-            <svg
-              className={`w-6 h-6 transition-all ${liked ? "fill-current scale-110" : ""}`}
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-
           {/* Mensaje */}
           {currentUser && !isOwner && ownerHasChat && (
             <button

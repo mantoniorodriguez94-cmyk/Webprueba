@@ -174,9 +174,10 @@ export default function EstadisticasPage() {
     phone: { label: "Llamadas", icon: "📞", color: "from-blue-500 to-blue-600" },
     message: { label: "Mensajes", icon: "✉️", color: "from-purple-500 to-purple-600" },
     share: { label: "Compartidos", icon: "🔗", color: "from-orange-500 to-orange-600" },
-    gallery_view: { label: "Galería", icon: "🖼️", color: "from-purple-500 to-purple-600" },
-    // Se registraban desde el principio y no aparecían en ningún sitio.
-    like: { label: "Me gusta", icon: "❤️", color: "from-pink-500 to-pink-600" }
+    gallery_view: { label: "Galería", icon: "🖼️", color: "from-purple-500 to-purple-600" }
+    // "Me gusta" se quitó de la tarjeta del feed —era un corazón que no
+    // recordaba nada—, así que ese contador dejó de poder crecer. Las
+    // pulsaciones ya registradas siguen en la base por si alguna vez vuelve.
   }
 
   const totalInteractions = interactions.reduce((sum, i) => sum + i.interaction_count, 0)
