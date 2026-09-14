@@ -15,10 +15,11 @@
  * desaparecía según dónde estuvieras.
  */
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import BottomNav from "@/components/ui/BottomNav"
+import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
@@ -29,6 +30,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [negocioId, setNegocioId] = useState<string | null>(null)
 
   const isCompany = (user?.user_metadata?.role ?? "person") === "company"
+
+  /* El sonido del chat estaba construido —hook, mp3 precargado, manejo de
+     errores— pero ningún archivo llamaba al hook, así que no sonaba nunca.
+     Va acá y no en la pantalla de chat porque el aviso sirve justamente
+     cuando NO estás mirando el chat, y este layout envuelve todo el panel. */
+  const { playSound, enableSound } = useChatNotificationSound()
+
+  // El conteo anterior. Arranca en null para que la primera medición no
+  // suene: al abrir la app con mensajes pendientes no hay nada nuevo que
+  // anunciar, sólo pendiente de antes.
+  const noLeidosPrevios = useRef<number | null>(null)
+
+  useEffect(() => {
+    const previo = noLeidosPrevios.current
+    noLeidosPrevios.current = noLeidos
+    if (previo !== null && noLeidos > previo) {
+      playSound()
+    }
+  }, [noLeidos, playSound])
+
+  /* Safari y iOS bloquean el audio hasta que la persona interactúa con la
+     página. Se desbloquea en el primer toque, sea cual sea, y el listener se
+     retira solo. Sin esto el primer sonido fallaría con NotAllowedError. */
+  useEffect(() => {
+    const desbloquear = () => {
+      enableSound()
+      window.removeEventListener("pointerdown", desbloquear)
+    }
+    window.addEventListener("pointerdown", desbloquear, { once: true })
+    return () => window.removeEventListener("pointerdown", desbloquear)
+  }, [enableSound])
 
   const contarNoLeidos = useCallback(async () => {
     if (!user) {
