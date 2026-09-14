@@ -11,7 +11,6 @@ import MembershipTierGrid from "@/components/memberships/MembershipTierGrid"
 import MembershipPaymentModal from "@/components/memberships/MembershipPaymentModal"
 import { Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
-import PromotionsManager from "@/components/dashboard/PromotionsManager"
 import { toast } from "sonner"
 
 interface ProfileMembership {
@@ -221,7 +220,14 @@ export default function MembresiaPage() {
         </div>
 
         {/* Grid de tiers */}
-        <MembershipTierGrid currentTier={currentTier} onSelectTier={handleSelectTier} />
+        {/* El tier efectivo, no el crudo. Con el crudo, una cuenta con tier 3
+            vencido veía "Sin suscripción activa" en el encabezado y, dos
+            centímetros más abajo, "Ya tienes este nivel o superior" en Básico
+            y en Conecta: la misma pantalla afirmando las dos cosas. */}
+        <MembershipTierGrid
+          currentTier={hasActiveSubscription ? currentTier : 0}
+          onSelectTier={handleSelectTier}
+        />
 
         {/* Métodos de pago disponibles para cualquier nivel */}
         <div className="surface rounded-3xl p-4 text-center">

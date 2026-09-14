@@ -6,6 +6,14 @@ import LocationSelector from "@/components/LocationSelector"
 
 interface FilterSidebarProps {
   onFilterChange: (filters: FilterState) => void
+  /**
+   * Cuando va dentro de otro contenedor que ya se presenta como "Filtros"
+   * —el desplegable de móvil o la hoja inferior—, este componente no debe
+   * repetir el título ni volver a dibujar su propia tarjeta. Sin esto salía
+   * una tarjeta dentro de otra, un `sticky` que no tiene sentido dentro de un
+   * desplegable, y la palabra "Filtros" dos veces seguidas.
+   */
+  embebido?: boolean
 }
 
 export interface FilterState {
@@ -31,7 +39,7 @@ const categories = [
   "Otros"
 ]
 
-export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
+export default function FilterSidebar({ onFilterChange, embebido = false }: FilterSidebarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -107,24 +115,39 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     filters.municipality_id !== null
 
   return (
-    <div className="surface rounded-3xl p-5 space-y-5 sticky top-20 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-black/8">
-        <h2 className="text-lg font-bold text-ink flex items-center gap-2">
-          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          Filtros
-        </h2>
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-semibold px-3 py-1.5 bg-blue-50 rounded-full hover:bg-blue-100"
-          >
-            Limpiar
-          </button>
-        )}
-      </div>
+    <div
+      className={
+        embebido
+          ? "space-y-5"
+          : "surface rounded-3xl p-5 space-y-5 sticky top-20 shadow-sm"
+      }
+    >
+      {/* Encabezado. Embebido se omite el título pero NO "Limpiar", que sigue
+          haciendo falta para deshacer lo que ya se filtró. */}
+      {(!embebido || hasActiveFilters) && (
+        <div
+          className={`flex items-center pb-4 border-b border-black/8 ${
+            embebido ? "justify-end" : "justify-between"
+          }`}
+        >
+          {!embebido && (
+            <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filtros
+            </h2>
+          )}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-semibold px-3 py-1.5 bg-blue-50 rounded-full hover:bg-blue-100"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Search Input */}
       <div className="space-y-2">

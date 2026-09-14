@@ -185,7 +185,7 @@ export default function DashboardPage() {
     municipality_id: municipalityIdParam,
     sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular") || "recent"
   })
-  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad">("feed")
+  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias">("feed")
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -901,9 +901,11 @@ export default function DashboardPage() {
     return acc
   }, {} as Record<string, Business[]>)
 
+  // Sin .slice(): cuando esto vivía embebido arriba del feed había que
+  // recortarlo a cuatro para no empujar el listado fuera de pantalla. Como
+  // pestaña propia no compite con nada, se muestran todas.
   const topCategories = Object.entries(businessesByCategory)
     .sort((a, b) => b[1].length - a[1].length)
-    .slice(0, 4)
 
   const displayedBusinesses = 
     activeTab === "destacados" ? featuredBusinesses :
@@ -1112,6 +1114,16 @@ export default function DashboardPage() {
               ⭐ Destacados
             </button>
             <button
+              onClick={() => setActiveTab("categorias")}
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                activeTab === "categorias"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
+              }`}
+            >
+              Categorías
+            </button>
+            <button
               onClick={() => setActiveTab("mejores")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "mejores"
@@ -1144,8 +1156,9 @@ export default function DashboardPage() {
 
           {/* Feed Central */}
           <div className="space-y-4">
-            {/* Categorías Destacadas (Solo en Tab Feed) */}
-            {activeTab === "feed" && topCategories.length > 0 && (
+            {/* Categorías: pestaña propia. Al elegir una se filtra y se vuelve
+                al listado, que es donde está el resultado. */}
+            {activeTab === "categorias" && topCategories.length > 0 && (
               <div className="surface rounded-3xl p-6 shadow-sm">
                 <h2 className="text-xl font-bold text-ink mb-5 flex items-center gap-3">
                   <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
@@ -1159,7 +1172,10 @@ export default function DashboardPage() {
                   {topCategories.map(([category, businesses]) => (
                     <button
                       key={category}
-                      onClick={() => handleFilterChange({ ...filters, category })}
+                      onClick={() => {
+                        handleFilterChange({ ...filters, category })
+                        setActiveTab("feed")
+                      }}
                       className="group relative p-5 bg-black/[0.02] rounded-2xl hover:bg-blue-50 border border-black/8 hover:border-blue-200 transition-all duration-300 hover:scale-105"
                     >
                       <div className="text-center">
@@ -1201,7 +1217,7 @@ export default function DashboardPage() {
             {/* Botón de Filtros Colapsable (Solo Mobile).
                 Mejores y Comunidad no son listados filtrables, así que ahí el
                 botón prometería algo que no hace. */}
-            <div className={activeTab === "mejores" || activeTab === "comunidad" ? "hidden" : "lg:hidden"}>
+            <div className={["mejores", "comunidad", "categorias"].includes(activeTab) ? "hidden" : "lg:hidden"}>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-full surface hover:bg-blue-50 hover:border-blue-200 rounded-2xl px-4 py-3 flex items-center justify-between transition-all duration-300 shadow-sm"
@@ -1234,13 +1250,13 @@ export default function DashboardPage() {
                 }`}
               >
                 <div className="surface rounded-2xl p-5 shadow-sm">
-                  <FilterSidebar onFilterChange={handleFilterChange} />
+                  <FilterSidebar onFilterChange={handleFilterChange} embebido />
                 </div>
               </div>
             </div>
 
             {/* Lista de Negocios */}
-            {activeTab === "mejores" ? (
+            {activeTab === "categorias" ? null : activeTab === "mejores" ? (
               <TopRatedBusinesses />
             ) : activeTab === "comunidad" ? (
               <CommunityFeed />
@@ -1345,10 +1361,13 @@ export default function DashboardPage() {
           </button>
         </div>
         <div className="pt-4">
-          <FilterSidebar onFilterChange={(newFilters) => {
-            handleFilterChange(newFilters)
-            setShowFilterModal(false)
-          }} />
+          <FilterSidebar
+            embebido
+            onFilterChange={(newFilters) => {
+              handleFilterChange(newFilters)
+              setShowFilterModal(false)
+            }}
+          />
         </div>
       </Sheet>
 
