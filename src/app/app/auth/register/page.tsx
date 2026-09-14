@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getReferralId, clearReferralCookie } from "@/lib/utils/referral";
 import { Dialog } from "@/components/ui/Overlay";
 
 /**
@@ -22,7 +21,6 @@ export default function RegisterPage() {
   // Se arrastra el destino original para que, tras registrarse e iniciar
   // sesión, la persona aterrice donde quería ir y no en el inicio.
   const siguiente = searchParams.get("next");
-  const refParam = searchParams.get('ref'); // Capturar parámetro ref
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -122,39 +120,6 @@ export default function RegisterPage() {
         .select("id, full_name, email, role")
         .eq("id", data.user.id)
         .single();
-
-      // Registrar referencia desde cookie o parámetro URL
-      // Prioridad: cookie > parámetro URL
-      const referralId = getReferralId() || refParam;
-
-      if (referralId && data.user && profile) {
-        try {
-          // Verificar que el referidor (partner) existe
-          const { data: partnerCheck } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("id", referralId)
-            .single();
-
-          if (partnerCheck) {
-            // Actualizar el perfil del usuario con referred_by
-            const { error: updateError } = await supabase
-              .from("profiles")
-              .update({ referred_by: referralId })
-              .eq("id", data.user.id);
-
-            if (updateError) {
-              console.warn("Error actualizando referred_by:", updateError);
-            } else {
-              // Limpiar la cookie después de usarla
-              clearReferralCookie();
-            }
-          }
-        } catch (refError) {
-          // Silenciar errores de referral para no interrumpir el registro
-          console.warn("Error registrando referral:", refError);
-        }
-      }
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.warn("Advertencia: No se pudo verificar el perfil:", profileError);

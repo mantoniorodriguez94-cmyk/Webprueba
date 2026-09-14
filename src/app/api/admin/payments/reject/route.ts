@@ -129,8 +129,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // NOTA: ya no se toca la tabla `payments`. Los pagos manuales dejaron de
-    // escribirse ahí (esa tabla es exclusiva de referidos/comisiones).
+    // NOTA: los pagos manuales no se escriben en la tabla `payments`. Estaba
+    // reservada para el sistema de referidos y comisiones, que se eliminó por
+    // no usarse; la tabla quedó sin ningún consumidor.
 
     // Etiqueta legible del nivel + duración solicitados (para el correo)
     const rejectedTier = Number(submissionData.target_tier)

@@ -255,9 +255,10 @@ export async function submitManualPayment(
       }
     }
 
-    // 8️⃣ NOTA: ya NO se inserta en la tabla `payments`. Esa tabla quedó reservada
-    //    exclusivamente para el sistema de referidos/comisiones
-    //    (commissions.source_payment_id) y perdió la columna plan_id.
+    // 8️⃣ NOTA: no se inserta en la tabla `payments`. Estaba reservada para el
+    //    sistema de referidos y comisiones, que se eliminó por no usarse, así
+    //    que hoy no la consume nadie. El registro de pagos manuales vive en
+    //    manual_payment_submissions.
 
     // 9️⃣ Revalidar rutas relacionadas
     revalidatePath('/app/dashboard/membresia')
