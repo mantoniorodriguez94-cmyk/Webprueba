@@ -30,19 +30,16 @@ export default function ReviewList({ reviews, loading = false }: ReviewListProps
     );
   }
 
+  // Compacto a propósito: antes eran 16 de padding vertical y un icono de
+  // 80px para decir que no hay nada. Un vacío no merece más espacio que el
+  // contenido que sustituye, y ocupando media pantalla parecía un error de
+  // carga en vez de un estado normal.
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-16 surface rounded-3xl">
-        <div className="w-20 h-20 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-bold text-ink mb-2">
-          Aún no hay reseñas
-        </h3>
-        <p className="text-ink-2">
-          Sé el primero en compartir tu experiencia con este negocio
+      <div className="surface rounded-2xl px-5 py-6 text-center">
+        <p className="text-sm font-semibold text-ink">Aún no hay reseñas</p>
+        <p className="mt-1 text-sm text-ink-2">
+          Sé el primero en compartir tu experiencia con este negocio.
         </p>
       </div>
     );

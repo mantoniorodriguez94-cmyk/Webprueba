@@ -810,14 +810,30 @@ export default function BusinessDetailPage() {
 
         {/* Sección de Reviews y Reseñas */}
         <div className="mt-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-3xl font-bold text-ink mb-2">
-                Reseñas y Calificaciones
-              </h2>
-              <p className="text-ink-2">
-                Descubre qué opinan los clientes sobre este negocio
-              </p>
+          {/* Un solo encabezado. Antes había tres capas diciendo lo mismo
+              —"Reseñas y Calificaciones", su subtítulo, y más abajo "Lo que
+              dicen nuestros clientes"— y la nota media quedaba enterrada en un
+              bloque aparte. Acá el titular lleva el dato: cuántas hay y qué
+              puntúan, que es lo que se viene a saber.
+
+              Se apila en móvil: en una sola fila el botón se estrujaba contra
+              el título y su etiqueta partía en dos líneas. */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h2 className="text-2xl font-bold text-ink">Reseñas</h2>
+              {reviewStats && reviewStats.total_reviews > 0 ? (
+                <span className="flex items-baseline gap-2 text-ink-2">
+                  <span className="text-2xl font-bold text-ink tabular-nums">
+                    {Number(reviewStats.average_rating).toFixed(1)}
+                  </span>
+                  <StarRating rating={Number(reviewStats.average_rating)} size="sm" />
+                  <span className="text-sm">
+                    ({reviewStats.total_reviews})
+                  </span>
+                </span>
+              ) : (
+                <span className="text-sm text-ink-2">Sin reseñas todavía</span>
+              )}
             </div>
             
             {/* Sin dueño no se reseña: es una ficha sembrada por el equipo
@@ -826,12 +842,12 @@ export default function BusinessDetailPage() {
             {user && !isOwner && !userReview && fichaReclamada && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold whitespace-nowrap w-full sm:w-auto"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
-                Dejar una reseña
+                Escribir reseña
               </button>
             )}
             
@@ -839,7 +855,7 @@ export default function BusinessDetailPage() {
             {user && !isOwner && userReview && isAdmin && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full transition-all font-semibold"
+                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full transition-all font-semibold whitespace-nowrap w-full sm:w-auto"
                 title="Solo administradores pueden editar reseñas"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -851,7 +867,7 @@ export default function BusinessDetailPage() {
             
             {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
             {user && !isOwner && userReview && !isAdmin && (
-              <div className="flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+              <div className="flex items-center justify-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200 w-full sm:w-auto">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -888,12 +904,7 @@ export default function BusinessDetailPage() {
           )}
 
           {/* Lista de Reviews */}
-          <div>
-            <h3 className="text-2xl font-bold text-ink mb-6">
-              Lo que dicen nuestros clientes
-            </h3>
-            <ReviewList reviews={reviews} loading={reviewsLoading} />
-          </div>
+          <ReviewList reviews={reviews} loading={reviewsLoading} />
 
           {/* Mensaje si el usuario no está logueado */}
           {!user && (
