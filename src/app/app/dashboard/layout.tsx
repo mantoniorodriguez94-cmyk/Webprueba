@@ -123,11 +123,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, isCompany])
 
+  /* Tiempo real, con el sondeo detrás como red.
+     Antes esto era sólo un setInterval de 30 segundos: bastaba para un badge,
+     pero un aviso sonoro que llega medio minuto tarde se siente roto.
+
+     Se escucha `conversations` y no `messages` por dos razones. Se puede
+     filtrar por usuario o por negocio, así que cada persona recibe únicamente
+     lo suyo y no se gasta cuota en conversaciones ajenas —Realtime cuenta por
+     mensaje recibido—. Y basta con una conexión, en vez de una por
+     conversación abierta.
+
+     Funciona porque insertar un mensaje modifica esa fila: dos triggers mueven
+     last_message_at y suben el contador de no leídos. El código que envía no
+     toca la conversación, así que todo depende de ellos; van asegurados en
+     scripts/chat-tiempo-real.sql.
+
+     El intervalo se queda, pero cada dos minutos en vez de cada treinta
+     segundos: si la conexión se cae o un aviso se pierde, el contador se
+     corrige solo sin que nadie lo note. */
   useEffect(() => {
     contarNoLeidos()
-    const intervalo = setInterval(contarNoLeidos, 30000)
+    const intervalo = setInterval(contarNoLeidos, 120000)
     return () => clearInterval(intervalo)
   }, [contarNoLeidos])
+
+  useEffect(() => {
+    if (!user) return
+
+    const filtro = isCompany
+      ? negocioId
+        ? `business_id=eq.${negocioId}`
+        : null
+      : `user_id=eq.${user.id}`
+
+    // Un dueño sin negocio todavía no tiene conversaciones que escuchar.
+    if (!filtro) return
+
+    const canal = supabase
+      .channel(`no_leidos_${isCompany ? negocioId : user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "conversations", filter: filtro },
+        () => contarNoLeidos()
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(canal)
+    }
+  }, [user, isCompany, negocioId, contarNoLeidos])
 
   return (
     <>
