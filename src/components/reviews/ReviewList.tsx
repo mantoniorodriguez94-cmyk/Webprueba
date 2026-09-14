@@ -116,20 +116,20 @@ function ReviewCard({
   const userName = review.user_name || 'Usuario';
 
   return (
-    <div className="surface rounded-3xl p-6 hover:border-blue-300 hover:shadow-md transition-all duration-300">
-      <div className="flex items-start gap-4">
+    <div className="surface rounded-2xl px-5 py-4 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+      <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-sm">
+        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
           {getInitials(userName)}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-2">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-bold text-ink text-lg">{userName}</h4>
+                <h4 className="font-semibold text-ink">{userName}</h4>
                 {/* La app no ve la compra —ocurre en el local—, así que esto
                     dice lo único comprobable: que esta persona contactó al
                     negocio antes de opinar. Lo sella un trigger al escribir;
@@ -146,12 +146,9 @@ function ReviewCard({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-ink-2 flex items-center gap-1.5 mt-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {formatDate(review.created_at)}
-              </p>
+              {/* Sin icono de reloj: "Justo ahora" ya se lee como una fecha
+                  y el reloj sólo añadía peso a una línea secundaria. */}
+              <p className="text-xs text-ink-2 mt-0.5">{formatDate(review.created_at)}</p>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               <StarRating rating={review.rating} size="sm" />
@@ -190,9 +187,10 @@ function ReviewCard({
             </div>
           </div>
 
-          {/* Comment */}
+          {/* El comentario, sin caja propia: era una tarjeta dentro de otra
+              para envolver una línea de texto. */}
           {review.comment && (
-            <p className="text-ink-2 leading-relaxed whitespace-pre-wrap bg-black/[0.02] rounded-2xl p-4 border border-black/8">
+            <p className="text-sm text-ink-2 leading-relaxed whitespace-pre-wrap">
               {review.comment}
             </p>
           )}
