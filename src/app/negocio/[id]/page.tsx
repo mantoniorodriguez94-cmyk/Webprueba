@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import StarRating from "@/components/reviews/StarRating"
+import RegistrarVista from "@/components/analytics/RegistrarVista"
 import { notFound } from "next/navigation"
 // Forzar renderizado dinámico para SEO
 export const dynamic = 'force-dynamic'
@@ -172,6 +173,11 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
 
   return (
     <>
+      {/* Esta página no contaba vistas: el enlace que el negocio comparte por
+          WhatsApp podía traerle cincuenta visitas y sus estadísticas marcaban
+          cero. Se registra desde el cliente para no contar rastreadores. */}
+      <RegistrarVista businessId={business.id} />
+
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"

@@ -178,6 +178,7 @@ export const BENEFICIOS_POR_TIER: Record<number, BeneficiosTier> = {
       "📍 Tu negocio en el directorio, con mapa y horario",
       "🔍 Apareces en las búsquedas",
       "📞 Tu teléfono visible para que te llamen",
+      "📊 Cuántas visitas recibe tu negocio",
       `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_FREE]} fotos`,
     ],
   },
@@ -186,6 +187,7 @@ export const BENEFICIOS_POR_TIER: Record<number, BeneficiosTier> = {
     items: [
       "💬 Chat en vivo con tus clientes, escriba quien escriba",
       "📲 Botón directo a WhatsApp",
+      "📊 Cuántos te escriben, te llaman y te guardan",
       `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_CONECTA]} fotos`,
     ],
   },
@@ -202,6 +204,7 @@ export const BENEFICIOS_POR_TIER: Record<number, BeneficiosTier> = {
     items: [
       "✨ Tus promociones salen en la sección Promociones del inicio",
       "👑 Insignia de patrocinador y marco dorado en tu tarjeta",
+      "📊 Estadísticas completas: gráfico diario, 30 días y crecimiento",
       `⭐ Entras en Mejores calificados desde ${String(NOTA_MINIMA_PATROCINA).replace(".", ",")} estrellas`,
       `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_PATROCINA]} fotos`,
     ],
