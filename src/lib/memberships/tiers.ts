@@ -177,14 +177,15 @@ export const BENEFICIOS_POR_TIER: Record<number, BeneficiosTier> = {
     items: [
       "📍 Tu negocio en el directorio, con mapa y horario",
       "🔍 Apareces en las búsquedas",
+      "📞 Tu teléfono visible para que te llamen",
       `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_FREE]} fotos`,
     ],
   },
   [SUBSCRIPTION_TIER_CONECTA]: {
     incluye: "Básico",
     items: [
-      "💬 Chat en vivo con tus clientes",
-      "📲 Botón directo a WhatsApp y llamada",
+      "💬 Chat en vivo con tus clientes, escriba quien escriba",
+      "📲 Botón directo a WhatsApp",
       `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_CONECTA]} fotos`,
     ],
   },

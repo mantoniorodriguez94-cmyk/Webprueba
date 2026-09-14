@@ -17,8 +17,9 @@ import {
   checkBusinessSaved,
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
-import { isTierActive } from "@/lib/memberships/tiers"
+import { isTierActive, SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
 import { tieneBordeDorado } from "@/lib/memberships/perks"
+import { CORONA_POR_TIER } from "@/components/memberships/MembershipBadge"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
@@ -200,11 +201,18 @@ export default function BusinessFeedCard({
   // cuenta tenga Patrocina. La regla suma, nunca resta: ver lib/memberships/perks.
   const ownerHasGoldenBorder = tieneBordeDorado(business, ownerTier)
 
-  // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Patrocina) ─────
-  const ownerHasFullContact = ownerTier >= 2
+  /* ── Contacto, escalera acumulativa ───────────────────────────────────────
+     Teléfono: TODOS, gratis incluido. Esto es un directorio; un negocio está
+     acá para que lo llamen, y esconder el teléfono esconde la utilidad básica
+     del producto. Antes era tier 2+, así que un negocio gratis quedaba en la
+     lista sin ninguna vía de contacto: un escaparate sin puerta. El cliente
+     que abría tres fichas sin poder contactar ninguna concluía que la app no
+     sirve, y era justo el público que hace que los planes valgan algo.
+
+     WhatsApp: Conecta en adelante. Es la conversación cómoda, sin marcar. */
+  const ownerHasWhatsApp = ownerTier >= SUBSCRIPTION_TIER_CONECTA
 
   const isTier2 = ownerTier >= 2
-  const isTier3 = ownerTier >= 3 // badge de Patrocinador (NO es verificación: eso es is_verified, lo otorga un admin)
 
   // ── Heal: lazy profile fetch when join data was absent ────────────────────
   // This covers edge cases where the batch join hadn't populated yet (e.g., new card).
@@ -295,11 +303,11 @@ export default function BusinessFeedCard({
                 <h3 className="text-lg font-bold text-ink truncate hover:text-blue-600 transition-colors">
                   {business.name}
                 </h3>
-                {isTier3 && (
+                {CORONA_POR_TIER[ownerTier] && (
                   <div
-                    className="flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full bg-amber-500 text-white"
-                    title="Patrocinador"
-                    aria-label="Patrocinador"
+                    className={`flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full text-white ${CORONA_POR_TIER[ownerTier].solido}`}
+                    title={CORONA_POR_TIER[ownerTier].etiqueta}
+                    aria-label={`Plan ${CORONA_POR_TIER[ownerTier].etiqueta}`}
                   >
                     <Crown className="w-3 h-3" />
                   </div>
@@ -446,7 +454,7 @@ export default function BusinessFeedCard({
           </div>
         )}
 
-        {ownerHasFullContact && (business.phone || business.whatsapp) && (
+        {(business.phone || business.whatsapp) && (
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -525,9 +533,9 @@ export default function BusinessFeedCard({
         </button>
       </div>
 
-      {/* Botones de Acción Principales — WhatsApp/Call solo si dueño Tier 2+ */}
+      {/* Llamar lo tiene todo el mundo; WhatsApp desde Conecta. */}
       <div className="p-4 pt-0 flex gap-2">
-        {ownerHasFullContact && business.whatsapp && (
+        {ownerHasWhatsApp && business.whatsapp && (
           <a
             href={`https://wa.me/${business.whatsapp}`}
             target="_blank"
@@ -541,7 +549,7 @@ export default function BusinessFeedCard({
             Contactar
           </a>
         )}
-        {ownerHasFullContact && business.phone && (
+        {business.phone && (
           <a
             href={`tel:${business.phone}`}
             onClick={handlePhone}
@@ -564,7 +572,7 @@ export default function BusinessFeedCard({
         </Link>
       </div>
 
-      {/* Modal de enviar mensaje — solo si negocio tiene chat activo y visitante Conecta+ */}
+      {/* Modal de enviar mensaje — el negocio es quien paga el chat. */}
       {showMessageModal && currentUser && (
         <SendMessageModal
           business={business}

@@ -19,7 +19,7 @@ import { toast } from "sonner"
 export default function MisNegociosPage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
-  const { tier, loading: tierLoading } = useMembershipAccess()
+  const { effectiveTier, loading: tierLoading } = useMembershipAccess()
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -35,7 +35,9 @@ export default function MisNegociosPage() {
     : "Límite de 1 negocio por cuenta alcanzado. Escríbenos desde /soporte si necesitas gestionar más."
   
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
-  const currentBadgeType = getBadgeTypeForTier((tier || 0) as MembershipTier)
+  // effectiveTier y no tier: con el crudo, una suscripción vencida seguía
+  // mostrando la corona de su antiguo plan.
+  const currentBadgeType = getBadgeTypeForTier((effectiveTier || 0) as MembershipTier)
   
   // Obtener mensajes no leídos para usuarios negocio
   useEffect(() => {

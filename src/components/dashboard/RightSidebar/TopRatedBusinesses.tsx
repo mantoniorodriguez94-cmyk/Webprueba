@@ -109,13 +109,15 @@ export default function TopRatedBusinesses() {
           tier: tierPorDueno.get(business.owner_id ?? '') ?? 0,
         }))
         .filter(b => {
-          // Destaca entra sólo con la nota perfecta: 4,9 no alcanza.
-          // Patrocina, que paga más, entra desde 4,5.
-          if (b.tier === SUBSCRIPTION_TIER_DESTACADO) {
-            return b.average_rating >= NOTA_MINIMA_DESTACA
-          }
-          if (b.tier === SUBSCRIPTION_TIER_PATROCINA) {
+          // Se comprueba de mayor a menor con >= y no con igualdad exacta,
+          // para que cada plan herede lo del anterior: Patrocina, que paga
+          // más, entra desde 4,5; Destaca necesita la nota perfecta, porque
+          // 4,9 no alcanza.
+          if (b.tier >= SUBSCRIPTION_TIER_PATROCINA) {
             return b.average_rating >= NOTA_MINIMA_PATROCINA
+          }
+          if (b.tier >= SUBSCRIPTION_TIER_DESTACADO) {
+            return b.average_rating >= NOTA_MINIMA_DESTACA
           }
           return false
         })

@@ -73,9 +73,10 @@ export default function BusinessDetailPage() {
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
   const businessSubscriptionEndDate =
     business?.profiles?.subscription_end_date ?? business?.owner?.subscription_end_date ?? null
-  // Chat access: the business owner needs an active paid membership, same rule as the sender
+  // El chat lo paga el negocio; quien escribe sólo necesita estar autenticado.
   const ownerHasChat = Boolean(business) && isTierActive(businessTier, businessSubscriptionEndDate)
-  const ownerHasFullContact = ownerHasChat
+  // Teléfono para todos —es un directorio—; WhatsApp desde Conecta.
+  const ownerHasWhatsApp = ownerHasChat
 
   // Parsear gallery_urls de manera segura
   const getGalleryUrls = (): string[] => {
@@ -530,7 +531,7 @@ export default function BusinessDetailPage() {
                 </div>
               )}
               
-              {ownerHasFullContact && (business.phone || business.whatsapp) && (
+              {ownerHasWhatsApp && (business.phone || business.whatsapp) && (
                 <p className="text-ink-2 flex items-center gap-2">
                   <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -544,7 +545,7 @@ export default function BusinessDetailPage() {
           {/* Botones de Contacto — debajo de toda la información */}
           {!isOwner && (
             <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-black/8">
-              {ownerHasFullContact && business.whatsapp && (
+              {ownerHasWhatsApp && business.whatsapp && (
                 <a
                   href={`https://wa.me/${business.whatsapp}`}
                   target="_blank"
@@ -557,7 +558,7 @@ export default function BusinessDetailPage() {
                   Contactar por WhatsApp
                 </a>
               )}
-              {ownerHasFullContact && business.phone && (
+              {ownerHasWhatsApp && business.phone && (
                 <a
                   href={`tel:${business.phone}`}
                   className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold flex-1"
@@ -1059,8 +1060,8 @@ export default function BusinessDetailPage() {
         </div>
       )}
 
-      {/* Modal de Mensajes — solo si negocio tiene chat activo y visitante Conecta+ */}
-      {showMessageModal && business && user && ownerHasChat && hasAccess(SUBSCRIPTION_TIER_CONECTA) && (
+      {/* Modal de Mensajes — sólo si el negocio tiene chat activo */}
+      {showMessageModal && business && user && ownerHasChat && (
         <SendMessageModal
           business={business}
           currentUserId={user.id}
