@@ -9,7 +9,7 @@ import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
 import BusinessClaimCodeSection from "@/components/admin/BusinessClaimCodeSection"
 import { getLabelForTier, isTierActive } from "@/lib/memberships/tiers"
-import { topeDeFotos } from "@/lib/memberships/perks"
+import { topeDeFotos, banderaVigente } from "@/lib/memberships/perks"
 import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 // Forzar renderizado dinámico
@@ -206,12 +206,12 @@ export default async function AdminBusinessDetailPage({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {business.is_premium && (
+                {banderaVigente(business.is_premium, business.premium_until) && (
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                     Premium
                   </span>
                 )}
-                {business.is_featured && (
+                {banderaVigente(business.is_featured, business.featured_until) && (
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                     Destacado
                   </span>

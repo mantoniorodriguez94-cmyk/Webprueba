@@ -26,6 +26,29 @@ import {
   getMaxPhotosForTier,
 } from "./tiers"
 
+/**
+ * Una bandera espejo del negocio —is_premium, is_featured— sigue vigente si
+ * está encendida y su fecha no ha pasado.
+ *
+ * Existe porque esas columnas son un espejo que sólo se refresca cuando algo
+ * las escribe: si nadie pasa a apagarlas, se quedan en `true` para siempre.
+ * Hubo una ruta pensada para limpiarlas con un cron que nunca se llegó a
+ * programar. En vez de montar esa maquinaria, se comprueba la fecha al leer,
+ * que es lo que hace el resto de la app desde isTierActive: así da igual que
+ * el espejo esté rancio.
+ *
+ * Sin fecha = sin vencimiento, la misma convención que isTierActive.
+ */
+export function banderaVigente(
+  activa: boolean | null | undefined,
+  hasta: string | null | undefined
+): boolean {
+  if (activa !== true) return false
+  if (hasta == null || String(hasta).trim() === "") return true
+  const fin = new Date(hasta)
+  return !Number.isNaN(fin.getTime()) && fin > new Date()
+}
+
 /** Una fecha de concesión está vigente si existe y no ha pasado. */
 export function perkVigente(hasta: string | null | undefined): boolean {
   if (hasta == null || String(hasta).trim() === "") return false

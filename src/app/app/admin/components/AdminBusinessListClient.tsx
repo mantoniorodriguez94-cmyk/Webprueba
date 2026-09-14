@@ -5,6 +5,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, Search } from "lucide-react"
 import AdminQuickActions, { AdminBusinessRow } from "./AdminQuickActions"
+import { banderaVigente } from "@/lib/memberships/perks"
 
 interface AdminBusinessListClientProps {
   businesses: AdminBusinessRow[]
@@ -101,7 +102,7 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {b.is_premium && (
+                      {banderaVigente(b.is_premium, b.premium_until) && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                           Premium
                         </span>

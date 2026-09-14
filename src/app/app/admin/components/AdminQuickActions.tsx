@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Info, Loader2, Shield } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { banderaVigente } from "@/lib/memberships/perks"
 import AdminUserManagementModal from "./AdminUserManagementModal"
 import SuspendUserButton from "@/app/app/admin/usuarios/components/SuspendUserButton"
 import HideBusinessButton from "./HideBusinessButton"
@@ -305,7 +306,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold truncate text-ink">{businessName}</h3>
           <div className="flex flex-wrap gap-2 mt-1">
-            {business.is_premium && (
+            {banderaVigente(business.is_premium, business.premium_until) && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Premium</span>
             )}
             {business.is_verified && (
