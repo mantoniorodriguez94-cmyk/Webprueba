@@ -107,7 +107,24 @@ function ReviewCard({ review }: { review: Review }) {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <h4 className="font-bold text-ink text-lg">{userName}</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="font-bold text-ink text-lg">{userName}</h4>
+                {/* La app no ve la compra —ocurre en el local—, así que esto
+                    dice lo único comprobable: que esta persona contactó al
+                    negocio antes de opinar. Lo sella un trigger al escribir;
+                    nadie puede ponérselo a sí mismo. */}
+                {review.cliente_verificado && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[11px] font-semibold text-green-700"
+                    title="Esta persona contactó al negocio antes de dejar su reseña"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Cliente verificado
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-ink-2 flex items-center gap-1.5 mt-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
