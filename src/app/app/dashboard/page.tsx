@@ -187,43 +187,6 @@ export default function DashboardPage() {
   })
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias">("feed")
 
-  /* La fila de pestañas desborda y nada lo indica: en un teléfono se ven tres
-     de seis y las otras no existen para quien no se le ocurra deslizar.
-
-     Dos señales, ninguna permanente. La máscara difumina el borde derecho
-     mientras quede fila por ver —difumina el CONTENIDO y no pinta un
-     degradado encima, que tendría que acertarle al fondo, y acá el fondo es
-     otro degradado—. Y al entrar la fila se desplaza sola un poco y vuelve:
-     un empujón que enseña que hay más y se acaba.
-
-     Deliberadamente NO se mueve en bucle: son botones, y una diana en
-     movimiento se falla. Quien prefiere no ver animaciones no ve el empujón. */
-  const pistaPestanasRef = useRef<HTMLDivElement>(null)
-  const [hayMasPestanas, setHayMasPestanas] = useState(false)
-
-  const alDesplazarPestanas = () => {
-    const pista = pistaPestanasRef.current
-    if (!pista) return
-    // El margen de 4px evita que un scroll fraccionario deje la máscara
-    // encendida para siempre al final de la fila.
-    setHayMasPestanas(pista.scrollLeft + pista.clientWidth < pista.scrollWidth - 4)
-  }
-
-  useEffect(() => {
-    const pista = pistaPestanasRef.current
-    if (!pista) return
-    alDesplazarPestanas()
-
-    const prefiereQuieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (prefiereQuieto || pista.scrollWidth <= pista.clientWidth) return
-
-    const ida = setTimeout(() => pista.scrollTo({ left: 72, behavior: "smooth" }), 700)
-    const vuelta = setTimeout(() => pista.scrollTo({ left: 0, behavior: "smooth" }), 1500)
-    return () => {
-      clearTimeout(ida)
-      clearTimeout(vuelta)
-    }
-  }, [])
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -1120,16 +1083,12 @@ export default function DashboardPage() {
       {/* Pestañas de categorías: salen de la barra y se alinean con el feed,
           con el mismo ancho y padding que las tarjetas de abajo. */}
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 pt-5">
-        <div className="relative">
-          <div
-            ref={pistaPestanasRef}
-            onScroll={alDesplazarPestanas}
-            className={`flex gap-2 overflow-x-auto scrollbar-none pb-1 ${
-              hayMasPestanas
-                ? "[mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
-                : ""
-            }`}
-          >
+        {/* Envuelven en vez de desbordar: con seis pestañas, en un teléfono
+            se veían tres y no había forma clara de saber que faltaban otras.
+            Se probó difuminar el borde y un empujón inicial, y seguía sin
+            quedar claro. Dos filas eliminan el problema en vez de insinuarlo.
+            En pantallas anchas caben las seis en una sola fila igualmente. */}
+        <div className="flex flex-wrap gap-2 pb-1">
             <button
               onClick={() => setActiveTab("feed")}
               className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
@@ -1190,7 +1149,6 @@ export default function DashboardPage() {
             >
               Comunidad
             </button>
-          </div>
         </div>
       </div>
 
