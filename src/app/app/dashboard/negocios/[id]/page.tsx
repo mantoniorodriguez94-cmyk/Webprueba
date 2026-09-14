@@ -904,7 +904,7 @@ export default function BusinessDetailPage() {
           )}
 
           {/* Lista de Reviews */}
-          <ReviewList reviews={reviews} loading={reviewsLoading} />
+          <ReviewList reviews={reviews} loading={reviewsLoading} currentUserId={user?.id ?? null} />
 
           {/* Mensaje si el usuario no está logueado */}
           {!user && (

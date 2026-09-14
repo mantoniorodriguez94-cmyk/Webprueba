@@ -4,13 +4,21 @@ import React, { useState } from 'react';
 import { Review } from '@/types/review';
 import StarRating from './StarRating';
 import ReportReviewModal from '@/components/reports/ReportReviewModal';
+import { Popover } from '@/components/ui/Overlay';
+import { MoreVertical, Flag } from 'lucide-react';
 
 interface ReviewListProps {
   reviews: Review[];
   loading?: boolean;
+  /**
+   * Quién está mirando. Sin esto la tarjeta no podía distinguir a nadie:
+   * ofrecía "Reportar reseña" al propio autor —reportarse a sí mismo— y a
+   * visitantes sin sesión, a los que el modal rechaza al comprobar la cuenta.
+   */
+  currentUserId?: string | null;
 }
 
-export default function ReviewList({ reviews, loading = false }: ReviewListProps) {
+export default function ReviewList({ reviews, loading = false, currentUserId = null }: ReviewListProps) {
   if (loading) {
     return (
       <div className="space-y-4">
@@ -48,14 +56,30 @@ export default function ReviewList({ reviews, loading = false }: ReviewListProps
   return (
     <div className="space-y-4">
       {reviews.map((review) => (
-        <ReviewCard key={review.id} review={review} />
+        <ReviewCard key={review.id} review={review} currentUserId={currentUserId} />
       ))}
     </div>
   );
 }
 
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({
+  review,
+  currentUserId,
+}: {
+  review: Review
+  currentUserId?: string | null
+}) {
   const [showReportModal, setShowReportModal] = useState(false)
+  const [menuAbierto, setMenuAbierto] = useState(false)
+
+  /* Reportar es una acción excepcional: va detrás de un menú y en color
+     neutro. En rojo y siempre visible competía con la reseña por la atención
+     y sugería peligro; el rojo tiene sentido dentro de la confirmación, que
+     es cuando ya se decidió hacerlo.
+
+     No lo ve quien no tiene sesión —el modal la exige y fallaría— ni el autor
+     de la reseña, que no tiene a quién reportar. */
+  const puedeReportar = Boolean(currentUserId) && currentUserId !== review.user_id
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -129,7 +153,41 @@ function ReviewCard({ review }: { review: Review }) {
                 {formatDate(review.created_at)}
               </p>
             </div>
-            <StarRating rating={review.rating} size="sm" />
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <StarRating rating={review.rating} size="sm" />
+              {puedeReportar && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMenuAbierto((v) => !v)}
+                    aria-label="Opciones de la reseña"
+                    aria-haspopup="menu"
+                    aria-expanded={menuAbierto}
+                    className="p-1.5 rounded-full text-ink-2 hover:bg-black/5 transition-colors"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  <Popover
+                    open={menuAbierto}
+                    onClose={() => setMenuAbierto(false)}
+                    align="right"
+                    panelClassName="w-48 rounded-2xl border border-black/10 bg-white p-1 shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuAbierto(false)
+                        setShowReportModal(true)
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-ink hover:bg-black/5 transition-colors"
+                    >
+                      <Flag className="w-4 h-4 text-ink-2" />
+                      Reportar reseña
+                    </button>
+                  </Popover>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Comment */}
@@ -139,18 +197,6 @@ function ReviewCard({ review }: { review: Review }) {
             </p>
           )}
 
-          {/* Botón Reportar */}
-          <div className="mt-3 flex justify-end">
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Reportar reseña
-            </button>
-          </div>
         </div>
       </div>
 

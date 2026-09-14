@@ -24,7 +24,7 @@ export default async function AdminBusinessDetailPage({
 }: { 
   params: Promise<{ id: string }> 
 }) {
-  await requireAdmin()
+  const adminActual = await requireAdmin()
   const { id } = await params
   const supabase = await createClient()
 
@@ -426,7 +426,7 @@ export default async function AdminBusinessDetailPage({
           <div className="mb-6">
             <ReviewStats stats={reviewStats} />
           </div>
-          <ReviewList reviews={reviewsData} loading={false} />
+          <ReviewList reviews={reviewsData} loading={false} currentUserId={adminActual?.id ?? null} />
         </div>
       )}
 
