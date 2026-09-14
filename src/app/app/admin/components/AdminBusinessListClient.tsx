@@ -18,9 +18,8 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
     const term = search.trim().toLowerCase()
     if (!term) return businesses
     return businesses.filter((b) => {
-      const name = (b.name || "").toLowerCase()
-      const id = (b.id || "").toLowerCase()
-      return name.includes(term) || id.includes(term)
+      const campos = [b.name, b.id, b.owner_email, b.owner_name, b.owner_id]
+      return campos.some((c) => (c || "").toLowerCase().includes(term))
     })
   }, [businesses, search])
 
@@ -45,7 +44,7 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar negocios por nombre o ID..."
+          placeholder="Buscar por negocio, dueño, correo o ID..."
           className="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-black/10 text-sm text-ink placeholder-ink-2/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -94,8 +93,11 @@ export default function AdminBusinessListClient({ businesses }: AdminBusinessLis
                   <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-ink truncate">{businessName}</p>
+                      {/* El correo del dueño a la vista: es el dato con el
+                          que llega un ticket de soporte, y sin él había que
+                          abrir negocio por negocio para encontrar a alguien. */}
                       <p className="text-[11px] text-ink-2 truncate">
-                        ID: <span className="font-mono text-ink-2">{b.id.slice(0, 8)}...</span>
+                        {b.owner_email || `ID: ${b.id.slice(0, 8)}...`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">

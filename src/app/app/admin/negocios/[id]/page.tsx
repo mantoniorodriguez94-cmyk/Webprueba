@@ -28,13 +28,18 @@ export default async function AdminBusinessDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Cargar información completa del negocio
+  /* El perfil del dueño va en una consulta aparte y no con
+     `profiles:owner_id(...)` embebido. PostgREST rechaza ese embebido —"Could
+     not find a relationship between 'businesses' and 'owner_id'"— porque
+     owner_id referencia auth.users, no public.profiles, y sin clave foránea
+     entre ambas no hay relación que seguir.
+
+     Esta página llevaba tiempo pidiéndolo así, de modo que la consulta fallaba
+     entera y el `notFound()` de abajo la convertía en un 404. Estaba rota, y
+     por eso no había en toda la app un enlace que apuntara a ella. */
   const { data: business, error: businessError } = await supabase
     .from("businesses")
-    .select(`
-      *,
-      profiles:owner_id(id, full_name, email, role, subscription_tier, subscription_end_date, created_at, suspended_at)
-    `)
+    .select("*")
     .eq("id", id)
     .single()
 
@@ -42,7 +47,13 @@ export default async function AdminBusinessDetailPage({
     notFound()
   }
 
-  const owner: any = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
+  const { data: owner } = business.owner_id
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, subscription_tier, subscription_end_date, created_at, suspended_at")
+        .eq("id", business.owner_id)
+        .maybeSingle()
+    : { data: null }
 
   // El tier guardado puede estar vencido: se pasa por la misma comprobación
   // que usa el resto de la app para no mostrar un plan que ya no rige.
