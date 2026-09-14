@@ -20,7 +20,8 @@ import { getBadgeTypeForTier, getLabelForTier, isTierActive, MAX_NEGOCIOS_POR_CU
 import { tienePrioridad } from "@/lib/memberships/perks"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
-import { destinosPrincipales } from "@/lib/navegacion"
+import { destinosPrincipales, type Destino } from "@/lib/navegacion"
+import { Bookmark } from "lucide-react"
 import { toast } from "sonner"
 
 /* ── Por qué acá dice `*` y no una lista de columnas ───────────────────────
@@ -231,7 +232,7 @@ export default function DashboardPage() {
     unreadMessagesPersonCount +
     Object.values(unreadMessagesByBusiness).reduce((suma, n) => suma + n, 0)
 
-  const destinosMenu = destinosPrincipales({
+  const destinosBase = destinosPrincipales({
     isCompany,
     pathname,
     unreadCount: totalNoLeidos,
@@ -241,6 +242,30 @@ export default function DashboardPage() {
       ? `/app/dashboard/negocios/${negocios[0].id}/gestionar`
       : undefined,
   })
+
+  /* El menú puede ofrecer MÁS que la barra.
+     La barra está limitada a cinco: con seis, las etiquetas se cortan en
+     pantallas de 360 px. El menú es una lista vertical y no tiene ese
+     problema, así que a las cuentas de negocio se les añade acá "Guardados",
+     que en su barra no cabe. Va detrás de "Mi negocio", donde se pidió.
+
+     Las cuentas de persona ya lo llevan en su propia barra, así que no se
+     duplica. */
+  const destinosMenu: Destino[] = !isCompany
+    ? destinosBase
+    : destinosBase.flatMap((destino) =>
+        destino.label === "Mi negocio"
+          ? [
+              destino,
+              {
+                href: "/app/dashboard/guardados",
+                label: "Guardados",
+                Icono: Bookmark,
+                activo: Boolean(pathname?.startsWith("/app/dashboard/guardados")),
+              },
+            ]
+          : [destino]
+      )
 
   // ============================================================
   // 🔥 DETECTAR SI EL USUARIO ES ADMIN (desde tabla profiles)
