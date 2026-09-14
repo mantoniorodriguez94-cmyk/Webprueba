@@ -18,10 +18,36 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 
 const EASE = "easeOut" as const
 const DURATION = 0.2
+
+/**
+ * Saca el overlay del DOM donde se declaró y lo cuelga de <body>.
+ *
+ * Sin esto, un modal abierto desde dentro de una tarjeta se renderiza dentro
+ * de esa tarjeta, y `z-[9999]` no sirve de nada: el z-index sólo compite
+ * dentro de su propio contexto de apilamiento. Basta con que un ancestro
+ * tenga transform, opacity o una animación —y las tarjetas del feed entran
+ * con animate-fade-in— para que el modal quede encerrado ahí y las tarjetas
+ * siguientes le pinten encima. Es exactamente lo que pasaba al escribirle a
+ * un negocio desde el inicio: el cuadro salía por debajo de las fichas.
+ *
+ * Colgado de <body> no hay ancestros que lo encierren y el z-index vuelve a
+ * significar lo que parece que significa.
+ *
+ * El Popover NO se porta: va anclado a su disparador con posición absoluta y
+ * sacarlo de ahí lo mandaría a la esquina de la pantalla.
+ */
+function EnCapaSuperior({ children }: { children: React.ReactNode }) {
+  // En el servidor no hay document; se monta después de la hidratación.
+  const [montado, setMontado] = useState(false)
+  useEffect(() => setMontado(true), [])
+  if (!montado) return null
+  return createPortal(children, document.body)
+}
 
 function useLockBodyScroll(active: boolean) {
   useEffect(() => {
@@ -77,6 +103,7 @@ export function Dialog({
   useEscapeKey(open, onClose)
 
   return (
+    <EnCapaSuperior>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -102,6 +129,7 @@ export function Dialog({
         </motion.div>
       )}
     </AnimatePresence>
+    </EnCapaSuperior>
   )
 }
 
@@ -122,6 +150,7 @@ export function Sheet({
   useEscapeKey(open, onClose)
 
   return (
+    <EnCapaSuperior>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -149,6 +178,7 @@ export function Sheet({
         </motion.div>
       )}
     </AnimatePresence>
+    </EnCapaSuperior>
   )
 }
 
@@ -172,6 +202,7 @@ export function Drawer({
   const isLeft = side === "left"
 
   return (
+    <EnCapaSuperior>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -197,6 +228,7 @@ export function Drawer({
         </motion.div>
       )}
     </AnimatePresence>
+    </EnCapaSuperior>
   )
 }
 
