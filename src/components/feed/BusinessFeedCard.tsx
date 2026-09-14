@@ -262,7 +262,12 @@ export default function BusinessFeedCard({
       
       {/* Header del negocio */}
       <div className="p-4">
-        <div className="flex items-center gap-3">
+        {/* flex-wrap: en un teléfono el nombre competía por el ancho con
+            "Nuevo", "Admin" y los botones de editar y eliminar, que no
+            encogen, y quedaba en "Pru...". Al envolver, las etiquetas bajan a
+            su propia fila y el nombre recupera el ancho completo. En pantallas
+            anchas caben todas en la misma línea y nada cambia. */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
           {/* Logo del negocio */}
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
             <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
@@ -338,7 +343,9 @@ export default function BusinessFeedCard({
             </div>
           </div>
 
-          {/* Badge "Nuevo" */}
+          {/* Etiquetas y acciones. En móvil ocupan su propia fila completa,
+              alineadas a la derecha; en escritorio vuelven junto al nombre. */}
+          <div className="flex items-center gap-2 w-full justify-end sm:w-auto">
           {business.created_at && isRecent(business.created_at) && (
             <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
               Nuevo
@@ -375,6 +382,7 @@ export default function BusinessFeedCard({
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 

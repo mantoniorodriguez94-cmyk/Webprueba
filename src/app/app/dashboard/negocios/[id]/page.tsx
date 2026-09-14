@@ -19,9 +19,7 @@ import BusinessLocation from "@/components/BusinessLocation"
 import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
-import useMembershipAccess from "@/hooks/useMembershipAccess"
-import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
-import { SUBSCRIPTION_TIER_CONECTA, isTierActive } from "@/lib/memberships/tiers"
+import { isTierActive } from "@/lib/memberships/tiers"
 import { alertModal } from "@/lib/alertModal"
 import { Dialog } from "@/components/ui/Overlay"
 
@@ -59,10 +57,8 @@ export default function BusinessDetailPage() {
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [showReportBusinessModal, setShowReportBusinessModal] = useState(false)
   const [menuNegocioAbierto, setMenuNegocioAbierto] = useState(false)
-  const [showUpgradeSuggestion, setShowUpgradeSuggestion] = useState(false)
   const [showChatDisabledModal, setShowChatDisabledModal] = useState(false)
 
-  const { hasAccess } = useMembershipAccess()
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
@@ -545,7 +541,8 @@ export default function BusinessDetailPage() {
                   Contactar por WhatsApp
                 </a>
               )}
-              {ownerHasWhatsApp && business.phone && (
+              {/* El teléfono no depende del plan: es un directorio. */}
+              {business.phone && (
                 <a
                   href={`tel:${business.phone}`}
                   className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold flex-1"
@@ -574,12 +571,13 @@ export default function BusinessDetailPage() {
                 ) : (
                   <button
                     onClick={() => {
+                      // Quien escribe sólo necesita cuenta: el chat lo paga el
+                      // negocio. Acá quedaba la comprobación sobre el remitente
+                      // que se quitó del modal, así que seguía apareciendo el
+                      // cartel de "Chat con negocios es exclusivo para Conecta"
+                      // a un cliente que sí puede escribir.
                       if (!user) {
                         router.push("/app/auth/login")
-                        return
-                      }
-                      if (!hasAccess(SUBSCRIPTION_TIER_CONECTA)) {
-                        setShowUpgradeSuggestion(true)
                         return
                       }
                       setShowMessageModal(true)
@@ -1087,21 +1085,6 @@ export default function BusinessDetailPage() {
         >
           Entendido
         </button>
-      </Dialog>
-
-      {/* Modal: visitante sin plan Conecta */}
-      <Dialog
-        open={showUpgradeSuggestion}
-        onClose={() => setShowUpgradeSuggestion(false)}
-        aria-label="Mejora tu plan"
-        panelClassName="max-w-md w-full"
-      >
-        <UpgradeSuggestion
-          requiredTier={SUBSCRIPTION_TIER_CONECTA}
-          featureName="Chat con negocios"
-          featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
-          variant="modal"
-        />
       </Dialog>
 
       {/* Modal de Reportar Negocio */}
