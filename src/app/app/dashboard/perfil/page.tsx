@@ -222,6 +222,15 @@ export default function PerfilPage() {
     }
   }
 
+  const handleCambiarCuenta = async () => {
+    try {
+      await supabase.auth.signOut()
+      window.location.href = "/app/auth/login?switch=1"
+    } catch (error) {
+      console.error("Error al cambiar de cuenta:", error)
+    }
+  }
+
   // ============================================================
   // Convertir a cuenta negocio
   // ============================================================
@@ -524,8 +533,17 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* CERRAR SESIÓN */}
-        <div className="pt-4">
+        {/* CAMBIAR DE CUENTA Y CERRAR SESIÓN */}
+        <div className="pt-4 space-y-3">
+          <button
+            onClick={handleCambiarCuenta}
+            className="w-full flex items-center justify-center gap-3 bg-black/5 hover:bg-black/10 border-2 border-black/10 text-ink font-bold py-4 rounded-3xl transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+            Cambiar de cuenta
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-3 bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-600 font-bold py-4 rounded-3xl transition-all"

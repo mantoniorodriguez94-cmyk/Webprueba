@@ -4,6 +4,14 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import Image from "next/image"
+import {
+  isTierActive,
+  MIN_RESENAS,
+  NOTA_MINIMA_DESTACA,
+  NOTA_MINIMA_PATROCINA,
+  SUBSCRIPTION_TIER_DESTACADO,
+  SUBSCRIPTION_TIER_PATROCINA,
+} from "@/lib/memberships/tiers"
 
 interface Business {
   id: string
@@ -12,6 +20,7 @@ interface Business {
   average_rating: number
   review_count: number
   logo_url?: string
+  tier: number
 }
 
 export default function TopRatedBusinesses() {
@@ -24,14 +33,18 @@ export default function TopRatedBusinesses() {
 
   const loadTopRated = async () => {
     try {
-      // Primero obtener los stats de reviews
+      // Sin el piso de reseñas, un negocio con una sola reseña de 5 estrellas
+      // encabezaba la lista por encima de uno con cincuenta y un 4,9. El piso
+      // es el mismo para todos los planes; lo que cambia según el plan es la
+      // nota exigida.
       const { data: stats, error: statsError } = await supabase
         .from('business_review_stats')
         .select('business_id, average_rating, total_reviews')
-        .gte('average_rating', 4)
+        .gte('total_reviews', MIN_RESENAS)
+        .gte('average_rating', NOTA_MINIMA_PATROCINA)
         .order('average_rating', { ascending: false })
         .order('total_reviews', { ascending: false })
-        .limit(3)
+        .limit(50)
 
       if (statsError) {
         console.error('Error loading stats:', statsError)
@@ -50,7 +63,7 @@ export default function TopRatedBusinesses() {
       const businessIds = stats.map(s => s.business_id)
       const { data: businessesData, error: businessesError } = await supabase
         .from('businesses')
-        .select('id, name, category, logo_url')
+        .select('id, name, category, logo_url, owner_id')
         .in('id', businessIds)
 
       if (businessesError) {
@@ -60,22 +73,59 @@ export default function TopRatedBusinesses() {
         return
       }
 
-      // Combinar datos
+      // Esta vitrina es un beneficio comprado, no un ranking abierto: aparecer
+      // acá lo venden Destaca y Patrocina. El tier se lee del perfil del dueño
+      // y se pasa por isTierActive, porque el número guardado puede
+      // corresponder a una suscripción ya vencida.
+      const ownerIds = Array.from(
+        new Set((businessesData || []).map(b => b.owner_id).filter(Boolean))
+      )
+
+      const { data: owners } = ownerIds.length
+        ? await supabase
+            .from('profiles')
+            .select('id, subscription_tier, subscription_end_date')
+            .in('id', ownerIds)
+        : { data: [] as any[] }
+
+      const tierPorDueno = new Map(
+        (owners || []).map((o: any) => [
+          o.id,
+          isTierActive(o.subscription_tier, o.subscription_end_date)
+            ? Number(o.subscription_tier) || 0
+            : 0,
+        ])
+      )
+
       const statsMap = new Map(stats.map(s => [s.business_id, s]))
-      const combined = (businessesData || []).map(business => ({
-        id: business.id,
-        name: business.name,
-        category: business.category || '',
-        logo_url: business.logo_url,
-        average_rating: statsMap.get(business.id)?.average_rating || 0,
-        review_count: statsMap.get(business.id)?.total_reviews || 0
-      })).sort((a, b) => {
-        // Ordenar por rating y luego por review_count
-        if (b.average_rating !== a.average_rating) {
-          return b.average_rating - a.average_rating
-        }
-        return b.review_count - a.review_count
-      })
+      const combined = (businessesData || [])
+        .map(business => ({
+          id: business.id,
+          name: business.name,
+          category: business.category || '',
+          logo_url: business.logo_url,
+          average_rating: statsMap.get(business.id)?.average_rating || 0,
+          review_count: statsMap.get(business.id)?.total_reviews || 0,
+          tier: tierPorDueno.get(business.owner_id ?? '') ?? 0,
+        }))
+        .filter(b => {
+          // Destaca entra sólo con la nota perfecta: 4,9 no alcanza.
+          // Patrocina, que paga más, entra desde 4,5.
+          if (b.tier === SUBSCRIPTION_TIER_DESTACADO) {
+            return b.average_rating >= NOTA_MINIMA_DESTACA
+          }
+          if (b.tier === SUBSCRIPTION_TIER_PATROCINA) {
+            return b.average_rating >= NOTA_MINIMA_PATROCINA
+          }
+          return false
+        })
+        .sort((a, b) => {
+          if (b.average_rating !== a.average_rating) {
+            return b.average_rating - a.average_rating
+          }
+          return b.review_count - a.review_count
+        })
+        .slice(0, 3)
 
       setBusinesses(combined)
     } catch (err) {
@@ -142,7 +192,7 @@ export default function TopRatedBusinesses() {
             </svg>
           </div>
           <p className="text-sm text-ink-2">
-            Aún no hay negocios calificados
+            Todavía ningún negocio reúne los requisitos para aparecer acá
           </p>
         </div>
       </div>

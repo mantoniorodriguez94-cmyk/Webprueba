@@ -16,7 +16,8 @@ import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
-import { getBadgeTypeForTier, getLabelForTier, isTierActive, type MembershipTier } from "@/lib/memberships/tiers"
+import { getBadgeTypeForTier, getLabelForTier, isTierActive, MAX_NEGOCIOS_POR_CUENTA, type MembershipTier } from "@/lib/memberships/tiers"
+import { tienePrioridad } from "@/lib/memberships/perks"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { Sheet, Dialog, Popover } from "@/components/ui/Overlay"
 import { destinosPrincipales } from "@/lib/navegacion"
@@ -37,6 +38,37 @@ import { toast } from "sonner"
    probarla contra datos reales antes de subirla. El ahorro era del 25-30%; el
    techo de abajo es lo que de verdad protege. */
 const COLUMNAS_FEED = "*"
+
+/* ── Posicionamiento en el feed ────────────────────────────────────────────
+   Es el beneficio que vende el plan Destaca: salir por encima de quien no lo
+   tiene. Lo concede la columna `search_priority_boost`, que
+   applyTierBenefitsToBusinesses activa para tier >= 2 y que un admin puede
+   otorgar a mano.
+
+   Conecta queda fuera a propósito — su plan es chat y más fotos, no
+   visibilidad. Ese era justamente el fallo: el feed ordenaba por `is_premium`,
+   que se activa con CUALQUIER plan pago, así que Conecta se llevaba un
+   posicionamiento que no compró y Destaca perdía aquello por lo que sí pagaba.
+
+   Vive acá arriba y no dentro de cada sort porque el archivo ordena la lista
+   en tres momentos distintos (carga con stats, carga sin stats, y al aplicar
+   filtros). Escrito tres veces, se desincroniza a la primera. */
+const tierVigente = (b: Business): number => {
+  const raw = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
+  const end = b.owner?.subscription_end_date ?? b.profiles?.subscription_end_date ?? null
+  return isTierActive(raw, end) ? Number(raw) || 0 : 0
+}
+
+const compararPosicionamiento = (a: Business, b: Business): number => {
+  // tienePrioridad cubre las tres vías: el plan (Destaca+), la marca que
+  // sincroniza el plan, y la concesión manual con vencimiento del panel.
+  const aBoost = tienePrioridad(a, tierVigente(a))
+  const bBoost = tienePrioridad(b, tierVigente(b))
+  if (aBoost !== bBoost) return aBoost ? -1 : 1
+  // Dentro del grupo posicionado, Patrocina por encima de Destaca. Fuera de
+  // él no se compara el tier: Conecta y gratis compiten en igualdad.
+  return aBoost ? tierVigente(b) - tierVigente(a) : 0
+}
 
 /* Techo de seguridad, NO paginación.
 
@@ -95,6 +127,36 @@ const RightSidebar = dynamic(
   }
 )
 
+// Los mismos paneles que la columna derecha, reusados como pestañas. En
+// escritorio viven en el sidebar; en móvil ese sidebar no existe (`hidden
+// lg:block`), así que sin esto su contenido era inalcanzable desde el teléfono.
+const panelCargando = (
+  <div className="surface rounded-2xl p-5 shadow-sm animate-pulse">
+    <div className="h-6 w-32 bg-black/5 rounded mb-4" />
+    <div className="space-y-3">
+      {[1, 2, 3].map((j) => (
+        <div key={j} className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-black/5 rounded-full" />
+          <div className="flex-1">
+            <div className="h-4 bg-black/5 rounded mb-2 w-3/4" />
+            <div className="h-3 bg-black/5 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+const TopRatedBusinesses = dynamic(
+  () => import("@/components/dashboard/RightSidebar/TopRatedBusinesses"),
+  { ssr: false, loading: () => panelCargando }
+)
+
+const CommunityFeed = dynamic(
+  () => import("@/components/dashboard/RightSidebar/CommunityFeed"),
+  { ssr: false, loading: () => panelCargando }
+)
+
 export default function DashboardPage() {
   const router = useRouter()
   const pathname = usePathname()
@@ -123,7 +185,7 @@ export default function DashboardPage() {
     municipality_id: municipalityIdParam,
     sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular") || "recent"
   })
-  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes">("feed")
+  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad">("feed")
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -155,13 +217,9 @@ export default function DashboardPage() {
     setVisibleCount(ITEMS_PER_PAGE)
   }, [activeTab])
   
-  // Calcular el límite de negocios permitidos y rol del usuario
   const userRole = user?.user_metadata?.role ?? "person"
   const isCompany = userRole === "company"
-  const allowedBusinesses = isCompany 
-    ? (isAdmin ? 999 : (user?.user_metadata?.allowed_businesses ?? 5))
-    : 0
-  const canCreateMore = isCompany && (isAdmin || negocios.length < allowedBusinesses)
+  const canCreateMore = isCompany && negocios.length < MAX_NEGOCIOS_POR_CUENTA
 
   // Menú del avatar: los MISMOS destinos que la barra inferior.
   // En escritorio la barra está oculta (`lg:hidden`), así que este menú es la
@@ -489,29 +547,10 @@ export default function DashboardPage() {
           shared_count: sharesMap.get(business.id) || 0
         }))
         
-        // Ordenar: Prioridad búsqueda (admin) > tier dueño > premium > fecha
+        // Ordenar: posicionamiento (Destaca+) > fecha
         const sortedBusinesses = businessesWithStats.sort((a, b) => {
-          const now = new Date()
-          const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
-          const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
-          const aBoost = a.search_priority_boost === true
-          const bBoost = b.search_priority_boost === true
-          if (aBoost && !bBoost) return -1
-          if (!aBoost && bBoost) return 1
-          // Mismo bug que el borde dorado de la tarjeta: el tier crudo puede
-          // estar vencido. Sin isTierActive, una cuenta que dejó de pagar
-          // hace meses seguía ordenándose por encima de un negocio con un
-          // plan menor pero VIGENTE, por el solo hecho de que el número
-          // guardado era más alto.
-          const rawTierA = (a.owner?.subscription_tier ?? a.profiles?.subscription_tier) ?? 0
-          const rawTierB = (b.owner?.subscription_tier ?? b.profiles?.subscription_tier) ?? 0
-          const endA = a.owner?.subscription_end_date ?? a.profiles?.subscription_end_date ?? null
-          const endB = b.owner?.subscription_end_date ?? b.profiles?.subscription_end_date ?? null
-          const tierA = isTierActive(rawTierA, endA) ? rawTierA : 0
-          const tierB = isTierActive(rawTierB, endB) ? rawTierB : 0
-          if (tierA !== tierB) return tierB - tierA
-          if (aIsPremium && !bIsPremium) return -1
-          if (!aIsPremium && bIsPremium) return 1
+          const porPosicion = compararPosicionamiento(a, b)
+          if (porPosicion !== 0) return porPosicion
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
@@ -528,15 +567,8 @@ export default function DashboardPage() {
         }))
         
         const sortedBusinesses = businessesWithDefaults.sort((a: Business, b: Business) => {
-          const now = new Date()
-          const aIsPremium = a.is_premium && (!a.premium_until || new Date(a.premium_until) > now)
-          const bIsPremium = b.is_premium && (!b.premium_until || new Date(b.premium_until) > now)
-          const aBoost = a.search_priority_boost === true
-          const bBoost = b.search_priority_boost === true
-          if (aBoost && !bBoost) return -1
-          if (!aBoost && bBoost) return 1
-          if (aIsPremium && !bIsPremium) return -1
-          if (!aIsPremium && bIsPremium) return 1
+          const porPosicion = compararPosicionamiento(a, b)
+          if (porPosicion !== 0) return porPosicion
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         })
         
@@ -631,22 +663,13 @@ export default function DashboardPage() {
       )
     }
 
-    // Helper para verificar si un negocio tiene premium activo
-    const isPremiumActive = (business: Business) => {
-      const now = new Date()
-      return business.is_premium && (!business.premium_until || new Date(business.premium_until) > now)
-    }
-
-    // Ordenar según el criterio seleccionado, pero siempre con premium primero
+    // Ordenar según el criterio seleccionado, pero con el posicionamiento
+    // comprado siempre por encima.
     filtered.sort((a, b) => {
-      // Premium siempre primero
-      const aIsPremium = isPremiumActive(a)
-      const bIsPremium = isPremiumActive(b)
-      
-      if (aIsPremium && !bIsPremium) return -1
-      if (!aIsPremium && bIsPremium) return 1
-      
-      // Dentro del mismo grupo (premium o no), aplicar el orden seleccionado
+      const porPosicion = compararPosicionamiento(a, b)
+      if (porPosicion !== 0) return porPosicion
+
+      // Dentro del mismo grupo, aplicar el orden seleccionado
       switch (filters.sortBy) {
         case "name":
           return a.name.localeCompare(b.name)
@@ -802,6 +825,15 @@ export default function DashboardPage() {
       window.location.href = "/"
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
+    }
+  }
+
+  const handleCambiarCuenta = async () => {
+    try {
+      await supabase.auth.signOut()
+      window.location.href = "/app/auth/login?switch=1"
+    } catch (error) {
+      console.error("Error al cambiar de cuenta:", error)
     }
   }
 
@@ -1018,8 +1050,17 @@ export default function DashboardPage() {
                     ))}
                   </div>
 
-                  {/* Logout */}
-                  <div className="p-4 border-t border-black/8">
+                  {/* Cambiar de cuenta y cerrar sesión */}
+                  <div className="p-4 border-t border-black/8 space-y-2">
+                    <button
+                      onClick={handleCambiarCuenta}
+                      className="w-full flex items-center justify-center gap-2 bg-black/5 hover:bg-black/10 text-ink px-4 py-3 rounded-2xl transition-all font-semibold"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                      </svg>
+                      Cambiar de cuenta
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-2xl transition-all font-semibold"
@@ -1069,6 +1110,26 @@ export default function DashboardPage() {
               }`}
             >
               ⭐ Destacados
+            </button>
+            <button
+              onClick={() => setActiveTab("mejores")}
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                activeTab === "mejores"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
+              }`}
+            >
+              Mejores
+            </button>
+            <button
+              onClick={() => setActiveTab("comunidad")}
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                activeTab === "comunidad"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
+              }`}
+            >
+              Comunidad
             </button>
           </div>
         </div>
@@ -1137,8 +1198,10 @@ export default function DashboardPage() {
                 hay ninguna promoción de patrocinador, no renderiza nada. */}
             <PromotionsSpotlight />
 
-            {/* Botón de Filtros Colapsable (Solo Mobile) */}
-            <div className="lg:hidden">
+            {/* Botón de Filtros Colapsable (Solo Mobile).
+                Mejores y Comunidad no son listados filtrables, así que ahí el
+                botón prometería algo que no hace. */}
+            <div className={activeTab === "mejores" || activeTab === "comunidad" ? "hidden" : "lg:hidden"}>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-full surface hover:bg-blue-50 hover:border-blue-200 rounded-2xl px-4 py-3 flex items-center justify-between transition-all duration-300 shadow-sm"
@@ -1177,7 +1240,11 @@ export default function DashboardPage() {
             </div>
 
             {/* Lista de Negocios */}
-            {loading ? (
+            {activeTab === "mejores" ? (
+              <TopRatedBusinesses />
+            ) : activeTab === "comunidad" ? (
+              <CommunityFeed />
+            ) : loading ? (
               <div className="text-center py-16">
                 <div className="relative w-16 h-16 mx-auto mb-6">
                   <div className="absolute inset-0 rounded-full border-4 border-blue-500/15"></div>

@@ -74,10 +74,19 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
+      // Google entra directo con la sesión que ya esté activa en el navegador y
+      // nunca pregunta cuál usar. Al llegar desde "Cambiar de cuenta" hay que
+      // pedirle el selector explícitamente, o es imposible salir de la cuenta
+      // actual. En el login normal se omite para no agregar un toque de más.
+      const vieneDeCambiarCuenta = searchParams.get("switch") === "1";
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          ...(vieneDeCambiarCuenta && {
+            queryParams: { prompt: 'select_account' },
+          }),
         },
       });
 

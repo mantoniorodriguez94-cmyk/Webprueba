@@ -1,7 +1,7 @@
 /**
  * API Route: Business override (ADMIN)
  * POST /api/admin/business-override
- * Updates extra_photo_limit, search_priority_boost, infraction_status, infraction_reason.
+ * Updates search_priority_boost, infraction_status, infraction_reason.
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       businessId,
-      extra_photo_limit,
       search_priority_boost,
       infraction_status,
       infraction_reason,
@@ -34,9 +33,6 @@ export async function POST(request: NextRequest) {
     }
 
     const updates: Record<string, unknown> = {}
-    if (typeof extra_photo_limit === "number" && extra_photo_limit >= 0) {
-      updates.extra_photo_limit = extra_photo_limit
-    }
     if (typeof search_priority_boost === "boolean") {
       updates.search_priority_boost = search_priority_boost
     }

@@ -9,7 +9,7 @@ import { alertModal } from "@/lib/alertModal"
 import { Dialog } from "@/components/ui/Overlay"
 import {
   isTierActive,
-  getMaxBusinessesForTier
+  MAX_NEGOCIOS_POR_CUENTA
 } from "@/lib/memberships/tiers"
 
 // Simple ID generator (no need for uuid package)
@@ -77,29 +77,17 @@ export default function NuevoNegocioPage() {
 
         setIsPremium(effectiveTier > 0)
 
-        // Verificar si es administrador (sin límites)
-        const isAdmin = user.user_metadata?.is_admin ?? false
+        const { count, error: fetchError } = await supabase
+          .from("businesses")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_id", user.id)
 
-        // Si NO es admin, aplicar límite de 1 negocio por cuenta
-        if (!isAdmin) {
-          const allowedBusinesses = getMaxBusinessesForTier(effectiveTier)
+        if (fetchError) throw fetchError
 
-          // Contar cuántos negocios tiene actualmente
-          const { data: businesses, error: fetchError } = await supabase
-            .from("businesses")
-            .select("id")
-            .eq("owner_id", user.id)
-
-          if (fetchError) throw fetchError
-
-          const currentCount = businesses?.length ?? 0
-
-          // Si ya alcanzó el límite, mostrar alerta
-          if (currentCount >= allowedBusinesses) {
-            alertModal.warning("Ya tienes un negocio registrado. Cada cuenta permite gestionar un solo negocio.")
-            router.push("/app/dashboard/mis-negocios")
-            return
-          }
+        if ((count ?? 0) >= MAX_NEGOCIOS_POR_CUENTA) {
+          alertModal.warning("Ya tienes un negocio registrado. Cada cuenta permite gestionar un solo negocio.")
+          router.push("/app/dashboard/mis-negocios")
+          return
         }
 
         setChecking(false)
@@ -205,38 +193,19 @@ export default function NuevoNegocioPage() {
         return
       }
 
-      // Verificar límite de negocios (validación anti-spam)
-      const isAdmin = user.user_metadata?.is_admin ?? false
-      if (!isAdmin) {
-        // Contar negocios actuales del usuario
-        const { data: existingBusinesses, error: countError } = await supabase
-          .from("businesses")
-          .select("id, name")
-          .eq("owner_id", user.id)
-        
-        if (countError) throw countError
-        
-        const currentCount = existingBusinesses?.length ?? 0
-        const allowedBusinesses = user.user_metadata?.allowed_businesses ?? 1
-        
-        // Verificar límite
-        if (currentCount >= allowedBusinesses) {
-          setError(`⚠️ Has alcanzado el límite de ${allowedBusinesses} ${allowedBusinesses === 1 ? 'negocio' : 'negocios'} de tu plan. ⭐ Mejora a Premium para crear más negocios.`)
-          setLoading(false)
-          return
-        }
-        
-        // Prevenir spam: verificar si ya existe un negocio con el mismo nombre (del mismo usuario)
-        const nameNormalized = name.trim().toLowerCase()
-        const duplicateExists = existingBusinesses?.some(b => 
-          b.name.trim().toLowerCase() === nameNormalized
-        )
-        
-        if (duplicateExists) {
-          setError("⚠️ Ya tienes un negocio con este nombre. Por favor, usa un nombre diferente.")
-          setLoading(false)
-          return
-        }
+      // Aviso temprano para no hacerle llenar el formulario a alguien que ya
+      // llegó al límite. El candado de verdad es el índice único en la base.
+      const { count: currentCount, error: countError } = await supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", user.id)
+
+      if (countError) throw countError
+
+      if ((currentCount ?? 0) >= MAX_NEGOCIOS_POR_CUENTA) {
+        setError("⚠️ Cada cuenta puede tener un solo negocio.")
+        setLoading(false)
+        return
       }
 
       let logoUrl: string | null = null

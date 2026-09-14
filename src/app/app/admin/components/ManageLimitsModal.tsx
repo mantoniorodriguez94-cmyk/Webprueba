@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { PERKS_CONCEDIBLES, perkVigente } from "@/lib/memberships/perks"
 
 const TIER_LABELS: Record<number, string> = { 0: "Básico", 1: "Conecta", 2: "Destaca", 3: "Patrocina" }
 
@@ -28,14 +29,27 @@ export default function ManageLimitsModal({
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(true)
   const [tier, setTier] = useState(0)
-  const [extraBusinessLimit, setExtraBusinessLimit] = useState(0)
-  const [extraPhotoLimit, setExtraPhotoLimit] = useState(0)
   const [searchPriorityBoost, setSearchPriorityBoost] = useState(false)
   const [infractionStatus, setInfractionStatus] = useState(false)
   const [infractionReason, setInfractionReason] = useState("")
   const [notificationMessage, setNotificationMessage] = useState("")
   const [showResetModal, setShowResetModal] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
+
+  /* Beneficios sueltos. Se piden en MESES y no como fecha porque así es como
+     se concede en la práctica ("dale tres meses"), y evita que la fecha
+     dependa del reloj del navegador: el servidor la calcula.
+
+     Los campos arrancan vacíos, no en 0. Es la diferencia entre "no toques
+     esto" y "quítaselo": si arrancaran en 0, abrir el modal para cambiar el
+     tier y guardar le retiraría al negocio todos los beneficios sin que nadie
+     lo pidiera. `vigenteHasta` guarda lo que ya tiene, sólo para mostrarlo. */
+  const [bordeDoradoMeses, setBordeDoradoMeses] = useState("")
+  const [promocionesMeses, setPromocionesMeses] = useState("")
+  const [prioridadMeses, setPrioridadMeses] = useState("")
+  const [fotosExtra, setFotosExtra] = useState("")
+  const [fotosExtraMeses, setFotosExtraMeses] = useState("")
+  const [vigenteHasta, setVigenteHasta] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
     if (!isOpen || !profileId) return
@@ -49,15 +63,20 @@ export default function ManageLimitsModal({
         const profileData = await profileRes.json()
         if (profileData.success && profileData.data) {
           setTier(profileData.data.subscription_tier ?? 0)
-          setExtraBusinessLimit(profileData.data.extra_business_limit ?? 0)
         }
         if (businessId && businessRes) {
           const businessData = await businessRes.json()
           if (businessData.success && businessData.data) {
-            setExtraPhotoLimit(businessData.data.extra_photo_limit ?? 0)
             setSearchPriorityBoost(businessData.data.search_priority_boost ?? false)
             setInfractionStatus(businessData.data.infraction_status ?? false)
             setInfractionReason(businessData.data.infraction_reason ?? "")
+            setVigenteHasta({
+              borde_dorado: businessData.data.perk_borde_dorado_hasta ?? null,
+              promociones: businessData.data.perk_promociones_hasta ?? null,
+              prioridad: businessData.data.perk_prioridad_hasta ?? null,
+              fotos_extra: businessData.data.perk_fotos_extra_hasta ?? null,
+            })
+            setFotosExtra(String(businessData.data.perk_fotos_extra ?? 0))
           }
         }
       } catch {
@@ -78,7 +97,6 @@ export default function ManageLimitsModal({
         body: JSON.stringify({
           profileId,
           subscription_tier: tier,
-          extra_business_limit: Math.max(0, extraBusinessLimit),
         }),
       })
       const dataProfile = await resProfile.json()
@@ -94,7 +112,6 @@ export default function ManageLimitsModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             businessId,
-            extra_photo_limit: Math.max(0, extraPhotoLimit),
             search_priority_boost: searchPriorityBoost,
             infraction_status: infractionStatus,
             infraction_reason: infractionStatus ? infractionReason.trim() || null : null,
@@ -105,6 +122,31 @@ export default function ManageLimitsModal({
           toast.error(dataBiz.error || "Error al actualizar negocio")
           setLoading(false)
           return
+        }
+
+        // Sólo se manda lo que el admin escribió. Un campo vacío no viaja, y
+        // la ruta deja ese beneficio como estaba.
+        const perks: Record<string, number> = {}
+        if (bordeDoradoMeses.trim() !== "") perks.bordeDoradoMeses = Number(bordeDoradoMeses)
+        if (promocionesMeses.trim() !== "") perks.promocionesMeses = Number(promocionesMeses)
+        if (prioridadMeses.trim() !== "") perks.prioridadMeses = Number(prioridadMeses)
+        if (fotosExtraMeses.trim() !== "") {
+          perks.fotosExtraMeses = Number(fotosExtraMeses)
+          perks.fotosExtra = Number(fotosExtra) || 0
+        }
+
+        if (Object.keys(perks).length > 0) {
+          const resPerks = await fetch("/api/admin/business/perks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ businessId, ...perks }),
+          })
+          const dataPerks = await resPerks.json()
+          if (!resPerks.ok) {
+            toast.error(dataPerks.error || "Error al conceder beneficios")
+            setLoading(false)
+            return
+          }
         }
       }
 
@@ -192,29 +234,69 @@ export default function ManageLimitsModal({
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-ink-2 mb-1">Límite extra de negocios</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={extraBusinessLimit}
-                    onChange={(e) => setExtraBusinessLimit(Number(e.target.value) || 0)}
-                    className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink"
-                  />
-                </div>
-
                 {businessId && (
                   <>
-                    <div>
-                      <label className="block text-sm font-medium text-ink-2 mb-1">Fotos extra permitidas</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={extraPhotoLimit}
-                        onChange={(e) => setExtraPhotoLimit(Number(e.target.value) || 0)}
-                        className="w-full px-4 py-2 rounded-xl bg-white border border-black/15 text-ink"
-                      />
+                    <div className="rounded-xl border border-black/10 p-3 space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-ink">Beneficios sueltos</p>
+                        <p className="text-[11px] text-ink-2">
+                          Se suman a lo que da su plan. Escribe los meses y deja en
+                          blanco lo que no quieras cambiar; 0 lo retira.
+                        </p>
+                      </div>
+
+                      {PERKS_CONCEDIBLES.map((perk) => {
+                        const valor =
+                          perk.clave === "borde_dorado" ? bordeDoradoMeses
+                          : perk.clave === "promociones" ? promocionesMeses
+                          : perk.clave === "prioridad" ? prioridadMeses
+                          : fotosExtraMeses
+                        const setValor =
+                          perk.clave === "borde_dorado" ? setBordeDoradoMeses
+                          : perk.clave === "promociones" ? setPromocionesMeses
+                          : perk.clave === "prioridad" ? setPrioridadMeses
+                          : setFotosExtraMeses
+                        const hasta = vigenteHasta[perk.clave]
+
+                        return (
+                          <div key={perk.clave} className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
+                              <label className="block text-xs font-medium text-ink truncate">
+                                {perk.etiqueta}
+                              </label>
+                              <p className="text-[10px] text-ink-2">
+                                {perkVigente(hasta)
+                                  ? `Vigente hasta ${new Date(hasta as string).toLocaleDateString()}`
+                                  : "Sin conceder"}
+                              </p>
+                            </div>
+                            {perk.clave === "fotos_extra" && (
+                              <input
+                                type="number"
+                                min={0}
+                                max={50}
+                                value={fotosExtra}
+                                onChange={(e) => setFotosExtra(e.target.value)}
+                                aria-label="Cuántas fotos extra"
+                                className="w-16 px-2 py-1.5 rounded-lg bg-white border border-black/15 text-ink text-sm"
+                                placeholder="nº"
+                              />
+                            )}
+                            <input
+                              type="number"
+                              min={0}
+                              max={120}
+                              value={valor}
+                              onChange={(e) => setValor(e.target.value)}
+                              aria-label={`Meses de ${perk.etiqueta}`}
+                              className="w-20 px-2 py-1.5 rounded-lg bg-white border border-black/15 text-ink text-sm"
+                              placeholder="meses"
+                            />
+                          </div>
+                        )
+                      })}
                     </div>
+
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"

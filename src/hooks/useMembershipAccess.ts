@@ -25,7 +25,6 @@ interface MembershipAccess {
   subscriptionEndDate: string | null
   hasActiveSubscription: boolean
   loading: boolean
-  extraBusinessLimit: number
 }
 
 /**
@@ -46,7 +45,6 @@ export default function useMembershipAccess() {
     subscriptionEndDate: null,
     hasActiveSubscription: false,
     loading: true,
-    extraBusinessLimit: 0
   })
 
   useEffect(() => {
@@ -63,7 +61,6 @@ export default function useMembershipAccess() {
           subscriptionEndDate: null,
           hasActiveSubscription: false,
           loading: false,
-          extraBusinessLimit: 0
         })
         return
       }
@@ -71,7 +68,7 @@ export default function useMembershipAccess() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("subscription_tier, subscription_end_date, extra_business_limit")
+          .select("subscription_tier, subscription_end_date")
           .eq("id", user.id)
           .maybeSingle()
 
@@ -82,7 +79,6 @@ export default function useMembershipAccess() {
             subscriptionEndDate: null,
             hasActiveSubscription: false,
             loading: false,
-            extraBusinessLimit: 0
           })
           return
         }
@@ -95,10 +91,6 @@ export default function useMembershipAccess() {
             rawEndDate != null && String(rawEndDate).trim() !== ""
               ? String(rawEndDate)
               : null
-          const extraBusinessLimit = Math.max(
-            0,
-            Number((data as { extra_business_limit?: number })?.extra_business_limit) || 0
-          )
 
           const isActive = isTierActive(tier, endDate)
 
@@ -113,7 +105,6 @@ export default function useMembershipAccess() {
             subscriptionEndDate: endDate,
             hasActiveSubscription: isActive,
             loading: false,
-            extraBusinessLimit
           })
         } catch {
           setMembership({
@@ -122,7 +113,6 @@ export default function useMembershipAccess() {
             subscriptionEndDate: null,
             hasActiveSubscription: false,
             loading: false,
-            extraBusinessLimit: 0
           })
         }
       } catch (_err) {
@@ -132,7 +122,6 @@ export default function useMembershipAccess() {
           subscriptionEndDate: null,
           hasActiveSubscription: false,
           loading: false,
-          extraBusinessLimit: 0
         })
       }
     }

@@ -57,7 +57,6 @@ export default function PromotionsManager() {
   // módulo aunque el resto de la app —borde dorado, orden del feed— ya lo
   // trate como vigente. isTierActive es la fuente única: null = vigencia
   // indefinida, una fecha pasada = vencido.
-  const isFounder = subscriptionTier >= 3
   const hasActiveSubscription = isTierActive(subscriptionTier, subscriptionEndDate)
 
   useEffect(() => {
@@ -165,12 +164,13 @@ export default function PromotionsManager() {
               Módulo de Promociones
               <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 text-purple-700 text-[10px] font-semibold px-2 py-0.5">
                 <Sparkles className="w-3 h-3" />
-                Exclusivo Patrocinadores
+                Patrocina
               </span>
             </h3>
             <p className="mt-1 text-xs text-ink-2">
-              🔒 Esta función es exclusiva para el plan{" "}
-              <span className="font-semibold text-purple-700">Patrocina</span>.
+              🔒 Necesitas un plan de pago para crear promociones. Con{" "}
+              <span className="font-semibold text-purple-700">Patrocina</span>{" "}
+              además salen en la sección Promociones del inicio.
             </p>
             <button
               type="button"

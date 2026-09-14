@@ -18,6 +18,7 @@ import {
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
 import { isTierActive } from "@/lib/memberships/tiers"
+import { tieneBordeDorado } from "@/lib/memberships/perks"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
@@ -194,10 +195,10 @@ export default function BusinessFeedCard({
   // overrides manuales del panel), cualquier fecha pasada no.
   const ownerTier = isTierActive(rawOwnerTier, rawOwnerEndDate) ? rawOwnerTier : 0
 
-  // ── Golden border: exclusivo del Tier 3 (Patrocina) ───────────────────────
-  // Los antiguos perks à-la-carte (golden_border_expires_at / chat_expires_at)
-  // fueron eliminados: todo beneficio deriva ahora del tier de la cuenta.
-  const ownerHasGoldenBorder = ownerTier >= 3
+  // ── Borde dorado: plan Patrocina, o concesión manual vigente ──────────────
+  // Un admin puede otorgarlo suelto por unos meses desde el panel, sin que la
+  // cuenta tenga Patrocina. La regla suma, nunca resta: ver lib/memberships/perks.
+  const ownerHasGoldenBorder = tieneBordeDorado(business, ownerTier)
 
   // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Patrocina) ─────
   const ownerHasFullContact = ownerTier >= 2
@@ -295,9 +296,12 @@ export default function BusinessFeedCard({
                   {business.name}
                 </h3>
                 {isTier3 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                  <div
+                    className="flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full bg-amber-500 text-white"
+                    title="Patrocinador"
+                    aria-label="Patrocinador"
+                  >
                     <Crown className="w-3 h-3" />
-                    <span>Patrocinador</span>
                   </div>
                 )}
                 {isPremiumActive && <PremiumBadge variant="small" showText={false} />}

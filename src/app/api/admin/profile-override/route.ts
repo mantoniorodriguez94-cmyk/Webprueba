@@ -1,7 +1,7 @@
 /**
  * API Route: Profile override (ADMIN)
  * POST /api/admin/profile-override
- * Updates subscription_tier and extra_business_limit for a profile and syncs tier benefits to businesses.
+ * Updates subscription_tier for a profile and syncs tier benefits to businesses.
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -21,10 +21,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { profileId, subscription_tier, extra_business_limit } = body as {
+    const { profileId, subscription_tier } = body as {
       profileId?: string
       subscription_tier?: number
-      extra_business_limit?: number
     }
 
     if (!profileId) {
@@ -47,12 +46,9 @@ export async function POST(request: NextRequest) {
       // This covers both upgrades (0→3) and downgrades/resets (3→0).
       updates.subscription_end_date = null
     }
-    if (typeof extra_business_limit === "number" && extra_business_limit >= 0) {
-      updates.extra_business_limit = extra_business_limit
-    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(
-        { success: false, error: "Incluye subscription_tier (0-3) y/o extra_business_limit (>= 0)" },
+        { success: false, error: "Incluye subscription_tier (0-3)" },
         { status: 400 }
       )
     }

@@ -43,8 +43,14 @@ export type Business = {
   is_verified?: boolean;
   verified_at?: string | null;
   verified_by?: string | null;
-  extra_photo_limit?: number;
   search_priority_boost?: boolean;
+  // ── Beneficios sueltos: concesiones manuales con vencimiento ──────────────
+  // Se suman a lo que da el plan, nunca lo restan. Ver lib/memberships/perks.
+  perk_borde_dorado_hasta?: string | null;
+  perk_promociones_hasta?: string | null;
+  perk_prioridad_hasta?: string | null;
+  perk_fotos_extra?: number;
+  perk_fotos_extra_hasta?: string | null;
   infraction_status?: boolean;
   infraction_reason?: string | null;
   // ── Extended / calculated fields ──────────────────────────────────────────

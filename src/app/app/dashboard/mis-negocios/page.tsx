@@ -7,7 +7,7 @@ import AuthGate from "@/components/auth/AuthGate"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
-import { getMaxBusinessesForTier } from "@/lib/memberships/tiers"
+import { MAX_NEGOCIOS_POR_CUENTA } from "@/lib/memberships/tiers"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
@@ -19,22 +19,20 @@ import { toast } from "sonner"
 export default function MisNegociosPage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
-  const { tier, loading: tierLoading, extraBusinessLimit = 0 } = useMembershipAccess()
+  const { tier, loading: tierLoading } = useMembershipAccess()
   const [negocios, setNegocios] = useState<Business[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Business | null>(null)
   
   const userRole = user?.user_metadata?.role ?? "person"
-  const isAdmin = user?.user_metadata?.is_admin ?? false
   const isCompany = userRole === "company"
-  
+
   const businessCount = negocios.length
-  const allowedBusinesses = isAdmin ? 999 : getMaxBusinessesForTier(tier) + (extraBusinessLimit ?? 0)
-  const canCreateMore = isAdmin ? true : (businessCount < allowedBusinesses)
-  const limitMessage = !isAdmin && businessCount >= allowedBusinesses
-    ? "Límite de 1 negocio por cuenta alcanzado. Escríbenos desde /soporte si necesitas gestionar más."
-    : null
+  const canCreateMore = businessCount < MAX_NEGOCIOS_POR_CUENTA
+  const limitMessage = canCreateMore
+    ? null
+    : "Límite de 1 negocio por cuenta alcanzado. Escríbenos desde /soporte si necesitas gestionar más."
   
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const currentBadgeType = getBadgeTypeForTier((tier || 0) as MembershipTier)
@@ -110,12 +108,11 @@ export default function MisNegociosPage() {
 
   // Con un negocio por cuenta, esta lista es una pantalla de un solo elemento
   // que solo agrega un toque de por medio. Si hay exactamente uno se va directo
-  // a gestionarlo; con cero (estado vacío para crear) o varios (admin), se
-  // queda como estaba.
+  // a gestionarlo; con cero se queda en el estado vacío para crear.
   useEffect(() => {
-    if (loading || isAdmin || negocios.length !== 1) return
+    if (loading || negocios.length !== 1) return
     router.replace(`/app/dashboard/negocios/${negocios[0].id}/gestionar`)
-  }, [loading, isAdmin, negocios, router])
+  }, [loading, negocios, router])
 
   const handleDelete = async (id: string) => {
     try {
@@ -190,11 +187,7 @@ export default function MisNegociosPage() {
         onVolver={() => router.back()}
         volverSoloEscritorio
         titulo="Mis negocios"
-        subtitulo={
-          isAdmin
-            ? `${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} · Ilimitado (Admin)`
-            : `${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} creado${negocios.length !== 1 ? "s" : ""}`
-        }
+        subtitulo={`${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} creado${negocios.length !== 1 ? "s" : ""}`}
         icono={
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
