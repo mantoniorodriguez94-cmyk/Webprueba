@@ -154,11 +154,7 @@ export default function AdminGestionarNegocioPage() {
     )
   }
 
-  const galleryUrls = Array.isArray(business.gallery_urls) 
-    ? business.gallery_urls 
-    : business.gallery_urls 
-      ? JSON.parse(business.gallery_urls || "[]")
-      : []
+  const galleryUrls = business.gallery_urls ?? []
 
   return (
     <div className="min-h-screen text-ink p-6">

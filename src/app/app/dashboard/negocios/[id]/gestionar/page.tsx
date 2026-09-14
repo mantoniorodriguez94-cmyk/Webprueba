@@ -54,25 +54,10 @@ export default function GestionarNegocioPage() {
 
   const { effectiveTier, loading: tierLoading } = useMembershipAccess()
 
-  // Parsear gallery_urls de manera segura
-  const getGalleryUrls = (): string[] => {
-    if (!business?.gallery_urls) return []
-    
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 

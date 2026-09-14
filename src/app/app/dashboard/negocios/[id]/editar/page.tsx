@@ -4,6 +4,9 @@ import SectionHeader from "@/components/ui/SectionHeader"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import { getMaxPhotosForTier } from "@/lib/memberships/tiers"
+import { topeDeFotos } from "@/lib/memberships/perks"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
@@ -20,6 +23,7 @@ export default function EditarNegocioPage() {
   const id = (params as any)?.id as string
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
+  const { effectiveTier } = useMembershipAccess()
   
   const [negocio, setNegocio] = useState<Business | null>(null)
   const [name, setName] = useState("")
@@ -44,35 +48,14 @@ export default function EditarNegocioPage() {
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canEdit = isOwner || isAdmin
   
-  // Verificar si el negocio es premium activo
-  const isPremiumActive = negocio?.is_premium === true && 
-                         negocio?.premium_until && 
-                         new Date(negocio.premium_until) > new Date()
-  
-  // Límites de imágenes según plan
-  const MAX_IMAGES_FREE = 3
-  const MAX_IMAGES_PREMIUM = 10
-  const maxImages = isPremiumActive ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
+  // El tope sale de la misma fuente que el resto de la app. Acá vivía una
+  // escalera propia —3 gratis / 10 premium— que ya no coincidía con nada.
+  const maxImages = negocio ? topeDeFotos(negocio, effectiveTier) : getMaxPhotosForTier(0)
 
-  // Parsear gallery_urls de manera segura
-  const getGalleryUrls = (): string[] => {
-    if (!negocio?.gallery_urls) return []
-    
-    if (Array.isArray(negocio.gallery_urls)) {
-      return negocio.gallery_urls
-    }
-    
-    if (typeof negocio.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(negocio.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    negocio?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 
@@ -145,9 +128,7 @@ export default function EditarNegocioPage() {
       
       if (totalImages > maxImages) {
         setGalleryError(
-          isPremiumActive 
-            ? `⚠️ Límite premium: máximo ${MAX_IMAGES_PREMIUM} imágenes totales. Ya tienes ${currentImageCount}, puedes agregar ${maxImages - currentImageCount} más.`
-            : `⚠️ Límite gratuito: máximo ${MAX_IMAGES_FREE} imágenes. Ya tienes ${currentImageCount}, puedes agregar ${maxImages - currentImageCount} más. ⭐ Con Premium puedes subir hasta ${MAX_IMAGES_PREMIUM} imágenes.`
+          `⚠️ Tu plan permite ${maxImages} fotos. Ya tienes ${currentImageCount}, puedes agregar ${Math.max(0, maxImages - currentImageCount)} más.`
         )
         e.target.value = "" // Limpiar selección
         setGalleryFiles(null)

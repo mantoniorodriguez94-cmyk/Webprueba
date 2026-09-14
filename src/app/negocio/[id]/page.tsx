@@ -133,21 +133,10 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
     .single()
 
   // Parsear gallery_urls
-  const getGalleryUrls = (): string[] => {
-    if (!business.gallery_urls) return []
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
   const averageRating = reviewStats?.average_rating || business.average_rating || 0
