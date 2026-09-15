@@ -17,12 +17,22 @@ export default function Home() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
 
-  // El directorio requiere cuenta. A quien no la tiene lo mandamos directo a
-  // crearla (arrastrando su destino) en vez de hacerlo rebotar contra una
-  // pantalla de bloqueo, que es un paso extra y se lee como un rechazo.
+  // El directorio requiere cuenta, así que a quien no ha entrado se le manda
+  // a iniciar sesión arrastrando su destino.
+  //
+  // Antes iba a REGISTRO, con el argumento de no hacer rebotar a nadie contra
+  // una pantalla de bloqueo. Pero eso da por hecho que quien pulsa "buscar
+  // negocios" es alguien nuevo, y a partir del segundo día la mayoría son
+  // personas que ya tienen cuenta: se encontraban un formulario de alta
+  // —nombre, contraseña, confirmar contraseña, tipo de cuenta— cuando lo que
+  // querían era entrar.
+  //
+  // El login no es un callejón: lleva "¿No tienes cuenta? Regístrate gratis"
+  // justo debajo, así que el recién llegado sigue a un clic de crearla. Al
+  // revés no funcionaba igual de bien.
   const irANegocios = user
     ? "/app/dashboard"
-    : `/app/auth/register?next=${encodeURIComponent("/app/dashboard")}`;
+    : `/app/auth/login?next=${encodeURIComponent("/app/dashboard")}`;
 
   // Función para scroll suave a sección (cierra menú primero, luego scroll)
   const scrollToSection = (id: string) => {

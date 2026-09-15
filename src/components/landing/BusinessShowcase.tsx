@@ -284,7 +284,11 @@ export default function BusinessShowcase() {
 
       <div className="text-center mt-10">
         <Link
-          href={user ? "/app/dashboard" : `/app/auth/register?next=${encodeURIComponent("/app/dashboard")}`}
+          /* A login, no a registro: esto es "ver negocios", o sea navegar, y
+             quien navega suele tener cuenta ya. El login ofrece crear una
+             justo debajo. Los botones de "publica tu negocio" sí van a
+             registro, porque ahí el alta es el objetivo. */
+          href={user ? "/app/dashboard" : `/app/auth/login?next=${encodeURIComponent("/app/dashboard")}`}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-ink text-white font-semibold hover:bg-ink/90 transition-colors"
         >
           {hayCatalogo ? "Ver todos los negocios" : "Explorar el directorio"}

@@ -18,6 +18,15 @@ function destinoSeguro(valor: string | null): string {
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  /* El enlace a registro arrastra el `next`, si lo hay.
+     Quien llega desde la landing trae su destino en la URL; sin esto, pulsar
+     "Regístrate gratis" lo perdía y acababa en el panel por defecto en vez de
+     donde iba. Registro ya sabe devolverlo al login cuando termina. */
+  const siguiente = searchParams.get("next");
+  const enlaceRegistro = siguiente
+    ? `/app/auth/register?next=${encodeURIComponent(siguiente)}`
+    : "/app/auth/register";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -298,7 +307,7 @@ export default function LoginPage() {
             <p className="text-ink-2 text-sm sm:text-base">
               ¿No tienes cuenta?{" "}
               <Link
-                href="/app/auth/register"
+                href={enlaceRegistro}
                 className="text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline"
               >
                 Regístrate gratis
