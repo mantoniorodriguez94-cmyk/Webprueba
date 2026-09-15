@@ -15,6 +15,7 @@ import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
+import LogoCabecera from "@/components/brand/LogoCabecera"
 import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, getLabelForTier, isTierActive, MAX_NEGOCIOS_POR_CUENTA, type MembershipTier } from "@/lib/memberships/tiers"
 import { tienePrioridad } from "@/lib/memberships/perks"
@@ -966,17 +967,12 @@ export default function DashboardPage() {
            app, así que acá la marca identifica mejor que la palabra "Inicio"
            —que además ya está en la barra inferior—.
            El logo mide 40px, exactamente el alto del bloque título+subtítulo,
-           así que la barra conserva el mismo alto que las demás secciones. */
-        icono={
-          <Image
-            src="/brand/encuentra-mark.svg"
-            alt="Logo App Encuentra"
-            width={44}
-            height={44}
-            className="w-10 h-10"
-            unoptimized
-          />
-        }
+           así que la barra conserva el mismo alto que las demás secciones.
+
+           Acá hace el barrido, una vez por sesión. Inicio es la portada de la
+           app y la pantalla de carga dura menos de lo que tarda el ojo cuando
+           la conexión es buena: este es el sitio donde se ve entero. */
+        icono={<LogoCabecera size={44} className="w-10 h-10" />}
         acciones={
           <>
               {/* Botón de Búsqueda — visible también en móvil: antes era
