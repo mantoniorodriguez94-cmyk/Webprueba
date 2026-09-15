@@ -24,6 +24,7 @@ import {
   SUBSCRIPTION_TIER_DESTACADO,
   SUBSCRIPTION_TIER_PATROCINA,
   getMaxPhotosForTier,
+  isTierActive,
 } from "./tiers"
 
 /**
@@ -106,6 +107,73 @@ export function topeDeFotos(
 /** Chat en vivo: plan Conecta en adelante. Todavía no se concede suelto. */
 export function tieneChat(tierVigente: number): boolean {
   return tierVigente >= SUBSCRIPTION_TIER_CONECTA
+}
+
+/** WhatsApp: plan Conecta en adelante. Es la conversación cómoda, sin marcar. */
+export function tieneWhatsApp(tierVigente: number): boolean {
+  return tierVigente >= SUBSCRIPTION_TIER_CONECTA
+}
+
+/**
+ * El tier que de verdad cuenta para un dueño: el de la columna, pero sólo si
+ * su suscripción sigue vigente. Un plan vencido vale exactamente lo mismo que
+ * no tener plan.
+ *
+ * Existe porque cada sitio que necesitaba esto lo resolvía a su manera —uno
+ * llamaba a isTierActive, otro usaba su resultado como si fuera el tier, y la
+ * página pública se había reescrito la comparación de fechas a mano. Esa
+ * última es la que preocupa: arreglar isTierActive no le llegaba.
+ *
+ * Sin fecha = vigencia indefinida, que es como el panel concede planes a mano.
+ */
+export function tierVigenteDelDueno(
+  tier: number | null | undefined,
+  finSuscripcion: string | null | undefined
+): number {
+  return isTierActive(tier, finSuscripcion) ? Number(tier) || 0 : 0
+}
+
+/** Por qué vías se puede contactar a un negocio. Ver `viasDeContacto`. */
+export type ViasDeContacto = {
+  /** Llamar. Siempre true; existe para que la regla se pueda leer y buscar. */
+  telefono: boolean
+  whatsapp: boolean
+  /** Chat dentro de la app. Lo paga el negocio que RECIBE, no quien escribe. */
+  chat: boolean
+}
+
+/**
+ * La escalera de contacto, en un solo sitio.
+ *
+ * Estaba escrita tres veces —la tarjeta del feed, la ficha del dashboard y la
+ * página pública— con tres expresiones distintas de la misma regla. Coincidían
+ * por casualidad, porque las tres comparaban contra el mismo número; en cuanto
+ * una cambiaba, las otras dos seguían con la regla vieja sin avisar. Así fue
+ * como el chat quedó abierto para negocios sin plan: se arregló en la tarjeta
+ * y no en las fichas.
+ *
+ * Devuelve las tres vías juntas a propósito. Pedirlas de una en una es lo que
+ * permitía corregir el chat y olvidarse de WhatsApp en el mismo archivo.
+ *
+ * El teléfono lo ve TODO EL MUNDO, plan gratis incluido. Esto es un directorio:
+ * un negocio está acá para que lo llamen, y esconder el teléfono esconde la
+ * utilidad básica del producto. Antes el corte estaba en tier 2 y un negocio
+ * gratis salía en la lista sin ninguna vía de contacto —un escaparate sin
+ * puerta—; el cliente que abría tres fichas sin poder contactar ninguna
+ * concluía que la app no sirve, y era justo el público que hace que los planes
+ * valgan algo. Pesa doble en las fichas sembradas por el equipo: no tienen
+ * dueño, o sea tier 0, y el argumento de venta es que ya reciben llamadas.
+ */
+export function viasDeContacto(
+  tier: number | null | undefined,
+  finSuscripcion: string | null | undefined
+): ViasDeContacto {
+  const vigente = tierVigenteDelDueno(tier, finSuscripcion)
+  return {
+    telefono: true,
+    whatsapp: tieneWhatsApp(vigente),
+    chat: tieneChat(vigente),
+  }
 }
 
 /** Los beneficios que el panel sabe conceder, con su columna de vencimiento. */

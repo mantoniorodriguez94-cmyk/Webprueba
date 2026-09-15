@@ -19,7 +19,7 @@ import BusinessLocation from "@/components/BusinessLocation"
 import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
-import { isTierActive } from "@/lib/memberships/tiers"
+import { viasDeContacto } from "@/lib/memberships/perks"
 import { alertModal } from "@/lib/alertModal"
 import { Dialog } from "@/components/ui/Overlay"
 
@@ -73,10 +73,18 @@ export default function BusinessDetailPage() {
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
   const businessSubscriptionEndDate =
     business?.profiles?.subscription_end_date ?? business?.owner?.subscription_end_date ?? null
-  // El chat lo paga el negocio; quien escribe sólo necesita estar autenticado.
-  const ownerHasChat = Boolean(business) && isTierActive(businessTier, businessSubscriptionEndDate)
-  // Teléfono para todos —es un directorio—; WhatsApp desde Conecta.
-  const ownerHasWhatsApp = ownerHasChat
+
+  /* La escalera de contacto sale de lib/memberships/perks, igual que en la
+     tarjeta del feed y en la página pública.
+
+     Acá estaba escrita de la forma más frágil de las tres: se usaba el
+     booleano de isTierActive como si fuera el permiso, y WhatsApp se definía
+     como `= ownerHasChat`. Coincidía con el resto por casualidad, porque los
+     dos beneficios cortan hoy en el mismo plan; el día que uno suba de nivel,
+     esta ficha se lleva el otro por delante sin que nada avise. */
+  const contacto = viasDeContacto(businessTier, businessSubscriptionEndDate)
+  const ownerHasChat = Boolean(business) && contacto.chat
+  const ownerHasWhatsApp = contacto.whatsapp
 
   const getGalleryUrls = (): string[] =>
     // gallery_urls es text[] en la base. Antes esto tenía además una rama
@@ -514,7 +522,10 @@ export default function BusinessDetailPage() {
                 </div>
               )}
               
-              {ownerHasWhatsApp && (business.phone || business.whatsapp) && (
+              {/* Estaba detrás de ownerHasWhatsApp: en un negocio sin plan la
+                  ficha escondía el número y debajo seguía ofreciendo el botón
+                  "Llamar", que sí lo usaba. El teléfono no depende del plan. */}
+              {contacto.telefono && (business.phone || business.whatsapp) && (
                 <p className="text-ink-2 flex items-center gap-2">
                   <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -541,8 +552,7 @@ export default function BusinessDetailPage() {
                   Contactar por WhatsApp
                 </a>
               )}
-              {/* El teléfono no depende del plan: es un directorio. */}
-              {business.phone && (
+              {contacto.telefono && business.phone && (
                 <a
                   href={`tel:${business.phone}`}
                   className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold flex-1"

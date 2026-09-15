@@ -17,8 +17,7 @@ import {
   checkBusinessSaved,
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
-import { isTierActive, SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
-import { tieneBordeDorado } from "@/lib/memberships/perks"
+import { tieneBordeDorado, tierVigenteDelDueno, viasDeContacto } from "@/lib/memberships/perks"
 import { CORONA_POR_TIER } from "@/components/memberships/MembershipBadge"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
@@ -176,32 +175,26 @@ export default function BusinessFeedCard({
   // con `effectiveTier` (useMembershipAccess.ts, "arquitectónicamente
   // imposible" dar acceso con un tier vencido), pero esta tarjeta leía el
   // valor crudo de la columna y nunca lo pasaba por esa comprobación.
-  // isTierActive es la misma función que usa el resto del sistema: un
+  // tierVigenteDelDueno es la misma función que usa el resto del sistema: un
   // subscription_end_date null cuenta como vigencia indefinida (útil para
   // overrides manuales del panel), cualquier fecha pasada no.
-  const ownerTier = isTierActive(rawOwnerTier, rawOwnerEndDate) ? rawOwnerTier : 0
+  const ownerTier = tierVigenteDelDueno(rawOwnerTier, rawOwnerEndDate)
 
   // ── Borde dorado: plan Patrocina, o concesión manual vigente ──────────────
   // Un admin puede otorgarlo suelto por unos meses desde el panel, sin que la
   // cuenta tenga Patrocina. La regla suma, nunca resta: ver lib/memberships/perks.
   const ownerHasGoldenBorder = tieneBordeDorado(business, ownerTier)
 
-  /* ── Contacto, escalera acumulativa ───────────────────────────────────────
-     Teléfono: TODOS, gratis incluido. Esto es un directorio; un negocio está
-     acá para que lo llamen, y esconder el teléfono esconde la utilidad básica
-     del producto. Antes era tier 2+, así que un negocio gratis quedaba en la
-     lista sin ninguna vía de contacto: un escaparate sin puerta. El cliente
-     que abría tres fichas sin poder contactar ninguna concluía que la app no
-     sirve, y era justo el público que hace que los planes valgan algo.
+  /* La escalera de contacto vive en lib/memberships/perks, no acá. Estaba
+     escrita también en la ficha del dashboard y en la página pública, y el
+     chat se quedó abierto para negocios sin plan justamente porque se corrigió
+     en esta tarjeta y no en las otras dos.
 
-     WhatsApp: Conecta en adelante. Es la conversación cómoda, sin marcar. */
-  const ownerHasWhatsApp = ownerTier >= SUBSCRIPTION_TIER_CONECTA
-
-  /* Sin esto el botón de mensaje salía en TODAS las tarjetas, también en las
-     de negocios sin plan, que no pueden recibirlos: se escribía el mensaje
-     entero y el servidor lo rechazaba al enviar. El permiso estaba bien; lo
-     que fallaba era invitar a algo que iba a fallar. */
-  const ownerHasChat = ownerTier >= SUBSCRIPTION_TIER_CONECTA
+     Se piden las tres vías juntas: pedirlas sueltas es lo que permitía tocar
+     el chat y olvidarse de WhatsApp en el mismo archivo. */
+  const contacto = viasDeContacto(rawOwnerTier, rawOwnerEndDate)
+  const ownerHasWhatsApp = contacto.whatsapp
+  const ownerHasChat = contacto.chat
 
   const isTier2 = ownerTier >= 2
 
@@ -457,7 +450,7 @@ export default function BusinessFeedCard({
           </div>
         )}
 
-        {(business.phone || business.whatsapp) && (
+        {contacto.telefono && (business.phone || business.whatsapp) && (
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -530,7 +523,7 @@ export default function BusinessFeedCard({
             Contactar
           </a>
         )}
-        {business.phone && (
+        {contacto.telefono && business.phone && (
           <a
             href={`tel:${business.phone}`}
             onClick={handlePhone}

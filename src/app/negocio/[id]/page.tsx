@@ -7,6 +7,7 @@ import StarRating from "@/components/reviews/StarRating"
 import RegistrarVista from "@/components/analytics/RegistrarVista"
 import EnlaceContacto from "@/components/analytics/EnlaceContacto"
 import { notFound } from "next/navigation"
+import { viasDeContacto } from "@/lib/memberships/perks"
 // Forzar renderizado dinámico para SEO
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidar cada hora
@@ -103,7 +104,8 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
   }
 
   // Fetch owner profile for tier (used for contact visibility only)
-  let effectiveOwnerTier = 0
+  let ownerTierCrudo: number | null = null
+  let ownerFinSuscripcion: string | null = null
   if (business.owner_id) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -111,28 +113,26 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
       .eq("id", business.owner_id)
       .maybeSingle()
 
-    const rawTier = (profile as any)?.subscription_tier ?? 0
-    const endRaw: string | null = (profile as any)?.subscription_end_date ?? null
-    const endValid =
-      endRaw !== null &&
-      !Number.isNaN(new Date(endRaw).getTime()) &&
-      new Date(endRaw) > new Date()
-    const isActive = rawTier > 0 && (endRaw === null || endValid)
-    effectiveOwnerTier = isActive ? rawTier : 0
+    ownerTierCrudo = (profile as any)?.subscription_tier ?? 0
+    ownerFinSuscripcion = (profile as any)?.subscription_end_date ?? null
   }
 
-  /* La misma escalera que el resto de la app, que no había llegado a este
-     archivo: el teléfono lo ve todo el mundo y WhatsApp desde Conecta.
+  /* La escalera de contacto sale de lib/memberships/perks, igual que en la
+     tarjeta del feed y en la ficha del dashboard.
 
-     Acá pesa más que en ningún sitio. Esta es la página que indexa Google y la
-     que se abre al compartir el negocio, y también la que lleva las fichas
-     sembradas por el propio equipo, que no tienen dueño y por tanto tier 0.
-     Con el corte en tier 2 esas fichas salían sin ninguna vía de contacto: un
-     escaparate sin puerta justo en el escaparate más visible. */
-  const ownerHasWhatsApp = effectiveOwnerTier >= 1
+     Este archivo tenía la copia más peligrosa de las tres: no llamaba a
+     isTierActive, se había reescrito a mano la comparación de fechas. O sea
+     que un arreglo en la función compartida no llegaba nunca hasta acá.
 
-  // El chat lo paga el negocio: sin plan activo no puede recibir mensajes.
-  const ownerHasInAppChat = effectiveOwnerTier >= 1
+     Y es donde más pesa. Esta es la página que indexa Google y la que se abre
+     al compartir un negocio, y la que lleva las fichas sembradas por el
+     equipo: sin dueño, o sea tier 0. El día que alguien vuelva a subir el
+     corte del teléfono, esas fichas se quedan sin ninguna vía de contacto —un
+     escaparate sin puerta justo en el escaparate más visible— y el argumento
+     de venta para reclamarlas se cae con ellas. */
+  const contacto = viasDeContacto(ownerTierCrudo, ownerFinSuscripcion)
+  const ownerHasWhatsApp = contacto.whatsapp
+  const ownerHasInAppChat = contacto.chat
 
   // Cargar estadísticas de reviews
   const { data: reviewStats } = await supabase
@@ -261,7 +261,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
                 </div>
               )}
 
-              {business.phone && (
+              {contacto.telefono && business.phone && (
                 <div className="flex items-start gap-3 p-4 bg-black/[0.02] rounded-xl">
                   <svg className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -348,7 +348,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
 
               {/* Sólo cuando no hay NINGUNA vía: ahora el teléfono está
                   siempre, así que este aviso casi nunca aparece. */}
-              {!ownerHasInAppChat && !ownerHasWhatsApp && !business.phone && (
+              {!ownerHasInAppChat && !ownerHasWhatsApp && !(contacto.telefono && business.phone) && (
                 <p className="text-center text-xs text-ink-2/70 self-center">
                   Este negocio todavía no tiene vías de contacto publicadas.
                 </p>
