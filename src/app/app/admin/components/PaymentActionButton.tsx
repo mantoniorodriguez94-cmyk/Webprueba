@@ -47,8 +47,16 @@ export default function PaymentActionButton({
     }
   }
 
-  const bgColor = variant === "success" 
-    ? "bg-green-600 hover:bg-green-700" 
+  /* Aprobar era verde y rechazar rojo. El par se lee solo, pero en la lista
+     de pagos se repite en cada fila: dos colores saturados por fila, y el
+     verde encima usado como "aprobar", que no es lo que significa en esta
+     app —tailwind.config lo reserva para activo/verificado/en línea—.
+
+     Aprobar pasa a azul, que es el color de la acción. Rechazar se queda en
+     rojo: eso sí es lo que el rojo significa en todas partes, y conviene que
+     el botón peligroso sea el que destaca del par. */
+  const bgColor = variant === "success"
+    ? "bg-blue-500 hover:bg-blue-600"
     : "bg-red-600 hover:bg-red-700"
 
   return (

@@ -806,7 +806,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   }
                   ensureUnlocked(execute)
                 }}
-                className="flex-1 py-2 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
               >
                 {badgesLoading ? "Guardando..." : "Guardar"}
               </button>

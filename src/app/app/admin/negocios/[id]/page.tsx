@@ -484,7 +484,7 @@ export default async function AdminBusinessDetailPage({
           </Link>
           <Link
             href={`/negocio/${id}`}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="px-4 py-2 bg-black/5 hover:bg-black/10 text-ink border border-black/8 rounded-xl text-sm font-medium transition-colors"
           >
             Ver página pública
           </Link>
