@@ -39,7 +39,8 @@ export type Business = {
   is_founder?: boolean;
   is_featured?: boolean;
   featured_until?: string | null;
-  max_photos?: number;
+  // max_photos ya no existe en la base. El tope sale de topeDeFotos() en
+  // lib/memberships/perks: el del plan más las fotos extra concedidas.
   is_verified?: boolean;
   verified_at?: string | null;
   verified_by?: string | null;
