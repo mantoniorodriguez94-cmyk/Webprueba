@@ -13,81 +13,102 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [verificando, setVerificando] = useState(true);
+  const [sesionLista, setSesionLista] = useState(false);
 
+  /* Canjear el enlace del correo por una sesión.
+   *
+   * Esto estaba roto y sólo desde el navegador se veía: el correo llegaba, el
+   * enlace abría la página y ahí se acababa. El motivo es que el cliente se
+   * crea con createBrowserClient de @supabase/ssr, que usa PKCE por defecto,
+   * así que Supabase devuelve `?code=` — y esta página sólo buscaba un
+   * `access_token` en el hash, que es el flujo antiguo. No encontraba nada,
+   * no había sesión, y updateUser no tenía con qué trabajar.
+   *
+   * Ahora se canjea el código aquí mismo. El verificador PKCE lo guarda el
+   * propio cliente del navegador, así que el canje funciona sin pasar por el
+   * callback del servidor —que se deja en paz, porque es el de Google.
+   *
+   * El flujo antiguo sigue cubierto sin escribir nada: con detectSessionInUrl
+   * (por defecto) la librería consume sola un `#access_token` al cargar, y
+   * getSession lo encuentra.
+   */
   useEffect(() => {
-    // Procesar el token de recuperación cuando la página carga
-    let mounted = true;
-    
-    const processRecoveryToken = async () => {
-      try {
-        // Verificar si hay un token en la URL
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const queryParams = new URLSearchParams(window.location.search);
-        const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
-        const type = hashParams.get('type') || queryParams.get('type');
-        
-        if (accessToken && type === 'recovery') {
-          // Escuchar cambios en el estado de autenticación
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-              if (mounted && session) {
-                // Limpiar la URL para ocultar el token
-                window.history.replaceState({}, document.title, window.location.pathname);
-                setError(""); // Limpiar cualquier error previo
-              }
-            }
-          });
-          
-          // También verificar después de un breve delay
-          setTimeout(async () => {
-            if (!mounted) return;
-            
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            
-            if (sessionError) {
-              console.error('Error obteniendo sesión:', sessionError);
-              if (mounted) {
-                setError("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
-              }
-              return;
-            }
-            
-            if (session) {
-              if (mounted) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                setError("");
-              }
-            } else {
-              console.warn('Token detectado pero no se estableció la sesión aún');
-            }
-            
-            // Limpiar la suscripción después de verificar
-            subscription.unsubscribe();
-          }, 2000);
-          
-          return () => {
-            subscription.unsubscribe();
-          };
-        } else if (!accessToken && !type) {
-          // No hay token, verificar si hay una sesión existente
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session && mounted) {
-            // No hay token ni sesión, pero no mostramos error inmediatamente
-            // El usuario puede estar llegando aquí directamente
-          }
-        }
-      } catch (err) {
-        console.error('Error procesando token de recuperación:', err);
-        if (mounted) {
-          setError("Error al procesar el enlace de recuperación. Por favor intenta de nuevo.");
-        }
-      }
-    };
+    let vivo = true;
 
-    processRecoveryToken();
-    
+    (async () => {
+      try {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const errorDescripcion = params.get("error_description");
+
+      if (errorDescripcion) {
+        if (vivo) {
+          setError(errorDescripcion);
+          setVerificando(false);
+        }
+        return;
+      }
+
+      /* Dos formas de enlace, según la plantilla de correo de Supabase.
+
+         `token_hash` va PRIMERO porque es el que funciona entre dispositivos:
+         se verifica contra el servidor y no depende de nada guardado en el
+         navegador. Hoy la plantilla por defecto no lo manda, pero en cuanto
+         se cambie a {{ .TokenHash }} esto empieza a funcionar solo.
+
+         `code` es PKCE y exige el verificador que guardó el navegador al
+         pedir el enlace. Funciona perfecto en el mismo dispositivo y falla
+         siempre si pides el correo en el ordenador y lo abres en el móvil
+         —de ahí que el mensaje de error nombre ese caso en vez de decir
+         sólo "caducó", que manda a la gente a repetir lo mismo. */
+      const tokenHash = params.get("token_hash");
+
+      if (tokenHash) {
+        const { error: errorOtp } = await supabase.auth.verifyOtp({
+          type: "recovery",
+          token_hash: tokenHash,
+        });
+        if (!vivo) return;
+        if (errorOtp) {
+          setError("Este enlace ya se usó o caducó. Pide uno nuevo más abajo.");
+          setVerificando(false);
+          return;
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (code) {
+        const { error: errorCanje } = await supabase.auth.exchangeCodeForSession(code);
+        if (!vivo) return;
+        if (errorCanje) {
+          setError(
+            "Este enlace no se puede abrir en este navegador. Ábrelo en el mismo dispositivo donde pediste el cambio, o pide uno nuevo desde aquí."
+          );
+          setVerificando(false);
+          return;
+        }
+        // Fuera el código de la barra de direcciones: ya está gastado.
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!vivo) return;
+
+      setSesionLista(Boolean(session));
+      if (!session) {
+        setError(
+          "Abre esta página desde el enlace que te llegó por correo. Si ya lo hiciste, es que caducó: pide uno nuevo."
+        );
+      }
+      setVerificando(false);
+      } catch (e: any) {
+        if (!vivo) return;
+        setError("No se pudo comprobar el enlace. Inténtalo de nuevo o pide uno nuevo.");
+        setVerificando(false);
+      }
+    })();
+
     return () => {
-      mounted = false;
+      vivo = false;
     };
   }, []);
 
@@ -114,37 +135,12 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      // Verificar que el usuario tenga una sesión válida (requerido para cambiar contraseña)
-      let { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      // Si no hay sesión, verificar si hay un token en la URL y procesarlo
+      // La sesión la dejó puesta el efecto de arriba al canjear el enlace.
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const queryParams = new URLSearchParams(window.location.search);
-        const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
-        const type = hashParams.get('type') || queryParams.get('type');
-        
-        if (accessToken && type === 'recovery') {
-          // Esperar un momento más para que Supabase procese el token
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Intentar obtener la sesión nuevamente
-          const sessionResult = await supabase.auth.getSession();
-          session = sessionResult.data.session;
-          sessionError = sessionResult.error;
-          
-          if (sessionError) {
-            throw new Error("Error al procesar el enlace de recuperación. Por favor solicita uno nuevo.");
-          }
-        }
-      }
-      
-      if (sessionError) {
-        throw new Error("No hay una sesión válida. Por favor, usa el enlace del correo electrónico.");
-      }
-
-      if (!session) {
-        throw new Error("No hay una sesión válida. Por favor, usa el enlace del correo electrónico para restablecer tu contraseña.");
+        throw new Error(
+          "El enlace ya no es válido. Pide uno nuevo desde «¿Olvidaste tu contraseña?»."
+        );
       }
 
       // Actualizar la contraseña
@@ -187,7 +183,9 @@ export default function ResetPasswordPage() {
                   Nueva contraseña
                 </h2>
                 <p className="text-ink-2 mt-2 text-sm sm:text-base">
-                  Ingresa tu nueva contraseña a continuación
+                  {verificando
+                    ? "Comprobando tu enlace…"
+                    : "Ingresa tu nueva contraseña a continuación"}
                 </p>
               </div>
 
@@ -203,8 +201,23 @@ export default function ResetPasswordPage() {
                 </div>
               )}
 
+              {/* Sin enlace válido no se ofrece el formulario: rellenar dos
+                  campos para que al enviar te digan que no servía es peor que
+                  decirlo antes, y la salida útil es pedir otro enlace. */}
+              {!verificando && !sesionLista && (
+                <Link
+                  href="/app/auth/forgot-password"
+                  className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white px-6 py-3.5 rounded-2xl transition-colors font-semibold"
+                >
+                  Pedir un enlace nuevo
+                </Link>
+              )}
+
               {/* Formulario */}
-              <form onSubmit={handleResetPassword} className="space-y-5">
+              <form
+                onSubmit={handleResetPassword}
+                className={`space-y-5 ${!verificando && !sesionLista ? "hidden" : ""}`}
+              >
                 {/* Password Input */}
                 <div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-semibold text-ink">
