@@ -19,9 +19,13 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
   const { id } = await params
   const supabase = await createClient()
   
+  /* Sin average_rating ni total_reviews: esas dos columnas NO existen en
+     `businesses`, viven en la vista business_review_stats. Pedirlas hacía
+     fallar la consulta entera, así que `business` llegaba null y toda ficha
+     compartida se anunciaba como "Negocio no encontrado". */
   const { data: business } = await supabase
     .from("businesses")
-    .select("name, description, category, address, logo_url, average_rating, total_reviews")
+    .select("name, description, category, address, logo_url")
     .eq("id", id)
     .single()
 
@@ -33,7 +37,10 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
   }
 
   const title = `${business.name}${business.category ? ` - ${business.category}` : ''} | App Encuentra`
-  const description = business.description || `Conoce más sobre ${business.name}${business.address ? ` ubicado en ${business.address}` : ''}.${business.average_rating ? ` Calificación: ${business.average_rating.toFixed(1)}/5.0` : ''}`
+  /* La calificación salía de business.average_rating, que nunca existió: la
+     expresión era siempre falsa y no añadía nada. Si se quiere en el
+     resumen, hay que traerla de business_review_stats. */
+  const description = business.description || `Conoce más sobre ${business.name}${business.address ? ` ubicado en ${business.address}` : ''}.`
 
   // URL canónica
   const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/negocio/${id}`
@@ -92,8 +99,6 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
       gallery_urls,
       latitude,
       longitude,
-      average_rating,
-      total_reviews,
       owner_id
     `)
     .eq("id", id)
@@ -148,8 +153,10 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
     business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
-  const averageRating = reviewStats?.average_rating || business.average_rating || 0
-  const totalReviews = reviewStats?.total_reviews || business.total_reviews || 0
+  // El respaldo era business.average_rating / business.total_reviews, campos
+  // que no existen. La vista business_review_stats es la única fuente.
+  const averageRating = reviewStats?.average_rating || 0
+  const totalReviews = reviewStats?.total_reviews || 0
 
   // JSON-LD Schema para LocalBusiness
   const jsonLd = {
