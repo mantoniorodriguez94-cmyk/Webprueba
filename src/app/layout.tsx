@@ -87,7 +87,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/brand/encuentra-pin.svg", type: "image/svg+xml" },
+      // La baldosa, no el pin suelto: a 16px en una pestaña, un bloque de
+      // color sólido se distingue entre veinte pestañas y una silueta fina
+      // se pierde contra el fondo del navegador.
+      { url: "/brand/encuentra-mark.svg", type: "image/svg+xml" },
       { url: "/icons/icon-192-maskable.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],

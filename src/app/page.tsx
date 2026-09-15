@@ -211,7 +211,11 @@ export default function Home() {
                 {/* Eyebrow */}
                 <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full opacity-0 animate-fade-in-up">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                  Portal Encuentra · Venezuela
+                  {/* Sólo el país. "Portal Encuentra LLC" es la razón social
+                      —vive en Términos, Privacidad y el panel de admin—, no
+                      el nombre con el que se presenta la app. Y repetir aquí
+                      "App Encuentra" no añade nada: el logo está al lado. */}
+                  Venezuela
                 </span>
                 {/* Título Principal */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-ink leading-tight opacity-0 animate-fade-in-up animation-delay-200">
@@ -556,7 +560,11 @@ export default function Home() {
               {/* Columna 1 — Marca */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Image src="/brand/encuentra-pin.svg" alt="App Encuentra logo" width={32} height={32} className="w-8 h-8" unoptimized />
+                  {/* La baldosa, igual que en el resto de la app: sin ella el
+                      logo pierde el mapa, la lupa se queda sin nada que mirar
+                      y el hueco del cristal vuelve a leerse como el puntito
+                      de un pin cualquiera. */}
+                  <Image src="/brand/encuentra-mark.svg" alt="App Encuentra logo" width={32} height={32} className="w-8 h-8" unoptimized />
                   <h3 className="text-xl font-semibold text-white">App Encuentra</h3>
                 </div>
                 <p className="text-sm leading-relaxed">

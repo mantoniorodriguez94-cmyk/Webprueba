@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Encuentra">
-  <defs>
-    <linearGradient id="ec-gs" x1="8" y1="42" x2="40" y2="6" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E24FD6"/><stop offset=".55" stop-color="#7C5CF0"/><stop offset="1" stop-color="#5B9BF0"/>
-    </linearGradient>
-  </defs>
-  <path fill="url(#ec-gs)" fill-rule="evenodd" d="M24 3.5c-8.56 0-15.5 6.94-15.5 15.5 0 11.2 13.02 24.2 14.62 25.76a1.25 1.25 0 0 0 1.76 0C26.48 43.2 39.5 30.2 39.5 19c0-8.56-6.94-15.5-15.5-15.5Zm0 21.1a5.6 5.6 0 1 0 0-11.2 5.6 5.6 0 0 0 0 11.2Z"/>
-</svg>

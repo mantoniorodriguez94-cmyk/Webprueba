@@ -42,7 +42,11 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
           </Link>
           <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full mt-4">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            Portal Encuentra · Venezuela
+            {/* Decía "Portal Encuentra · Venezuela" justo debajo de "App
+                Encuentra": dos nombres distintos pegados, y el de arriba es
+                la razón social, que aquí no toca. Queda el país, que es lo
+                único que esta línea aporta. */}
+            Venezuela
           </span>
         </div>
 

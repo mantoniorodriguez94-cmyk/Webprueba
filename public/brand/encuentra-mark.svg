@@ -1,14 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Encuentra">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="48" height="48" role="img" aria-label="Encuentra">
   <defs>
-    <linearGradient id="ec-g" x1="4" y1="44" x2="44" y2="4" gradientUnits="userSpaceOnUse">
+    <linearGradient id="ec-g" x1="0" y1="64" x2="64" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#E24FD6"/><stop offset=".55" stop-color="#7C5CF0"/><stop offset="1" stop-color="#5B9BF0"/>
     </linearGradient>
-    <mask id="ec-m">
-      <rect width="48" height="48" fill="#fff"/>
-      <g transform="translate(7.2 6) scale(0.7)">
-        <path fill="#000" fill-rule="evenodd" d="M24 3.5c-8.56 0-15.5 6.94-15.5 15.5 0 11.2 13.02 24.2 14.62 25.76a1.25 1.25 0 0 0 1.76 0C26.48 43.2 39.5 30.2 39.5 19c0-8.56-6.94-15.5-15.5-15.5Zm0 21.1a5.6 5.6 0 1 0 0-11.2 5.6 5.6 0 0 0 0 11.2Z"/>
-      </g>
-    </mask>
+    <clipPath id="ec-baldosa"><rect width="64" height="64" rx="14"/></clipPath>
+    <clipPath id="ec-lente"><circle cx="36.3" cy="22" r="8.2"/></clipPath>
   </defs>
-  <rect width="48" height="48" rx="12" fill="url(#ec-g)" mask="url(#ec-m)"/>
+
+  <g clip-path="url(#ec-baldosa)">
+    <!-- Fondo, calles y pin. El pin es una gota entera: el aro de la lupa le
+         tapa la cabeza, así que a simple vista parece tener un agujero. -->
+    <g id="ec-escena">
+      <rect width="64" height="64" fill="url(#ec-g)"/>
+      <g stroke="#FFFFFF" fill="none" stroke-linecap="round">
+        <path d="M-6 17 H70" stroke-width="2.2" opacity=".13"/>
+        <path d="M-6 45 H70" stroke-width="2.8" opacity=".13"/>
+        <path d="M13 -6 V70" stroke-width="2.2" opacity=".13"/>
+        <path d="M51 -6 V70" stroke-width="2.4" opacity=".13"/>
+        <path d="M-6 62 L27 29 V-6" stroke-width="1.6" opacity=".09"/>
+      </g>
+      <path d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z" fill="#F7F5FC"/>
+    </g>
+
+    <!-- El cristal aumenta un 30% lo que hay debajo. -->
+    <g clip-path="url(#ec-lente)">
+      <g transform="translate(36.3 22) scale(1.3) translate(-36.3 -22)">
+        <use href="#ec-escena"/>
+      </g>
+    </g>
+
+    <!-- Aro, mango y virola -->
+    <g fill="#2E1F72">
+      <path fill-rule="evenodd" d="M36.3 9a13 13 0 1 0 0 26 13 13 0 0 0 0-26Zm0 4.8a8.2 8.2 0 1 1 0 16.4 8.2 8.2 0 0 1 0-16.4Z"/>
+      <rect x="-11" y="-3.5" width="22" height="7" rx="3.5" transform="translate(20.2 38.1) rotate(135)"/>
+      <rect x="-5.6" y="-2" width="11.2" height="4" rx="2" transform="translate(25.9 32.4) rotate(45)"/>
+    </g>
+  </g>
 </svg>

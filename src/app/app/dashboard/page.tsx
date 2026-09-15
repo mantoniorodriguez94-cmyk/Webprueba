@@ -948,7 +948,7 @@ export default function DashboardPage() {
 
       {/* Inicio dejó de ser la excepción.
           Tenía el bloque de marca de las pantallas de registro —logo grande,
-          título centrado, píldora "Portal Encuentra"—, que en móvil se veía
+          título centrado, píldora del país—, que en móvil se veía
           bien pero en escritorio hacía que el panel pareciera una landing: el
           bloque centrado se comía el alto de la pantalla y la fila de acciones
           se estiraba de borde a borde, desalineada del feed.
