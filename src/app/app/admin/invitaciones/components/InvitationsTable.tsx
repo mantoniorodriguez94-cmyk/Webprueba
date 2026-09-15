@@ -128,7 +128,7 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
                   {/* Negocio */}
                   <td className="py-4 px-4">
                     <Link
-                      href={`/app/admin/negocios/${invitation.business_id}/gestionar`}
+                      href={`/app/admin/negocios/${invitation.business_id}`}
                       className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                     >
                       {invitation.business_name}

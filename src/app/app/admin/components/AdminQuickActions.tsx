@@ -330,22 +330,14 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       </div>
 
       <div className="flex flex-col gap-3">
-        {/* "Ficha completa" iba antes a ningún sitio: la página con los datos
-            del dueño —correo, plan, id, reseñas y pagos— no tenía un solo
-            enlace que apuntara a ella desde acá, así que era inalcanzable.
-            "Editar datos" es el formulario, que es otra cosa y por eso van
-            separados y con nombres que dicen cuál es cuál. */}
+        {/* Un solo botón: "Ficha completa" y "Editar datos" eran dos páginas
+            que pintaban los mismos campos, y había que ir y volver para ver
+            si un cambio había entrado. Ahora es una. */}
         <Link
           href={`/app/admin/negocios/${business.id}`}
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
         >
           Ficha completa
-        </Link>
-        <Link
-          href={`/app/admin/negocios/${business.id}/gestionar`}
-          className="px-4 py-2 bg-black/5 hover:bg-black/10 text-ink rounded-xl text-center text-sm font-medium transition-colors"
-        >
-          Editar datos
         </Link>
 
         <div className="rounded-2xl border border-black/8 bg-black/[0.015] p-4 mt-1">

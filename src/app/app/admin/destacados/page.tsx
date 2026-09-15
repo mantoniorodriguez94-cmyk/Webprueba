@@ -138,17 +138,14 @@ export default async function AdminDestacadosPage() {
 
                 {/* Acciones */}
                 <div className="flex flex-col gap-2 pt-4 border-t border-black/8">
+                  {/* "Ver Detalles" y "Gestionar Negocio" llevaban a dos
+                      páginas distintas que mostraban lo mismo. Ahora hay una
+                      sola ficha. */}
                   <Link
                     href={`/app/admin/negocios/${b.id}`}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
                   >
-                    Ver Detalles
-                  </Link>
-                  <Link
-                    href={`/app/admin/negocios/${b.id}/gestionar`}
-                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
-                  >
-                    Gestionar Negocio
+                    Ver ficha
                   </Link>
                 </div>
               </div>
