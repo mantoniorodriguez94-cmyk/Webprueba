@@ -204,7 +204,19 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         </Drawer>
 
         {/* CONTENIDO */}
-        <main className="flex-1 mt-1">
+        {/* min-w-0 es la causa raíz de que el panel saliera más ancho que la
+            pantalla y hubiera que alejar el zoom para leerlo.
+
+            Un elemento flex trae min-width:auto, así que NO encoge por debajo
+            del ancho mínimo de su contenido. Bastaba un hijo que no supiera
+            encoger —una tarjeta con el botón en flex-shrink-0, una tabla— para
+            que <main> creciera y arrastrase con él el encabezado, las métricas
+            y todo lo demás. Por eso se veía cortada la página entera y no sólo
+            el elemento culpable.
+
+            Con min-w-0, <main> encoge hasta el ancho real disponible y cada
+            sección se las arregla dentro: la que desborde se desborda sola. */}
+        <main className="flex-1 min-w-0 mt-1">
           <div className="surface rounded-3xl p-4 sm:p-6 md:p-8 min-h-[calc(100vh-7rem)] shadow-sm">
             {children}
           </div>
