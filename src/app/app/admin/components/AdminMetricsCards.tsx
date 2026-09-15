@@ -69,7 +69,7 @@ export default function AdminMetricsCards() {
     { title: "Usuarios Registrados", value: m.users, iconBg: "bg-blue-50", iconColor: "text-blue-600", href: "/app/admin/usuarios" },
     { title: "Negocios", value: m.businesses, iconBg: "bg-green-50", iconColor: "text-green-600", href: "/app/admin/negocios" },
     { title: "Negocios Premium", value: m.premium, iconBg: "bg-amber-50", iconColor: "text-amber-600", href: "/app/admin/negocios?filter=premium" },
-    { title: "Pagos Pendientes", value: m.pendingPayments, iconBg: "bg-orange-50", iconColor: "text-orange-600", href: "/app/admin/pagos" },
+    { title: "Pagos Pendientes", value: m.pendingPayments, iconBg: "bg-amber-50", iconColor: "text-amber-600", href: "/app/admin/pagos" },
     { title: "Suscripciones por Expirar", value: m.expiring, iconBg: "bg-red-50", iconColor: "text-red-600", href: "/app/admin/pagos" },
     { title: "Negocios Destacados", value: m.featured, iconBg: "bg-purple-50", iconColor: "text-purple-600", href: "/app/admin/destacados" },
   ]
