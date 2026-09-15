@@ -98,145 +98,112 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
 
       {/* Tabla de invitaciones */}
       {filteredInvitations.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-black/10">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
-                  Negocio
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
-                  Código
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
-                  Estado
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">
-                  Fecha de Creación
-                </th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredInvitations.map((invitation) => (
-                <tr
-                  key={invitation.id}
-                  className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
-                >
-                  {/* Negocio */}
-                  <td className="py-4 px-4">
-                    <Link
-                      href={`/app/admin/negocios/${invitation.business_id}`}
-                      className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                    >
-                      {invitation.business_name}
-                    </Link>
-                  </td>
+        <>
+          {/* Móvil: tarjetas. Cinco columnas no caben en un teléfono, y el
+              código de reclamación —que es el dato por el que se entra a esta
+              pantalla— quedaba fuera de la parte visible de la tabla. */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filteredInvitations.map((invitation) => (
+              <div
+                key={invitation.id}
+                className="rounded-2xl border border-black/8 bg-white p-4 flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <Link
+                    href={`/app/admin/negocios/${invitation.business_id}`}
+                    className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors min-w-0 break-words"
+                  >
+                    {invitation.business_name}
+                  </Link>
+                  <EstadoInvitacion reclamada={invitation.is_claimed} />
+                </div>
 
-                  {/* Código */}
-                  <td className="py-4 px-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-lg border border-black/10">
-                      <code className="font-mono text-sm font-semibold text-blue-700 tracking-wider">
-                        {invitation.code}
-                      </code>
-                    </div>
-                  </td>
+                <div className="inline-flex items-center gap-2 px-3 py-2 bg-black/5 rounded-lg border border-black/10 self-start">
+                  <code className="font-mono text-sm font-semibold text-blue-700 tracking-wider break-all">
+                    {invitation.code}
+                  </code>
+                </div>
 
-                  {/* Estado */}
-                  <td className="py-4 px-4">
-                    {invitation.is_claimed ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-black/5 text-ink-2 border border-black/10">
-                        Reclamado
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                        Pendiente
-                      </span>
-                    )}
-                  </td>
+                <p className="text-xs text-ink-2">{fechaInvitacion(invitation.created_at)}</p>
 
-                  {/* Fecha de Creación */}
-                  <td className="py-4 px-4 text-sm text-ink-2">
-                    {new Date(invitation.created_at).toLocaleDateString("es-ES", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </td>
+                <div className="flex items-center gap-2 pt-1 border-t border-black/5">
+                  <BotonCopiar
+                    codigo={invitation.code}
+                    copiado={copiedCode === invitation.code}
+                    onCopiar={handleCopyCode}
+                  />
+                  {!invitation.is_claimed && (
+                    <BotonRegenerar
+                      businessId={invitation.business_id}
+                      onRegenerar={handleRegenerate}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
 
-                  {/* Acciones */}
-                  <td className="py-4 px-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Botón Copiar */}
-                      <button
-                        onClick={() => handleCopyCode(invitation.code)}
-                        className="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-300 flex items-center justify-center transition-all group"
-                        title={copiedCode === invitation.code ? "Copiado!" : "Copiar código"}
-                      >
-                        {copiedCode === invitation.code ? (
-                          <svg
-                            className="w-5 h-5 text-green-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-5 h-5 text-blue-600 group-hover:text-blue-700"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                        )}
-                      </button>
-
-                      {/* Botón Regenerar (solo si está pendiente) */}
-                      {!invitation.is_claimed && (
-                        <button
-                          onClick={() => handleRegenerate(invitation.business_id)}
-                          className="w-9 h-9 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 hover:border-amber-300 flex items-center justify-center transition-all group"
-                          title="Regenerar código"
-                        >
-                          <svg
-                            className="w-5 h-5 text-amber-600 group-hover:text-amber-700"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-black/10">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Negocio</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Código</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Estado</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Fecha de Creación</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredInvitations.map((invitation) => (
+                  <tr
+                    key={invitation.id}
+                    className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <Link
+                        href={`/app/admin/negocios/${invitation.business_id}`}
+                        className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                      >
+                        {invitation.business_name}
+                      </Link>
+                    </td>
+                    <td className="py-4 px-4">
+                      {/* whitespace-nowrap: un código se lee y se dicta, y
+                          partido en dos líneas se copia mal a ojo. */}
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-lg border border-black/10">
+                        <code className="font-mono text-sm font-semibold text-blue-700 tracking-wider whitespace-nowrap">
+                          {invitation.code}
+                        </code>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <EstadoInvitacion reclamada={invitation.is_claimed} />
+                    </td>
+                    <td className="py-4 px-4 text-sm text-ink-2">
+                      {fechaInvitacion(invitation.created_at)}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <BotonCopiar
+                          codigo={invitation.code}
+                          copiado={copiedCode === invitation.code}
+                          onCopiar={handleCopyCode}
+                        />
+                        {!invitation.is_claimed && (
+                          <BotonRegenerar
+                            businessId={invitation.business_id}
+                            onRegenerar={handleRegenerate}
+                          />
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : (
         <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">
@@ -255,3 +222,71 @@ export default function InvitationsTable({ invitations }: InvitationsTableProps)
   )
 }
 
+/* Las piezas que usan las dos formas de la lista —tarjetas en móvil, tabla en
+   escritorio—. Definidas una vez para que no se separen: si cambia el estado
+   o se añade una acción, cambia en las dos o en ninguna. */
+
+function fechaInvitacion(iso: string) {
+  return new Date(iso).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+function EstadoInvitacion({ reclamada }: { reclamada: boolean }) {
+  return reclamada ? (
+    <span className="inline-flex flex-shrink-0 items-center px-3 py-1 rounded-full text-xs font-semibold bg-black/5 text-ink-2 border border-black/10">
+      Reclamado
+    </span>
+  ) : (
+    <span className="inline-flex flex-shrink-0 items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+      Pendiente
+    </span>
+  )
+}
+
+function BotonCopiar({
+  codigo,
+  copiado,
+  onCopiar,
+}: { codigo: string; copiado: boolean; onCopiar: (codigo: string) => void }) {
+  return (
+    <button
+      onClick={() => onCopiar(codigo)}
+      className="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-300 flex items-center justify-center transition-all group"
+      title={copiado ? "Copiado!" : "Copiar código"}
+      aria-label={copiado ? "Código copiado" : "Copiar código"}
+    >
+      {copiado ? (
+        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      ) : (
+        <svg className="w-5 h-5 text-blue-600 group-hover:text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+function BotonRegenerar({
+  businessId,
+  onRegenerar,
+}: { businessId: string; onRegenerar: (businessId: string) => void }) {
+  return (
+    <button
+      onClick={() => onRegenerar(businessId)}
+      className="w-9 h-9 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 hover:border-amber-300 flex items-center justify-center transition-all group"
+      title="Regenerar código"
+      aria-label="Regenerar código"
+    >
+      <svg className="w-5 h-5 text-amber-600 group-hover:text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    </button>
+  )
+}
