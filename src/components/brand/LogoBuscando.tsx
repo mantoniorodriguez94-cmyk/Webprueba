@@ -28,6 +28,8 @@ export default function LogoBuscando({
   const baldosa = `${idPrefix}-baldosa`
   const lente = `${idPrefix}-lente`
   const escena = `${idPrefix}-escena`
+  const mapa = `${idPrefix}-mapa`
+  const gota = `${idPrefix}-gota`
 
   return (
     <svg
@@ -51,21 +53,60 @@ export default function LogoBuscando({
         <clipPath id={lente}>
           <circle cx="36.3" cy="22" r="8.2" />
         </clipPath>
+        <clipPath id={gota}>
+          <path d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z" />
+        </clipPath>
 
-        {/* Todo lo que la lupa puede mirar. El aro NO está aquí: si estuviera,
-            se vería a sí mismo aumentado dentro del cristal. */}
-        <g id={escena}>
-          <rect width="64" height="64" fill={`url(#${gradiente})`} />
-          <g stroke="#FFFFFF" fill="none" strokeLinecap="round">
-            <path d="M-6 17 H70" strokeWidth="2.2" opacity=".13" />
-            <path d="M-6 45 H70" strokeWidth="2.8" opacity=".13" />
-            <path d="M13 -6 V70" strokeWidth="2.2" opacity=".13" />
-            <path d="M51 -6 V70" strokeWidth="2.4" opacity=".13" />
-            <path d="M-6 62 L27 29 V-6" strokeWidth="1.6" opacity=".09" />
+        {/* El mundo: fondo y calles. Un cruce en X centrado justo en la
+            lente (36.3, 22), para que sea EL CRUCE lo que se ve aumentado.
+            Las manzanas van giradas 45°, con sus lados paralelos a las
+            calzadas: rectas parecían cuadrados flotando sobre un cruce
+            diagonal. El rectángulo se sale de la baldosa a propósito.
+
+            El aro NO está acá: si estuviera, se vería a sí mismo aumentado. */}
+        <g id={mapa}>
+          <rect x="-12" y="-12" width="88" height="88" fill={`url(#${gradiente})`} />
+
+          <g fill="#FFFFFF" opacity=".08">
+            <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(36.3 5) rotate(45)" />
+            <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(19.3 22) rotate(45)" />
+            <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(53.3 22) rotate(45)" />
+            <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(36.3 39) rotate(45)" />
           </g>
-          {/* El pin es una gota entera: el aro le tapa la cabeza, y por eso
-              al apartarse la lupa aparece un pin limpio. */}
-          <path d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z" fill="#F7F5FC" />
+
+          <g stroke="#FFFFFF" fill="none" strokeLinecap="round" opacity=".16">
+            <path d="M10.3 -4 L76.3 62" strokeWidth="7.5" />
+            <path d="M-6 64.3 L76 -17.7" strokeWidth="7.5" />
+            <path d="M-6 44 Q 14 40 18 20 T 30 -6" strokeWidth="5" />
+          </g>
+
+          <g stroke="#FFFFFF" fill="none" strokeLinecap="round" opacity=".5" strokeWidth="1" strokeDasharray="2.5 3">
+            <path d="M10.3 -4 L76.3 62" />
+            <path d="M-6 64.3 L76 -17.7" />
+          </g>
+
+          <g fill="#FFFFFF" opacity=".22">
+            <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(36.3 5) rotate(45)" />
+            <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(19.3 22) rotate(45)" />
+            <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(53.3 22) rotate(45)" />
+            <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(36.3 39) rotate(45)" />
+          </g>
+        </g>
+
+        {/* El pin de cristal. Va DENTRO de la escena porque la lente tiene que
+            ampliarlo a él también: con el pin opaco el cristal ampliaba blanco
+            y una lupa que amplía una mancha no parece una lupa. */}
+        <g id={escena}>
+          <use href={`#${mapa}`} />
+          <g clipPath={`url(#${gota})`}>
+            <rect x="-12" y="-12" width="88" height="88" fill="#fff" opacity=".45" />
+          </g>
+          <path
+            d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="2"
+          />
         </g>
       </defs>
 
