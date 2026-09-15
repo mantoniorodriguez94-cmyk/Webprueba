@@ -22,7 +22,18 @@ export default function ConfirmEmailPage() {
       return;
     }
 
-    if (!code) {
+    /* Dos formas de enlace, igual que en reset-password.
+
+       `token_hash` funciona ENTRE DISPOSITIVOS: se verifica contra el
+       servidor y no depende de nada guardado en el navegador. Acá pesa más
+       que en ninguna parte, porque registrarse en el ordenador y abrir el
+       correo en el móvil es lo normal, y con PKCE eso falla siempre.
+
+       `code` es PKCE y necesita el verificador que guardó el navegador al
+       registrarse. Se mantiene para los enlaces ya enviados. */
+    const tokenHash = searchParams.get("token_hash");
+
+    if (!code && !tokenHash) {
       setStatus("error");
       setMessage("Enlace inválido o expirado. Solicita un nuevo correo de confirmación.");
       return;
@@ -31,15 +42,21 @@ export default function ConfirmEmailPage() {
     const confirmEmail = async () => {
       try {
         // Solo procesamos enlaces de registro/confirmación
-        if (type && type !== "signup" && type !== "email_change") {
+        if (type && type !== "signup" && type !== "email" && type !== "email_change") {
           setStatus("error");
           setMessage("El enlace recibido no es válido para confirmar tu correo.");
           return;
         }
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          throw error;
+        if (tokenHash) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: type === "email_change" ? "email_change" : "email",
+            token_hash: tokenHash,
+          });
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.auth.exchangeCodeForSession(code!);
+          if (error) throw error;
         }
 
         setStatus("success");

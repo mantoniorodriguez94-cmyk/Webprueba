@@ -1,0 +1,91 @@
+<!--
+  Supabase → Authentication → Email Templates → Reset Password
+  Asunto sugerido: Cambia tu contraseña · App Encuentra
+
+  El enlace usa {{ .TokenHash }} y apunta DIRECTO a la página, sin pasar por
+  el endpoint de verificación de Supabase. Ver el LEEME de esta carpeta.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambia tu contraseña</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F1F0F6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" style="width:100%; border-collapse:collapse; background-color:#F1F0F6; padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" style="max-width:560px; width:100%; border-collapse:collapse; background-color:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 2px 10px rgba(14,14,22,.06);">
+
+          <!-- Marca -->
+          <tr>
+            <td style="padding:32px 32px 8px 32px;">
+              <table role="presentation" style="border-collapse:collapse;">
+                <tr>
+                  <td style="padding-right:12px; vertical-align:middle;">
+                    <img src="https://appencuentra.com/icons/icon-512.png"
+                         width="44" height="44" alt=""
+                         style="display:block; width:44px; height:44px; border-radius:11px;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <span style="font-size:20px; font-weight:700; color:#0E0E16; letter-spacing:-.01em;">App Encuentra</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Contenido -->
+          <tr>
+            <td style="padding:20px 32px 32px 32px;">
+              <h1 style="margin:0 0 14px 0; font-size:26px; line-height:1.2; font-weight:700; color:#0E0E16; letter-spacing:-.02em;">
+                Cambia tu contraseña
+              </h1>
+
+              <p style="margin:0 0 20px 0; font-size:16px; line-height:1.6; color:#6B6B78;">
+                Pediste cambiar la contraseña de tu cuenta. Pulsa el botón y elige una nueva.
+              </p>
+
+              <div style="text-align:center; margin:28px 0;">
+                <a href="{{ .SiteURL }}/app/auth/reset-password?token_hash={{ .TokenHash }}&type=recovery"
+                   style="display:inline-block; background-color:#5B4FE8; color:#ffffff; text-decoration:none; padding:14px 34px; border-radius:999px; font-weight:600; font-size:16px;">
+                  Elegir contraseña nueva
+                </a>
+              </div>
+
+              <div style="background-color:#F1EFFE; border-left:3px solid #5B4FE8; padding:14px 16px; border-radius:10px; margin-bottom:24px;">
+                <p style="margin:0; font-size:14px; line-height:1.6; color:#2B2482;">
+                  El enlace caduca en una hora y sólo sirve una vez. Si caduca, vuelve a pedirlo desde
+                  «¿Olvidaste tu contraseña?».
+                </p>
+              </div>
+
+              <p style="margin:0 0 8px 0; font-size:14px; line-height:1.6; color:#6B6B78;">
+                <strong style="color:#0E0E16;">¿No fuiste tú?</strong> No hagas nada. Tu contraseña
+                actual sigue funcionando y nadie puede cambiarla sin abrir este enlace.
+              </p>
+
+              <p style="margin:24px 0 0 0; font-size:12px; line-height:1.6; color:#9a9aa5; word-break:break-all;">
+                Si el botón no funciona, copia esta dirección en tu navegador:<br>
+                {{ .SiteURL }}/app/auth/reset-password?token_hash={{ .TokenHash }}&type=recovery
+              </p>
+            </td>
+          </tr>
+
+          <!-- Pie -->
+          <tr>
+            <td style="background-color:#FAF9FD; padding:20px 32px; text-align:center; border-top:1px solid #ECEAF3;">
+              <p style="margin:0; font-size:12px; line-height:1.6; color:#9a9aa5;">
+                App Encuentra · Venezuela<br>
+                Recibes este correo porque alguien pidió cambiar la contraseña de esta dirección.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
