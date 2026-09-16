@@ -122,7 +122,7 @@ BEGIN
   END;
 
   -- Fotos extra concedidas a mano desde el panel, mientras estén vigentes.
-  -- Ver scripts/beneficios-sueltos.sql, que debe ejecutarse antes que este.
+  -- Ver 20260914110002_beneficios_sueltos.sql, que corre antes que este.
   IF NEW.perk_fotos_extra_hasta IS NOT NULL
      AND NEW.perk_fotos_extra_hasta > now() THEN
     v_permitidas := v_permitidas + COALESCE(NEW.perk_fotos_extra, 0);

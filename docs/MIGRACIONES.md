@@ -26,13 +26,16 @@ Ocho aguantan la reejecución. Una no. El detalle está abajo.
 | | Qué es | Cuántos |
 |---|---|---|
 | `supabase/migrations/` | Migraciones con fecha, formato CLI. Todas de sep 2026. | 9 |
-| `scripts/` | SQL suelto ejecutado a mano, de nov 2025 en adelante. | 73 |
+| `scripts/` | SQL suelto ejecutado a mano, de nov 2025 en adelante. | 64 |
 
-### 8 archivos están duplicados
+Ninguna migración tiene ya copia en `scripts/`. Ocho la tenían —byte a byte— y
+se eliminaron: mientras existan dos copias del mismo SQL, alguien edita una y
+empiezan a divergir sin que nadie sepa cuál refleja la base. La fuente única es
+`supabase/migrations/`.
 
-Ocho scripts existen **dos veces**, como copias byte a byte:
+Si buscás alguno de esos ocho por su nombre viejo:
 
-| En `scripts/` | En `supabase/migrations/` |
+| Nombre anterior en `scripts/` | Dónde está ahora |
 |---|---|
 | `un-negocio-por-cuenta.sql` | `20260914110001_un_negocio_por_cuenta.sql` |
 | `beneficios-sueltos.sql` | `20260914110002_beneficios_sueltos.sql` |
@@ -42,19 +45,6 @@ Ocho scripts existen **dos veces**, como copias byte a byte:
 | `resenas-cliente-verificado.sql` | `20260914130001_resenas_cliente_verificado.sql` |
 | `resenas-solo-negocios-reclamados.sql` | `20260914140001_resenas_solo_negocios_reclamados.sql` |
 | `chat-tiempo-real.sql` | `20260914150001_chat_tiempo_real.sql` |
-
-Hoy son idénticas, así que da igual cuál se corra. El riesgo es a futuro: en
-cuanto alguien edite una de las dos, empiezan a divergir en silencio y nadie
-sabe cuál refleja la base.
-
-**Pendiente:** borrar las copias de `scripts/` y dejar
-`supabase/migrations/` como única fuente. Antes hay que repuntar tres
-referencias, porque dos de esos nombres aparecen en mensajes de error que la
-app le muestra al admin:
-
-- `src/app/api/admin/business/perks/route.ts` → `beneficios-sueltos.sql`
-- `src/lib/memberships/perks.ts` → `beneficios-sueltos.sql`
-- `src/app/app/dashboard/layout.tsx` → `chat-tiempo-real.sql`
 
 ## Estado de las 9 migraciones
 

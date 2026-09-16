@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: "Faltan las columnas perk_*. Ejecuta scripts/beneficios-sueltos.sql en Supabase.",
+            error:
+              "Faltan las columnas perk_*. Ejecuta supabase/migrations/20260914110002_beneficios_sueltos.sql en Supabase.",
           },
           { status: 500 }
         )

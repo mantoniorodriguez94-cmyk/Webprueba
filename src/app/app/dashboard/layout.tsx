@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
      Funciona porque insertar un mensaje modifica esa fila: dos triggers mueven
      last_message_at y suben el contador de no leídos. El código que envía no
      toca la conversación, así que todo depende de ellos; van asegurados en
-     scripts/chat-tiempo-real.sql.
+     supabase/migrations/20260914150001_chat_tiempo_real.sql.
 
      El intervalo se queda, pero cada dos minutos en vez de cada treinta
      segundos: si la conexión se cae o un aviso se pierde, el contador se

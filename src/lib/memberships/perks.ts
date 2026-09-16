@@ -15,7 +15,7 @@
  * es admin, porque la política RLS de UPDATE no restringe por columna y el
  * dueño podría regalarse el borde dorado desde la consola).
  *
- * Ver scripts/beneficios-sueltos.sql.
+ * Ver supabase/migrations/20260914110002_beneficios_sueltos.sql.
  */
 
 import type { Business } from "@/types/business"
