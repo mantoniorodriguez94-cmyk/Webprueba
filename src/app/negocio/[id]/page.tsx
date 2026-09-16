@@ -14,9 +14,21 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidar cada hora
 
 /**
- * Generar metadata SEO para la página pública del negocio
+ * Generar metadata SEO para la página pública del negocio.
+ *
+ * OJO con el `export`: faltaba, y sin él Next ni se entera de que esta
+ * función existe. El efecto era invisible desde el código —la función está
+ * escrita entera, con su consulta y sus etiquetas— pero en producción TODAS
+ * las fichas heredaban los metadatos de la portada: el mismo título para
+ * cada negocio, la misma descripción, y ningún canonical propio. Compartir
+ * un negocio por WhatsApp mostraba la tarjeta genérica de la app en vez de
+ * la del negocio.
+ *
+ * Se descubrió comparando el HTML que sirve producción contra lo que decía
+ * el código. Leer el archivo no bastaba: el cuerpo de la función parecía
+ * correcto y lo que fallaba era una palabra en su primera línea.
  */
-async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const supabase = await createClient()
   
