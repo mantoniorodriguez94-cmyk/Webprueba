@@ -19,9 +19,8 @@ import BusinessLocation from "@/components/BusinessLocation"
 import { trackBusinessView, trackBusinessInteraction } from "@/lib/analytics"
 import SendMessageModal from "@/components/messages/SendMessageModal"
 import ReportBusinessModal from "@/components/reports/ReportBusinessModal"
-import useMembershipAccess from "@/hooks/useMembershipAccess"
-import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
-import { SUBSCRIPTION_TIER_CONECTA, isTierActive } from "@/lib/memberships/tiers"
+import { viasDeContacto } from "@/lib/memberships/perks"
+import { claseBoton } from "@/lib/ui/botones"
 import { alertModal } from "@/lib/alertModal"
 import { Dialog } from "@/components/ui/Overlay"
 
@@ -59,13 +58,15 @@ export default function BusinessDetailPage() {
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [showReportBusinessModal, setShowReportBusinessModal] = useState(false)
   const [menuNegocioAbierto, setMenuNegocioAbierto] = useState(false)
-  const [showUpgradeSuggestion, setShowUpgradeSuggestion] = useState(false)
   const [showChatDisabledModal, setShowChatDisabledModal] = useState(false)
 
-  const { hasAccess } = useMembershipAccess()
 
   // Verificar permisos
   const isOwner = user?.id === business?.owner_id
+  /* Una ficha sin dueño es una de las cargadas por el equipo para ofrecérsela
+     luego a su dueño con un código. Hasta que alguien la reclame no es de
+     nadie, y no se opina sobre ella. */
+  const fichaReclamada = Boolean(business?.owner_id)
   const isAdmin = user?.user_metadata?.is_admin ?? false
   const canManage = isOwner || isAdmin
 
@@ -73,31 +74,23 @@ export default function BusinessDetailPage() {
   const businessTier = business?.profiles?.subscription_tier ?? business?.owner?.subscription_tier ?? 0
   const businessSubscriptionEndDate =
     business?.profiles?.subscription_end_date ?? business?.owner?.subscription_end_date ?? null
-  // Chat access: the business owner needs an active paid membership, same rule as the sender
-  const ownerHasChat = Boolean(business) && isTierActive(businessTier, businessSubscriptionEndDate)
-  const ownerHasFullContact = ownerHasChat
 
-  // Parsear gallery_urls de manera segura
-  const getGalleryUrls = (): string[] => {
-    if (!business?.gallery_urls) return []
-    
-    // Si ya es un array, devolverlo
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    
-    // Si es un string, intentar parsearlo como JSON
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    
-    return []
-  }
+  /* La escalera de contacto sale de lib/memberships/perks, igual que en la
+     tarjeta del feed y en la página pública.
+
+     Acá estaba escrita de la forma más frágil de las tres: se usaba el
+     booleano de isTierActive como si fuera el permiso, y WhatsApp se definía
+     como `= ownerHasChat`. Coincidía con el resto por casualidad, porque los
+     dos beneficios cortan hoy en el mismo plan; el día que uno suba de nivel,
+     esta ficha se lleva el otro por delante sin que nada avise. */
+  const contacto = viasDeContacto(businessTier, businessSubscriptionEndDate)
+  const ownerHasChat = Boolean(business) && contacto.chat
+  const ownerHasWhatsApp = contacto.whatsapp
+
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 
@@ -530,7 +523,10 @@ export default function BusinessDetailPage() {
                 </div>
               )}
               
-              {ownerHasFullContact && (business.phone || business.whatsapp) && (
+              {/* Estaba detrás de ownerHasWhatsApp: en un negocio sin plan la
+                  ficha escondía el número y debajo seguía ofreciendo el botón
+                  "Llamar", que sí lo usaba. El teléfono no depende del plan. */}
+              {contacto.telefono && (business.phone || business.whatsapp) && (
                 <p className="text-ink-2 flex items-center gap-2">
                   <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -544,12 +540,12 @@ export default function BusinessDetailPage() {
           {/* Botones de Contacto — debajo de toda la información */}
           {!isOwner && (
             <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-black/8">
-              {ownerHasFullContact && business.whatsapp && (
+              {ownerHasWhatsApp && business.whatsapp && (
                 <a
                   href={`https://wa.me/${business.whatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full hover:shadow-xl transition-all font-semibold flex-1"
+                  className={claseBoton("whatsapp", "normal", "flex-1")}
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -557,10 +553,10 @@ export default function BusinessDetailPage() {
                   Contactar por WhatsApp
                 </a>
               )}
-              {ownerHasFullContact && business.phone && (
+              {contacto.telefono && business.phone && (
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold flex-1"
+                  className={claseBoton("primario", "normal", "flex-1")}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -576,7 +572,7 @@ export default function BusinessDetailPage() {
                     type="button"
                     onClick={() => setShowChatDisabledModal(true)}
                     title="Chat no disponible"
-                    className="flex items-center justify-center gap-2 bg-black/5 text-ink-2 px-6 py-3 rounded-full cursor-not-allowed opacity-60 font-semibold flex-1 border border-black/8"
+                    className={claseBoton("deshabilitado", "normal", "flex-1")}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -586,12 +582,13 @@ export default function BusinessDetailPage() {
                 ) : (
                   <button
                     onClick={() => {
+                      // Quien escribe sólo necesita cuenta: el chat lo paga el
+                      // negocio. Acá quedaba la comprobación sobre el remitente
+                      // que se quitó del modal, así que seguía apareciendo el
+                      // cartel de "Chat con negocios es exclusivo para Conecta"
+                      // a un cliente que sí puede escribir.
                       if (!user) {
                         router.push("/app/auth/login")
-                        return
-                      }
-                      if (!hasAccess(SUBSCRIPTION_TIER_CONECTA)) {
-                        setShowUpgradeSuggestion(true)
                         return
                       }
                       setShowMessageModal(true)
@@ -824,26 +821,44 @@ export default function BusinessDetailPage() {
 
         {/* Sección de Reviews y Reseñas */}
         <div className="mt-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-3xl font-bold text-ink mb-2">
-                Reseñas y Calificaciones
-              </h2>
-              <p className="text-ink-2">
-                Descubre qué opinan los clientes sobre este negocio
-              </p>
+          {/* Un solo encabezado. Antes había tres capas diciendo lo mismo
+              —"Reseñas y Calificaciones", su subtítulo, y más abajo "Lo que
+              dicen nuestros clientes"— y la nota media quedaba enterrada en un
+              bloque aparte. Acá el titular lleva el dato: cuántas hay y qué
+              puntúan, que es lo que se viene a saber.
+
+              Se apila en móvil: en una sola fila el botón se estrujaba contra
+              el título y su etiqueta partía en dos líneas. */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h2 className="text-2xl font-bold text-ink">Reseñas</h2>
+              {reviewStats && reviewStats.total_reviews > 0 ? (
+                <span className="flex items-baseline gap-2 text-ink-2">
+                  <span className="text-2xl font-bold text-ink tabular-nums">
+                    {Number(reviewStats.average_rating).toFixed(1)}
+                  </span>
+                  <StarRating rating={Number(reviewStats.average_rating)} size="sm" />
+                  <span className="text-sm">
+                    ({reviewStats.total_reviews})
+                  </span>
+                </span>
+              ) : (
+                <span className="text-sm text-ink-2">Sin reseñas todavía</span>
+              )}
             </div>
             
-            {/* Botón para dejar reseña: Solo si NO tiene review previa */}
-            {user && !isOwner && !userReview && (
+            {/* Sin dueño no se reseña: es una ficha sembrada por el equipo
+                que todavía no es de nadie, y la base rechaza el insert. Si el
+                botón siguiera ahí, ofrecería algo destinado a fallar. */}
+            {user && !isOwner && !userReview && fichaReclamada && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold"
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-all font-semibold whitespace-nowrap w-full sm:w-auto"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
-                Dejar una reseña
+                Escribir reseña
               </button>
             )}
             
@@ -851,7 +866,7 @@ export default function BusinessDetailPage() {
             {user && !isOwner && userReview && isAdmin && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full transition-all font-semibold"
+                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full transition-all font-semibold whitespace-nowrap w-full sm:w-auto"
                 title="Solo administradores pueden editar reseñas"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -863,7 +878,7 @@ export default function BusinessDetailPage() {
             
             {/* Mensaje para usuarios que ya dejaron reseña (no admin) */}
             {user && !isOwner && userReview && !isAdmin && (
-              <div className="flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+              <div className="flex items-center justify-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200 w-full sm:w-auto">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -900,12 +915,7 @@ export default function BusinessDetailPage() {
           )}
 
           {/* Lista de Reviews */}
-          <div>
-            <h3 className="text-2xl font-bold text-ink mb-6">
-              Lo que dicen nuestros clientes
-            </h3>
-            <ReviewList reviews={reviews} loading={reviewsLoading} />
-          </div>
+          <ReviewList reviews={reviews} loading={reviewsLoading} currentUserId={user?.id ?? null} />
 
           {/* Mensaje si el usuario no está logueado */}
           {!user && (
@@ -1059,8 +1069,8 @@ export default function BusinessDetailPage() {
         </div>
       )}
 
-      {/* Modal de Mensajes — solo si negocio tiene chat activo y visitante Conecta+ */}
-      {showMessageModal && business && user && ownerHasChat && hasAccess(SUBSCRIPTION_TIER_CONECTA) && (
+      {/* Modal de Mensajes — sólo si el negocio tiene chat activo */}
+      {showMessageModal && business && user && ownerHasChat && (
         <SendMessageModal
           business={business}
           currentUserId={user.id}
@@ -1097,21 +1107,6 @@ export default function BusinessDetailPage() {
         >
           Entendido
         </button>
-      </Dialog>
-
-      {/* Modal: visitante sin plan Conecta */}
-      <Dialog
-        open={showUpgradeSuggestion}
-        onClose={() => setShowUpgradeSuggestion(false)}
-        aria-label="Mejora tu plan"
-        panelClassName="max-w-md w-full"
-      >
-        <UpgradeSuggestion
-          requiredTier={SUBSCRIPTION_TIER_CONECTA}
-          featureName="Chat con negocios"
-          featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
-          variant="modal"
-        />
       </Dialog>
 
       {/* Modal de Reportar Negocio */}

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import SectionHeader from "@/components/ui/SectionHeader"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 import { getMaxPhotosForTier } from "@/lib/memberships/tiers"
+import { topeDeFotos } from "@/lib/memberships/perks"
 import { comprimirImagen } from "@/lib/comprimirImagen"
 import { confirmModal } from "@/lib/confirmModal"
 import { useParams, useRouter } from "next/navigation"
@@ -36,38 +37,26 @@ export default function GaleriaPage() {
   // El nivel del plan del dueño, que es quien está editando su propia galería.
   // Antes esta pantalla solo veía un is_premium genérico, y por eso no podía
   // distinguir entre Conecta, Destaca y Patrocina.
-  const { tier } = useMembershipAccess()
+  const { effectiveTier } = useMembershipAccess()
 
   const isPremiumActive = business?.is_premium === true && 
                          business?.premium_until && 
                          new Date(business.premium_until) > new Date()
   
-  // Límite por plan: definido en un solo lugar (lib/memberships/tiers) para
-  // que la tabla de precios y el producto no puedan volver a divergir. Antes
-  // acá vivía un "3 gratis / 10 cualquier plan pago" que hacía que los tres
-  // planes dieran lo mismo.
-  const baseMax = business?.max_photos ?? getMaxPhotosForTier(isPremiumActive ? tier : 0)
-  const maxImages = baseMax + (business?.extra_photo_limit ?? 0)
+  /* El límite sale del plan y de nada más, definido en lib/memberships/tiers
+     para que la tabla de precios y el producto no puedan volver a divergir.
+     Antes esta línea era `business?.max_photos ?? getMaxPhotosForTier(...)`, y
+     como `max_photos` trae 5 en todas las filas —no null— ese 5 ganaba
+     siempre: la escalera por plan nunca llegó a aplicarse y los cuatro planes
+     daban lo mismo. Se usa effectiveTier y no `tier` porque el hook ya colapsa
+     a 0 las suscripciones vencidas; `is_premium` es un espejo a nivel negocio
+     que puede quedar desactualizado respecto al perfil. */
+  const maxImages = business ? topeDeFotos(business, effectiveTier) : getMaxPhotosForTier(effectiveTier)
 
-  // Parsear gallery_urls de manera segura
-  const getGalleryUrls = (): string[] => {
-    if (!business?.gallery_urls) return []
-    
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 
@@ -116,7 +105,7 @@ export default function GaleriaPage() {
     if (currentImageCount >= maxImages) {
       // El mensaje nombra el límite real del plan que tiene la persona, y el
       // del siguiente nivel solo si existe uno mejor.
-      const siguienteNivel = getMaxPhotosForTier((tier ?? 0) + 1)
+      const siguienteNivel = getMaxPhotosForTier(effectiveTier + 1)
       alertModal.warning(`Llegaste al límite de ${maxImages} fotos de tu plan`, {
         description:
           siguienteNivel > maxImages
@@ -316,7 +305,7 @@ export default function GaleriaPage() {
                   nivel, no un "premium" genérico, y desaparece cuando ya se
                   está en el más alto. Enlaza a los planes, no al perfil. */}
               {galleryUrls.length > 0 &&
-                getMaxPhotosForTier((tier ?? 0) + 1) > maxImages && (
+                getMaxPhotosForTier(effectiveTier + 1) > maxImages && (
                   <div className="mt-2 text-xs text-ink-2">
                     <Link
                       href="/app/dashboard/membresia"
@@ -324,7 +313,7 @@ export default function GaleriaPage() {
                     >
                       Sube de plan
                     </Link>{" "}
-                    para subir hasta {getMaxPhotosForTier((tier ?? 0) + 1)} fotos
+                    para subir hasta {getMaxPhotosForTier(effectiveTier + 1)} fotos
                   </div>
                 )}
             </div>

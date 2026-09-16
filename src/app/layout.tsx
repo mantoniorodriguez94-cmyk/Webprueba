@@ -87,12 +87,25 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/brand/encuentra-pin.svg", type: "image/svg+xml" },
+      // La baldosa, no el pin suelto: a 16px en una pestaña, un bloque de
+      // color sólido se distingue entre veinte pestañas y una silueta fina
+      // se pierde contra el fondo del navegador.
+      { url: "/brand/encuentra-mark.svg", type: "image/svg+xml" },
       { url: "/icons/icon-192-maskable.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
     ],
+    // iOS necesita SU icono, no el maskable.
+    //
+    // Android recorta el icono a la forma que le dé la gana —círculo,
+    // squircle, gota—, así que el maskable lleva la marca encogida al 90%
+    // para que nada quede fuera del recorte. iOS no recorta: coge la imagen
+    // tal cual y sólo redondea las esquinas. Dándole el maskable, ese 90% se
+    // convertía en margen de más y la marca salía pequeña en la pantalla de
+    // inicio del iPhone.
+    //
+    // Este va a tamaño completo y a 180x180, que es lo que pide iOS.
     apple: [
-      { url: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
 };
@@ -117,7 +130,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="App Encuentra" />
-        <link rel="apple-touch-icon" href="/icons/icon-512-maskable.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
       </head>
       <body className="antialiased relative min-h-screen bg-paper font-sans">
         {/* Fondo de página: malla orgánica clara aprobada por el cliente.

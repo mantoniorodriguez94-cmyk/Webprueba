@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
-import { Crown } from "lucide-react"
+import { Crown, ChevronLeft, ChevronRight } from "lucide-react"
 import { SUBSCRIPTION_TIER_PATROCINA, isTierActive } from "@/lib/memberships/tiers"
+import { perkVigente } from "@/lib/memberships/perks"
 
 export interface SpotlightPromotion {
   id: string
@@ -19,6 +20,30 @@ export interface SpotlightPromotion {
 export default function PromotionsSpotlight() {
   const [promotions, setPromotions] = useState<SpotlightPromotion[]>([])
   const [loading, setLoading] = useState(true)
+  const [indice, setIndice] = useState(0)
+  const pistaRef = useRef<HTMLDivElement>(null)
+
+  /* El álbum se mueve con scroll nativo y scroll-snap, no con transform: así
+     el deslizamiento con el dedo en el teléfono sale gratis y con la inercia
+     que el sistema operativo ya sabe hacer. Las flechas no son otro mecanismo,
+     sólo empujan ese mismo scroll.
+
+     scrollTo sobre el contenedor y no scrollIntoView sobre la tarjeta, porque
+     scrollIntoView arrastra también el scroll vertical de la página y da el
+     salto de que la vista se mueva sola al pulsar una flecha. */
+  const irA = (destino: number) => {
+    const pista = pistaRef.current
+    if (!pista) return
+    const total = promotions.length
+    const objetivo = ((destino % total) + total) % total
+    pista.scrollTo({ left: objetivo * pista.clientWidth, behavior: "smooth" })
+  }
+
+  const alDesplazar = () => {
+    const pista = pistaRef.current
+    if (!pista || pista.clientWidth === 0) return
+    setIndice(Math.round(pista.scrollLeft / pista.clientWidth))
+  }
 
   useEffect(() => {
     const loadFounderPromotions = async () => {
@@ -43,7 +68,7 @@ export default function PromotionsSpotlight() {
         const businessIds = [...new Set(promotionsData.map((p) => p.business_id))]
         const { data: businessesData, error: businessesError } = await supabase
           .from("businesses")
-          .select("id, name, owner_id")
+          .select("id, name, owner_id, perk_promociones_hasta")
           .in("id", businessIds)
 
         if (businessesError || !businessesData?.length) {
@@ -76,10 +101,16 @@ export default function PromotionsSpotlight() {
         )
         const businessesMap = new Map(businessesData.map((b) => [b.id, b]))
 
+        // Entra en la vitrina quien tiene Patrocina vigente, o quien recibió
+        // el módulo suelto desde el panel mientras la concesión no caduque.
         const founderPromos: SpotlightPromotion[] = promotionsData
           .filter((p) => {
             const biz = businessesMap.get(p.business_id)
-            return biz && founderOwnerIds.has(biz.owner_id)
+            if (!biz) return false
+            return (
+              founderOwnerIds.has(biz.owner_id) ||
+              perkVigente((biz as { perk_promociones_hasta?: string | null }).perk_promociones_hasta)
+            )
           })
           .map((p) => {
             const biz = businessesMap.get(p.business_id)!
@@ -127,17 +158,24 @@ export default function PromotionsSpotlight() {
         </div>
       </div>
 
-      <div className="-mx-1 flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+      <div
+        ref={pistaRef}
+        onScroll={alDesplazar}
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth scrollbar-none"
+      >
         {promotions.map((promo) => (
           <Link
             key={promo.id}
             href={`/app/dashboard/negocios/${promo.business_id}`}
-            className="group w-64 flex-shrink-0"
+            className="group w-full flex-shrink-0 snap-center px-0.5"
           >
-            <div className="flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/40 p-4 transition-colors hover:border-amber-400 hover:bg-amber-50">
-              <span className="mb-2 inline-flex items-center gap-1 self-start rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
+            <div className="flex h-full min-h-[11rem] flex-col rounded-2xl border border-amber-200 bg-amber-50/40 p-4 transition-colors hover:border-amber-400 hover:bg-amber-50">
+              <span
+                className="mb-2 flex h-5 w-5 flex-shrink-0 items-center justify-center self-start rounded-full bg-amber-500 text-white"
+                title="Patrocinador"
+                aria-label="Patrocinador"
+              >
                 <Crown className="h-3 w-3" />
-                Patrocinador
               </span>
               <h3 className="font-display text-base font-bold text-ink line-clamp-2 leading-snug">
                 {promo.name}
@@ -164,6 +202,44 @@ export default function PromotionsSpotlight() {
           </Link>
         ))}
       </div>
+
+      {/* Con una sola promoción los controles sobran y sugerirían que hay más. */}
+      {promotions.length > 1 && (
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => irA(indice - 1)}
+            aria-label="Promoción anterior"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-600 transition-colors hover:bg-amber-50"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            {promotions.map((promo, i) => (
+              <button
+                key={promo.id}
+                type="button"
+                onClick={() => irA(i)}
+                aria-label={`Ir a la promoción ${i + 1} de ${promotions.length}`}
+                aria-current={i === indice}
+                className={`h-2 rounded-full transition-all ${
+                  i === indice ? "w-5 bg-amber-500" : "w-2 bg-amber-200 hover:bg-amber-300"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => irA(indice + 1)}
+            aria-label="Promoción siguiente"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-600 transition-colors hover:bg-amber-50"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      )}
     </section>
   )
 }

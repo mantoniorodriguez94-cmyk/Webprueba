@@ -5,7 +5,6 @@
  * Activa premium para un negocio con la duración especificada:
  * - Activa is_premium = true
  * - Establece premium_until = now() + durationDays
- * - Actualiza max_photos según plan premium (10 por defecto)
  * - Si ya es premium, extiende la fecha de expiración
  */
 
@@ -87,8 +86,7 @@ export async function POST(request: NextRequest) {
       .from('businesses')
       .update({
         is_premium: true,
-        premium_until: newPremiumUntil.toISOString(),
-        max_photos: 10 // Beneficio premium: 10 fotos
+        premium_until: newPremiumUntil.toISOString()
         // ⚠️ SEGURIDAD: Solo campos de premium del negocio. NO tocar:
         // - NO tocar tabla profiles
         // - NO tocar is_admin, role, ni campos del usuario

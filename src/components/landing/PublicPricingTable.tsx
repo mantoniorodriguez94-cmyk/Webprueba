@@ -1,14 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { Crown, BadgeCheck, HeartHandshake, Sparkles, MessageCircle, TrendingUp } from "lucide-react"
+import { Crown, HeartHandshake, MessageCircle, TrendingUp } from "lucide-react"
 import {
   SUBSCRIPTION_TIER_FREE,
   SUBSCRIPTION_TIER_CONECTA,
   SUBSCRIPTION_TIER_DESTACADO,
   SUBSCRIPTION_TIER_PATROCINA,
   SUBSCRIPTION_PRICES,
-  getLabelForTier
+  getLabelForTier,
+  BENEFICIOS_POR_TIER
 } from "@/lib/memberships/tiers"
 
 interface PublicPricingTableProps {
@@ -61,31 +62,14 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
               </div>
 
               <ul className="mt-auto space-y-1 text-xs text-ink-2">
-                {t.tier === SUBSCRIPTION_TIER_FREE && (
-                  <>
-                    <li>📍 Acceso a tu Localización en el Mapa con un click</li>
-                    <li>📷 Galería de hasta 6 fotos</li>
-                    <li>🔍 Búsqueda Básica</li>
-                    <li>🛡️ Sube tu horario de atención</li>
-                    <li>📞 Publica tus promociones</li>
-                  </>
+                {BENEFICIOS_POR_TIER[t.tier]?.incluye && (
+                  <li className="text-[11px] text-ink-2/80">
+                    ✅ <span className="italic">Todo lo del plan {BENEFICIOS_POR_TIER[t.tier].incluye} más:</span>
+                  </li>
                 )}
-                {t.tier === SUBSCRIPTION_TIER_CONECTA && (
-                  <>
-                    <li className="text-[11px] text-ink-2/80">✅ <span className="italic">Todo lo del plan Básico más:</span></li>
-                    <li>💬 Sistema de Chat en vivo</li>
-                    <li>📲 Comunicación Directa a WhatsApp y Llamadas con un solo botón</li>
-                    <li>📷 Galería de hasta 12 fotos</li>
-                  </>
-                )}
-                {t.tier === SUBSCRIPTION_TIER_DESTACADO && (
-                  <>
-                    <li className="text-[11px] text-ink-2/80">✅ <span className="italic">Todo lo del plan Conecta más:</span></li>
-                    <li>🚀 Prioridad en Resultados de búsqueda (Arriba)</li>
-                    <li>🛡️ Tu negocio aparece en la sección de &quot;Más Destacados&quot;</li>
-                    <li>📷 Galería de hasta 20 fotos</li>
-                  </>
-                )}
+                {BENEFICIOS_POR_TIER[t.tier]?.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </Link>
           )
@@ -117,8 +101,8 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-ink-2 max-w-md">
-                  Tu negocio formará parte del círculo interno de apoyo a la plataforma y tendrá
-                  prioridad visual frente al resto, además de otros beneficios.
+                  Todo lo del plan Destaca, y tus promociones salen en la sección
+                  Promociones del inicio, donde las ve todo el mundo.
                 </p>
               </div>
             </div>
@@ -129,34 +113,16 @@ export default function PublicPricingTable({ ctaHref }: PublicPricingTableProps)
                 <span className="text-sm text-ink-2">/mes</span>
               </div>
               <p className="mt-1 text-[11px] text-ink-2">
-                Incluye insignia de verificación, marco distintivo y promociones destacadas.
+                El plan más completo.
               </p>
             </div>
           </div>
 
-          <div className="relative mt-4 grid gap-3 md:grid-cols-2 text-xs text-ink-2">
-            <div className="flex items-start gap-2">
-              <BadgeCheck className="w-4 h-4 text-green-600 mt-0.5" />
-              <div>
-                <p className="font-semibold text-ink">Insignia de Patrocinador</p>
-                <p className="text-[11px] text-ink-2">Distintivo visible en tu tarjeta que muestra que apoyas la plataforma.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Crown className="w-4 h-4 text-amber-600 mt-0.5" />
-              <div>
-                <p className="font-semibold text-ink">Marco Distintivo Exclusivo</p>
-                <p className="text-[11px] text-ink-2">Borde exclusivo alrededor de tu tarjeta de negocio en el feed.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600 mt-0.5" />
-              <div>
-                <p className="font-semibold text-ink">Módulo de Promociones</p>
-                <p className="text-[11px] text-ink-2">Tus promociones serán destacadas para impulsar tus ventas.</p>
-              </div>
-            </div>
-          </div>
+          <ul className="relative mt-4 grid gap-2 md:grid-cols-2 text-xs text-ink-2">
+            {BENEFICIOS_POR_TIER[SUBSCRIPTION_TIER_PATROCINA].items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </Link>
       </div>
 

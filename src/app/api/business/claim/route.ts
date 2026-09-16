@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { MAX_NEGOCIOS_POR_CUENTA } from '@/lib/memberships/tiers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +36,30 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedCode = code.trim().toUpperCase()
+
+    // Reclamar transfiere la propiedad con un UPDATE de owner_id, así que es la
+    // otra puerta por la que alguien podría terminar con dos negocios. El índice
+    // único la cierra, pero aquí el mensaje es entendible en vez de un error de
+    // violación de restricción.
+    const { count: negociosActuales, error: countError } = await supabase
+      .from('businesses')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.id)
+
+    if (countError) {
+      console.error('Error contando negocios del usuario:', countError)
+      return NextResponse.json(
+        { success: false, error: 'No se pudo verificar tu cuenta' },
+        { status: 500 }
+      )
+    }
+
+    if ((negociosActuales ?? 0) >= MAX_NEGOCIOS_POR_CUENTA) {
+      return NextResponse.json(
+        { success: false, error: 'Ya tienes un negocio. Cada cuenta puede gestionar uno solo.' },
+        { status: 400 }
+      )
+    }
 
     // Llamar a la función SQL claim_business() que tiene SECURITY DEFINER
     // Esta función puede actualizar el owner_id sin que RLS lo bloquee

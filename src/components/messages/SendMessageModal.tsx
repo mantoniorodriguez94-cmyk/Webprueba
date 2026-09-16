@@ -4,9 +4,6 @@ import React, { useState } from "react"
 import Image from "next/image"
 import { toast } from "sonner"
 import type { Business } from "@/types/business"
-import useMembershipAccess from "@/hooks/useMembershipAccess"
-import { SUBSCRIPTION_TIER_CONECTA } from "@/lib/memberships/tiers"
-import UpgradeSuggestion from "@/components/memberships/UpgradeSuggestion"
 import { Dialog } from "@/components/ui/Overlay"
 
 interface SendMessageModalProps {
@@ -24,8 +21,6 @@ export default function SendMessageModal({
 }: SendMessageModalProps) {
   const [message, setMessage] = useState("")
   const [sending, setSending] = useState(false)
-  const { hasAccess, loading: membershipLoading } = useMembershipAccess()
-  const senderHasChatAccess = hasAccess(SUBSCRIPTION_TIER_CONECTA)
 
   // El padre monta/desmonta este componente vía `{show && <SendMessageModal .../>}`.
   // Cierre en dos tiempos para que la animación de salida de Dialog se
@@ -37,11 +32,6 @@ export default function SendMessageModal({
   }
 
   const handleSendMessage = async () => {
-    if (!senderHasChatAccess) {
-      toast.error("Necesitas una membresía activa para enviar mensajes.")
-      return
-    }
-
     if (!message.trim()) {
       toast.error("Por favor escribe un mensaje antes de enviar.")
       return
@@ -139,20 +129,7 @@ export default function SendMessageModal({
       </div>
 
       {/* Body */}
-      {membershipLoading ? (
-        <div className="p-8 sm:p-10 flex-1 min-h-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-        </div>
-      ) : !senderHasChatAccess ? (
-        <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
-          <UpgradeSuggestion
-            requiredTier={SUBSCRIPTION_TIER_CONECTA}
-            featureName="Chat con negocios"
-            featureDescription="Adquiere el plan Conecta como mínimo para desbloquear el sistema de chat y comunicarte directamente con los negocios."
-            variant="modal"
-          />
-        </div>
-      ) : (
+      {(
         <>
           <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
             <label className="block text-sm font-semibold text-gray-700 mb-2">

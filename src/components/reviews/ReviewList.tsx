@@ -4,13 +4,21 @@ import React, { useState } from 'react';
 import { Review } from '@/types/review';
 import StarRating from './StarRating';
 import ReportReviewModal from '@/components/reports/ReportReviewModal';
+import { Popover } from '@/components/ui/Overlay';
+import { MoreVertical, Flag } from 'lucide-react';
 
 interface ReviewListProps {
   reviews: Review[];
   loading?: boolean;
+  /**
+   * Quién está mirando. Sin esto la tarjeta no podía distinguir a nadie:
+   * ofrecía "Reportar reseña" al propio autor —reportarse a sí mismo— y a
+   * visitantes sin sesión, a los que el modal rechaza al comprobar la cuenta.
+   */
+  currentUserId?: string | null;
 }
 
-export default function ReviewList({ reviews, loading = false }: ReviewListProps) {
+export default function ReviewList({ reviews, loading = false, currentUserId = null }: ReviewListProps) {
   if (loading) {
     return (
       <div className="space-y-4">
@@ -30,19 +38,16 @@ export default function ReviewList({ reviews, loading = false }: ReviewListProps
     );
   }
 
+  // Compacto a propósito: antes eran 16 de padding vertical y un icono de
+  // 80px para decir que no hay nada. Un vacío no merece más espacio que el
+  // contenido que sustituye, y ocupando media pantalla parecía un error de
+  // carga en vez de un estado normal.
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-16 surface rounded-3xl">
-        <div className="w-20 h-20 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-bold text-ink mb-2">
-          Aún no hay reseñas
-        </h3>
-        <p className="text-ink-2">
-          Sé el primero en compartir tu experiencia con este negocio
+      <div className="surface rounded-2xl px-5 py-6 text-center">
+        <p className="text-sm font-semibold text-ink">Aún no hay reseñas</p>
+        <p className="mt-1 text-sm text-ink-2">
+          Sé el primero en compartir tu experiencia con este negocio.
         </p>
       </div>
     );
@@ -51,14 +56,30 @@ export default function ReviewList({ reviews, loading = false }: ReviewListProps
   return (
     <div className="space-y-4">
       {reviews.map((review) => (
-        <ReviewCard key={review.id} review={review} />
+        <ReviewCard key={review.id} review={review} currentUserId={currentUserId} />
       ))}
     </div>
   );
 }
 
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({
+  review,
+  currentUserId,
+}: {
+  review: Review
+  currentUserId?: string | null
+}) {
   const [showReportModal, setShowReportModal] = useState(false)
+  const [menuAbierto, setMenuAbierto] = useState(false)
+
+  /* Reportar es una acción excepcional: va detrás de un menú y en color
+     neutro. En rojo y siempre visible competía con la reseña por la atención
+     y sugería peligro; el rojo tiene sentido dentro de la confirmación, que
+     es cuando ya se decidió hacerlo.
+
+     No lo ve quien no tiene sesión —el modal la exige y fallaría— ni el autor
+     de la reseña, que no tiene a quién reportar. */
+  const puedeReportar = Boolean(currentUserId) && currentUserId !== review.user_id
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -95,48 +116,85 @@ function ReviewCard({ review }: { review: Review }) {
   const userName = review.user_name || 'Usuario';
 
   return (
-    <div className="surface rounded-3xl p-6 hover:border-blue-300 hover:shadow-md transition-all duration-300">
-      <div className="flex items-start gap-4">
+    <div className="surface rounded-2xl px-5 py-4 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+      <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-sm">
+        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
           {getInitials(userName)}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-2">
             <div>
-              <h4 className="font-bold text-ink text-lg">{userName}</h4>
-              <p className="text-sm text-ink-2 flex items-center gap-1.5 mt-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {formatDate(review.created_at)}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="font-semibold text-ink">{userName}</h4>
+                {/* La app no ve la compra —ocurre en el local—, así que esto
+                    dice lo único comprobable: que esta persona contactó al
+                    negocio antes de opinar. Lo sella un trigger al escribir;
+                    nadie puede ponérselo a sí mismo. */}
+                {review.cliente_verificado && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[11px] font-semibold text-green-700"
+                    title="Esta persona contactó al negocio antes de dejar su reseña"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Cliente verificado
+                  </span>
+                )}
+              </div>
+              {/* Sin icono de reloj: "Justo ahora" ya se lee como una fecha
+                  y el reloj sólo añadía peso a una línea secundaria. */}
+              <p className="text-xs text-ink-2 mt-0.5">{formatDate(review.created_at)}</p>
             </div>
-            <StarRating rating={review.rating} size="sm" />
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <StarRating rating={review.rating} size="sm" />
+              {puedeReportar && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMenuAbierto((v) => !v)}
+                    aria-label="Opciones de la reseña"
+                    aria-haspopup="menu"
+                    aria-expanded={menuAbierto}
+                    className="p-1.5 rounded-full text-ink-2 hover:bg-black/5 transition-colors"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  <Popover
+                    open={menuAbierto}
+                    onClose={() => setMenuAbierto(false)}
+                    align="right"
+                    panelClassName="w-48 rounded-2xl border border-black/10 bg-white p-1 shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuAbierto(false)
+                        setShowReportModal(true)
+                      }}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-ink hover:bg-black/5 transition-colors"
+                    >
+                      <Flag className="w-4 h-4 text-ink-2" />
+                      Reportar reseña
+                    </button>
+                  </Popover>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Comment */}
+          {/* El comentario, sin caja propia: era una tarjeta dentro de otra
+              para envolver una línea de texto. */}
           {review.comment && (
-            <p className="text-ink-2 leading-relaxed whitespace-pre-wrap bg-black/[0.02] rounded-2xl p-4 border border-black/8">
+            <p className="text-sm text-ink-2 leading-relaxed whitespace-pre-wrap">
               {review.comment}
             </p>
           )}
 
-          {/* Botón Reportar */}
-          <div className="mt-3 flex justify-end">
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Reportar reseña
-            </button>
-          </div>
         </div>
       </div>
 

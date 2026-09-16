@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Info, Loader2, Shield } from "lucide-react"
+import { Loader2, Shield } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
-import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
+import { banderaVigente } from "@/lib/memberships/perks"
 import AdminUserManagementModal from "./AdminUserManagementModal"
 import SuspendUserButton from "@/app/app/admin/usuarios/components/SuspendUserButton"
 import HideBusinessButton from "./HideBusinessButton"
@@ -20,7 +20,6 @@ export type AdminBusinessRow = {
   premium_until: string | null
   created_at?: string
   is_verified?: boolean
-  max_photos?: number
   owner_id?: string | null
   is_featured?: boolean
   featured_until?: string | null
@@ -28,7 +27,35 @@ export type AdminBusinessRow = {
   search_priority_boost?: boolean
   badges?: string[]
   hidden_at?: string | null
+  // Del perfil del dueño. La búsqueda del panel es por persona más que por
+  // negocio: alguien escribe a soporte y hay que dar con su ficha.
+  owner_email?: string | null
+  owner_name?: string | null
+  owner_tier?: number
+  owner_tier_end?: string | null
 }
+
+/* El color de cada acción dice su CONSECUENCIA, no su categoría.
+ *
+ * Eran once pastillas en seis tonos —violeta, magenta, verde, azul, naranja,
+ * rojo— repartidos sin criterio: "Verificado" en verde y "Gestionar badges"
+ * también, pero "Spotlight" en magenta y "Destacar negocio" en azul, siendo
+ * las dos lo mismo (dar visibilidad). El color no informaba de nada y el
+ * bloque parecía un semáforo averiado.
+ *
+ * Tres niveles y ya:
+ *   neutro   — reversible y cotidiano. La mayoría.
+ *   atención — destruye contenido o restringe, pero se puede deshacer.
+ *   peligro  — irreversible.
+ *
+ * El ámbar es el que tailwind.config declara "señal de atención", y el rojo
+ * el de siempre. Nada de naranja: no está en la paleta.
+ */
+const BOTON_BASE =
+  "w-full px-3 py-2 rounded-xl text-xs font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+const BOTON_NEUTRO = `${BOTON_BASE} bg-black/[0.04] hover:bg-black/[0.08] text-ink border border-black/8`
+const BOTON_ATENCION = `${BOTON_BASE} bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200`
+const BOTON_PELIGRO = `${BOTON_BASE} bg-red-50 hover:bg-red-100 text-red-700 border border-red-200`
 
 const TIER_LABELS: Record<number, string> = {
   0: "Básico",
@@ -49,7 +76,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [showPhotosModal, setShowPhotosModal] = useState(false)
   const [showFeaturedModal, setShowFeaturedModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showResetPhotosModal, setShowResetPhotosModal] = useState(false)
@@ -59,7 +85,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [showAlertModal, setShowAlertModal] = useState(false)
   const [alertMessage, setAlertMessage] = useState("")
   const [sendingAlert, setSendingAlert] = useState(false)
-  const [openTooltipId, setOpenTooltipId] = useState<string | null>(null)
   const [showBadgesModal, setShowBadgesModal] = useState(false)
   const [badgesLoading, setBadgesLoading] = useState(false)
   const [selectedBadges, setSelectedBadges] = useState<string[]>([])
@@ -73,19 +98,6 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
   const [softDeleted, setSoftDeleted] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    if (openTooltipId === null) return
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Element
-      const trigger = target.closest?.("[data-tooltip-trigger]")
-      const popover = target.closest?.("[data-tooltip-popover]")
-      if (trigger || popover) return
-      setOpenTooltipId(null)
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [openTooltipId])
 
   const refresh = () => {
     onActionSuccess?.()
@@ -201,40 +213,44 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
     }
   }
 
-  const ActionRow = ({
-    id,
-    button,
-    description,
-  }: { id: string; button: React.ReactNode; description: string }) => {
-    const isOpen = openTooltipId === id
-    const safeDescription = description ?? ""
-    return (
-      <div className="flex items-center gap-2 py-3 first:pt-0 border-b border-black/8 last:border-b-0">
-        <div className="flex-shrink-0 w-[140px] sm:w-[160px]">{button}</div>
-        <div className="relative flex-shrink-0 pt-0.5">
-          <button
-            type="button"
-            data-tooltip-trigger
-            aria-label="Ver descripción"
-            onClick={() => setOpenTooltipId(isOpen ? null : id)}
-            className="p-1 rounded-full text-ink-2 hover:text-ink hover:bg-black/5 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <Info className="w-4 h-4" aria-hidden />
-          </button>
-          {isOpen && (
-            <div
-              key={`tooltip-${id}`}
-              data-tooltip-popover
-              className="animate-fade-in absolute left-0 top-full mt-1 z-50 min-w-[200px] max-w-[280px] rounded-lg bg-ink border border-black/20 p-3 shadow-xl text-xs text-white leading-relaxed"
-              role="tooltip"
-            >
-              {safeDescription}
-            </div>
-          )}
-        </div>
+  /**
+   * Una acción: qué hace, escrito encima, y el control debajo.
+   *
+   * Antes la explicación vivía detrás de un icono (i) que había que pulsar,
+   * uno por uno, para saber qué era cada botón. En un panel con once acciones
+   * —varias destructivas— esconder justo lo que distingue "Ocultar" de
+   * "Eliminar" detrás de un clic extra es al revés de como debería ser.
+   *
+   * Y de paso se recupera el espacio: el botón iba en un w-[140px] fijo
+   * dentro de una fila del ancho completo, así que cada acción dejaba media
+   * pantalla vacía a su derecha. Ahora son tarjetas en rejilla.
+   *
+   * El mt-auto alinea todos los botones abajo aunque las descripciones midan
+   * distinto: el borde inferior de una rejilla queda recto y no dentado.
+   */
+  const Accion = ({
+    descripcion,
+    children,
+  }: { descripcion: string; children: React.ReactNode }) => (
+    <div className="flex flex-col gap-2 rounded-xl border border-black/8 bg-white p-3">
+      <p className="text-[11px] leading-snug text-ink-2">{descripcion}</p>
+      <div className="mt-auto">{children}</div>
+    </div>
+  )
+
+  const Grupo = ({
+    titulo,
+    children,
+  }: { titulo: string; children: React.ReactNode }) => (
+    <div className="flex flex-col gap-2">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-2/70">
+        {titulo}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+        {children}
       </div>
-    )
-  }
+    </div>
+  )
 
   const scheduleDeleteWithUndo = () => {
     // Marcar como eliminado a nivel de UI (optimista)
@@ -302,14 +318,14 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold truncate text-ink">{businessName}</h3>
           <div className="flex flex-wrap gap-2 mt-1">
-            {business.is_premium && (
+            {banderaVigente(business.is_premium, business.premium_until) && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Premium</span>
             )}
             {business.is_verified && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">Verificado</span>
             )}
             {business.hidden_at && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-semibold">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold">
                 Oculto del directorio
               </span>
             )}
@@ -326,35 +342,27 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
       </div>
 
       <div className="flex flex-col gap-3">
+        {/* Un solo botón: "Ficha completa" y "Editar datos" eran dos páginas
+            que pintaban los mismos campos, y había que ir y volver para ver
+            si un cambio había entrado. Ahora es una. */}
         <Link
-          href={`/app/admin/negocios/${business.id}/gestionar`}
+          href={`/app/admin/negocios/${business.id}`}
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
         >
-          Gestionar
+          Ficha completa
         </Link>
 
         <div className="rounded-2xl border border-black/8 bg-black/[0.015] p-4 mt-1">
-          <p className="text-xs font-semibold text-ink-2 uppercase tracking-wide mb-1">Acciones rápidas</p>
-          <p className="text-[11px] text-ink-2/70 mb-3">Haz clic en el icono (i) para ver la guía de cada acción.</p>
-          <div className="space-y-0">
-            <ActionRow
-              id="verificar"
-              button={
-                <button
-                  type="button"
-                  onClick={toggleVerification}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {loading === "verification" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "verification" ? "..." : business.is_verified ? "Quitar ✓" : "Verificado"}
-                </button>
-              }
-              description="Valida la autenticidad del negocio. Otorga el sello azul de confianza."
-            />
-            <ActionRow
-              id="tier"
-              button={
+          <p className="text-xs font-semibold text-ink-2 uppercase tracking-wide mb-3">Acciones rápidas</p>
+
+          {/* Agrupadas por lo que hacen. Antes eran once filas seguidas sin
+              orden aparente, con "Eliminar" a la misma altura visual que
+              "Ver promos". Separarlas deja el bloque irreversible al final y
+              solo. */}
+          <div className="flex flex-col gap-5">
+
+            <Grupo titulo="Plan y visibilidad">
+              <Accion descripcion="Cambia el nivel de acceso. Úsalo para activaciones manuales tras pagos externos.">
                 <select
                   className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-white border border-black/15 text-ink focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={selectedTier}
@@ -367,118 +375,52 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     ensureUnlocked(() => tierOverride(tier))
                   }}
                   disabled={!!loading}
+                  aria-label="Cambiar plan del negocio"
                 >
                   <option value="">Cambiar Tier…</option>
                   {([0, 1, 2, 3] as const).map((t) => (
                     <option key={t} value={t}>{TIER_LABELS[t]}</option>
                   ))}
                 </select>
-              }
-              description="Cambia el nivel de acceso. Úsalo para activaciones manuales tras pagos externos."
-            />
-            <ActionRow
-              id="spotlight"
-              button={
-                <button
-                  type="button"
-                  onClick={toggleSpotlight}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {loading === "spotlight" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
-                  {loading === "spotlight" ? "..." : inSpotlight ? "Quitar Spotlight" : "Spotlight"}
-                </button>
-              }
-              description="Fuerza la aparición del negocio en el carrusel principal de la pantalla de inicio."
-            />
-            <ActionRow
-              id="fotos"
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowPhotosModal(true)}
-                  disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-black/5 text-ink-2 border border-black/10 hover:bg-black/10 disabled:opacity-50"
-                >
-                  Fotos ({business.max_photos ?? 5})
-                </button>
-              }
-              description="Incrementa el límite de carga de imágenes en 10 unidades como bono especial."
-            />
-            <ActionRow
-              id="destacar"
-              button={
+              </Accion>
+
+              <Accion descripcion="Prioriza este negocio en los algoritmos de búsqueda.">
                 <button
                   type="button"
                   onClick={() => ensureUnlocked(toggleSearchPriority)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className={BOTON_NEUTRO}
                 >
                   {loading === "searchPriority" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
                   {loading === "searchPriority" ? "..." : hasSearchPriority ? "Quitar prioridad" : "Destacar negocio"}
                 </button>
-              }
-              description="Prioriza este negocio en los algoritmos de búsqueda."
-            />
-            <ActionRow
-              id="promos"
-              button={
-                <Link
-                  href={`/app/dashboard/negocios/${business.id}/promociones`}
-                  className="w-full inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 disabled:opacity-50"
-                >
-                  Ver promos
-                </Link>
-              }
-              description="Administra, corrige o elimina las ofertas publicadas por este local."
-            />
-            <ActionRow
-              id="reset-fotos"
-              button={
+              </Accion>
+
+              <Accion descripcion="Fuerza la aparición del negocio en el carrusel principal de la pantalla de inicio.">
                 <button
                   type="button"
-                  onClick={() => setShowResetPhotosModal(true)}
+                  onClick={toggleSpotlight}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 disabled:opacity-50"
+                  className={BOTON_NEUTRO}
                 >
-                  Reset fotos
+                  {loading === "spotlight" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
+                  {loading === "spotlight" ? "..." : inSpotlight ? "Quitar Spotlight" : "Spotlight"}
                 </button>
-              }
-              description="Elimina TODO el contenido visual del negocio por infracciones de calidad."
-            />
-            {business.owner_id && (
-              <ActionRow
-                id="limites"
-                button={
-                  <button
-                    type="button"
-                    onClick={() => setShowLimitsModal(true)}
-                    disabled={!!loading}
-                    className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
-                  >
-                    Gestionar Usuario
-                  </button>
-                }
-                description="Panel modular: plan de membresía, alertas, fotos y eliminación de cuenta."
-              />
-            )}
-            {business.owner_id && (
-              <ActionRow
-                id="suspender-dueno"
-                button={
-                  <SuspendUserButton
-                    profileId={business.owner_id}
-                    profileName={businessName}
-                    suspendido={false}
-                  />
-                }
-                description="Suspende la CUENTA del dueño, no el negocio. Para reseñas abusivas o spam: la cuenta sigue existiendo y se reactiva desde Personas → Usuarios, donde además se ve su estado actual."
-              />
-            )}
-            {/* Enviar Alerta está integrado dentro de Gestionar Usuario (AdminUserManagementModal) */}
-            <ActionRow
-              id="badges"
-              button={
+              </Accion>
+
+              <Accion descripcion="Valida la autenticidad del negocio. Otorga el sello azul de confianza.">
+                <button
+                  type="button"
+                  onClick={toggleVerification}
+                  disabled={!!loading}
+                  className={BOTON_NEUTRO}
+                >
+                  {loading === "verification" ? <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" /> : null}
+                  {loading === "verification" ? "..." : business.is_verified ? "Quitar ✓" : "Verificado"}
+                </button>
+              </Accion>
+
+              <Accion descripcion="Gestiona sellos de confianza y etiquetas especiales de la comunidad.">
                 <button
                   type="button"
                   onClick={() => {
@@ -487,53 +429,87 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                     setShowBadgesModal(true)
                   }}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50"
+                  className={BOTON_NEUTRO}
                 >
                   Gestionar badges
                 </button>
-              }
-              description="Gestiona sellos de confianza y etiquetas especiales de la comunidad."
-            />
-            <ActionRow
-              id="ocultar"
-              button={
+              </Accion>
+            </Grupo>
+
+            <Grupo titulo="Contenido del negocio">
+              <Accion descripcion="Administra, corrige o elimina las ofertas publicadas por este local.">
+                <Link
+                  href={`/app/dashboard/negocios/${business.id}/promociones`}
+                  className={BOTON_NEUTRO}
+                >
+                  Ver promos
+                </Link>
+              </Accion>
+
+              <Accion descripcion="Elimina TODO el contenido visual del negocio por infracciones de calidad.">
+                <button
+                  type="button"
+                  onClick={() => setShowResetPhotosModal(true)}
+                  disabled={!!loading}
+                  className={BOTON_PELIGRO}
+                >
+                  Reset fotos
+                </button>
+              </Accion>
+            </Grupo>
+
+            {/* Las dos acciones de este grupo tocan la CUENTA, no el negocio,
+                así que sólo existen si la ficha tiene dueño. */}
+            {business.owner_id && (
+              <Grupo titulo="La cuenta del dueño">
+                <Accion descripcion="Panel modular: plan de membresía, alertas, fotos y eliminación de cuenta.">
+                  <button
+                    type="button"
+                    onClick={() => setShowLimitsModal(true)}
+                    disabled={!!loading}
+                    className={BOTON_NEUTRO}
+                  >
+                    Gestionar Usuario
+                  </button>
+                </Accion>
+
+                <Accion descripcion="Suspende la CUENTA del dueño, no el negocio. Para reseñas abusivas o spam: la cuenta sigue existiendo y se reactiva desde Personas → Usuarios, donde además se ve su estado actual.">
+                  <SuspendUserButton
+                    profileId={business.owner_id}
+                    profileName={businessName}
+                    suspendido={false}
+                    aLoAncho
+                  />
+                </Accion>
+              </Grupo>
+            )}
+
+            <Grupo titulo="Retirar del directorio">
+              <Accion descripcion="Lo saca del directorio sin borrar nada: reseñas, chat, fotos e historial quedan intactos y se puede revertir. El dueño sigue viendo su ficha con el motivo, para poder corregir. Para estafas, negocios cerrados o contenido que viola las reglas — antes de llegar a Eliminar.">
                 <HideBusinessButton
                   businessId={business.id}
                   businessName={businessName}
                   oculto={Boolean(business.hidden_at)}
                 />
-              }
-              description="Lo saca del directorio sin borrar nada: reseñas, chat, fotos e historial quedan intactos y se puede revertir. El dueño sigue viendo su ficha con el motivo, para poder corregir. Para estafas, negocios cerrados o contenido que viola las reglas — antes de llegar a Eliminar."
-            />
-            <ActionRow
-              id="eliminar"
-              button={
+              </Accion>
+
+              <Accion descripcion="Borra permanentemente el registro. Acción irreversible.">
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
                   disabled={!!loading}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50"
+                  className={BOTON_PELIGRO}
                 >
                   Eliminar
                 </button>
-              }
-              description="Borra permanentemente el registro. Acción irreversible."
-            />
+              </Accion>
+            </Grupo>
+
           </div>
           {error && <p className="text-xs text-red-600 mt-3">{error}</p>}
         </div>
       </div>
 
-      {showPhotosModal && (
-        <UpdatePhotosLimitModal
-          businessId={business.id}
-          businessName={businessName}
-          currentLimit={business.max_photos ?? 5}
-          isOpen={showPhotosModal}
-          onClose={() => setShowPhotosModal(false)}
-          onSuccess={() => { setShowPhotosModal(false); refresh() }}
-        />
-      )}
       <ConfirmationModal
         open={showDeleteModal}
         title="¿Eliminar este negocio permanentemente?"
@@ -627,7 +603,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                       setResetLogoChoice((document.getElementById("resetLogo") as HTMLInputElement)?.checked ?? false)
                       setResetPhotosConfirmStep(2)
                     }}
-                    className="flex-1 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600"
+                    className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600"
                   >
                     Continuar
                   </button>
@@ -652,7 +628,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                       resetPhotos(resetLogoChoice)
                     }}
                     disabled={!!loading}
-                    className="flex-1 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading === "reset" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     Sí, restablecer
@@ -823,7 +799,7 @@ export default function AdminQuickActions({ business, onActionSuccess }: { busin
                   }
                   ensureUnlocked(execute)
                 }}
-                className="flex-1 py-2 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
               >
                 {badgesLoading ? "Guardando..." : "Guardar"}
               </button>

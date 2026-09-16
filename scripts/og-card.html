@@ -1,0 +1,159 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Fuente de public/brand/og.png</title>
+<!--
+  La tarjeta que se ve al compartir un enlace de la app en WhatsApp, X o
+  Telegram. Hasta ahora sólo existía el PNG ya montado, así que cualquier
+  retoque —cambiar el logo, corregir una palabra— obligaba a rehacerla desde
+  cero. Esta es la fuente; el PNG sale de aquí.
+
+  Para regenerarla:
+
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --hide-scrollbars \
+      --window-size=1200,630 --virtual-time-budget=4000 \
+      --screenshot=public/brand/og.png \
+      "file://$PWD/scripts/og-card.html"
+
+  El presupuesto de 4 s es para que Fraunces y Sora terminen de bajar: sin
+  eso Chrome fotografía la tarjeta con las tipografías de reserva.
+
+  Las medidas son fijas a propósito (1200x630 es lo que piden las redes) y
+  los colores salen de los mismos tokens que globals.css, no de valores
+  inventados aquí.
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Sora:wght@400;700&display=swap">
+<style>
+  :root {
+    --paper: #F1F0F6;
+    --ink: #0E0E16;
+    --ink-2: #6B6B78;
+    --violeta: #7C5CF0;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+
+  /* La misma malla que .bg-mesh en globals.css: la tarjeta tiene que
+     parecerse a la app que abre, no a una plantilla aparte. */
+  body {
+    background:
+      radial-gradient(58% 48% at 14% 18%, #DAD3F5 0%, transparent 70%),
+      radial-gradient(54% 44% at 86% 14%, #C9D9F6 0%, transparent 72%),
+      radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
+      radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
+      var(--paper);
+    padding: 0 92px;
+    display: flex; flex-direction: column; justify-content: center; gap: 30px;
+    font-family: Sora, system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .marca { display: flex; align-items: center; gap: 20px; }
+  .marca svg { width: 72px; height: 72px; display: block; }
+  .marca span {
+    font-family: Fraunces, Georgia, serif; font-weight: 900;
+    font-size: 44px; letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-family: Fraunces, Georgia, serif; font-weight: 900;
+    font-size: 78px; line-height: 1.08; letter-spacing: -0.025em;
+  }
+  h1 em { font-style: normal; color: var(--violeta); }
+
+  p.bajada {
+    font-size: 30px; line-height: 1.42; color: var(--ink-2);
+    max-width: 800px;
+  }
+
+  .sello {
+    align-self: flex-start;
+    background: #fff; color: var(--violeta);
+    font-weight: 700; font-size: 22px;
+    padding: 16px 30px; border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(14,14,22,.06);
+  }
+</style>
+
+<div class="marca">
+  <!-- La marca nueva, idéntica a public/brand/encuentra-mark.svg -->
+  <svg viewBox="0 0 64 64" role="img" aria-label="Encuentra">
+    <defs>
+    <linearGradient id="og-g" x1="0" y1="64" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E24FD6"/><stop offset=".55" stop-color="#7C5CF0"/><stop offset="1" stop-color="#5B9BF0"/>
+    </linearGradient>
+    <clipPath id="og-baldosa"><rect width="64" height="64" rx="14"/></clipPath>
+    <clipPath id="og-lente"><circle cx="36.3" cy="22" r="8.2"/></clipPath>
+    <clipPath id="og-gota"><path d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z"/></clipPath>
+
+    <!-- ── El mundo: fondo y calles. El rectángulo se sale de la baldosa a
+         propósito, para que al encoger la marca en el icono recortable el
+         mapa siga llegando a los bordes. ── -->
+    <g id="og-mapa">
+      <rect x="-12" y="-12" width="88" height="88" fill="url(#og-g)"/>
+
+      <g fill="#FFFFFF" opacity=".08">
+        <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(36.3 5)  rotate(45)"/>
+        <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(19.3 22) rotate(45)"/>
+        <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(53.3 22) rotate(45)"/>
+        <rect x="-8" y="-8" width="16" height="16" rx="3" transform="translate(36.3 39) rotate(45)"/>
+      </g>
+
+      <g stroke="#FFFFFF" fill="none" stroke-linecap="round" opacity=".16">
+        <path d="M10.3 -4 L76.3 62" stroke-width="7.5"/>
+        <path d="M-6 64.3 L76 -17.7" stroke-width="7.5"/>
+        <path d="M-6 44 Q 14 40 18 20 T 30 -6" stroke-width="5"/>
+      </g>
+
+      <g stroke="#FFFFFF" fill="none" stroke-linecap="round" opacity=".5" stroke-width="1" stroke-dasharray="2.5 3">
+        <path d="M10.3 -4 L76.3 62"/>
+        <path d="M-6 64.3 L76 -17.7"/>
+      </g>
+
+      <g fill="#FFFFFF" opacity=".22">
+        <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(36.3 5)  rotate(45)"/>
+        <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(19.3 22) rotate(45)"/>
+        <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(53.3 22) rotate(45)"/>
+        <rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.3" transform="translate(36.3 39) rotate(45)"/>
+      </g>
+    </g>
+
+    <!-- ── El pin de cristal. Va DENTRO de og-escena porque la lente tiene
+         que ampliarlo a él también, no sólo al mapa. ── -->
+    <g id="og-escena">
+      <use href="#og-mapa"/>
+      <g clip-path="url(#og-gota)"><rect x="-12" y="-12" width="88" height="88" fill="#fff" opacity=".45"/></g>
+      <path d="M24.29 26.97 A 13 13 0 1 1 48.31 26.97 L 36.3 56 Z" fill="none" stroke="#fff" stroke-width="2"/>
+    </g>
+  </defs>
+
+  <g clip-path="url(#og-baldosa)">
+    <use href="#og-escena"/>
+
+    <!-- ── El cristal: la misma escena, un 30% más grande. ── -->
+    <g clip-path="url(#og-lente)">
+      <g transform="translate(36.3 22) scale(1.3) translate(-36.3 -22)">
+        <use href="#og-escena"/>
+      </g>
+    </g>
+
+    <!-- ── Aro, mango y virola ── -->
+    <g fill="#2E1F72">
+      <path fill-rule="evenodd" d="M36.3 9a13 13 0 1 0 0 26 13 13 0 0 0 0-26Zm0 4.8a8.2 8.2 0 1 1 0 16.4 8.2 8.2 0 0 1 0-16.4Z"/>
+      <rect x="-11" y="-3.5" width="22" height="7" rx="3.5" transform="translate(20.2 38.1) rotate(135)"/>
+      <rect x="-5.6" y="-2" width="11.2" height="4" rx="2" transform="translate(25.9 32.4) rotate(45)"/>
+    </g>
+  </g>
+  </svg>
+  <span>App Encuentra</span>
+</div>
+
+<h1>Encuentra negocios locales<br><em>en los que puedes confiar</em></h1>
+
+<p class="bajada">La distancia exacta a cada negocio, reseñas reales y chat directo.</p>
+
+<!-- Sólo el país: es el único dato que no está ya en el titular ni en la
+     marca de arriba. Decía "Portal Encuentra · Venezuela", que es la razón
+     social; esa vive en Términos y Privacidad, no en una tarjeta de WhatsApp. -->
+<div class="sello">Venezuela</div>

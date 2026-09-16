@@ -8,32 +8,55 @@ import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
 import ReviewList from "@/components/reviews/ReviewList"
 import BusinessClaimCodeSection from "@/components/admin/BusinessClaimCodeSection"
-import { getLabelForTier } from "@/lib/memberships/tiers"
+import AdminBusinessForm from "../../components/AdminBusinessForm"
+import AdminBusinessDangerZone from "../../components/AdminBusinessDangerZone"
+import { getLabelForTier, isTierActive } from "@/lib/memberships/tiers"
+import { topeDeFotos, banderaVigente } from "@/lib/memberships/perks"
 import type { SubscriptionTier } from "@/lib/memberships/tiers"
 
 // Forzar renderizado dinámico
 export const dynamic = 'force-dynamic'
 
 /**
- * Página de detalle de negocio para admin (BLOQUE 5)
- * Permite ver toda la información y ejecutar acciones administrativas
+ * La ficha del negocio en el panel de admin: todo lo que hay que saber y todo
+ * lo que se puede hacer, en una sola página.
+ *
+ * Antes eran dos. Esta mostraba los datos y una página aparte, /gestionar,
+ * los dejaba editar — pero las dos pintaban los MISMOS campos: nombre,
+ * descripción, categoría, dirección, teléfono y WhatsApp salían dos veces, en
+ * solo lectura acá y en formulario allá. El admin tenía que ir y volver para
+ * comprobar si un cambio había entrado, y cualquier arreglo había que hacerlo
+ * en dos sitios.
+ *
+ * Al juntarlas, esos campos aparecen UNA vez, en el formulario. Lo que queda
+ * en solo lectura es lo que no se edita desde acá: el dueño, el plan, las
+ * insignias, el rendimiento y las fechas.
+ *
+ * El orden sigue el trabajo real del admin: primero saber a quién tiene
+ * delante y cómo le va la ficha, después las acciones, después editar, y al
+ * final —separado— lo que no se puede deshacer.
  */
 export default async function AdminBusinessDetailPage({ 
   params 
 }: { 
   params: Promise<{ id: string }> 
 }) {
-  await requireAdmin()
+  const adminActual = await requireAdmin()
   const { id } = await params
   const supabase = await createClient()
 
-  // Cargar información completa del negocio
+  /* El perfil del dueño va en una consulta aparte y no con
+     `profiles:owner_id(...)` embebido. PostgREST rechaza ese embebido —"Could
+     not find a relationship between 'businesses' and 'owner_id'"— porque
+     owner_id referencia auth.users, no public.profiles, y sin clave foránea
+     entre ambas no hay relación que seguir.
+
+     Esta página llevaba tiempo pidiéndolo así, de modo que la consulta fallaba
+     entera y el `notFound()` de abajo la convertía en un 404. Estaba rota, y
+     por eso no había en toda la app un enlace que apuntara a ella. */
   const { data: business, error: businessError } = await supabase
     .from("businesses")
-    .select(`
-      *,
-      profiles:owner_id(full_name, email)
-    `)
+    .select("*")
     .eq("id", id)
     .single()
 
@@ -41,7 +64,40 @@ export default async function AdminBusinessDetailPage({
     notFound()
   }
 
-  const owner = Array.isArray(business.profiles) ? business.profiles[0] : business.profiles
+  const { data: owner } = business.owner_id
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, subscription_tier, subscription_end_date, created_at, suspended_at")
+        .eq("id", business.owner_id)
+        .maybeSingle()
+    : { data: null }
+
+  // El tier guardado puede estar vencido: se pasa por la misma comprobación
+  // que usa el resto de la app para no mostrar un plan que ya no rige.
+  const tierVigenteDueno = isTierActive(owner?.subscription_tier, owner?.subscription_end_date)
+    ? Number(owner?.subscription_tier) || 0
+    : 0
+
+  const topeRealDeFotos = topeDeFotos(business as any, tierVigenteDueno)
+
+  /* El argumento de venta, listo para decirlo en voz alta.
+     Cuando se va a ofrecer una ficha sembrada a su dueño, lo que convence no
+     es explicarle qué es la app sino enseñarle lo que ya le está pasando:
+     "tu negocio lleva 340 visitas y 12 personas pulsaron tu teléfono". Ese
+     número vivía sólo en el panel del dueño, al que todavía no tiene acceso. */
+  const { data: resumenVisitas } = await supabase
+    .from("business_analytics_summary")
+    .select("total_views, unique_viewers, views_last_30_days")
+    .eq("business_id", id)
+    .maybeSingle()
+
+  const { data: interacciones } = await supabase
+    .from("business_interactions_summary")
+    .select("interaction_type, interaction_count")
+    .eq("business_id", id)
+
+  const clics = (tipo: string) =>
+    (interacciones ?? []).find((i: any) => i.interaction_type === tipo)?.interaction_count ?? 0
 
   // Cargar estadísticas de reviews
   const { data: reviewStats } = await supabase
@@ -67,21 +123,10 @@ export default async function AdminBusinessDetailPage({
   }
 
   // Parsear gallery_urls
-  const getGalleryUrls = (): string[] => {
-    if (!business.gallery_urls) return []
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 
@@ -112,8 +157,8 @@ export default async function AdminBusinessDetailPage({
           </svg>
           Volver a negocios
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Gestión de Negocio</h1>
-        <p className="text-ink-2 text-sm">ID: {id.substring(0, 8)}...</p>
+        <h1 className="text-3xl font-bold mb-1">{business.name}</h1>
+        <p className="text-ink-2 text-sm font-mono">ID: {id}</p>
       </div>
 
       {/* Código de Reclamación - SECCIÓN VISIBLE */}
@@ -145,23 +190,64 @@ export default async function AdminBusinessDetailPage({
           <div className="flex-1">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-3xl font-bold text-ink mb-2">{business.name}</h2>
-                {business.category && (
-                  <p className="text-blue-600 text-lg mb-2">{business.category}</p>
-                )}
+                {/* El nombre y la categoría ya no se repiten acá: el nombre es
+                    el título de la página y la categoría se edita abajo, en
+                    "Datos del negocio". Lo que queda es lo que NO se edita
+                    desde esta ficha. */}
+                {/* Antes acá iba `full_name || email`, así que en cuanto el
+                    dueño tenía nombre el correo no se veía nunca — justo el
+                    dato que hace falta para escribirle o para cruzarlo con un
+                    ticket de soporte. El id también: los correos de soporte
+                    llegan identificando al usuario por UUID. */}
                 {owner && (
-                  <p className="text-ink-2 text-sm">
-                    Propietario: {owner.full_name || owner.email || "N/A"}
-                  </p>
+                  <div className="text-ink-2 text-sm space-y-0.5">
+                    <p>
+                      Propietario:{" "}
+                      <span className="text-ink font-medium">
+                        {owner.full_name || "Sin nombre"}
+                      </span>
+                      {owner.role ? ` · ${owner.role}` : ""}
+                    </p>
+                    {owner.email && (
+                      <p>
+                        Correo:{" "}
+                        <a href={`mailto:${owner.email}`} className="text-blue-600 hover:underline">
+                          {owner.email}
+                        </a>
+                      </p>
+                    )}
+                    <p>
+                      Plan: {getLabelForTier(tierVigenteDueno as SubscriptionTier)}
+                      {owner.subscription_tier > 0 && tierVigenteDueno === 0
+                        ? " (vencido)"
+                        : ""}
+                      {owner.subscription_end_date
+                        ? ` · hasta ${new Date(owner.subscription_end_date).toLocaleDateString("es-ES")}`
+                        : owner.subscription_tier > 0
+                        ? " · sin vencimiento"
+                        : ""}
+                    </p>
+                    {owner.created_at && (
+                      <p>Registrado: {new Date(owner.created_at).toLocaleDateString("es-ES")}</p>
+                    )}
+                    {owner.suspended_at && (
+                      <p className="text-red-600 font-medium">
+                        Cuenta suspendida el {new Date(owner.suspended_at).toLocaleDateString("es-ES")}
+                      </p>
+                    )}
+                    <p className="font-mono text-[11px] text-ink-2/70 break-all">
+                      ID: {owner.id}
+                    </p>
+                  </div>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {business.is_premium && (
+                {banderaVigente(business.is_premium, business.premium_until) && (
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                     Premium
                   </span>
                 )}
-                {business.is_featured && (
+                {banderaVigente(business.is_featured, business.featured_until) && (
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                     Destacado
                   </span>
@@ -174,38 +260,9 @@ export default async function AdminBusinessDetailPage({
               </div>
             </div>
 
-            {business.description && (
-              <p className="text-ink-2 mb-4">{business.description}</p>
-            )}
-
-            {/* Info de contacto */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {business.address && (
-                <div className="flex items-start gap-2 text-sm">
-                  <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="text-ink-2">{business.address}</span>
-                </div>
-              )}
-              {business.phone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <span className="text-ink-2">{business.phone}</span>
-                </div>
-              )}
-              {business.whatsapp && (
-                <div className="flex items-center gap-2 text-sm">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                  </svg>
-                  <span className="text-ink-2">{business.whatsapp}</span>
-                </div>
-              )}
-            </div>
+            {/* La descripción y el contacto se editan abajo. Estaban acá
+                además en solo lectura, que era la mitad de la duplicación
+                entre esta ficha y la antigua página /gestionar. */}
 
             {/* Estado Premium */}
             {business.is_premium && business.premium_until && (
@@ -217,13 +274,57 @@ export default async function AdminBusinessDetailPage({
                     year: "numeric"
                   })}
                 </p>
-                {business.max_photos && (
-                  <p className="text-sm text-amber-700 mt-1">
-                    Límite de fotos: {business.max_photos}
-                  </p>
-                )}
               </div>
             )}
+
+            {/* Argumento de venta para ofrecer la ficha a su dueño. Sale
+                arriba y con los números grandes porque es lo primero que hay
+                que decir en esa conversación, no un detalle a buscar. */}
+            <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2">
+                {business.owner_id ? "Rendimiento" : "Para ofrecer esta ficha"}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">
+                    {(resumenVisitas?.total_views ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-ink-2">visitas</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">
+                    {(resumenVisitas?.views_last_30_days ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-ink-2">últimos 30 días</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">{clics("phone")}</p>
+                  <p className="text-[11px] text-ink-2">clics al teléfono</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-ink">{clics("whatsapp")}</p>
+                  <p className="text-[11px] text-ink-2">clics a WhatsApp</p>
+                </div>
+              </div>
+              {!business.owner_id && (
+                <p className="mt-3 text-[11px] text-ink-2">
+                  Ficha sin reclamar. No admite reseñas hasta que su dueño la reclame.
+                </p>
+              )}
+            </div>
+
+            {/* El tope real, calculado como lo calcula la app: el del plan más
+                las fotos extra concedidas si siguen vigentes. Acá se mostraba
+                `max_photos`, una columna que ya nadie lee: decía 5 en todas
+                las filas y daba igual lo que pusieras. */}
+            <div className="mt-4 text-xs text-ink-2">
+              <p>
+                Fotos: {galleryUrls.length} de {topeRealDeFotos}
+                {(business as any).perk_fotos_extra_hasta
+                  ? ` · incluye ${(business as any).perk_fotos_extra ?? 0} extra concedidas`
+                  : ""}
+              </p>
+            </div>
 
             {/* Fechas */}
             <div className="mt-4 text-xs text-ink-2 space-y-1">
@@ -248,13 +349,6 @@ export default async function AdminBusinessDetailPage({
             />
             <AdminActionButton id={business.id} type="suspender" label="Suspender Premium" />
             <AdminActionButton id={business.id} type="destacar" label={business.is_featured ? "Quitar Destacado" : "Destacar"} />
-            <AdminActionButton 
-              id={business.id} 
-              type="foto_limite" 
-              label={`+ Fotos (${business.max_photos || 5})`}
-              currentMaxPhotos={business.max_photos || 5}
-              businessName={business.name || "Negocio"}
-            />
           </div>
 
           {/* Pagos pendientes */}
@@ -280,16 +374,70 @@ export default async function AdminBusinessDetailPage({
             </div>
           )}
 
-          {/* Botón para gestionar todo el negocio */}
-          <div className="mt-6 pt-6 border-t border-black/10">
-            <Link
-              href={`/app/admin/negocios/${business.id}/gestionar`}
-              className="inline-block px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors w-full"
-            >
-              Gestionar Negocio Completo (Galería, Horarios, Promociones, Eliminar)
-            </Link>
-          </div>
         </div>
+      </div>
+
+      {/* Datos del negocio — lo que antes vivía en /gestionar */}
+      <div className="surface rounded-3xl shadow-sm p-6 mb-6">
+        <h3 className="text-xl font-bold mb-1">Datos del negocio</h3>
+        <p className="text-ink-2 text-sm mb-4">
+          Se editan como si fueras el dueño. Los cambios se ven en el resto de
+          la ficha al guardar.
+        </p>
+        <AdminBusinessForm business={business as any} />
+      </div>
+
+      {/* Secciones que tienen su propia pantalla en el panel del dueño. El
+          admin las abre ahí mismo: duplicar acá el editor de galería, el de
+          horarios y el de promociones sería repetir tres pantallas enteras
+          para no cambiar nada de lo que hacen. */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Link
+          href={`/app/dashboard/negocios/${id}/galeria`}
+          className="surface rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all"
+        >
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 className="font-bold">Galería</h3>
+          </div>
+          <p className="text-sm text-ink-2">
+            {galleryUrls.length} de {topeRealDeFotos} fotos
+          </p>
+        </Link>
+
+        <Link
+          href={`/app/dashboard/negocios/${id}/horarios`}
+          className="surface rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all"
+        >
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="font-bold">Horarios</h3>
+          </div>
+          <p className="text-sm text-ink-2">Horario de atención</p>
+        </Link>
+
+        <Link
+          href={`/app/dashboard/negocios/${id}/promociones`}
+          className="surface rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all"
+        >
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="font-bold">Promociones</h3>
+          </div>
+          <p className="text-sm text-ink-2">Promociones activas</p>
+        </Link>
       </div>
 
       {/* Galería */}
@@ -320,12 +468,12 @@ export default async function AdminBusinessDetailPage({
           <div className="mb-6">
             <ReviewStats stats={reviewStats} />
           </div>
-          <ReviewList reviews={reviewsData} loading={false} />
+          <ReviewList reviews={reviewsData} loading={false} currentUserId={adminActual?.id ?? null} />
         </div>
       )}
 
       {/* Links útiles */}
-      <div className="surface rounded-3xl shadow-sm p-6">
+      <div className="surface rounded-3xl shadow-sm p-6 mb-6">
         <h3 className="text-lg font-bold mb-4">Enlaces</h3>
         <div className="flex flex-wrap gap-3">
           <Link
@@ -336,12 +484,18 @@ export default async function AdminBusinessDetailPage({
           </Link>
           <Link
             href={`/negocio/${id}`}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="px-4 py-2 bg-black/5 hover:bg-black/10 text-ink border border-black/8 rounded-xl text-sm font-medium transition-colors"
           >
             Ver página pública
           </Link>
         </div>
       </div>
+
+      {/* Lo último y aparte: es la única acción de la ficha sin vuelta atrás. */}
+      <AdminBusinessDangerZone
+        businessId={business.id}
+        businessName={business.name || "este negocio"}
+      />
     </div>
   )
 }

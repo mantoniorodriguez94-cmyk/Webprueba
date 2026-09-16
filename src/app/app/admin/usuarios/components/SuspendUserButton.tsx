@@ -19,9 +19,19 @@ interface Props {
   profileId: string
   profileName: string
   suspendido: boolean
+  /**
+   * Botón a lo ancho en vez de pastilla. En la tabla de usuarios va inline
+   * dentro de una fila y la pastilla es lo correcto; en la rejilla de
+   * acciones rápidas queda al pie de una tarjeta, junto a diez botones que
+   * ocupan todo el ancho, y la pastilla desalineaba la fila entera.
+   */
+  aLoAncho?: boolean
 }
 
-export default function SuspendUserButton({ profileId, profileName, suspendido }: Props) {
+export default function SuspendUserButton({ profileId, profileName, suspendido, aLoAncho = false }: Props) {
+  const forma = aLoAncho
+    ? "w-full justify-center rounded-xl px-3 py-2 text-xs font-medium"
+    : "rounded-full px-3 py-1.5 text-xs font-semibold"
   const router = useRouter()
   const [abierto, setAbierto] = useState(false)
   const [motivo, setMotivo] = useState("")
@@ -62,7 +72,7 @@ export default function SuspendUserButton({ profileId, profileName, suspendido }
         type="button"
         disabled={ocupado}
         onClick={() => enviar(false)}
-        className="rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50"
+        className={`inline-flex items-center border border-green-200 bg-green-50 text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50 ${forma}`}
       >
         Reactivar
       </button>
@@ -74,7 +84,7 @@ export default function SuspendUserButton({ profileId, profileName, suspendido }
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+        className={`inline-flex items-center border border-amber-200 bg-amber-50 text-amber-700 transition-colors hover:bg-amber-100 ${forma}`}
       >
         Suspender
       </button>

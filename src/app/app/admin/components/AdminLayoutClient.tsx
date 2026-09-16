@@ -35,7 +35,6 @@ const navGroups: NavGroup[] = [
     title: "Personas",
     items: [
       { href: "/app/admin/usuarios", label: "Usuarios", icon: <UsersIcon /> },
-      { href: "/app/admin/referrales", label: "Referidos", icon: <GiftIcon /> },
       { href: "/app/admin/invitaciones", label: "Invitaciones", icon: <TicketIcon /> },
     ],
   },
@@ -205,7 +204,19 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         </Drawer>
 
         {/* CONTENIDO */}
-        <main className="flex-1 mt-1">
+        {/* min-w-0 es la causa raíz de que el panel saliera más ancho que la
+            pantalla y hubiera que alejar el zoom para leerlo.
+
+            Un elemento flex trae min-width:auto, así que NO encoge por debajo
+            del ancho mínimo de su contenido. Bastaba un hijo que no supiera
+            encoger —una tarjeta con el botón en flex-shrink-0, una tabla— para
+            que <main> creciera y arrastrase con él el encabezado, las métricas
+            y todo lo demás. Por eso se veía cortada la página entera y no sólo
+            el elemento culpable.
+
+            Con min-w-0, <main> encoge hasta el ancho real disponible y cada
+            sección se las arregla dentro: la que desborde se desborda sola. */}
+        <main className="flex-1 min-w-0 mt-1">
           <div className="surface rounded-3xl p-4 sm:p-6 md:p-8 min-h-[calc(100vh-7rem)] shadow-sm">
             {children}
           </div>
@@ -395,14 +406,6 @@ function TicketIcon() {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
       <path d="M15 5v2M15 11v2M15 17v2M5 5h14a2 2 0 012 2v3a2 2 0 100 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 100-4V7a2 2 0 012-2z" />
-    </svg>
-  )
-}
-
-function GiftIcon() {
-  return (
-    <svg fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-      <path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7M5 12h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12a2 2 0 012-2h10a2 2 0 012 2" />
     </svg>
   )
 }

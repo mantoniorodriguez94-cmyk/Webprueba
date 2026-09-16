@@ -39,7 +39,12 @@ export default async function AdminDestacadosPage() {
   const getStatusColor = (days: number | null): string => {
     if (days === null) return "bg-black/5 text-ink-2 border-black/10"
     if (days <= 0) return "bg-red-50 text-red-700 border-red-200"
-    if (days <= 3) return "bg-orange-50 text-orange-700 border-orange-200"
+    // Los dos avisos se gradúan dentro del MISMO ámbar, por intensidad. Antes
+    // el de 3 días era naranja y el de 7 ámbar: dos tonos distintos para decir
+    // lo mismo con más o menos prisa, y el naranja ni siquiera está en la
+    // paleta. Subir un peldaño del mismo color se lee como urgencia; cambiar
+    // de color se lee como otra cosa.
+    if (days <= 3) return "bg-amber-100 text-amber-900 border-amber-300"
     if (days <= 7) return "bg-amber-50 text-amber-700 border-amber-200"
     return "bg-green-50 text-green-700 border-green-200"
   }
@@ -138,17 +143,14 @@ export default async function AdminDestacadosPage() {
 
                 {/* Acciones */}
                 <div className="flex flex-col gap-2 pt-4 border-t border-black/8">
+                  {/* "Ver Detalles" y "Gestionar Negocio" llevaban a dos
+                      páginas distintas que mostraban lo mismo. Ahora hay una
+                      sola ficha. */}
                   <Link
                     href={`/app/admin/negocios/${b.id}`}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
                   >
-                    Ver Detalles
-                  </Link>
-                  <Link
-                    href={`/app/admin/negocios/${b.id}/gestionar`}
-                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-center text-sm font-medium transition-colors"
-                  >
-                    Gestionar Negocio
+                    Ver ficha
                   </Link>
                 </div>
               </div>

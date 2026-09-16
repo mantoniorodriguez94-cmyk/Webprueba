@@ -17,7 +17,8 @@ import {
   checkBusinessSaved,
 } from "@/lib/analytics"
 import { supabase } from "@/lib/supabaseClient"
-import { isTierActive } from "@/lib/memberships/tiers"
+import { tieneBordeDorado, tierVigenteDelDueno, viasDeContacto } from "@/lib/memberships/perks"
+import { CORONA_POR_TIER } from "@/components/memberships/MembershipBadge"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
@@ -42,7 +43,6 @@ export default function BusinessFeedCard({
   const [imageError, setImageError] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
-  const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   /** Healed tier/vencimiento cuando owner_id existe pero el join no trajo perfil */
@@ -60,36 +60,22 @@ export default function BusinessFeedCard({
     checkSaved()
   }, [currentUser, business.id])
   
-  // Parsear gallery_urls correctamente
-  const getGalleryUrls = (): string[] => {
-    if (!business.gallery_urls) return []
-    if (Array.isArray(business.gallery_urls)) return business.gallery_urls
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
   
   const gallery = getGalleryUrls()
   const isOwner = currentUser?.id === business.owner_id
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
   
-  // Handlers con tracking de analytics
-  const handleLike = async () => {
-    const newLikedState = !liked
-    setLiked(newLikedState)
-    
-    if (newLikedState && business.id) {
-      await trackBusinessInteraction(business.id, 'like', currentUser?.id)
-    }
-  }
-  
+  /* El corazón se quitó: prometía recordar y no recordaba. Su estado nacía en
+     false y no se cargaba de ningún sitio, así que al recargar la página
+     volvía a estar vacío — y estaba justo al lado del marcador de guardar,
+     que sí persiste. Dos botones idénticos en peso, uno real y otro
+     decorativo. Guardar ya cubre la misma intención, esa sí de verdad. */
+
   const handleSave = async () => {
     if (!currentUser) {
       toast.error("Debes iniciar sesión para guardar negocios")
@@ -189,21 +175,28 @@ export default function BusinessFeedCard({
   // con `effectiveTier` (useMembershipAccess.ts, "arquitectónicamente
   // imposible" dar acceso con un tier vencido), pero esta tarjeta leía el
   // valor crudo de la columna y nunca lo pasaba por esa comprobación.
-  // isTierActive es la misma función que usa el resto del sistema: un
+  // tierVigenteDelDueno es la misma función que usa el resto del sistema: un
   // subscription_end_date null cuenta como vigencia indefinida (útil para
   // overrides manuales del panel), cualquier fecha pasada no.
-  const ownerTier = isTierActive(rawOwnerTier, rawOwnerEndDate) ? rawOwnerTier : 0
+  const ownerTier = tierVigenteDelDueno(rawOwnerTier, rawOwnerEndDate)
 
-  // ── Golden border: exclusivo del Tier 3 (Patrocina) ───────────────────────
-  // Los antiguos perks à-la-carte (golden_border_expires_at / chat_expires_at)
-  // fueron eliminados: todo beneficio deriva ahora del tier de la cuenta.
-  const ownerHasGoldenBorder = ownerTier >= 3
+  // ── Borde dorado: plan Patrocina, o concesión manual vigente ──────────────
+  // Un admin puede otorgarlo suelto por unos meses desde el panel, sin que la
+  // cuenta tenga Patrocina. La regla suma, nunca resta: ver lib/memberships/perks.
+  const ownerHasGoldenBorder = tieneBordeDorado(business, ownerTier)
 
-  // ── Contact visibility (phone/WhatsApp): Tier 2+ (Destaca / Patrocina) ─────
-  const ownerHasFullContact = ownerTier >= 2
+  /* La escalera de contacto vive en lib/memberships/perks, no acá. Estaba
+     escrita también en la ficha del dashboard y en la página pública, y el
+     chat se quedó abierto para negocios sin plan justamente porque se corrigió
+     en esta tarjeta y no en las otras dos.
+
+     Se piden las tres vías juntas: pedirlas sueltas es lo que permitía tocar
+     el chat y olvidarse de WhatsApp en el mismo archivo. */
+  const contacto = viasDeContacto(rawOwnerTier, rawOwnerEndDate)
+  const ownerHasWhatsApp = contacto.whatsapp
+  const ownerHasChat = contacto.chat
 
   const isTier2 = ownerTier >= 2
-  const isTier3 = ownerTier >= 3 // badge de Patrocinador (NO es verificación: eso es is_verified, lo otorga un admin)
 
   // ── Heal: lazy profile fetch when join data was absent ────────────────────
   // This covers edge cases where the batch join hadn't populated yet (e.g., new card).
@@ -257,7 +250,12 @@ export default function BusinessFeedCard({
       
       {/* Header del negocio */}
       <div className="p-4">
-        <div className="flex items-center gap-3">
+        {/* flex-wrap: en un teléfono el nombre competía por el ancho con
+            "Nuevo", "Admin" y los botones de editar y eliminar, que no
+            encogen, y quedaba en "Pru...". Al envolver, las etiquetas bajan a
+            su propia fila y el nombre recupera el ancho completo. En pantallas
+            anchas caben todas en la misma línea y nada cambia. */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
           {/* Logo del negocio */}
           <Link href={`/app/dashboard/negocios/${business.id}`} className="flex-shrink-0">
             <div className={`relative w-14 h-14 rounded-2xl overflow-hidden ${
@@ -294,10 +292,13 @@ export default function BusinessFeedCard({
                 <h3 className="text-lg font-bold text-ink truncate hover:text-blue-600 transition-colors">
                   {business.name}
                 </h3>
-                {isTier3 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                {CORONA_POR_TIER[ownerTier] && (
+                  <div
+                    className={`flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full text-white ${CORONA_POR_TIER[ownerTier].solido}`}
+                    title={CORONA_POR_TIER[ownerTier].etiqueta}
+                    aria-label={`Plan ${CORONA_POR_TIER[ownerTier].etiqueta}`}
+                  >
                     <Crown className="w-3 h-3" />
-                    <span>Patrocinador</span>
                   </div>
                 )}
                 {isPremiumActive && <PremiumBadge variant="small" showText={false} />}
@@ -312,7 +313,11 @@ export default function BusinessFeedCard({
                   {business.category}
                 </span>
               )}
-              {business.total_reviews && business.total_reviews > 0 && (
+              {/* El paréntesis importa. Escrito como `total_reviews && ...`,
+                  con cero reseñas el && cortaba devolviendo 0 —no false— y
+                  React pinta el número: era el "0" suelto que salía junto a
+                  la categoría en todas las tarjetas sin reseñas. */}
+              {(business.total_reviews ?? 0) > 0 && (
                 <>
                   {business.category && <span className="text-black/20">•</span>}
                   <div className="flex items-center gap-1">
@@ -326,7 +331,9 @@ export default function BusinessFeedCard({
             </div>
           </div>
 
-          {/* Badge "Nuevo" */}
+          {/* Etiquetas y acciones. En móvil ocupan su propia fila completa,
+              alineadas a la derecha; en escritorio vuelven junto al nombre. */}
+          <div className="flex items-center gap-2 w-full justify-end sm:w-auto">
           {business.created_at && isRecent(business.created_at) && (
             <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
               Nuevo
@@ -363,6 +370,7 @@ export default function BusinessFeedCard({
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
@@ -442,7 +450,7 @@ export default function BusinessFeedCard({
           </div>
         )}
 
-        {ownerHasFullContact && (business.phone || business.whatsapp) && (
+        {contacto.telefono && (business.phone || business.whatsapp) && (
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -455,30 +463,8 @@ export default function BusinessFeedCard({
       {/* Barra de Acciones */}
       <div className="px-4 py-3 border-t border-black/8 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {/* Me gusta */}
-          <button
-            onClick={handleLike}
-            className={`p-2 rounded-full transition-all ${
-              liked ? "bg-red-50 text-red-600" : "text-ink-2 hover:bg-black/5"
-            }`}
-          >
-            <svg
-              className={`w-6 h-6 transition-all ${liked ? "fill-current scale-110" : ""}`}
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-
           {/* Mensaje */}
-          {currentUser && !isOwner && (
+          {currentUser && !isOwner && ownerHasChat && (
             <button
               onClick={handleMessage}
               className="p-2 rounded-full transition-all text-ink-2 hover:bg-black/5 hover:text-blue-600"
@@ -521,47 +507,66 @@ export default function BusinessFeedCard({
         </button>
       </div>
 
-      {/* Botones de Acción Principales — WhatsApp/Call solo si dueño Tier 2+ */}
-      <div className="p-4 pt-0 flex gap-2">
-        {ownerHasFullContact && business.whatsapp && (
+      {/* Llamar lo tiene todo el mundo; WhatsApp desde Conecta.
+
+          Acá había tres botones del mismo peso —los tres flex-1, los tres en
+          negrita— y dos de ellos con el fondo lleno de color: un degradado
+          verde con shadow-lg y el azul de marca con shadow-md. Eso rompía la
+          regla cardinal de tailwind.config: un solo color saturado en
+          pantalla, el azul, y reservado a la acción principal. El verde es
+          semántico —activo, verificado, en línea— y como campo grande es un
+          error declarado ahí mismo.
+
+          Ahora hay una sola acción principal (Llamar, la única que existe en
+          todas las fichas porque el teléfono no depende del plan), WhatsApp
+          como acento verde tintado —se reconoce igual, sin ser una losa— y
+          "Ver más" en neutro debajo.
+
+          Lo de abajo además arregla que "Ver más" se partiera en dos líneas:
+          con tres botones a un tercio del ancho no cabía, y la fila entera
+          crecía y quedaba desigual. */}
+      <div className="px-4 pb-4 flex flex-col gap-2">
+        <div className="flex gap-2">
+        {ownerHasWhatsApp && business.whatsapp && (
           <a
             href={`https://wa.me/${business.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWhatsApp}
-            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 font-semibold text-sm py-2.5 px-4 rounded-2xl transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
             </svg>
-            Contactar
+            WhatsApp
           </a>
         )}
-        {ownerHasFullContact && business.phone && (
+        {contacto.telefono && business.phone && (
           <a
             href={`tel:${business.phone}`}
             onClick={handlePhone}
-            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm py-2.5 px-4 rounded-2xl shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             Llamar
           </a>
         )}
+        </div>
         <Link
           href={`/app/dashboard/negocios/${business.id}`}
-          className="flex-1 bg-black/5 hover:bg-black/10 border-2 border-black/8 text-ink font-bold py-3 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
+          className="w-full bg-black/[0.04] hover:bg-black/[0.07] text-ink-2 hover:text-ink font-semibold text-sm py-2.5 px-4 rounded-2xl transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
           Ver más
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </Link>
       </div>
 
-      {/* Modal de enviar mensaje — solo si negocio tiene chat activo y visitante Conecta+ */}
-      {showMessageModal && currentUser && (
+      {/* Modal de enviar mensaje — el negocio es quien paga el chat. */}
+      {showMessageModal && currentUser && ownerHasChat && (
         <SendMessageModal
           business={business}
           currentUserId={currentUser.id}

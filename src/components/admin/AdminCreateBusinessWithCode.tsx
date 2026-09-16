@@ -118,8 +118,11 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
     return (
       <div className="surface rounded-3xl shadow-sm overflow-hidden">
         <div className="p-6">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-start gap-4 flex-1">
+          {/* En móvil se apila: el botón no sabe encoger —lleva flex-shrink-0
+              porque su etiqueta no debe partirse— así que en una sola fila
+              obligaba a la tarjeta a medir más que la pantalla. */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-start gap-4 flex-1 min-w-0">
               <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 border border-green-200">
                 <svg
                   className="w-6 h-6 text-green-600"
@@ -146,7 +149,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all flex items-center gap-2 flex-shrink-0"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all flex items-center justify-center gap-2 flex-shrink-0"
             >
               <svg
                 className="w-5 h-5"
@@ -173,8 +176,8 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
     <div className="surface rounded-3xl shadow-sm overflow-hidden">
       {/* Card Header */}
       <div className="p-6 pb-4 border-b border-black/8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-4 flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 border border-green-200">
               <svg
                 className="w-6 h-6 text-green-600"
@@ -410,7 +413,7 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-3.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

@@ -8,6 +8,12 @@ import useUser from "@/hooks/useUser"
 import Link from "next/link"
 import type { Business } from "@/types/business"
 import { alertModal } from "@/lib/alertModal"
+import useMembershipAccess from "@/hooks/useMembershipAccess"
+import BloqueoPorPlan from "@/components/analytics/BloqueoPorPlan"
+import {
+  SUBSCRIPTION_TIER_CONECTA,
+  SUBSCRIPTION_TIER_PATROCINA,
+} from "@/lib/memberships/tiers"
 
 type AnalyticsSummary = {
   total_views: number
@@ -19,7 +25,6 @@ type AnalyticsSummary = {
   messages_received: number
   last_viewed_at: string | null
   // Impresiones en resultados de búsqueda (puede venir de la vista de resumen)
-  search_impressions?: number
 }
 
 type ViewsByDay = {
@@ -37,6 +42,7 @@ export default function EstadisticasPage() {
   const params = useParams()
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
+  const { effectiveTier } = useMembershipAccess()
   const [business, setBusiness] = useState<Business | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null)
   const [viewsByDay, setViewsByDay] = useState<ViewsByDay[]>([])
@@ -86,7 +92,6 @@ export default function EstadisticasPage() {
             total_interactions: analyticsData.total_interactions || 0,
             messages_received: analyticsData.messages_received || 0,
             last_viewed_at: analyticsData.last_viewed_at,
-            search_impressions: (analyticsData as any).search_impressions || 0,
           })
         } else {
           setAnalytics({
@@ -98,7 +103,6 @@ export default function EstadisticasPage() {
             total_interactions: 0,
             messages_received: 0,
             last_viewed_at: null,
-            search_impressions: 0,
           })
         }
 
@@ -171,9 +175,26 @@ export default function EstadisticasPage() {
     message: { label: "Mensajes", icon: "✉️", color: "from-purple-500 to-purple-600" },
     share: { label: "Compartidos", icon: "🔗", color: "from-orange-500 to-orange-600" },
     gallery_view: { label: "Galería", icon: "🖼️", color: "from-purple-500 to-purple-600" }
+    // "Me gusta" se quitó de la tarjeta del feed —era un corazón que no
+    // recordaba nada—, así que ese contador dejó de poder crecer. Las
+    // pulsaciones ya registradas siguen en la base por si alguna vez vuelve.
   }
 
   const totalInteractions = interactions.reduce((sum, i) => sum + i.interaction_count, 0)
+
+  /* Qué ve cada plan.
+
+     Las visitas las ve todo el mundo, gratis incluido: es el mínimo que
+     justifica estar en el directorio, y sin ningún número nadie renueva nada.
+
+     Las métricas de contacto —WhatsApp, llamadas, guardados— llegan con
+     Conecta, que es el plan que compra poder ser contactado: es el recibo de
+     aquello por lo que paga.
+
+     El análisis —gráfico diario, 30 días, crecimiento y desglose completo— es
+     de Patrocina. Es la parte vistosa y la que empuja a subir. */
+  const veContacto = effectiveTier >= SUBSCRIPTION_TIER_CONECTA
+  const veAnalisis = effectiveTier >= SUBSCRIPTION_TIER_PATROCINA
 
   // Derivados principales para las 4 tarjetas destacadas
   const whatsappClicks =
@@ -183,10 +204,17 @@ export default function EstadisticasPage() {
 
   const favoritesCount = analytics.total_saves
 
-  const searchImpressions =
-    analytics.search_impressions ??
+  /* Acá había una tarjeta "Visto en búsquedas" que sólo podía mostrar cero:
+     `search_impressions` no existe como columna en business_analytics_summary
+     y el evento `search_impression` no se registra en ningún punto de la app.
+     Era la cuarta tarjeta grande, con el número en cuerpo enorme.
+
+     La sustituyen las llamadas, que sí se registran y que ahora importan más:
+     el teléfono pasó a verse en todos los planes, así que para un negocio sin
+     plan la llamada es su principal vía de contacto. */
+  const phoneClicks =
     interactions
-      .filter((i) => i.interaction_type === "search_impression")
+      .filter((i) => i.interaction_type === "phone")
       .reduce((sum, i) => sum + i.interaction_count, 0)
 
   return (
@@ -211,6 +239,7 @@ export default function EstadisticasPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           
           {/* Card 1: Contactos directos (WhatsApp) */}
+          <BloqueoPorPlan desbloqueado={veContacto} tierRequerido={SUBSCRIPTION_TIER_CONECTA}>
           <div className="bg-green-50 rounded-3xl border border-green-200 p-6 hover:border-green-300 transition-all shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center">
@@ -223,6 +252,7 @@ export default function EstadisticasPage() {
             <p className="text-sm text-green-700 font-semibold">Contactos directos</p>
             <p className="text-xs text-ink-2 mt-2">Clics en el botón de WhatsApp</p>
           </div>
+          </BloqueoPorPlan>
 
           {/* Card 2: Visitas al perfil */}
           <div className="bg-blue-50 rounded-3xl border border-blue-200 p-6 hover:border-blue-300 transition-all shadow-sm">
@@ -233,7 +263,7 @@ export default function EstadisticasPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </div>
-              {growthRate !== 0 && (
+              {veAnalisis && growthRate !== 0 && (
                 <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${growthRate > 0 ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
                   {growthRate > 0 ? '↑' : '↓'} {Math.abs(growthRate)}%
                 </span>
@@ -245,6 +275,7 @@ export default function EstadisticasPage() {
           </div>
 
           {/* Card 3: Guardados */}
+          <BloqueoPorPlan desbloqueado={veContacto} tierRequerido={SUBSCRIPTION_TIER_CONECTA}>
           <div className="bg-purple-50 rounded-3xl border border-purple-200 p-6 hover:border-purple-300 transition-all shadow-sm">
             <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,20 +286,28 @@ export default function EstadisticasPage() {
             <p className="text-sm text-purple-700 font-semibold">Guardados</p>
             <p className="text-xs text-ink-2 mt-2">Usuarios que guardaron tu negocio</p>
           </div>
+          </BloqueoPorPlan>
 
-          {/* Card 4: Visto en búsquedas */}
+          {/* Card 4: Llamadas */}
+          <BloqueoPorPlan desbloqueado={veContacto} tierRequerido={SUBSCRIPTION_TIER_CONECTA}>
           <div className="bg-amber-50 rounded-3xl border border-amber-200 p-6 hover:border-amber-300 transition-all shadow-sm">
             <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
             </div>
-            <h3 className="text-4xl font-extrabold text-ink mb-1">{searchImpressions.toLocaleString()}</h3>
-            <p className="text-sm text-amber-700 font-semibold">Visto en búsquedas</p>
-            <p className="text-xs text-ink-2 mt-2">Veces que apareciste en resultados</p>
+            <h3 className="text-4xl font-extrabold text-ink mb-1">{phoneClicks.toLocaleString()}</h3>
+            <p className="text-sm text-amber-700 font-semibold">Llamadas</p>
+            <p className="text-xs text-ink-2 mt-2">Veces que pulsaron tu teléfono</p>
           </div>
+          </BloqueoPorPlan>
         </div>
 
+        {/* Análisis: gráfico diario, desglose y última actividad. Es la parte
+            vistosa, y la que vende Patrocina. Se deja borrosa en vez de
+            escondida a propósito: quien no la tiene ve que hay barras y
+            números detrás del velo, y eso pesa más que una pantalla vacía. */}
+        <BloqueoPorPlan desbloqueado={veAnalisis} tierRequerido={SUBSCRIPTION_TIER_PATROCINA}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Gráfico de Visitas - LINE CHART STYLE (2/3) */}
@@ -442,6 +481,7 @@ export default function EstadisticasPage() {
 
           </div>
         </div>
+        </BloqueoPorPlan>
       </div>
     </div>
   )

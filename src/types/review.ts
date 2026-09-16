@@ -12,6 +12,12 @@ export type Review = {
   // Extended fields from join
   user_name?: string;
   user_email?: string;
+  /**
+   * La persona había contactado al negocio antes de reseñarlo. Lo calcula un
+   * trigger al escribir la fila, nunca el cliente: no es un sello que uno
+   * pueda ponerse a sí mismo.
+   */
+  cliente_verificado?: boolean;
 };
 
 export type ReviewInsert = {

@@ -83,8 +83,6 @@ export default function PerfilPage() {
   const fullName = user?.user_metadata?.full_name || "Usuario"
   const email = user?.email || ""
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
-  const [invitedCount, setInvitedCount] = useState(0)
-  const [qualifiedInvitedCount, setQualifiedInvitedCount] = useState(0)
   const currentBadgeType = getBadgeTypeForTier(effectiveTier as MembershipTier)
 
   // ============================================================
@@ -168,49 +166,6 @@ export default function PerfilPage() {
   }, [user, isCompany])
 
   // ============================================================
-  // Contador de referidos (registrados vs calificados)
-  // ============================================================
-  useEffect(() => {
-    const loadInvitedCounts = async () => {
-      if (!user) {
-        setInvitedCount(0)
-        setQualifiedInvitedCount(0)
-        return
-      }
-      try {
-        // Total registros con tu link
-        const { count: totalCount, error: totalError } = await supabase
-          .from("profiles")
-          .select("id", { count: "exact", head: true })
-          .eq("referred_by", user.id)
-
-        if (totalError) {
-          console.warn("Error cargando referidos totales:", totalError)
-        } else {
-          setInvitedCount(totalCount ?? 0)
-        }
-
-        // Referidos calificados: tienen algún plan de suscripción (tier >= 1)
-        const { count: qualifiedCount, error: qualifiedError } = await supabase
-          .from("profiles")
-          .select("id", { count: "exact", head: true })
-          .eq("referred_by", user.id)
-          .gt("subscription_tier", 0)
-
-        if (qualifiedError) {
-          console.warn("Error cargando referidos calificados:", qualifiedError)
-        } else {
-          setQualifiedInvitedCount(qualifiedCount ?? 0)
-        }
-      } catch (err) {
-        console.error("Error inesperado cargando referidos:", err)
-      }
-    }
-
-    loadInvitedCounts()
-  }, [user])
-
-  // ============================================================
   // Logout
   // ============================================================
   const handleLogout = async () => {
@@ -219,6 +174,15 @@ export default function PerfilPage() {
       router.push("/")
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
+    }
+  }
+
+  const handleCambiarCuenta = async () => {
+    try {
+      await supabase.auth.signOut()
+      window.location.href = "/app/auth/login?switch=1"
+    } catch (error) {
+      console.error("Error al cambiar de cuenta:", error)
     }
   }
 
@@ -367,94 +331,6 @@ export default function PerfilPage() {
         )}
 
         {/* ============================================
-            INVITACIONES
-            Sube desde el fondo de la pantalla: es lo único de esta página
-            que no vive en ningún otro lado, y encima es el motor de
-            crecimiento del producto. Estaba enterrado bajo tres enlaces que
-            solo repetían la barra inferior.
-        ============================================ */}
-        <div className="space-y-4 pt-2">
-          <h3 className="text-lg font-bold text-ink px-2">Invitaciones</h3>
-
-            <div className="surface rounded-3xl overflow-hidden">
-              {/* Encabezado: la recompensa primero, que es lo que motiva */}
-              <div className="p-5 pb-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 flex-shrink-0 rounded-2xl bg-blue-50 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="font-semibold text-ink leading-tight">Invita a tus amigos</h4>
-                    <p className="text-sm text-ink-2 mt-0.5">
-                      Por cada 3 negocios que se sumen, ganas{" "}
-                      <span className="font-semibold text-amber-600">un mes de Patrocina gratis</span>.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progreso: el dato que la persona vuelve a mirar */}
-              <div className="px-5 pb-4">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-xs font-medium text-ink-2">Invitados válidos</span>
-                  <span className="font-mono text-sm font-bold text-ink tabular-nums">
-                    {qualifiedInvitedCount}<span className="text-ink-2 font-normal"> / 3</span>
-                  </span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
-                  <div
-                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
-                    style={{ width: `${Math.min(100, (qualifiedInvitedCount / 3) * 100)}%` }}
-                  />
-                </div>
-                <p className="mt-2 text-[11px] leading-snug text-ink-2">
-                  Se registraron {invitedCount}. Un invitado cuenta como válido cuando activa
-                  cualquier plan (Conecta, Destaca o Patrocina).
-                </p>
-              </div>
-
-              {/* Acciones: el enlace y las dos formas de compartirlo */}
-              <div className="border-t border-black/5 bg-black/[0.02] p-4 space-y-2">
-                <div className="truncate rounded-xl border border-black/10 bg-white px-3 py-2 font-mono text-xs text-ink-2">
-                  {`appencuentra.com/register?ref=${user?.id || ""}`}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
-                      try {
-                        await navigator.clipboard.writeText(link)
-                        toast.success("Enlace de invitación copiado")
-                      } catch (err) {
-                        console.error("Error copiando:", err)
-                        toast.error("No se pudo copiar el enlace. Intentá de nuevo.")
-                      }
-                    }}
-                    className="rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-black/[0.03] transition-colors"
-                  >
-                    Copiar enlace
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const link = `https://appencuentra.com/register?ref=${user?.id || ""}`
-                      const message = `¡Hola! Únete a App Encuentra y haz crecer tu negocio. Si te registras con mi link y activas un plan, ¡ambos ganamos beneficios! ${link}`
-                      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer")
-                    }}
-                    className="rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-colors"
-                  >
-                    WhatsApp
-                  </button>
-                </div>
-              </div>
-            </div>
-        </div>
-
-
-        {/* ============================================
             SECCIÓN CONFIGURACIÓN (BOTÓN ADMIN AQUÍ)
         ============================================ */}
         <div className="space-y-4 pt-4">
@@ -524,8 +400,17 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* CERRAR SESIÓN */}
-        <div className="pt-4">
+        {/* CAMBIAR DE CUENTA Y CERRAR SESIÓN */}
+        <div className="pt-4 space-y-3">
+          <button
+            onClick={handleCambiarCuenta}
+            className="w-full flex items-center justify-center gap-3 bg-black/5 hover:bg-black/10 border-2 border-black/10 text-ink font-bold py-4 rounded-3xl transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+            Cambiar de cuenta
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-3 bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-600 font-bold py-4 rounded-3xl transition-all"

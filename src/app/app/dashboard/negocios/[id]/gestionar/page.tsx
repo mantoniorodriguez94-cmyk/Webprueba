@@ -9,7 +9,7 @@ import useMembershipAccess from "@/hooks/useMembershipAccess"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
-import { SUBSCRIPTION_TIER_PATROCINA } from "@/lib/memberships/tiers"
+import { topeDeFotos, tienePromociones } from "@/lib/memberships/perks"
 import { alertModal } from "@/lib/alertModal"
 import { Popover } from "@/components/ui/Overlay"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
@@ -52,27 +52,12 @@ export default function GestionarNegocioPage() {
   }
   const businessId = params?.id as string
 
-  const { tier, loading: tierLoading } = useMembershipAccess()
+  const { effectiveTier, loading: tierLoading } = useMembershipAccess()
 
-  // Parsear gallery_urls de manera segura
-  const getGalleryUrls = (): string[] => {
-    if (!business?.gallery_urls) return []
-    
-    if (Array.isArray(business.gallery_urls)) {
-      return business.gallery_urls
-    }
-    
-    if (typeof business.gallery_urls === 'string') {
-      try {
-        const parsed = JSON.parse(business.gallery_urls)
-        return Array.isArray(parsed) ? parsed : []
-      } catch {
-        return []
-      }
-    }
-    
-    return []
-  }
+  const getGalleryUrls = (): string[] =>
+    // gallery_urls es text[] en la base. Antes esto tenía además una rama
+    // JSON.parse porque la columna era TEXT con un array serializado.
+    business?.gallery_urls ?? []
 
   const galleryUrls = getGalleryUrls()
 
@@ -339,8 +324,12 @@ export default function GestionarNegocioPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-ink">Galería de Fotos</h3>
+                {/* El tope va junto al conteo: sin él, nadie sabe cuánto le
+                    queda ni que su plan da más que el de al lado. */}
                 <p className="text-sm text-ink-2">
-                  {galleryUrls.length} foto{galleryUrls.length !== 1 ? 's' : ''}
+                  {tierLoading
+                    ? `${galleryUrls.length} foto${galleryUrls.length !== 1 ? "s" : ""}`
+                    : `${galleryUrls.length} de ${topeDeFotos(business, effectiveTier)} fotos`}
                 </p>
               </div>
             </div>
@@ -455,13 +444,19 @@ export default function GestionarNegocioPage() {
             </p>
             {!tierLoading && (
               <div className="mb-4 rounded-xl border border-purple-200 bg-purple-50 px-3 py-2.5 text-sm">
-                {tier === SUBSCRIPTION_TIER_PATROCINA ? (
+                {tienePromociones(business, effectiveTier) ? (
                   <p className="text-purple-700">
-                    ¡Felicidades! Tu promoción aparecerá destacada en el inicio de la plataforma.
+                    Tus promociones salen en la sección Promociones del inicio.
+                  </p>
+                ) : effectiveTier > 0 ? (
+                  <p className="text-ink-2">
+                    Tus promociones se ven en tu perfil. Con{" "}
+                    <strong className="text-purple-700">Patrocina</strong> además salen
+                    en la sección Promociones del inicio.
                   </p>
                 ) : (
                   <p className="text-ink-2">
-                    Tu promoción será visible en tu perfil. Sube a <strong className="text-purple-700">Patrocina</strong> para aparecer en el Spotlight principal del Dashboard.
+                    Necesitas un plan de pago para crear promociones.
                   </p>
                 )}
               </div>

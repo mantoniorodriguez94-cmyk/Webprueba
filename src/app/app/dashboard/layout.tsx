@@ -15,10 +15,11 @@
  * desaparecía según dónde estuvieras.
  */
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import BottomNav from "@/components/ui/BottomNav"
+import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
@@ -29,6 +30,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [negocioId, setNegocioId] = useState<string | null>(null)
 
   const isCompany = (user?.user_metadata?.role ?? "person") === "company"
+
+  /* El sonido del chat estaba construido —hook, mp3 precargado, manejo de
+     errores— pero ningún archivo llamaba al hook, así que no sonaba nunca.
+     Va acá y no en la pantalla de chat porque el aviso sirve justamente
+     cuando NO estás mirando el chat, y este layout envuelve todo el panel. */
+  const { playSound, enableSound } = useChatNotificationSound()
+
+  // El conteo anterior. Arranca en null para que la primera medición no
+  // suene: al abrir la app con mensajes pendientes no hay nada nuevo que
+  // anunciar, sólo pendiente de antes.
+  const noLeidosPrevios = useRef<number | null>(null)
+
+  useEffect(() => {
+    const previo = noLeidosPrevios.current
+    noLeidosPrevios.current = noLeidos
+    if (previo !== null && noLeidos > previo) {
+      playSound()
+    }
+  }, [noLeidos, playSound])
+
+  /* Safari y iOS bloquean el audio hasta que la persona interactúa con la
+     página. Se desbloquea en el primer toque, sea cual sea, y el listener se
+     retira solo. Sin esto el primer sonido fallaría con NotAllowedError. */
+  useEffect(() => {
+    const desbloquear = () => {
+      enableSound()
+      window.removeEventListener("pointerdown", desbloquear)
+    }
+    window.addEventListener("pointerdown", desbloquear, { once: true })
+    return () => window.removeEventListener("pointerdown", desbloquear)
+  }, [enableSound])
 
   const contarNoLeidos = useCallback(async () => {
     if (!user) {
@@ -91,11 +123,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, isCompany])
 
+  /* Tiempo real, con el sondeo detrás como red.
+     Antes esto era sólo un setInterval de 30 segundos: bastaba para un badge,
+     pero un aviso sonoro que llega medio minuto tarde se siente roto.
+
+     Se escucha `conversations` y no `messages` por dos razones. Se puede
+     filtrar por usuario o por negocio, así que cada persona recibe únicamente
+     lo suyo y no se gasta cuota en conversaciones ajenas —Realtime cuenta por
+     mensaje recibido—. Y basta con una conexión, en vez de una por
+     conversación abierta.
+
+     Funciona porque insertar un mensaje modifica esa fila: dos triggers mueven
+     last_message_at y suben el contador de no leídos. El código que envía no
+     toca la conversación, así que todo depende de ellos; van asegurados en
+     scripts/chat-tiempo-real.sql.
+
+     El intervalo se queda, pero cada dos minutos en vez de cada treinta
+     segundos: si la conexión se cae o un aviso se pierde, el contador se
+     corrige solo sin que nadie lo note. */
   useEffect(() => {
     contarNoLeidos()
-    const intervalo = setInterval(contarNoLeidos, 30000)
+    const intervalo = setInterval(contarNoLeidos, 120000)
     return () => clearInterval(intervalo)
   }, [contarNoLeidos])
+
+  useEffect(() => {
+    if (!user) return
+
+    const filtro = isCompany
+      ? negocioId
+        ? `business_id=eq.${negocioId}`
+        : null
+      : `user_id=eq.${user.id}`
+
+    // Un dueño sin negocio todavía no tiene conversaciones que escuchar.
+    if (!filtro) return
+
+    const canal = supabase
+      .channel(`no_leidos_${isCompany ? negocioId : user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "conversations", filter: filtro },
+        () => contarNoLeidos()
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(canal)
+    }
+  }, [user, isCompany, negocioId, contarNoLeidos])
 
   return (
     <>

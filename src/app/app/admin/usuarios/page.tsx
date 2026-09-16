@@ -20,6 +20,95 @@ interface UserData {
   suspended_at: string | null
 }
 
+/* Las piezas de cada usuario, una sola vez.
+ *
+ * La lista se pinta de dos formas —tarjetas en móvil, tabla en escritorio—
+ * porque seis columnas no caben en un teléfono: la tabla llevaba
+ * overflow-x-auto y eso "funcionaba" en el sentido de que no rompía el
+ * layout, pero obligaba a leer los datos a trozos arrastrando de lado, y los
+ * correos largos salían cortados a media palabra.
+ *
+ * Definirlas acá es lo que evita que las dos formas se separen: si mañana se
+ * añade un estado o una acción, aparece en las dos o en ninguna.
+ */
+
+function Avatar({ usuario }: { usuario: UserData }) {
+  if (usuario.avatar_url) {
+    return (
+      <Image
+        src={usuario.avatar_url}
+        width={40}
+        height={40}
+        alt={usuario.full_name || "Usuario"}
+        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        unoptimized
+      />
+    )
+  }
+  return (
+    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold flex-shrink-0">
+      {(usuario.full_name?.[0] || usuario.email?.[0] || "U").toUpperCase()}
+    </div>
+  )
+}
+
+function nombreDe(usuario: UserData) {
+  return usuario.full_name || usuario.email?.split("@")[0] || "Sin nombre"
+}
+
+function fechaDe(usuario: UserData) {
+  if (!usuario.created_at) return "N/A"
+  return new Date(usuario.created_at).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+}
+
+const PILDORA = "text-xs px-2 py-1 rounded-full border"
+
+function Rol({ usuario }: { usuario: UserData }) {
+  return (
+    <span className={`${PILDORA} bg-blue-50 text-blue-700 border-blue-200`}>
+      {usuario.role || "person"}
+    </span>
+  )
+}
+
+function Estado({ usuario }: { usuario: UserData }) {
+  return (
+    <>
+      {usuario.is_admin ? (
+        <span className={`${PILDORA} bg-amber-50 text-amber-700 border-amber-200`}>Admin</span>
+      ) : (
+        <span className={`${PILDORA} bg-black/5 text-ink-2 border-black/10`}>Usuario</span>
+      )}
+      {usuario.suspended_at && (
+        <span className={`${PILDORA} bg-red-50 text-red-700 border-red-200`}>Suspendido</span>
+      )}
+    </>
+  )
+}
+
+function Acciones({ usuario }: { usuario: UserData }) {
+  const nombre = usuario.full_name || usuario.email || "Usuario"
+  return (
+    <>
+      <ManageLimitsButton profileId={usuario.id} profileName={nombre} />
+      <SuspendUserButton
+        profileId={usuario.id}
+        profileName={nombre}
+        suspendido={Boolean(usuario.suspended_at)}
+      />
+      <DeleteUserButton
+        userId={usuario.id}
+        userName={nombre}
+        userEmail={usuario.email || ""}
+      />
+    </>
+  )
+}
+
 /**
  * Página de gestión de usuarios (Admin)
  * - Lista todos los usuarios registrados en el sistema
@@ -149,103 +238,82 @@ export default async function AdminUsuariosPage() {
       )}
 
       {usuarios && usuarios.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-black/10">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Usuario</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Email</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Rol</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Estado</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Registro</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuarios.map((usuario) => (
-                <tr 
-                  key={usuario.id}
-                  className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
-                >
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      {usuario.avatar_url ? (
-                        <Image 
-                          src={usuario.avatar_url} 
-                          width={40}
-                          height={40}
-                          alt={usuario.full_name || "Usuario"} 
-                          className="w-10 h-10 rounded-full object-cover"
-                          unoptimized
-                        />  
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-semibold">
-                          {(usuario.full_name?.[0] || usuario.email?.[0] || "U").toUpperCase()}
-                        </div>
-                      )}
-                      <span className="font-medium">
-                        {usuario.full_name || usuario.email?.split('@')[0] || "Sin nombre"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-ink-2">
-                    {usuario.email || "N/A"}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      {usuario.role || "person"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {usuario.is_admin ? (
-                        <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                          Admin
-                        </span>
-                      ) : (
-                        <span className="text-xs px-2 py-1 rounded-full bg-black/5 text-ink-2 border border-black/10">
-                          Usuario
-                        </span>
-                      )}
-                      {usuario.suspended_at && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
-                          Suspendido
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-ink-2">
-                    {usuario.created_at 
-                      ? new Date(usuario.created_at).toLocaleDateString("es-ES", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric"
-                        })
-                      : "N/A"}
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <ManageLimitsButton
-                        profileId={usuario.id}
-                        profileName={usuario.full_name || usuario.email || "Usuario"}
-                      />
-                      <SuspendUserButton
-                        profileId={usuario.id}
-                        profileName={usuario.full_name || usuario.email || "Usuario"}
-                        suspendido={Boolean(usuario.suspended_at)}
-                      />
-                      <DeleteUserButton 
-                        userId={usuario.id}
-                        userName={usuario.full_name || usuario.email || "Usuario"}
-                        userEmail={usuario.email || ""}
-                      />
-                    </div>
-                  </td>
+        <>
+          {/* Móvil: una tarjeta por persona. El correo con break-all, que es
+              el dato que se cortaba a media palabra en la tabla. */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {usuarios.map((usuario) => (
+              <div
+                key={usuario.id}
+                className="rounded-2xl border border-black/8 bg-white p-4 flex flex-col gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar usuario={usuario} />
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink">{nombreDe(usuario)}</p>
+                    <p className="text-xs text-ink-2 break-all">{usuario.email || "N/A"}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Rol usuario={usuario} />
+                  <Estado usuario={usuario} />
+                </div>
+
+                <p className="text-xs text-ink-2">Registro: {fechaDe(usuario)}</p>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-black/5">
+                  <Acciones usuario={usuario} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Escritorio: la tabla, que acá sí es la forma correcta — catorce
+              filas se comparan de un vistazo columna a columna. */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-black/10">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Usuario</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Email</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Rol</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Estado</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-ink-2">Registro</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-ink-2">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {usuarios.map((usuario) => (
+                  <tr
+                    key={usuario.id}
+                    className="border-b border-black/5 hover:bg-black/[0.02] transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar usuario={usuario} />
+                        <span className="font-medium">{nombreDe(usuario)}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-ink-2">{usuario.email || "N/A"}</td>
+                    <td className="py-4 px-4"><Rol usuario={usuario} /></td>
+                    <td className="py-4 px-4">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Estado usuario={usuario} />
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-ink-2">{fechaDe(usuario)}</td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Acciones usuario={usuario} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : !error ? (
         <div className="text-center py-12 text-ink-2">
           <p className="text-lg mb-2">No hay usuarios registrados</p>

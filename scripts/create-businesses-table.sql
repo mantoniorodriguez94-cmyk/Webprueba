@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS public.businesses (
   phone BIGINT,
   whatsapp BIGINT,
   logo_url TEXT,
+  -- La base real llegó a tener esta columna como TEXT con un array JSON
+  -- serializado dentro, pese a lo que decía acá. Se corrigió en
+  -- scripts/gallery-urls-a-array.sql; si montas el proyecto desde cero, este
+  -- TEXT[] ya es el tipo correcto y no hay que ejecutar aquella migración.
   gallery_urls TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

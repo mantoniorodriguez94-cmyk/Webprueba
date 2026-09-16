@@ -86,8 +86,18 @@ final de `panel-admin-control.sql`.
 escribir el propio usuario desde el navegador, así que aceptarlo era una
 escalada de privilegios directa.
 
-Para conceder el rol: `POST /api/admin/set-admin` con `ADMIN_SETUP_SECRET`. Para
-comprobarlo:
+Para conceder el rol se actualiza la fila directamente en Supabase. Había una
+ruta `/api/admin/set-admin` para esto, sin autenticación y protegida sólo por
+un secreto de instalación; se eliminó porque ya hay administrador y una puerta
+así no tiene por qué seguir abierta. De todos modos llevaba tiempo sin
+funcionar: leía `ADMIN_SETUP_SECRET` y la variable configurada se llama
+`ADMIN_SETUP_KEY`.
+
+```sql
+update public.profiles set is_admin = true where email = 'correo@ejemplo.com';
+```
+
+Para comprobarlo:
 
 ```sql
 select id, email, is_admin from public.profiles where email = 'correo@ejemplo.com';

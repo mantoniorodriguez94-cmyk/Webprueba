@@ -18,6 +18,15 @@ function destinoSeguro(valor: string | null): string {
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  /* El enlace a registro arrastra el `next`, si lo hay.
+     Quien llega desde la landing trae su destino en la URL; sin esto, pulsar
+     "Regístrate gratis" lo perdía y acababa en el panel por defecto en vez de
+     donde iba. Registro ya sabe devolverlo al login cuando termina. */
+  const siguiente = searchParams.get("next");
+  const enlaceRegistro = siguiente
+    ? `/app/auth/register?next=${encodeURIComponent(siguiente)}`
+    : "/app/auth/register";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,10 +83,19 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
+      // Google entra directo con la sesión que ya esté activa en el navegador y
+      // nunca pregunta cuál usar. Al llegar desde "Cambiar de cuenta" hay que
+      // pedirle el selector explícitamente, o es imposible salir de la cuenta
+      // actual. En el login normal se omite para no agregar un toque de más.
+      const vieneDeCambiarCuenta = searchParams.get("switch") === "1";
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          ...(vieneDeCambiarCuenta && {
+            queryParams: { prompt: 'select_account' },
+          }),
         },
       });
 
@@ -289,7 +307,7 @@ export default function LoginPage() {
             <p className="text-ink-2 text-sm sm:text-base">
               ¿No tienes cuenta?{" "}
               <Link
-                href="/app/auth/register"
+                href={enlaceRegistro}
                 className="text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline"
               >
                 Regístrate gratis

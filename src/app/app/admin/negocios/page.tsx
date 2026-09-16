@@ -24,8 +24,12 @@ export default async function AdminNegociosPage({
   const params = await searchParams
   const filter = params?.filter
 
+  /* `max_photos` sale de la lista: la galería dejó de leerla y sólo confundía.
+     El perfil del dueño NO se pide acá embebido: owner_id referencia
+     auth.users y no public.profiles, así que PostgREST no encuentra relación y
+     rechaza la consulta entera. Se resuelve más abajo con una segunda lectura. */
   const baseSelect =
-    "id, name, logo_url, is_premium, premium_until, created_at, is_verified, max_photos, owner_id, is_featured, featured_until"
+    "id, name, logo_url, is_premium, premium_until, created_at, is_verified, owner_id, is_featured, featured_until"
   const extendedSelect =
     baseSelect +
     ", has_gold_border, search_priority_boost, badges, hidden_at"
@@ -72,7 +76,24 @@ export default async function AdminNegociosPage({
     }
   }
 
-  // Calcular días restantes para negocios premium
+  /* Los dueños, en una segunda consulta.
+     La búsqueda más frecuente del panel no es por nombre de negocio sino por
+     persona: alguien escribe a soporte y hay que dar con su ficha. Sin el
+     correo en esta lista, esa búsqueda era imposible y había que abrir los
+     negocios de uno en uno. */
+  const idsDuenos = Array.from(
+    new Set((negocios ?? []).map((b) => b.owner_id).filter(Boolean))
+  )
+
+  const { data: duenos } = idsDuenos.length
+    ? await supabase
+        .from("profiles")
+        .select("id, email, full_name, subscription_tier, subscription_end_date")
+        .in("id", idsDuenos)
+    : { data: [] as any[] }
+
+  const duenoPorId = new Map((duenos ?? []).map((p: any) => [p.id, p]))
+
   return (
     <div className="min-h-screen text-ink">
       <div className="mb-8">
@@ -112,13 +133,16 @@ export default async function AdminNegociosPage({
             premium_until: b.premium_until,
             created_at: b.created_at,
             is_verified: b.is_verified,
-            max_photos: b.max_photos,
             owner_id: b.owner_id,
             is_featured: b.is_featured,
             featured_until: b.featured_until,
             has_gold_border: (b as any).has_gold_border ?? false,
             search_priority_boost: (b as any).search_priority_boost ?? false,
             badges: (b as any).badges ?? [],
+            owner_email: duenoPorId.get(b.owner_id)?.email ?? null,
+            owner_name: duenoPorId.get(b.owner_id)?.full_name ?? null,
+            owner_tier: duenoPorId.get(b.owner_id)?.subscription_tier ?? 0,
+            owner_tier_end: duenoPorId.get(b.owner_id)?.subscription_end_date ?? null,
           }))}
         />
       ) : (

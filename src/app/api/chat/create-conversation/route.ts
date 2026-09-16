@@ -4,11 +4,10 @@
  * Creates or finds an existing conversation between the authenticated sender
  * and the target business, then inserts the first message.
  *
- * Server-side gate: BOTH the sender and the business owner need an active
- * paid membership (tier >= 1). This mirrors the client-side gates
- * (SendMessageModal for the sender, negocios/[id]/page.tsx's ownerHasChat
- * for the receiver) — never trust the client alone, the API must be able
- * to reject a request even if someone calls it directly.
+ * Server-side gate: sólo el NEGOCIO necesita membresía activa (tier >= 1).
+ * El chat es el beneficio que compra el negocio; quien escribe únicamente
+ * tiene que estar autenticado. La comprobación vive también acá y no sólo en
+ * la pantalla porque a esta ruta se la puede llamar directamente.
  *
  * Returns { conversationId: string }
  */
@@ -18,6 +17,11 @@ import { createClient } from "@/utils/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { sendChatNotificationEmail } from "@/lib/emails"
 import { isTierActive } from "@/lib/memberships/tiers"
+
+/** A cuántos negocios distintos puede escribirle una persona por hora.
+ *  Alguien pidiendo presupuestos contacta cinco o seis; nadie legítimo pasa
+ *  de diez. Subirlo o bajarlo es cambiar este número. */
+const MAX_NEGOCIOS_NUEVOS_POR_HORA = 10
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,34 +83,25 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── 2b. Membership gate — BOTH sides need an active tier ──────────────────
-    const [senderProfileResult, ownerProfileResult] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("subscription_tier, subscription_end_date")
-        .eq("id", sender.id)
-        .maybeSingle(),
-      business.owner_id
-        ? supabase
-            .from("profiles")
-            .select("subscription_tier, subscription_end_date")
-            .eq("id", business.owner_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ])
+    /* ── 2b. El chat lo paga el negocio, no el cliente ────────────────────────
+       Antes esto exigía membresía activa en LOS DOS lados, y ahí el chat
+       estaba muerto: las personas se registran como clientes, nunca compran un
+       plan de negocio, así que ningún cliente podía escribirle a nadie. Un
+       negocio pagaba Conecta —cuyo beneficio estrella es justamente el chat—
+       y no le llegaba un solo mensaje.
 
-    const senderTier = (senderProfileResult.data as any)?.subscription_tier ?? 0
-    const senderEndDate = (senderProfileResult.data as any)?.subscription_end_date ?? null
+       El cliente sólo tiene que estar autenticado, y eso se comprueba arriba:
+       sin cuenta no hay a quién responderle. */
+    const { data: ownerProfile } = business.owner_id
+      ? await supabase
+          .from("profiles")
+          .select("subscription_tier, subscription_end_date")
+          .eq("id", business.owner_id)
+          .maybeSingle()
+      : { data: null }
 
-    if (!isTierActive(senderTier, senderEndDate)) {
-      return NextResponse.json(
-        { error: "Necesitas una membresía activa para enviar mensajes." },
-        { status: 403 }
-      )
-    }
-
-    const ownerTier = (ownerProfileResult.data as any)?.subscription_tier ?? 0
-    const ownerEndDate = (ownerProfileResult.data as any)?.subscription_end_date ?? null
+    const ownerTier = (ownerProfile as any)?.subscription_tier ?? 0
+    const ownerEndDate = (ownerProfile as any)?.subscription_end_date ?? null
 
     if (!isTierActive(ownerTier, ownerEndDate)) {
       return NextResponse.json(
@@ -128,6 +123,34 @@ export async function POST(req: NextRequest) {
     if (existing?.id) {
       conversationId = existing.id
     } else {
+      /* Tope de negocios nuevos por hora.
+         Va sólo en esta rama —la de crear— porque seguir una conversación ya
+         abierta no es spam: escribirle diez veces a una panadería es pesado,
+         escribirle a cien negocios en una hora es un bot.
+
+         Como `conversations` tiene UNIQUE(business_id, user_id), contar
+         conversaciones creadas equivale a contar a cuántos negocios DISTINTOS
+         ha escrito la persona, que es justo la señal que importa.
+
+         El contador vive en la base y no en memoria del proceso: en Vercel
+         cada petición puede caer en una instancia distinta, y una variable
+         local no contaría nada. */
+      const haceUnaHora = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+      const { count: nuevasEstaHora } = await supabase
+        .from("conversations")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", sender.id)
+        .gte("created_at", haceUnaHora)
+
+      if ((nuevasEstaHora ?? 0) >= MAX_NEGOCIOS_NUEVOS_POR_HORA) {
+        return NextResponse.json(
+          {
+            error: `Has contactado ${MAX_NEGOCIOS_NUEVOS_POR_HORA} negocios en la última hora. Espera un rato antes de escribir a otro.`,
+          },
+          { status: 429 }
+        )
+      }
+
       const { data: created, error: createErr } = await supabase
         .from("conversations")
         .insert({ business_id: businessId, user_id: sender.id })

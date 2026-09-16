@@ -6,6 +6,29 @@
 // Este módulo NO realiza IO con la base de datos;
 // solo contiene lógica pura de precios y tiers.
 
+/**
+ * Requisitos para entrar en la vitrina de "Mejores calificados".
+ *
+ * No es un ranking abierto sino un beneficio comprado: sólo aparecen Destaca y
+ * Patrocina. Un negocio gratis con cinco estrellas no entra — si entrara, el
+ * plan no vendería nada.
+ *
+ * El piso de reseñas es igual para todos y existe porque sin él una sola
+ * reseña de cinco estrellas superaba a un negocio con cincuenta y un 4,9.
+ *
+ * Destaca exige la nota perfecta; Patrocina, que cuesta más, entra desde 4,5.
+ * Es deliberado que el plan caro pida menos: parte de lo que compra es margen.
+ */
+export const MIN_RESENAS = 10
+export const NOTA_MINIMA_DESTACA = 5
+export const NOTA_MINIMA_PATROCINA = 4.5
+
+// Cuántos negocios puede tener una cuenta. No depende del plan: los planes
+// diferencian fotos, promociones y visibilidad, no cantidad de negocios.
+// El candado real es el índice businesses_un_negocio_por_cuenta; esta
+// constante sólo alimenta los avisos de la interfaz.
+export const MAX_NEGOCIOS_POR_CUENTA = 1
+
 // Constantes de tiers de suscripción
 export const SUBSCRIPTION_TIER_FREE = 0 as const
 export const SUBSCRIPTION_TIER_CONECTA = 1 as const
@@ -102,11 +125,6 @@ export function getPlanByTier(
   }
 }
 
-/** Máximo de negocios por cuenta: 1 negocio por usuario, sin importar el tier. */
-export function getMaxBusinessesForTier(tier: number | null | undefined): number {
-  return 1
-}
-
 /**
  * Fotos de galería por plan — fuente única de verdad.
  *
@@ -116,19 +134,81 @@ export function getMaxBusinessesForTier(tier: number | null | undefined): number
  * tenía. Peor: vendía 1 foto para Conecta cuando gratis ya daba 3, o sea que
  * pagar te daba menos.
  *
- * Los números son generosos a propósito: con las imágenes comprimidas al
- * subir (~250 KB en vez de ~3 MB), 20 fotos por negocio pesan 5 MB. Lo que
- * encarece no es la cantidad sino el peso de cada archivo.
+ * La escalera sube de tres en tres para que el salto entre planes sea legible
+ * de un vistazo en la tabla de precios. Con las imágenes comprimidas al subir
+ * (~250 KB en vez de ~3 MB), el coste de almacenamiento no es lo que manda
+ * acá: el número existe para diferenciar planes, no para contener gastos.
  */
 export const MAX_FOTOS_POR_TIER: Record<number, number> = {
   [SUBSCRIPTION_TIER_FREE]: 3,
   [SUBSCRIPTION_TIER_CONECTA]: 6,
-  [SUBSCRIPTION_TIER_DESTACADO]: 12,
-  [SUBSCRIPTION_TIER_PATROCINA]: 20,
+  [SUBSCRIPTION_TIER_DESTACADO]: 9,
+  [SUBSCRIPTION_TIER_PATROCINA]: 12,
 }
 
 export function getMaxPhotosForTier(tier: number | null | undefined): number {
   return MAX_FOTOS_POR_TIER[tier ?? 0] ?? MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_FREE]
+}
+
+/**
+ * Qué vende cada plan, en una sola lista.
+ *
+ * Vive acá y no escrito a mano en cada tabla de precios por dos motivos que
+ * ya costaron caro. El primero: estaba duplicado en la tabla pública y en la
+ * de dentro de la app, y ya habían divergido hasta en la ortografía. El
+ * segundo, peor: las cifras iban a mano, así que la tabla anunciaba seis
+ * fotos para el plan gratis cuando daba tres. Ahora las cifras salen de las
+ * mismas constantes que aplica el producto, y no pueden mentir.
+ *
+ * Las frases son cortas a propósito: quien compara planes lee en diagonal.
+ * Cada línea dice qué GANA la persona, no cómo está implementado. Y donde el
+ * beneficio tiene condiciones —entrar en Mejores calificados exige nota y
+ * reseñas— la condición va dicha, porque prometer lo que no se entrega es
+ * exactamente lo que ya hubo que corregir una vez.
+ */
+export interface BeneficiosTier {
+  /** Plan que este incluye entero, para no repetir la lista completa. */
+  incluye?: string
+  items: string[]
+}
+
+export const BENEFICIOS_POR_TIER: Record<number, BeneficiosTier> = {
+  [SUBSCRIPTION_TIER_FREE]: {
+    items: [
+      "📍 Tu negocio en el directorio, con mapa y horario",
+      "🔍 Apareces en las búsquedas",
+      "📞 Tu teléfono visible para que te llamen",
+      "📊 Cuántas visitas recibe tu negocio",
+      `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_FREE]} fotos`,
+    ],
+  },
+  [SUBSCRIPTION_TIER_CONECTA]: {
+    incluye: "Básico",
+    items: [
+      "💬 Chat en vivo con tus clientes, escriba quien escriba",
+      "📲 Botón directo a WhatsApp",
+      "📊 Cuántos te escriben, te llaman y te guardan",
+      `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_CONECTA]} fotos`,
+    ],
+  },
+  [SUBSCRIPTION_TIER_DESTACADO]: {
+    incluye: "Conecta",
+    items: [
+      "🚀 Tu negocio sale primero en el directorio",
+      `⭐ Entras en Mejores calificados con ${NOTA_MINIMA_DESTACA} estrellas y ${MIN_RESENAS} reseñas`,
+      `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_DESTACADO]} fotos`,
+    ],
+  },
+  [SUBSCRIPTION_TIER_PATROCINA]: {
+    incluye: "Destaca",
+    items: [
+      "✨ Tus promociones salen en la sección Promociones del inicio",
+      "👑 Insignia de patrocinador y marco dorado en tu tarjeta",
+      "📊 Estadísticas completas: gráfico diario, 30 días y crecimiento",
+      `⭐ Entras en Mejores calificados desde ${String(NOTA_MINIMA_PATROCINA).replace(".", ",")} estrellas`,
+      `📷 ${MAX_FOTOS_POR_TIER[SUBSCRIPTION_TIER_PATROCINA]} fotos`,
+    ],
+  },
 }
 
 /**

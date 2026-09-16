@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("businesses")
-      .select("id, owner_id, max_photos, extra_photo_limit, search_priority_boost, infraction_status, infraction_reason")
+      .select("id, owner_id, search_priority_boost, infraction_status, infraction_reason, perk_borde_dorado_hasta, perk_promociones_hasta, perk_prioridad_hasta, perk_fotos_extra, perk_fotos_extra_hasta")
       .eq("id", businessId)
       .single()
     if (error || !data) {
@@ -39,11 +39,14 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         owner_id: data.owner_id,
-        max_photos: data.max_photos ?? 5,
-        extra_photo_limit: (data as { extra_photo_limit?: number }).extra_photo_limit ?? 0,
         search_priority_boost: (data as { search_priority_boost?: boolean }).search_priority_boost ?? false,
         infraction_status: (data as { infraction_status?: boolean }).infraction_status ?? false,
         infraction_reason: (data as { infraction_reason?: string | null }).infraction_reason ?? null,
+        perk_borde_dorado_hasta: (data as Record<string, unknown>).perk_borde_dorado_hasta ?? null,
+        perk_promociones_hasta: (data as Record<string, unknown>).perk_promociones_hasta ?? null,
+        perk_prioridad_hasta: (data as Record<string, unknown>).perk_prioridad_hasta ?? null,
+        perk_fotos_extra: (data as Record<string, unknown>).perk_fotos_extra ?? 0,
+        perk_fotos_extra_hasta: (data as Record<string, unknown>).perk_fotos_extra_hasta ?? null,
       },
     })
   } catch (err: unknown) {

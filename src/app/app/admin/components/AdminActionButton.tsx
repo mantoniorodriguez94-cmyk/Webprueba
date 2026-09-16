@@ -2,16 +2,14 @@
 
 import { useState } from "react"
 import VerifyPremiumModal from "./VerifyPremiumModal"
-import UpdatePhotosLimitModal from "./UpdatePhotosLimitModal"
 import FeaturedDaysModal from "./FeaturedDaysModal"
 
 interface AdminActionButtonProps {
   id: string
-  type: "verificar" | "suspender" | "destacar" | "foto_limite"
+  type: "verificar" | "suspender" | "destacar"
   label: string
   disabled?: boolean
   businessName?: string
-  currentMaxPhotos?: number
 }
 
 export default function AdminActionButton({ 
@@ -20,12 +18,10 @@ export default function AdminActionButton({
   label, 
   disabled = false,
   businessName = "Negocio",
-  currentMaxPhotos = 5
 }: AdminActionButtonProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showVerifyModal, setShowVerifyModal] = useState(false)
-  const [showPhotosModal, setShowPhotosModal] = useState(false)
   const [showFeaturedModal, setShowFeaturedModal] = useState(false)
 
   async function handleClick() {
@@ -34,12 +30,6 @@ export default function AdminActionButton({
     // Si es "verificar", abrir modal de premium
     if (type === "verificar") {
       setShowVerifyModal(true)
-      return
-    }
-
-    // Si es "foto_limite", abrir modal de límite de fotos
-    if (type === "foto_limite") {
-      setShowPhotosModal(true)
       return
     }
 
@@ -108,20 +98,6 @@ export default function AdminActionButton({
         />
       )}
 
-      {/* Modal para modificar límite de fotos */}
-      {type === "foto_limite" && (
-        <UpdatePhotosLimitModal
-          businessId={id}
-          businessName={businessName}
-          currentLimit={currentMaxPhotos}
-          isOpen={showPhotosModal}
-          onClose={() => setShowPhotosModal(false)}
-          onSuccess={() => {
-            setShowPhotosModal(false)
-            window.location.reload()
-          }}
-        />
-      )}
 
       {/* Modal para destacar negocio */}
       {type === "destacar" && (
