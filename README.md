@@ -61,9 +61,20 @@ programada). La lista completa está en `.env.example`.
 
 El esquema vive en dos sitios, con reglas distintas:
 
-- **`supabase/migrations/`** — lo nuevo. Se aplica con `supabase db push` y
-  queda registrado en `supabase_migrations.schema_migrations`, así que siempre
-  se puede saber qué corrió.
+- **`supabase/migrations/`** — lo nuevo. Va numerado y en orden, así que se
+  sabe qué sigue a qué. Para que además quede *registrado* —en
+  `supabase_migrations.schema_migrations`, que es lo que permite saber qué
+  corrió sin adivinar— hay que aplicarlo con el CLI, y para eso falta enlazar
+  el proyecto:
+
+  ```bash
+  supabase init                        # crea supabase/config.toml
+  supabase link --project-ref <ref>    # el ref está en la URL del panel
+  supabase db push
+  ```
+
+  Mientras no se haga, pegar las migraciones a mano en el editor funciona
+  igual pero no deja registro, que es justo lo que se venía a resolver.
 - **`scripts/`** — lo anterior. Se pega a mano en el SQL Editor y no deja
   registro de nada. Está escrito para ser idempotente: correrlo dos veces no
   rompe nada.

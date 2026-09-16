@@ -3,9 +3,10 @@
 -- ============================================================================
 -- La base tiene dos mitades con reglas distintas:
 --
---   supabase/migrations/  se aplica con el CLI y SÍ deja registro, en la tabla
---                         supabase_migrations.schema_migrations.
---   scripts/              se pega a mano en el editor y NO deja ninguno.
+--   supabase/migrations/  va numerado y en orden. Deja registro en
+--                         supabase_migrations.schema_migrations SOLO si se
+--                         aplica con el CLI; pegado a mano, no.
+--   scripts/              se pega a mano en el editor y no deja ninguno.
 --
 -- Esto cubre la segunda mitad, que es la que no se puede auditar de otra
 -- forma: en vez de buscar un registro que no existe, pregunta por el ESTADO
@@ -113,14 +114,16 @@ order by orden;
 
 
 -- ── Las migraciones que sí dejan registro ───────────────────────────────────
--- Estas no hace falta deducirlas: el CLI las anota. Si la tabla no existe, es
--- que nunca se corrió `supabase db push` contra esta base y ninguna de las
--- nueve migraciones de supabase/migrations/ está aplicada.
+-- Si el proyecto está enlazado con el CLI, esto las cuenta y no hace falta
+-- deducir nada. Si la tabla NO existe, significa que nunca se corrió
+-- `supabase db push` — pero OJO: no prueba que las migraciones falten, porque
+-- pegadas a mano en el editor se aplican sin dejar registro. En ese caso hay
+-- que mirar el efecto de cada una en el esquema, no el registro.
 
 select
   case
     when to_regclass('supabase_migrations.schema_migrations') is null
-      then '❌ sin registro de migraciones — ninguna aplicada'
+      then '⚠️ sin registro — CLI no enlazado (no dice si faltan o no)'
     else '✅ ' || (select count(*)::text from supabase_migrations.schema_migrations)
          || ' migraciones aplicadas'
   end as migraciones;
@@ -129,3 +132,74 @@ select
 --
 --   select version, name from supabase_migrations.schema_migrations
 --   order by version;
+
+
+-- ── Y si no hay registro: el efecto de cada migración ───────────────────────
+-- Sin el CLI enlazado la tabla de arriba no dice nada, así que esto pregunta
+-- por lo que cada migración deja en el esquema. Es la misma idea que el primer
+-- bloque, aplicada a supabase/migrations/.
+
+select * from (
+  select 1 as n, 'un_negocio_por_cuenta' as migracion,
+    case when exists (select 1 from pg_indexes where schemaname = 'public'
+                        and indexname = 'businesses_un_negocio_por_cuenta')
+         then '✅' else '❌ FALTA' end as estado,
+    'Índice único: una cuenta, un negocio' as efecto
+
+  union all select 2, 'beneficios_sueltos',
+    case when (select count(*) from information_schema.columns
+                 where table_schema='public' and table_name='businesses'
+                   and column_name like 'perk\_%') >= 5
+         then '✅' else '❌ FALTA' end,
+    'businesses.perk_* — concesiones manuales con vencimiento'
+
+  union all select 3, 'limite_fotos_por_plan',
+    case when exists (select 1 from pg_trigger
+                        where tgname = 'businesses_limite_fotos')
+         then '✅' else '❌ FALTA' end,
+    'Trigger que aplica el límite de fotos en la base'
+
+  union all select 4, 'limpiar_columnas_borde_dorado',
+    case when not exists (select 1 from information_schema.columns
+                            where table_schema='public' and table_name='businesses'
+                              and column_name in ('has_golden_border','golden_border_active'))
+         then '✅' else '❌ FALTA' end,
+    'Fuera las dos columnas de borde dorado que nadie leía'
+
+  union all select 5, 'gallery_urls_a_array',
+    case (select data_type from information_schema.columns
+            where table_schema='public' and table_name='businesses'
+              and column_name='gallery_urls')
+      when 'ARRAY' then '✅'
+      when 'text'  then '❌ FALTA — sigue siendo TEXT'
+      else '⚠️ no se pudo determinar' end,
+    'gallery_urls: TEXT con JSON dentro → TEXT[] de verdad'
+
+  union all select 6, 'resenas_cliente_verificado',
+    case when exists (select 1 from information_schema.columns
+                        where table_schema='public' and table_name='reviews'
+                          and column_name='cliente_verificado')
+         then '✅' else '❌ FALTA' end,
+    'reviews.cliente_verificado y su trigger'
+
+  union all select 7, 'resenas_solo_negocios_reclamados',
+    case when exists (select 1 from pg_policies where schemaname='public'
+                        and tablename='reviews'
+                        and policyname='Users can create own reviews')
+         then '✅' else '❌ FALTA' end,
+    'Sólo se reseñan negocios con dueño'
+
+  union all select 8, 'chat_tiempo_real',
+    case when exists (select 1 from pg_trigger
+                        where tgname = 'trigger_increment_unread_count')
+         then '✅' else '❌ FALTA' end,
+    'Triggers de no leídos y de marca de tiempo'
+
+  union all select 9, 'columnas_muertas',
+    case when not exists (select 1 from information_schema.columns
+                            where table_schema='public'
+                              and ((table_name='profiles'   and column_name in ('membership_tier','membership_expiry'))
+                                or (table_name='businesses' and column_name='max_photos')))
+         then '✅' else '❌ FALTA' end,
+    'Fuera tres columnas que devolvían valores falsos'
+) m order by n;
