@@ -99,6 +99,9 @@ en una base concreta.
 
 No escriben nada. Se pueden correr cuando sea, contra lo que sea.
 
+`inventario-esquema.sql` es el que hace falta para el baseline del paso 1: saca
+la forma real del esquema sin leer datos.
+
 `diagnostico-admin-completo.sql` · `diagnostico-permisos.sql` ·
 `step1-check-view-definition.sql` · `verify-paypal-setup.sql` ·
 `verify-created-at-field.sql` · `check-businesses-dates.sql` ·
@@ -147,18 +150,35 @@ explica el README.
 El objetivo es que `supabase db push` sea seguro. Hacen falta tres pasos, y el
 primero necesita leer el esquema real.
 
-### Paso 1 — Baseline (requiere acceso de lectura)
+### Paso 1 — Baseline (requiere acceso a la base)
 
 Una migración que describa cómo está producción **hoy**, con fecha anterior a
-todas las demás. Se genera desde la base, no a mano:
+todas las demás. Se genera desde la base, no a mano: escribirla adivinando desde
+los scripts sueltos es donde se cuela el error, porque se aplicaron en distinto
+orden y varios se pisan entre sí.
+
+Hay dos caminos según lo que tengas a mano.
+
+**A. Con la CLI** — el camino corto, si podés instalarla:
 
 ```bash
 supabase db dump --schema public -f supabase/migrations/20260101000000_baseline.sql
 ```
 
-Sobre una **copia** de producción, nunca sobre producción. Escribirlo adivinando
-desde los scripts sueltos es donde se cuela el error: se aplicaron en distinto
-orden y varios se pisan entre sí.
+Sobre una **copia** de producción, nunca sobre producción.
+
+**B. Desde el SQL Editor** — el camino que no necesita instalar nada, y que
+encaja con cómo se viene trabajando:
+
+```
+Supabase → SQL Editor → pegar scripts/inventario-esquema.sql → Run
+```
+
+Devuelve una sola celda de texto con la forma real del esquema: tablas,
+columnas, tipos, restricciones, índices, funciones, triggers, políticas RLS y
+el estado del registro de la CLI. **Es de solo lectura y no toca ni una fila de
+datos** — sólo consulta los catálogos de Postgres. Con esa salida se escribe el
+baseline.
 
 ### Paso 2 — Marcar lo ya aplicado
 
@@ -194,6 +214,10 @@ Si el reset reconstruye una base equivalente a producción, el baseline está bi
 
 ## Estado actual
 
-El paso 1 está pendiente porque requiere leer el esquema. Hasta entonces:
+El paso 1 está pendiente porque requiere acceso a la base. Hasta entonces:
 **no correr `supabase db push` contra producción.** El esquema se sigue
 aplicando a mano, como hasta ahora.
+
+El reparto es: correr `scripts/inventario-esquema.sql` lleva un minuto y
+necesita entrar a Supabase. Escribir el baseline a partir de esa salida, y los
+pasos 2 y 3, no necesitan entrar a ningún lado.
