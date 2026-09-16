@@ -147,38 +147,58 @@ explica el README.
 
 ## Cómo salir de los dos sistemas
 
-El objetivo es que `supabase db push` sea seguro. Hacen falta tres pasos, y el
-primero necesita leer el esquema real.
+El objetivo es que `supabase db push` sea seguro. Son tres pasos, y **se corren
+desde tu Mac**, no desde una sesión en la nube: los contenedores remotos no
+alcanzan Supabase por política de red, no tienen Docker para el paso 3, y meter
+ahí una clave de producción es exponerla sin necesidad. En local la clave no
+viaja a ningún lado.
 
-### Paso 1 — Baseline (requiere acceso a la base)
+### Qué escribe cada comando
+
+Antes de correr nada, la diferencia que importa:
+
+| Comando | ¿Escribe? | Dónde |
+|---|---|---|
+| `supabase db dump` | **No.** Solo lectura. | — |
+| `supabase migration repair` | Sí, una fila por migración. | `supabase_migrations.schema_migrations`, no el esquema |
+| `supabase db reset` | Sí, destruye y reconstruye. | **Solo la base local.** Nunca la remota |
+| `supabase db push` | Sí, aplica migraciones. | El esquema. **Este es el peligroso** |
+
+### Preparación
+
+```bash
+brew install supabase/tap/supabase
+supabase login
+supabase link --project-ref <ref>   # el <ref> está en la URL de tu proyecto
+```
+
+`link` crea `supabase/config.toml`, que hoy no existe en el repo. Conviene
+commitearlo.
+
+Para el paso 3 hace falta además Docker Desktop corriendo.
+
+### Paso 1 — Baseline
 
 Una migración que describa cómo está producción **hoy**, con fecha anterior a
 todas las demás. Se genera desde la base, no a mano: escribirla adivinando desde
 los scripts sueltos es donde se cuela el error, porque se aplicaron en distinto
 orden y varios se pisan entre sí.
 
-Hay dos caminos según lo que tengas a mano.
-
-**A. Con la CLI** — el camino corto, si podés instalarla:
-
 ```bash
 supabase db dump --schema public -f supabase/migrations/20260101000000_baseline.sql
 ```
 
-Sobre una **copia** de producción, nunca sobre producción.
+Es una lectura, así que puede correr contra producción sin copia previa.
 
-**B. Desde el SQL Editor** — el camino que no necesita instalar nada, y que
-encaja con cómo se viene trabajando:
+Revisá el archivo que sale antes de seguir. Si trae `CREATE POLICY` y las
+funciones y triggers que ya conocés, está bien.
 
-```
-Supabase → SQL Editor → pegar scripts/inventario-esquema.sql → Run
-```
-
-Devuelve una sola celda de texto con la forma real del esquema: tablas,
-columnas, tipos, restricciones, índices, funciones, triggers, políticas RLS y
-el estado del registro de la CLI. **Es de solo lectura y no toca ni una fila de
-datos** — sólo consulta los catálogos de Postgres. Con esa salida se escribe el
-baseline.
+> **Alternativa sin instalar nada.** `scripts/inventario-esquema.sql` se pega en
+> el SQL Editor y devuelve la forma del esquema en una sola celda de texto:
+> tablas, columnas, tipos, restricciones, índices, funciones, triggers,
+> políticas RLS y buckets. También es de solo lectura, y no lee ni una fila de
+> datos. Sirve para escribir el baseline a mano o para revisar qué hay antes de
+> tocar nada.
 
 ### Paso 2 — Marcar lo ya aplicado
 
@@ -187,20 +207,40 @@ Que la CLI sepa que esas migraciones no hay que correrlas:
 ```bash
 supabase migration repair --status applied 20260101000000
 supabase migration repair --status applied 20260914110001
-# … una por cada migración existente
+supabase migration repair --status applied 20260914110002
+supabase migration repair --status applied 20260914110003
+supabase migration repair --status applied 20260914110004
+supabase migration repair --status applied 20260914120001
+supabase migration repair --status applied 20260914130001
+supabase migration repair --status applied 20260914140001
+supabase migration repair --status applied 20260914150001
+supabase migration repair --status applied 20260915120001
 ```
 
-Esto solo escribe en `supabase_migrations.schema_migrations`. No toca el
-esquema.
+Solo escribe en `supabase_migrations.schema_migrations`. No toca el esquema, y
+se deshace borrando esas filas.
 
-### Paso 3 — Probar antes de tocar producción
+Comprobar que no quedó nada pendiente:
 
 ```bash
-supabase db reset          # reconstruye desde cero en local
+supabase migration list
+```
+
+Todas tienen que aparecer con fecha en Local y en Remote.
+
+### Paso 3 — Probar en local, no en producción
+
+```bash
+supabase db reset          # destruye y reconstruye la base LOCAL
 npx tsc --noEmit && npm run build
 ```
 
-Si el reset reconstruye una base equivalente a producción, el baseline está bien.
+`db reset` corre el baseline y las 9 migraciones desde cero contra la base
+local. Si reconstruye una base equivalente a producción, el baseline está bien y
+a partir de acá `db push` es seguro.
+
+Si el reset falla, el baseline está incompleto: corregilo y repetí. Es
+exactamente para lo que sirve — fallar en local, que no le cuesta nada a nadie.
 
 ### Reglas a partir de ahí
 
@@ -214,10 +254,14 @@ Si el reset reconstruye una base equivalente a producción, el baseline está bi
 
 ## Estado actual
 
-El paso 1 está pendiente porque requiere acceso a la base. Hasta entonces:
-**no correr `supabase db push` contra producción.** El esquema se sigue
-aplicando a mano, como hasta ahora.
+Los tres pasos están pendientes. Hasta que se hagan: **no correr `supabase db
+push` contra producción.** El esquema se sigue aplicando a mano, como hasta
+ahora, y nada de esto corre prisa — la app funciona.
 
-El reparto es: correr `scripts/inventario-esquema.sql` lleva un minuto y
-necesita entrar a Supabase. Escribir el baseline a partir de esa salida, y los
-pasos 2 y 3, no necesitan entrar a ningún lado.
+Se hacen desde la Mac, de una sentada, porque los tres necesitan lo mismo:
+alcanzar Supabase y tener Docker. Una sesión en la nube no tiene ninguna de las
+dos cosas, y además obligaría a exponer ahí una clave de producción.
+
+Lo ya hecho, que no dependía de nada de eso: el inventario de este documento,
+el estado verificado de las 9 migraciones, y la eliminación de los ocho scripts
+duplicados.
