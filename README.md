@@ -75,6 +75,12 @@ Los que tienen que estar sí o sí para que la app funcione completa:
 Para saber qué falta en una base concreta, el bloque de verificación está al
 final de `panel-admin-control.sql`.
 
+Hay además una carpeta `supabase/migrations/` con 9 migraciones fechadas. Son
+dos sistemas conviviendo: **`supabase db push` todavía no es seguro contra
+producción**, porque la CLI no tiene registro de lo que se aplicó a mano.
+`docs/MIGRACIONES.md` tiene el inventario completo —qué scripts se pueden
+repetir y cuáles no— y el procedimiento para unificarlos.
+
 > El bucket `payment_receipts` contiene comprobantes de pago: capturas de
 > transferencias con nombres y números de cuenta. Tiene que seguir siendo
 > privado; el panel genera URLs firmadas de una hora para mostrarlos.
