@@ -59,25 +59,42 @@ programada). La lista completa está en `.env.example`.
 
 ## Base de datos
 
-El esquema se aplica con los scripts de `scripts/`, ejecutados a mano en el SQL
-Editor de Supabase. Están escritos para ser idempotentes: correrlos dos veces no
-rompe nada.
+El esquema vive en dos sitios, con reglas distintas:
 
-Los que tienen que estar sí o sí para que la app funcione completa:
+- **`supabase/migrations/`** — lo nuevo. Se aplica con `supabase db push` y
+  queda registrado en `supabase_migrations.schema_migrations`, así que siempre
+  se puede saber qué corrió.
+- **`scripts/`** — lo anterior. Se pega a mano en el SQL Editor y no deja
+  registro de nada. Está escrito para ser idempotente: correrlo dos veces no
+  rompe nada.
+
+Todo cambio de esquema nuevo va como migración. `scripts/` no se amplía.
+
+De `scripts/`, los que tienen que estar sí o sí para que la app funcione
+completa:
 
 | Script | Para qué |
 |---|---|
 | `support-table.sql` | Formulario de soporte y su bandeja en el panel |
 | `panel-admin-control.sql` | Moderación de reseñas, suspensión, reversión de pagos y auditoría |
-| `referral-rewards-table.sql` | Evita otorgar el mes gratis de referidos más de una vez |
+| `ocultar-negocio.sql` | Ocultar un negocio del directorio sin eliminarlo |
 | `create-storage-bucket.sql` | Bucket `payment_receipts` — **debe quedar privado** |
 
-Para saber qué falta en una base concreta, el bloque de verificación está al
-final de `panel-admin-control.sql`.
+Para saber qué falta en una base concreta:
+`scripts/verificar-scripts-aplicados.sql`. Solo lee, y devuelve una fila por
+script con lo que falta cuando falta.
 
 > El bucket `payment_receipts` contiene comprobantes de pago: capturas de
 > transferencias con nombres y números de cuenta. Tiene que seguir siendo
 > privado; el panel genera URLs firmadas de una hora para mostrarlos.
+>
+> **Ojo con el script: lo crea público.** `create-storage-bucket.sql` hace
+> `insert into storage.buckets (..., public) values (..., true)` y añade una
+> política de lectura para el rol `public`, que es exactamente lo contrario de
+> lo anterior. El código de lectura ya usa URLs firmadas y no necesita que el
+> bucket sea público. Antes de correrlo, poné `public` en `false` y quitá esa
+> política; si ya se corrió, `verificar-scripts-aplicados.sql` lo detecta y
+> trae las dos sentencias que lo cierran.
 
 ## Permisos de administrador
 

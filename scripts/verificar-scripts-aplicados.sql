@@ -1,10 +1,16 @@
 -- ============================================================================
 -- ¿Qué scripts están aplicados en ESTA base?
 -- ============================================================================
--- Supabase no guarda un registro de qué SQL se corrió: el esquema se aplica a
--- mano en el editor, y eso no queda versionado en ningún lado. En vez de
--- buscar ese registro inexistente, esto pregunta por el ESTADO: si los objetos
--- que crea cada script están o no están.
+-- La base tiene dos mitades con reglas distintas:
+--
+--   supabase/migrations/  se aplica con el CLI y SÍ deja registro, en la tabla
+--                         supabase_migrations.schema_migrations.
+--   scripts/              se pega a mano en el editor y NO deja ninguno.
+--
+-- Esto cubre la segunda mitad, que es la que no se puede auditar de otra
+-- forma: en vez de buscar un registro que no existe, pregunta por el ESTADO
+-- —si los objetos que crea cada script están o no están— y de paso lista las
+-- migraciones que sí constan.
 --
 -- Pegar entero en el SQL Editor de Supabase y ejecutar. Solo lee; no modifica
 -- nada. Una fila por script, con lo que falta cuando falta.
@@ -34,12 +40,6 @@ with objetos as (
 
     -- support-table.sql
     (to_regclass('public.support_messages') is not null)                          as soporte_tabla,
-
-    -- referral-rewards-table.sql
-    (to_regclass('public.referral_rewards') is not null)                          as ref_tabla,
-    (select count(*) from pg_constraint
-       where conrelid = to_regclass('public.referral_rewards')
-         and contype = 'u')                                                       as ref_unique,
 
     -- create-storage-bucket.sql
     (select count(*) from storage.buckets where id = 'payment_receipts')          as bucket,
@@ -78,17 +78,7 @@ select * from (
   from objetos
 
   union all
-  select 4, 'referral-rewards-table.sql',
-    case when ref_tabla and ref_unique > 0 then '✅ aplicado' else '❌ FALTA' end,
-    nullif(concat_ws(', ',
-      case when not ref_tabla   then 'tabla referral_rewards'        end,
-      case when ref_tabla and ref_unique = 0 then 'restricción unique en user_id' end
-    ), ''),
-    'Sin esto, "Otorgar mes gratis" se puede repetir sin límite'
-  from objetos
-
-  union all
-  select 5, 'create-storage-bucket.sql',
+  select 4, 'create-storage-bucket.sql',
     case
       when bucket = 0        then '❌ FALTA'
       when bucket_publico    then '⚠️ APLICADO PERO PÚBLICO'
@@ -113,10 +103,29 @@ order by orden;
 -- de cuenta. El panel ya las muestra con URLs firmadas de una hora
 -- (createSignedUrl), así que NO necesita que el bucket sea público.
 --
--- Si la fila 5 sale en ⚠️, esto lo cierra:
+-- Si la fila 4 sale en ⚠️, esto lo cierra:
 --
 --   update storage.buckets set public = false where id = 'payment_receipts';
 --   drop policy if exists "Public receipts are viewable" on storage.objects;
 --
 -- Comprobar después que el panel sigue mostrando los comprobantes: la lectura
 -- va por URL firmada y no debería verse afectada.
+
+
+-- ── Las migraciones que sí dejan registro ───────────────────────────────────
+-- Estas no hace falta deducirlas: el CLI las anota. Si la tabla no existe, es
+-- que nunca se corrió `supabase db push` contra esta base y ninguna de las
+-- nueve migraciones de supabase/migrations/ está aplicada.
+
+select
+  case
+    when to_regclass('supabase_migrations.schema_migrations') is null
+      then '❌ sin registro de migraciones — ninguna aplicada'
+    else '✅ ' || (select count(*)::text from supabase_migrations.schema_migrations)
+         || ' migraciones aplicadas'
+  end as migraciones;
+
+-- Y cuáles, por si falta alguna suelta:
+--
+--   select version, name from supabase_migrations.schema_migrations
+--   order by version;
