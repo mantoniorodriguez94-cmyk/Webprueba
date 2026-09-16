@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import AdminMessageModal from "@/components/AdminMessageModal";
 import AlertModalHost from "@/components/ui/AlertModalHost";
 import ConfirmModalHost from "@/components/ui/ConfirmModalHost";
+import { SITIO, NOMBRE_SITIO, IMAGEN_OG } from "@/lib/seo";
 
 // Tipografía: se revisó a conciencia si Fraunces/Sora/JetBrains Mono
 // seguían sirviendo al registro "Luz" (claro, sobrio, "serio, cuerdo") y se
@@ -41,7 +42,6 @@ const fontMono = JetBrains_Mono({
   display: "swap",
 });
 
-const SITIO = "https://appencuentra.com"
 const TITULO = "App Encuentra — Encuentra negocios locales en los que puedes confiar"
 const DESCRIPCION =
   "La distancia exacta a cada negocio, reseñas reales y chat directo con el dueño. Descubre negocios cerca de ti en Venezuela."
@@ -54,6 +54,20 @@ export const metadata: Metadata = {
   title: TITULO,
   description: DESCRIPCION,
 
+  /* La URL canónica de la portada.
+     No existía ninguna en toda la app salvo la de las fichas de negocio, así
+     que el buscador no tenía forma de saber cuál de las variantes del dominio
+     era la buena y tenía que adivinar por los redirects.
+
+     OJO: los metadatos se heredan hacia abajo, así que este canonical lo
+     reciben todas las rutas hijas que no declaren el suyo. Cada página
+     pública indexable tiene que sobrescribirlo con el propio — /negocio/[id],
+     /terminos, /privacidad y /soporte ya lo hacen. Si se agrega otra página
+     pública, hay que darle el suyo o se anunciará como si fuera la portada. */
+  alternates: {
+    canonical: "/",
+  },
+
   // Sin esto, un enlace compartido por WhatsApp se ve como texto pelado.
   // Es el canal principal de invitaciones del producto, así que la vista
   // previa es parte del embudo de registro, no un adorno.
@@ -61,18 +75,18 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_VE",
     url: SITIO,
-    siteName: "App Encuentra",
+    siteName: NOMBRE_SITIO,
     title: TITULO,
     description: DESCRIPCION,
-    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "App Encuentra" }],
+    images: [{ url: IMAGEN_OG, width: 1200, height: 630, alt: NOMBRE_SITIO }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITULO,
     description: DESCRIPCION,
-    images: ["/brand/og.png"],
+    images: [IMAGEN_OG],
   },
-  applicationName: "App Encuentra",
+  applicationName: NOMBRE_SITIO,
   appleWebApp: {
     capable: true,
     // Antes "black-translucent" (texto blanco sobre el mapa oscuro de

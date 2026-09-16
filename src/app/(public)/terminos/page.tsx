@@ -1,3 +1,16 @@
+import { metadatosDePaginaPublica } from "@/lib/seo"
+
+/* Metadatos propios, bloque completo.
+   Next fusiona los metadatos del layout raíz hacia abajo campo por campo, así
+   que sin esto la página heredaba tanto el canonical como el og:url de la
+   portada: le decía al buscador que la URL buena era "/" y, al compartirla,
+   la vista previa mostraba la dirección de la portada en vez de la suya. */
+export const metadata = metadatosDePaginaPublica({
+  title: "Términos y Condiciones | App Encuentra",
+  description: "Condiciones de uso de App Encuentra, el directorio de negocios locales de Venezuela.",
+  path: "/terminos",
+})
+
 export default function PublicTermsPage() {
   return (
     <main className="min-h-screen text-ink">

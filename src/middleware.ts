@@ -2,16 +2,27 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Dominio canónico: encuentr.app y encuentrapp.com también resuelven a esta
-// misma app, pero deben redirigir aquí (308) para que no cuenten como
-// contenido duplicado ante buscadores.
+// Dominio canónico: www.appencuentra.com. Los demás dominios resuelven a esta
+// misma app y deben redirigir aquí (308) para no contar como contenido
+// duplicado ante los buscadores.
 //
-// IMPORTANTE: Vercel ya redirige a nivel de borde appencuentra.com (bare) ->
-// www.appencuentra.com ANTES de que este middleware corra. NO incluir
-// 'www.appencuentra.com' aquí — hacerlo crea un loop infinito entre el
-// redirect de Vercel (bare->www) y este middleware (www->bare).
-const CANONICAL_HOST = 'appencuentra.com'
+// El canónico es el que lleva www porque es el que Vercel sirve de verdad.
+// Antes esta constante decía el dominio pelado mientras Vercel servía el www:
+// las dos capas se contradecían, los otros dominios daban dos saltos en vez de
+// uno (encuentr.app -> pelado -> www) y todo lo que se anunciaba —og:url,
+// sitemap, robots— nombraba un host que no era el que respondía.
+//
+// El pelado SÍ va en la lista, y no crea loop: Vercel lo redirige a www en el
+// borde, este middleware lo redirige a www también, y dos redirects en la
+// misma dirección no se pelean. Está acá para que la canonicalización no
+// dependa de una configuración de panel: si el redirect de Vercel se quita o
+// se pierde en una migración, el middleware lo sigue cubriendo.
+//
+// Lo que NO puede entrar nunca es 'www.appencuentra.com' — apuntaría el
+// canónico contra sí mismo y ahí sí hay loop infinito.
+const CANONICAL_HOST = 'www.appencuentra.com'
 const REDIRECT_HOSTS = new Set([
+  'appencuentra.com',
   'encuentr.app',
   'www.encuentr.app',
   'encuentrapp.com',

@@ -43,9 +43,17 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
      resumen, hay que traerla de business_review_stats. */
   const description = business.description || `Conoce más sobre ${business.name}${business.address ? ` ubicado en ${business.address}` : ''}.`
 
-  // URL canónica
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/negocio/${id}`
-  const imageUrl = business.logo_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/og-default.png`
+  /* URL canónica. El respaldo lleva www, igual que el host que Vercel sirve:
+     si NEXT_PUBLIC_APP_URL faltara, la ficha se anunciaba a sí misma bajo un
+     dominio que redirige, que es exactamente lo que un canonical no debe
+     hacer. */
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.appencuentra.com'
+  const url = `${baseUrl}/negocio/${id}`
+  /* La imagen de respaldo apuntaba a /og-default.png, que no existe en
+     `public/`. Un negocio sin logo se compartía por WhatsApp con una vista
+     previa rota — 404 en la imagen. Se usa la misma tarjeta de marca que ya
+     emplea la portada. */
+  const imageUrl = business.logo_url || `${baseUrl}/brand/og.png`
 
   return {
     title,
