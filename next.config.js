@@ -125,5 +125,41 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+/* ── Sentry ────────────────────────────────────────────────────────────────
+ *
+ * Envuelve por fuera de withPWA porque necesita ver la configuración ya
+ * resuelta para inyectar el plugin que sube los mapas de código.
+ *
+ * Los mapas de código son lo que convierte un informe inútil —"error en
+ * chunk-4f2a.js línea 1, columna 28470"— en uno que dice archivo y línea de
+ * TU código. Se suben a Sentry en el build y NO se publican al navegador, así
+ * que no exponen el fuente a nadie.
+ *
+ * Sin SENTRY_AUTH_TOKEN el plugin se salta esa subida y el build sigue
+ * adelante: el proyecto se puede compilar sin cuenta de Sentry.
+ */
+const { withSentryConfig } = require("@sentry/nextjs/config");
+
+module.exports = withSentryConfig(withPWA(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Que el build no se llene de avisos del plugin cuando no hay token.
+  silent: !process.env.CI,
+
+  // No publicar los mapas de código al navegador: van a Sentry y se borran.
+  sourcemaps: { deleteSourcemapsAfterUpload: true },
+
+  /* Rutea los informes del navegador por nuestro propio dominio.
+     Sin esto, los bloqueadores de anuncios —que mucha gente lleva puesto—
+     bloquean la petición a Sentry y el error se pierde justo en los usuarios
+     que más raro tienen el navegador, que son los que más fallos encuentran. */
+  tunnelRoute: "/monitoring",
+
+  /* Quita de la compilación los mensajes de depuración del propio SDK. Antes
+     era `disableLogger`, obsoleto desde la v10. */
+  webpack: { treeshake: { removeDebugLogging: true } },
+
+});
 

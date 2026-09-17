@@ -18,6 +18,7 @@
  */
 
 import { useEffect } from "react"
+import * as Sentry from "@sentry/nextjs"
 import Link from "next/link"
 
 export default function Error({
@@ -34,6 +35,10 @@ export default function Error({
        `digest` es el identificador que Vercel asigna al error del servidor —
        es lo único que permite cruzar esto con sus registros. */
     console.error("[app] Error de render:", error, error.digest)
+    /* Y a Sentry, que es quien lo va a ver. La consola vive en el navegador
+       del usuario y no la lee nadie: sin esta línea, la pantalla de error es
+       bonita y el fallo sigue siendo invisible. */
+    Sentry.captureException(error)
   }, [error])
 
   return (

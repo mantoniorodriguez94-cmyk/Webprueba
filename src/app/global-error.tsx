@@ -22,6 +22,7 @@
  */
 
 import { useEffect } from "react"
+import * as Sentry from "@sentry/nextjs"
 
 export default function GlobalError({
   error,
@@ -32,6 +33,10 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error("[app] Error global:", error, error.digest)
+    /* Y a Sentry, que es quien lo va a ver. La consola vive en el navegador
+       del usuario y no la lee nadie: sin esta línea, la pantalla de error es
+       bonita y el fallo sigue siendo invisible. */
+    Sentry.captureException(error)
   }, [error])
 
   return (

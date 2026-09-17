@@ -137,8 +137,15 @@ export default function PublicPrivacyPage() {
               </p>
               <p>
                 Solo compartimos información estrictamente necesaria con proveedores de
-                infraestructura y analítica (por ejemplo, servicios de base de datos, hosting
-                o envío de correos) bajo acuerdos de confidencialidad y protección de datos.
+                infraestructura (por ejemplo, servicios de base de datos, hosting, envío de
+                correos y <strong>monitoreo de errores</strong>) bajo acuerdos de
+                confidencialidad y protección de datos.
+              </p>
+              <p className="mt-3">
+                El servicio de monitoreo de errores recibe únicamente datos técnicos cuando
+                algo falla en la Plataforma: el mensaje del error, la página donde ocurrió y el
+                tipo de navegador. <strong>No se le envían</strong> su dirección IP, el
+                contenido de sus mensajes, sus comprobantes de pago ni su ubicación.
               </p>
             </div>
 
