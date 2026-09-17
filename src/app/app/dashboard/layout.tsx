@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
+import CuentaSuspendida from "@/components/auth/CuentaSuspendida"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
@@ -30,6 +31,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [negocioId, setNegocioId] = useState<string | null>(null)
 
   const isCompany = (user?.user_metadata?.role ?? "person") === "company"
+
+  /* Suspensión.
+     Se consulta acá y no en cada pantalla por el mismo motivo que la barra
+     inferior: si depende de que cada página se acuerde, alguna se olvida — y
+     la que se olvide es un agujero por el que la persona suspendida sigue
+     operando. Este layout envuelve todo el panel.
+
+     Esto es la CORTESÍA, no el candado. Lo que de verdad impide escribir son
+     las políticas restrictivas de la base (suspension_efectiva.sql) más la
+     comprobación de la ruta del chat. Si alguien se saltara esta pantalla, no
+     conseguiría escribir nada igualmente. */
+  const [suspension, setSuspension] = useState<{ desde: string; motivo: string | null } | null>(null)
+
+  useEffect(() => {
+    if (!user) {
+      setSuspension(null)
+      return
+    }
+    let vivo = true
+    ;(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("suspended_at, suspended_reason")
+        .eq("id", user.id)
+        .maybeSingle()
+
+      if (!vivo) return
+      const desde = (data as any)?.suspended_at ?? null
+      setSuspension(desde ? { desde, motivo: (data as any)?.suspended_reason ?? null } : null)
+    })()
+    return () => {
+      vivo = false
+    }
+  }, [user])
 
   /* El sonido del chat estaba construido —hook, mp3 precargado, manejo de
      errores— pero ningún archivo llamaba al hook, así que no sonaba nunca.
@@ -172,6 +207,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       supabase.removeChannel(canal)
     }
   }, [user, isCompany, negocioId, contarNoLeidos])
+
+  /* Sin barra inferior ni contador: no hay a dónde navegar dentro del panel
+     hasta que se levante la suspensión. */
+  if (suspension) {
+    return <CuentaSuspendida motivo={suspension.motivo} desde={suspension.desde} />
+  }
 
   return (
     <>
