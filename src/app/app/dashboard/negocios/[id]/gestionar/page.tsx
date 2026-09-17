@@ -14,6 +14,7 @@ import { alertModal } from "@/lib/alertModal"
 import { Popover } from "@/components/ui/Overlay"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { MoreVertical, Trash2 } from "lucide-react"
+import UbicacionModal from "@/components/business/UbicacionModal"
 
 type Promotion = {
   id: string
@@ -34,6 +35,12 @@ export default function GestionarNegocioPage() {
   // Eliminar vivía en la lista de negocios como un botón rojo a todo el ancho,
   // a un solo toque. Borrar el único negocio de una cuenta es irreversible, así
   // que acá queda detrás de un menú y de una confirmación.
+  /* La ubicación en el mapa se pone desde acá y no desde el alta, a propósito:
+     es opcional, y al registrarse casi nadie está dentro de su local. Ofrecerla
+     como un interruptor en el perfil del negocio deja que cada uno la active
+     cuando le convenga —y que la corrija si se muda. */
+  const [modalUbicacion, setModalUbicacion] = useState(false)
+
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
   const [borrando, setBorrando] = useState(false)
@@ -87,7 +94,9 @@ export default function GestionarNegocioPage() {
         // Verificar que el usuario es el dueño
         if (data.owner_id !== user.id) {
           alertModal.warning("No tienes permiso para gestionar este negocio")
-          router.push("/app/dashboard")
+          // replace y no push: una pantalla que te rechaza no debe quedar en el
+          // historial, o el "atrás" la monta de nuevo y te vuelve a rechazar.
+          router.replace("/app/dashboard")
           return
         }
 
@@ -125,7 +134,7 @@ export default function GestionarNegocioPage() {
       } catch (error) {
         console.error("Error cargando negocio:", error)
         alertModal.error("Error cargando el negocio")
-        router.push("/app/dashboard")
+        router.replace("/app/dashboard")
       } finally {
         setLoading(false)
       }
@@ -133,6 +142,21 @@ export default function GestionarNegocioPage() {
 
     fetchBusiness()
   }, [businessId, user, router])
+
+  const guardarUbicacion = async (latitud: number, longitud: number) => {
+    if (!business) return
+
+    const { error } = await supabase
+      .from("businesses")
+      .update({ latitude: latitud, longitude: longitud })
+      .eq("id", business.id)
+
+    if (error) throw error
+
+    // Se refresca en memoria en vez de recargar la página: el botón tiene que
+    // pasar de "Activar" a "Editar" en el momento, sin parpadeo.
+    setBusiness({ ...business, latitude: latitud, longitude: longitud })
+  }
 
   if (userLoading || loading) {
     return (
@@ -160,6 +184,10 @@ export default function GestionarNegocioPage() {
       </div>
     )
   }
+
+  /* Hacen falta las DOS. Una sola no ubica nada, y guardar media coordenada
+     dejaría al negocio contando como "ubicado" sin salir nunca en el mapa. */
+  const tieneUbicacion = business.latitude != null && business.longitude != null
 
   return (
     <div className="min-h-screen pb-12">
@@ -295,6 +323,47 @@ export default function GestionarNegocioPage() {
                   </svg>
                   {business.address}
                 </p>
+              )}
+
+              {/* Ubicación en el mapa: interruptor, no campo de formulario.
+                  Mientras no esté puesta, el negocio no sale en las búsquedas
+                  por cercanía —que es la función que distingue a la app—, así
+                  que el aviso dice qué se está perdiendo en vez de limitarse a
+                  ofrecer un botón sin contexto. Una vez puesta, el botón no
+                  desaparece: cambia a "Editar", porque los negocios se mudan. */}
+              {tieneUbicacion ? (
+                <button
+                  type="button"
+                  onClick={() => setModalUbicacion(true)}
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-ink-2 hover:text-ink transition-colors"
+                >
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Apareces en el mapa
+                  <span className="text-blue-600 underline underline-offset-2">Editar ubicación</span>
+                </button>
+              ) : (
+                <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-sm font-semibold text-ink mb-1">
+                    Tu negocio todavía no aparece en el mapa
+                  </p>
+                  <p className="text-sm text-ink-2 mb-3">
+                    Al activarla, quien vea tu negocio sabrá a qué distancia
+                    está de ti. Puedes hacerlo ahora o cuando quieras.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setModalUbicacion(true)}
+                    className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-full transition-all font-semibold text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Activar ubicación
+                  </button>
+                </div>
               )}
             </div>
 
@@ -496,6 +565,14 @@ export default function GestionarNegocioPage() {
 
         </div>
       </div>
+
+      <UbicacionModal
+        open={modalUbicacion}
+        onClose={() => setModalUbicacion(false)}
+        latitudInicial={business.latitude}
+        longitudInicial={business.longitude}
+        onGuardar={guardarUbicacion}
+      />
 
       <ConfirmationModal
         open={confirmarBorrado}

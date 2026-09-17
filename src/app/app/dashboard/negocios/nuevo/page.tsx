@@ -6,7 +6,6 @@ import Link from "next/link"
 import LocationSelector from "@/components/LocationSelector"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
-import { Dialog } from "@/components/ui/Overlay"
 import {
   isTierActive,
   MAX_NEGOCIOS_POR_CUENTA
@@ -27,9 +26,6 @@ export default function NuevoNegocioPage() {
   const [whatsapp, setWhatsapp] = useState("")
   const [logo, setLogo] = useState<File | null>(null)
   const [gallery, setGallery] = useState<FileList | null>(null)
-  const [latitude, setLatitude] = useState("")
-  const [longitude, setLongitude] = useState("")
-  const [showMapModal, setShowMapModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [checking, setChecking] = useState(true)
@@ -45,22 +41,29 @@ export default function NuevoNegocioPage() {
   const MAX_IMAGES_PREMIUM = 10
   const maxImages = isPremium ? MAX_IMAGES_PREMIUM : MAX_IMAGES_FREE
   
-  // Verificar límite de negocios al cargar la página
+  // Verificar límite de negocios al cargar la página.
+  //
+  // Los rebotes de acá van con replace y no con push, a propósito. Esta
+  // pantalla es una guardia: si te echa, no tiene por qué quedarse en el
+  // historial. Con push quedaba, y volver atrás la montaba de nuevo, que
+  // revisaba de nuevo y volvía a echarte — un bucle del que no se sale.
+  // Se llega desde el hero de la portada, que manda acá a quien ya tiene
+  // sesión, así que el "atrás" que la gente espera es la portada.
   useEffect(() => {
     const checkBusinessLimit = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
-        
+
         if (!user) {
-          router.push("/app/auth/login")
+          router.replace("/app/auth/login")
           return
         }
-        
+
         // Verificar si el usuario es tipo company
         const userRole = user.user_metadata?.role ?? "person"
         if (userRole !== "company") {
           alertModal.warning("Para crear negocios, necesitas una cuenta tipo Empresa.")
-          router.push("/app/dashboard")
+          router.replace("/app/dashboard")
           return
         }
 
@@ -86,7 +89,7 @@ export default function NuevoNegocioPage() {
 
         if ((count ?? 0) >= MAX_NEGOCIOS_POR_CUENTA) {
           alertModal.warning("Ya tienes un negocio registrado. Cada cuenta permite gestionar un solo negocio.")
-          router.push("/app/dashboard/mis-negocios")
+          router.replace("/app/dashboard/mis-negocios")
           return
         }
 
@@ -236,8 +239,6 @@ export default function NuevoNegocioPage() {
           whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
           gallery_urls: galleryUrls.length > 0 ? galleryUrls : null,
-          latitude: latitude ? Number(latitude) : null,
-          longitude: longitude ? Number(longitude) : null,
           state_id: stateId,
           municipality_id: municipalityId
         })
@@ -386,49 +387,6 @@ export default function NuevoNegocioPage() {
               </div>
             </div>
 
-            {/* Ubicación GPS (Opcional) */}
-            <div className="space-y-4 p-4 bg-black/[0.02] rounded-2xl border-2 border-black/8">
-              <div className="flex items-center gap-2 mb-2">
-                <svg className="w-5 h-5 text-ink-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-                <h3 className="font-bold text-ink-2">
-                  Ubicación GPS (Opcional)
-                </h3>
-              </div>
-              
-              <div>
-                {/* Coordenadas ocultas: siguen presentes para que el mapa y la lógica las actualicen */}
-                <input
-                  id="latitude"
-                  type="hidden"
-                  value={latitude}
-                  onChange={e => setLatitude(e.target.value)}
-                />
-                <input
-                  id="longitude"
-                  type="hidden"
-                  value={longitude}
-                  onChange={e => setLongitude(e.target.value)}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-black/5 hover:bg-black/10 border border-black/10 text-ink font-semibold py-2.5 px-4 rounded-xl transition-all"
-                  disabled={loading}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                  Colocar ubicación en mapa
-                </button>
-                <p className="text-xs text-ink-2 mt-2 text-center">
-                  Haz clic para seleccionar tu ubicación en un mapa interactivo
-                </p>
-              </div>
-            </div>
-
             {/* Teléfono */}
             <div>
               <label htmlFor="phone" className="block text-sm font-semibold text-ink mb-2">
@@ -553,146 +511,6 @@ export default function NuevoNegocioPage() {
         </div>
       </div>
 
-      {/* Modal de Mapa */}
-      <Dialog
-        open={showMapModal}
-        onClose={() => setShowMapModal(false)}
-        aria-label="Seleccionar ubicación GPS"
-        panelClassName="bg-white border border-black/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-      >
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-ink">📍 Seleccionar Ubicación GPS</h3>
-                <button
-                  onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-black/5 rounded-full transition-all"
-                >
-                  <svg className="w-6 h-6 text-ink-2 hover:text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-sm text-ink-2">
-                Obtén tu ubicación actual o ingresa las coordenadas manualmente
-              </p>
-            </div>
-
-            {/* Opción 1: Obtener ubicación actual */}
-            <div className="mb-6">
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                      (position) => {
-                        setLatitude(position.coords.latitude.toFixed(6))
-                        setLongitude(position.coords.longitude.toFixed(6))
-                        toast.success("Ubicación sincronizada")
-                      },
-                      (error) => {
-                        console.error("Error obteniendo ubicación:", error)
-                        toast.error("No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
-                      }
-                    )
-                  } else {
-                    toast.error("Tu navegador no soporta geolocalización.")
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-sm"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Usar mi ubicación actual
-              </button>
-              <p className="text-xs text-ink-2 mt-2 text-center">
-                La precisión del GPS asegura que los clientes encuentren tu negocio más rápido.
-              </p>
-            </div>
-
-            {/* Divisor (oculto, ya no se muestra la opción manual) */}
-            <div className="hidden flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-xs font-semibold text-gray-600">O ingresa manualmente</span>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Opción 2: Ingresar coordenadas manualmente (oculta, pero mantiene el binding al estado) */}
-            <div className="space-y-4">
-              <div className="hidden">
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Latitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={latitude}
-                  onChange={e => setLatitude(e.target.value)}
-                  placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
-                />
-              </div>
-              <div className="hidden">
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Longitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={longitude}
-                  onChange={e => setLongitude(e.target.value)}
-                  placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
-                />
-              </div>
-
-              {/* Vista previa de Google Maps */}
-              {latitude && longitude && (
-                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-gray-900 mb-2">Vista previa:</p>
-                  <div className="bg-gray-200 rounded-xl overflow-hidden">
-                    <iframe
-                      title="Mapa de ubicación"
-                      width="100%"
-                      height="200"
-                      frameBorder="0"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${longitude},${latitude},${longitude},${latitude}&layer=mapnik&marker=${latitude},${longitude}`}
-                      className="w-full"
-                    ></iframe>
-                  </div>
-                  <p className="text-xs text-gray-700 mt-2">
-                    📍 Lat: {latitude}, Lng: {longitude}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all"
-                >
-                  Confirmar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-2xl transition-all"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-
-            {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
-              <p className="text-xs text-blue-900">
-                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps,
-                haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
-              </p>
-            </div>
-      </Dialog>
     </div>
   )
 }

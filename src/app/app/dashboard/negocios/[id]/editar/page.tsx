@@ -32,9 +32,6 @@ export default function EditarNegocioPage() {
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
-  const [latitude, setLatitude] = useState("")
-  const [longitude, setLongitude] = useState("")
-  const [showMapModal, setShowMapModal] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(true)
@@ -87,8 +84,6 @@ export default function EditarNegocioPage() {
         setAddress(data.address ?? "")
         setPhone(data.phone ? String(data.phone) : "")
         setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
-        setLatitude(data.latitude ? String(data.latitude) : "")
-        setLongitude(data.longitude ? String(data.longitude) : "")
       } catch (err: any) {
         console.error("Error cargando negocio:", err)
         toast.error("No se pudo cargar el negocio. Intenta de nuevo.")
@@ -146,12 +141,17 @@ export default function EditarNegocioPage() {
     
     setError("")
     
-    // Validar que al menos dirección o coordenadas estén presentes
-    const hasAddress = address.trim().length > 0
-    const hasCoordinates = latitude.trim().length > 0 && longitude.trim().length > 0
-    
-    if (!hasAddress && !hasCoordinates) {
-      setError("⚠️ Debes completar al menos uno: Dirección manual O Ubicación GPS")
+    /* Sigue haciendo falta al menos una forma de encontrar el negocio: una
+       dirección escrita o un punto en el mapa. Lo que cambia es de dónde sale
+       el segundo dato — del negocio ya guardado, no de este formulario, que
+       dejó de editar coordenadas. El punto en el mapa se pone desde "Mi
+       negocio", así que alguien que ya lo tenga puesto puede dejar la
+       dirección en blanco sin que esto lo frene. */
+    const tieneDireccion = address.trim().length > 0
+    const tieneUbicacionEnMapa = negocio.latitude != null && negocio.longitude != null
+
+    if (!tieneDireccion && !tieneUbicacionEnMapa) {
+      setError("⚠️ Escribe una dirección, o activa la ubicación en el mapa desde «Mi negocio».")
       return
     }
     
@@ -184,8 +184,10 @@ export default function EditarNegocioPage() {
           whatsapp: whatsapp ? Number(whatsapp) : null,
           logo_url: logoUrl,
           gallery_urls: gallery.length > 0 ? gallery : null,
-          latitude: latitude ? Number(latitude) : null,
-          longitude: longitude ? Number(longitude) : null
+          /* Sin latitude/longitude a propósito. Esta pantalla ya no las edita,
+             y mandarlas desde un estado que siempre está vacío BORRARÍA la
+             ubicación cada vez que alguien tocara cualquier otro campo. Una
+             consulta sólo debe escribir lo que su pantalla gobierna. */
         })
         .eq('id', negocio.id)
 
@@ -318,23 +320,26 @@ export default function EditarNegocioPage() {
               />
             </div>
 
-            {/* Dirección y Ubicación GPS */}
+            {/* Dirección escrita. El punto en el mapa se pone desde "Mi
+                negocio": es opcional, y al registrarse casi nadie está dentro
+                de su local. */}
             <div className="space-y-4 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h3 className="font-bold text-ink">Ubicación del Negocio *</h3>
+                <h3 className="font-bold text-ink">Dirección</h3>
               </div>
               <p className="text-xs text-ink-2 mb-2">
-                ⚠️ Debes completar al menos UNA opción: Dirección manual O Ubicación GPS
+                Cómo llegar a tu negocio, en palabras. Para que además se vea a
+                qué distancia estás de quien te busca, activa la ubicación desde
+                «Mi negocio».
               </p>
-              
-              {/* Opción A: Dirección Manual */}
+
               <div>
                 <label htmlFor="address" className="block text-sm font-semibold text-ink mb-2">
-                  📍 Opción A: Dirección Manual
+                  📍 Dirección
                 </label>
                 <input
                   id="address"
@@ -353,42 +358,6 @@ export default function EditarNegocioPage() {
                     Dirección completada
                   </p>
                 )}
-              </div>
-
-              {/* Divisor */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-300"></div>
-                <span className="text-xs font-semibold text-ink-2/70">O</span>
-                <div className="flex-1 h-px bg-gray-300"></div>
-              </div>
-
-              {/* Opción B: Ubicación GPS */}
-              <div>
-                {/* Campos de coordenadas ocultos: mantienen la sincronización con el mapa y la lógica de guardado */}
-                <input
-                  id="latitude"
-                  type="hidden"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                />
-                <input
-                  id="longitude"
-                  type="hidden"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-xl transition-all"
-                  disabled={loading}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                  Actualizar ubicación en mapa
-                </button>
               </div>
             </div>
 
@@ -577,146 +546,6 @@ export default function EditarNegocioPage() {
         `}</style>
       </Dialog>
 
-      {/* Modal de Mapa */}
-      <Dialog
-        open={showMapModal}
-        onClose={() => setShowMapModal(false)}
-        aria-label="Actualizar ubicación GPS"
-        panelClassName="bg-white border border-black/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-      >
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-ink">📍 Actualizar Ubicación GPS</h3>
-                <button
-                  onClick={() => setShowMapModal(false)}
-                  className="p-2 hover:bg-black/5 rounded-full transition-all"
-                >
-                  <svg className="w-6 h-6 text-ink-2 hover:text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-sm text-ink-2">
-                Obtén tu ubicación actual o ingresa las coordenadas manualmente
-              </p>
-            </div>
-
-            {/* Opción 1: Obtener ubicación actual */}
-            <div className="mb-6">
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                      (position) => {
-                        setLatitude(position.coords.latitude.toFixed(6))
-                        setLongitude(position.coords.longitude.toFixed(6))
-                        toast.success("Ubicación sincronizada")
-                      },
-                      (error) => {
-                        console.error("Error obteniendo ubicación:", error)
-                        toast.error("No se pudo obtener tu ubicación. Por favor, verifica los permisos del navegador.")
-                      }
-                    )
-                  } else {
-                    toast.error("Tu navegador no soporta geolocalización.")
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-sm"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Usar mi ubicación actual
-              </button>
-              <p className="text-xs text-ink-2 mt-2 text-center">
-                La precisión del GPS asegura que los clientes encuentren tu negocio más rápido.
-              </p>
-            </div>
-
-            {/* Divisor (oculto, ya no se muestra la opción manual) */}
-            <div className="hidden flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-black/10"></div>
-              <span className="text-xs font-semibold text-ink-2">O ingresa manualmente</span>
-              <div className="flex-1 h-px bg-black/10"></div>
-            </div>
-
-            {/* Opción 2: Ingresar coordenadas manualmente (oculta, pero mantiene el binding al estado) */}
-            <div className="space-y-4">
-              <div className="hidden">
-                <label className="block text-sm font-semibold text-ink mb-2">
-                  Latitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                  placeholder="Ej: 4.6097"
-                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
-                />
-              </div>
-              <div className="hidden">
-                <label className="block text-sm font-semibold text-ink mb-2">
-                  Longitud
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                  placeholder="Ej: -74.0817"
-                  className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-500"
-                />
-              </div>
-
-              {/* Vista previa de Mapa */}
-              {latitude && longitude && (
-                <div className="bg-black/[0.02] border border-black/8 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-ink mb-2">Vista previa:</p>
-                  <div className="bg-gray-200 rounded-xl overflow-hidden">
-                    <iframe
-                      title="Mapa de ubicación"
-                      width="100%"
-                      height="200"
-                      frameBorder="0"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${longitude},${latitude},${longitude},${latitude}&layer=mapnik&marker=${latitude},${longitude}`}
-                      className="w-full"
-                    ></iframe>
-                  </div>
-                  <p className="text-xs text-ink-2 mt-2">
-                    📍 Lat: {latitude}, Lng: {longitude}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-blue-500/30"
-                >
-                  Confirmar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="px-6 py-3 bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink font-semibold rounded-2xl transition-all border border-black/10"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-
-            {/* Ayuda */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
-              <p className="text-xs text-blue-700">
-                💡 <strong>Tip:</strong> Puedes obtener las coordenadas de cualquier lugar abriendo Google Maps,
-                haciendo clic derecho en el lugar y seleccionando las coordenadas que aparecen.
-              </p>
-            </div>
-      </Dialog>
     </div>
   )
 }

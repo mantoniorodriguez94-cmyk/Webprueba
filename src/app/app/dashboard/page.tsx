@@ -13,6 +13,8 @@ import dynamic from "next/dynamic"
 import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
+import useUserLocation from "@/hooks/useUserLocation"
+import { calculateDistance } from "@/lib/utils/distance"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
 import LogoCabecera from "@/components/brand/LogoCabecera"
@@ -185,8 +187,13 @@ export default function DashboardPage() {
     location: "", // Deprecated, mantener para compatibilidad
     state_id: stateIdParam,
     municipality_id: municipalityIdParam,
-    sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular") || "recent"
+    sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular" | "cercania" | "lejania") || "recent"
   })
+
+  /* Ubicación de quien mira, para el filtro y el orden por cercanía. Es la
+     misma instancia compartida que usan las tarjetas: si alguien concede el
+     permiso desde una tarjeta, el filtro se habilita solo, y al revés. */
+  const { userLocation } = useUserLocation()
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias">("feed")
 
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -698,6 +705,32 @@ export default function DashboardPage() {
 
       // Dentro del mismo grupo, aplicar el orden seleccionado
       switch (filters.sortBy) {
+        case "cercania":
+        case "lejania": {
+          /* Sin ubicación no hay nada que comparar; se deja el orden tal cual
+             y la barra lateral explica qué falta.
+
+             Los negocios sin coordenadas van AL FINAL en los dos sentidos, y
+             por eso no basta con invertir el signo: si se tratara la distancia
+             desconocida como "infinita", en "más lejanos" los que no se pueden
+             medir encabezarían la lista. Van fuera del orden, no en un extremo
+             de él. */
+          if (!userLocation) return 0
+
+          const medir = (n: typeof a) =>
+            n.latitude != null && n.longitude != null
+              ? calculateDistance(userLocation.lat, userLocation.lng, n.latitude, n.longitude)
+              : null
+
+          const distA = medir(a)
+          const distB = medir(b)
+
+          if (distA === null && distB === null) return 0
+          if (distA === null) return 1
+          if (distB === null) return -1
+
+          return filters.sortBy === "cercania" ? distA - distB : distB - distA
+        }
         case "name":
           return a.name.localeCompare(b.name)
         case "popular":
@@ -712,7 +745,9 @@ export default function DashboardPage() {
     setFilteredBusinesses(filtered)
     // Resetear contador cuando cambian los filtros
     setVisibleCount(ITEMS_PER_PAGE)
-  }, [filters, allBusinesses, ITEMS_PER_PAGE])
+    // userLocation entra en las dependencias: al conceder el permiso, la lista
+    // tiene que recalcularse sola sin tocar ningún filtro.
+  }, [filters, allBusinesses, ITEMS_PER_PAGE, userLocation])
 
   // Intersection Observer para scroll infinito (debe estar antes de los early returns)
   useEffect(() => {
