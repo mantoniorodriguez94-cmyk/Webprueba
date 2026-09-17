@@ -73,6 +73,21 @@ Cuando el usuario decida sobre un hallazgo —lo arregla, lo asume, o lo descart
 
 Cosas evaluadas, con su conclusión. No volver a levantarlas salvo que la premisa haya cambiado — y en ese caso, decir qué cambió.
 
+**2026-09-17 · Buckets de almacenamiento — cerrados, ARREGLADO.**
+`logos` y `negocios-gallery` eran públicos, sin límite de tamaño y aceptaban
+cualquier tipo de archivo. Los cinco buckets quedan con la misma lista: 7
+formatos de imagen, 5 MB (10 MB en comprobantes), y `payment_receipts` sigue
+privado. **image/svg+xml queda fuera a propósito**: es el único formato de
+imagen que puede llevar script y ejecutarlo al servirse desde el dominio.
+Verificado subiendo un SVG con `<script>` — devuelve 415.
+
+Lo que NO hay que perder de vista: el candado vive sólo en el bucket. El
+`accept="image/*"` del formulario es una sugerencia del navegador y ni siquiera
+excluye SVG, y `comprimirImagen` devuelve intacto lo que no sabe convertir —
+es un paso-a-través para los HEIC, no una defensa, y además sólo se usa en la
+pantalla de galería. Si alguien añade un bucket nuevo, hay que darle esta misma
+lista o nace abierto.
+
 **2026-09-17 · Enlaces a Google Maps — sin riesgo, no repetir.**
 `BusinessLocation.tsx` arma `https://www.google.com/maps?q=lat,lng` y abre pestaña nueva. Es un enlace a una web pública, no Google Maps Platform: sin clave, sin cuota, sin facturación. Google documenta este uso (Google Maps URLs) como la forma oficial de abrir Maps sin la API. **La premisa cambia** si aparece una clave de API, un mapa de Google incrustado, o uso de Places, Geocoding o Directions.
 
