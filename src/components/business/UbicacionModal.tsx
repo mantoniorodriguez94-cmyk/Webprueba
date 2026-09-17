@@ -12,24 +12,39 @@
  * El botón hace TODO: pide el permiso, lee el GPS y guarda. No hay un segundo
  * paso de confirmar, porque el segundo paso es donde la gente se cae.
  *
- * ── PERO SIGUE HABIENDO SALIDA PARA QUIEN NO ESTÁ EN EL LOCAL ───────────────
+ * ── HAY UN SOLO CAMINO, Y ES DELIBERADO ─────────────────────────────────────
  *
- * Esto importa y ya costó caro: la versión original tenía los campos manuales
- * en `type="hidden"`, así que el ÚNICO camino era el GPS del momento. Quien
- * daba de alta desde su casa no podía poner la ubicación de su negocio, y por
- * eso los cuatro negocios que hubo en producción tenían latitude y longitude
- * en null. No es que nadie quisiera salir en el mapa: es que casi nadie podía.
+ * Se probó una segunda vía —pegar el enlace de Google Maps del local— y se
+ * descartó por una razón de negocio, no técnica: mandar al dueño de un local a
+ * Google Maps es enseñarle que ahí ya está lo que él quiere vender, y de paso
+ * sacarlo de la app. Está en el historial de git por si alguna vez se
+ * reconsidera.
  *
- * La salida secundaria tampoco habla de coordenadas: se pega el enlace de
- * Google Maps del local, que es algo que la gente sí sabe hacer. Los números
- * se sacan del enlace y no se le enseñan a nadie.
+ * Lo que queda en su lugar no es una alternativa sino un AVISO: "No estoy en
+ * mi negocio ahora" explica que el botón guarda donde estás parado y que
+ * conviene pulsarlo dentro del local. No pide nada; devuelve al botón.
+ *
+ * ── LO QUE ESTE DISEÑO CUESTA, PARA QUE NADIE LO REDESCUBRA ─────────────────
+ *
+ * Con un solo camino, quien nunca pisa su local no puede ubicarse. Eso ya pasó
+ * una vez y salió caro: la versión original tenía los campos manuales en
+ * `type="hidden"`, el único camino era el GPS del momento, y los cuatro
+ * negocios que hubo en producción tenían latitude y longitude en null. No es
+ * que nadie quisiera salir en el mapa — es que casi nadie podía.
+ *
+ * La diferencia ahora es que se le DICE. Antes fallaba en silencio; ahora la
+ * persona sabe qué guarda el botón y cuándo pulsarlo, y puede volver cuando
+ * esté en el negocio.
+ *
+ * Si algún día hace falta cubrir al dueño que gestiona a distancia, la salida
+ * que respeta esta decisión es un mapa con un pin arrastrable DENTRO de la
+ * app, no un enlace que lleve fuera.
  */
 
 import { useEffect, useState } from "react"
 import { Dialog } from "@/components/ui/Overlay"
-import { puntoDesdeEnlace, esEnlaceCorto } from "@/lib/enlaceMapa"
 
-type Paso = "inicio" | "enlace" | "listo"
+type Paso = "inicio" | "aviso" | "listo"
 
 interface UbicacionModalProps {
   open: boolean
@@ -49,7 +64,6 @@ export default function UbicacionModal({
   const yaTenia = latitudInicial != null && longitudInicial != null
 
   const [paso, setPaso] = useState<Paso>("inicio")
-  const [enlace, setEnlace] = useState("")
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
   /* Sólo para dibujar el mapita de confirmación. Nunca se muestra como texto. */
@@ -58,7 +72,6 @@ export default function UbicacionModal({
   useEffect(() => {
     if (!open) return
     setPaso("inicio")
-    setEnlace("")
     setError("")
     setOcupado(false)
     setPunto(
@@ -83,8 +96,7 @@ export default function UbicacionModal({
 
   const compartirUbicacion = () => {
     if (!navigator.geolocation) {
-      setError("Tu navegador no puede leer la ubicación. Prueba con el enlace del mapa.")
-      setPaso("enlace")
+      setError("Tu navegador no puede leer la ubicación. Prueba desde otro teléfono o navegador.")
       return
     }
     setOcupado(true)
@@ -94,27 +106,15 @@ export default function UbicacionModal({
         void guardar(pos.coords.latitude, pos.coords.longitude)
       },
       () => {
-        /* Denegado o fuera de cobertura. No es un callejón sin salida: se
-           empuja a la otra puerta en vez de dejar a la persona mirando un
-           error que no sabe resolver. */
+        /* Denegado, sin cobertura o tardó demasiado. El mensaje nombra la
+           causa más común —el permiso— porque "error de ubicación" a secas no
+           le dice a nadie qué hacer a continuación. */
         setOcupado(false)
-        setError("No pudimos leer tu ubicación. Puedes indicarla con el enlace del mapa.")
-        setPaso("enlace")
+        setError(
+          "No pudimos leer tu ubicación. Revisa que le hayas dado permiso a la app en los ajustes de tu teléfono, y vuelve a intentarlo."
+        )
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
-    )
-  }
-
-  const guardarDesdeEnlace = () => {
-    const p = puntoDesdeEnlace(enlace)
-    if (p) {
-      void guardar(p.latitud, p.longitud)
-      return
-    }
-    setError(
-      esEnlaceCorto(enlace)
-        ? "Ese enlace corto no dice dónde está. Ábrelo en Google Maps y copia el enlace de la barra de direcciones."
-        : "No reconocimos ese enlace. Tiene que ser un enlace de Google Maps de tu local."
     )
   }
 
@@ -217,7 +217,7 @@ export default function UbicacionModal({
             type="button"
             onClick={() => {
               setError("")
-              setPaso("enlace")
+              setPaso("aviso")
             }}
             className="mt-6 w-full text-sm text-ink-2 hover:text-ink underline underline-offset-4 transition-colors"
           >
@@ -226,56 +226,44 @@ export default function UbicacionModal({
         </>
       )}
 
-      {/* ── La salida: pegar el enlace del mapa ─────────────────────────── */}
-      {paso === "enlace" && (
+      {/* ── El aviso ────────────────────────────────────────────────────
+          No es una vía alternativa: es una explicación. A propósito no manda a
+          buscar el sitio en un mapa externo — mandar a un dueño a Google Maps
+          es enseñarle que ahí ya está lo que él quiere vender, y de paso
+          sacarlo de la app.
+
+          Así que esta pantalla no pide nada. Sólo dice qué guarda el botón y
+          cuándo conviene pulsarlo, y devuelve a la persona a él. */}
+      {paso === "aviso" && (
         <>
-          <p className="text-sm text-ink-2 mb-4">
-            Busca tu local en Google Maps y pega aquí el enlace. Nosotros
-            encontramos el punto.
-          </p>
-
-          <input
-            type="url"
-            inputMode="url"
-            autoFocus
-            value={enlace}
-            onChange={(e) => {
-              setEnlace(e.target.value)
-              setError("")
-            }}
-            placeholder="Pega aquí el enlace de Google Maps"
-            disabled={ocupado}
-            className="w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-400"
-          />
-
-          <p className="text-xs text-ink-2 mt-2">
-            En Google Maps: busca tu local, pulsa «Compartir» y luego «Copiar
-            vínculo».
-          </p>
-
-          <Aviso />
-
-          <div className="flex gap-3 pt-6">
-            <button
-              type="button"
-              onClick={guardarDesdeEnlace}
-              disabled={ocupado || !enlace.trim()}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-bold py-3 px-6 rounded-2xl transition-all"
-            >
-              {ocupado ? "Guardando…" : "Guardar ubicación"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setError("")
-                setPaso("inicio")
-              }}
-              disabled={ocupado}
-              className="px-6 py-3 bg-black/5 hover:bg-black/10 disabled:opacity-60 text-ink font-semibold rounded-2xl transition-all"
-            >
-              Atrás
-            </button>
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 mb-5">
+            <p className="text-sm font-semibold text-ink mb-1">
+              El botón guarda el lugar donde estás en ese momento
+            </p>
+            <p className="text-sm text-ink-2">
+              Si lo pulsas desde tu casa, tu negocio quedará marcado en tu casa.
+            </p>
           </div>
+
+          <p className="text-sm text-ink-2 mb-2">
+            Para que tus clientes te encuentren bien, compártela estando dentro
+            de tu negocio.
+          </p>
+          <p className="text-sm text-ink-2">
+            No hay prisa: puedes hacerlo cuando quieras. Entra a «Mi negocio» y
+            vuelve a este botón.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              setError("")
+              setPaso("inicio")
+            }}
+            className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all"
+          >
+            Entendido
+          </button>
         </>
       )}
 
@@ -299,18 +287,18 @@ export default function UbicacionModal({
             Entendido
           </button>
 
-          {/* El precio de guardar de un toque: si el GPS erró, hay que poder
-              deshacerlo sin salir y volver a entrar. */}
+          {/* El precio de guardar de un toque: si el GPS erró —o se pulsó
+              desde el sitio equivocado— hay que poder rehacerlo sin cerrar y
+              volver a abrir. */}
           <button
             type="button"
             onClick={() => {
               setError("")
-              setEnlace("")
-              setPaso("enlace")
+              setPaso("inicio")
             }}
             className="mt-3 w-full text-sm text-ink-2 hover:text-ink underline underline-offset-4 transition-colors"
           >
-            No es aquí — corregir
+            No es aquí — volver a intentarlo
           </button>
         </>
       )}
