@@ -11,6 +11,12 @@ interface BusinessLocationProps {
   variant?: "default" | "compact" | "detailed"
 }
 
+/* Los textos no nombran a Google a propósito. Al cliente no le aporta saber
+   qué mapa se abre —le aporta llegar—, y nombrarlo es publicitar gratis al
+   producto que compite con este directorio: Maps también es un directorio de
+   negocios, con reseñas y horarios. La flecha de enlace externo que acompaña
+   al botón ya avisa de que se sale de la app, que es lo único que hace falta
+   decir para no engañar a nadie. */
 export default function BusinessLocation({
   address,
   latitude,
@@ -111,7 +117,7 @@ export default function BusinessLocation({
           />
         </svg>
         <span className="text-blue-500 font-semibold text-sm group-hover:text-blue-600 transition-colors">
-          📍 Ver ubicación en Google Maps
+          Ver ubicación
         </span>
         <svg 
           className="w-4 h-4 text-blue-500 group-hover:translate-x-1 transition-transform" 
