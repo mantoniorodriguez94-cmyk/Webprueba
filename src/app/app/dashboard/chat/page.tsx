@@ -64,6 +64,10 @@ function ChatInner() {
   const [clientConversations, setClientConversations] = useState<UnifiedConversation[]>([])
   const [businessConversations, setBusinessConversations] = useState<UnifiedConversation[]>([])
   const [userBusinesses, setUserBusinesses] = useState<UserBusiness[]>([])
+  /* Tener negocio, no "ser cuenta de empresa". Una cuenta de empresa recién
+     creada tampoco tiene bandeja de negocio que enseñar, y una persona nunca
+     la tendrá. La señal correcta es si existe el negocio. */
+  const tieneNegocio = userBusinesses.length > 0
   /** Which of the user's own businesses is currently active in the "Mi Negocio" tab */
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
   const [selectedConversation, setSelectedConversation] = useState<UnifiedConversation | null>(null)
@@ -189,6 +193,10 @@ function ChatInner() {
         name: b.name,
       }))
       setUserBusinesses(businesses)
+      /* Se puede llegar con ?tab=negocio en la URL —un enlace viejo, un
+         marcador— sin tener negocio. Sin esto quedaría en una pestaña que ya
+         no se dibuja: bandeja vacía y ninguna forma visible de volver. */
+      if (!businesses.length) setActiveTab("consultas")
       // Default to the first business; preserve any value already set by URL param
       setSelectedBusinessId((prev) => prev ?? businesses[0]?.id ?? null)
 
@@ -629,7 +637,12 @@ function ChatInner() {
             selectedConversation ? "hidden lg:flex" : "flex"
           } w-full lg:w-96 flex-col border-r border-black/8 bg-white/60 min-h-0`}
         >
-          {/* Tabs */}
+          {/* Tabs.
+              Sólo tienen sentido si hay dos. Sin negocio, la bandeja de
+              negocio no existe, y dejar "Mis Consultas" sola en una pestaña a
+              todo el ancho sugiere que hay otra vista escondida que no está.
+              Sin negocio no se dibuja la barra: se ve la bandeja y ya. */}
+          {tieneNegocio && (
           <div className="flex border-b border-black/10 flex-shrink-0">
             {/* Tab: Mis Consultas */}
             <button
@@ -679,6 +692,7 @@ function ChatInner() {
               )}
             </button>
           </div>
+          )}
 
           {/* ── Business context switcher (only when owning 2+ businesses) ── */}
           {activeTab === "negocio" && userBusinesses.length > 1 && (

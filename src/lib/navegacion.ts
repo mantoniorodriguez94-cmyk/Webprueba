@@ -17,7 +17,7 @@
  * en pantallas de 360 px.
  */
 
-import { Home, MessageCircle, User, Store, Crown, Search, Bookmark } from "lucide-react"
+import { Home, MessageCircle, User, Store, Crown, Bookmark } from "lucide-react"
 
 export type Destino = {
   href: string
@@ -96,16 +96,19 @@ export function destinosPrincipales({
     ]
   }
 
+  /* "Buscar" salió de la barra.
+     Abría el buscador del directorio, que es el mismo filtro que ya está a la
+     vista en la portada nada más entrar. Un destino que sólo desplaza a un
+     control visible de la pantalla en la que ya estás no es navegación: es un
+     botón de más ocupando uno de los cinco sitios buenos.
+
+     No se borra, queda escrito acá. Si algún día el buscador crece hasta
+     merecer pantalla propia, se devuelve esta entrada a la lista y se vuelve a
+     importar `Search` de lucide-react:
+
+       { href: "/app/dashboard?buscar=1", label: "Buscar", Icono: Search, activo: false } */
   return [
     inicio,
-    {
-      // Abre el buscador del directorio, que vivía escondido en un botón del
-      // encabezado.
-      href: "/app/dashboard?buscar=1",
-      label: "Buscar",
-      Icono: Search,
-      activo: false,
-    },
     {
       href: "/app/dashboard/guardados",
       label: "Guardados",
