@@ -216,7 +216,8 @@ export interface TierBenefitsOptions {
  *
  * Mapa de beneficios por tier:
  *   tier >= 1 (Conecta)   → is_premium + premium_until
- *   tier >= 2 (Destaca)   → search_priority_boost (+ is_featured si authoritative)
+ *   tier >= 2 (Destaca)   → prioridad en el feed, calculada en vivo desde el
+ *                           tier; NO se escribe espejo (+ is_featured si authoritative)
  *   tier >= 3 (Patrocina) → has_gold_border
  *
  * Nunca lanza: los beneficios visuales son secundarios frente al pago ya
@@ -278,8 +279,23 @@ export async function applyTierBenefitsToBusinesses(
         update.is_premium = true
         update.premium_until = premiumUntil
 
+        /* El plan YA NO enciende search_priority_boost, y ese es el arreglo.
+           Esa columna es un booleano SIN fecha al lado, así que a diferencia de
+           is_premium/premium_until nadie podía saber al leerla si seguía
+           vigente. Se encendía al comprar Destaca y no la apagaba nunca nadie:
+           quien pagaba un mes conservaba el primer puesto del directorio para
+           siempre, gratis. Justo el beneficio que Destaca vende.
+
+           No hace falta espejo: `tienePrioridad` ya concede la prioridad con
+           `tierVigente >= 2`, y el tier se calcula en vivo desde el perfil del
+           dueño —el feed lo trae en cada carga—. Un espejo que nadie refresca
+           sólo puede mentir.
+
+           La columna se queda, pero pasa a significar UNA sola cosa: concesión
+           manual de un administrador, indefinida y a propósito. Por eso en
+           modo authoritative sí se apaga: ahí el admin está fijando el estado
+           entero del negocio. */
         if (tierNum >= 2) {
-          update.search_priority_boost = true
           if (authoritative) update.is_featured = true
         } else if (authoritative) {
           update.search_priority_boost = false
