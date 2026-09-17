@@ -6,6 +6,7 @@ import Link from "next/link"
 import LocationSelector from "@/components/LocationSelector"
 import { toast } from "sonner"
 import { alertModal } from "@/lib/alertModal"
+import { CATEGORIAS } from "@/lib/categorias"
 import {
   isTierActive,
   MAX_NEGOCIOS_POR_CUENTA
@@ -336,15 +337,20 @@ export default function NuevoNegocioPage() {
               <label htmlFor="category" className="block text-sm font-semibold text-ink mb-2">
                 Categoría
               </label>
-              <input
+              <select
                 id="category"
-                type="text"
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
                 disabled={loading}
-              />
+              >
+                <option value="">Elige una categoría</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.emoji} {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Ubicación: Estado y Municipio (Obligatorio) */}

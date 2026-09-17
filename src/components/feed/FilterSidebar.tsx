@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import LocationSelector from "@/components/LocationSelector"
 import useUserLocation from "@/hooks/useUserLocation"
+import { CATEGORIAS, CATEGORIA_TODAS } from "@/lib/categorias"
 
 interface FilterSidebarProps {
   onFilterChange: (filters: FilterState) => void
@@ -26,19 +27,6 @@ export interface FilterState {
   sortBy: "recent" | "name" | "popular" | "cercania" | "lejania"
 }
 
-const categories = [
-  "Todos",
-  "Restaurantes",
-  "Tiendas",
-  "Servicios",
-  "Salud",
-  "Educación",
-  "Tecnología",
-  "Entretenimiento",
-  "Deportes",
-  "Belleza",
-  "Otros"
-]
 
 export default function FilterSidebar({ onFilterChange, embebido = false }: FilterSidebarProps) {
   const router = useRouter()
@@ -51,7 +39,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
   // Inicializar desde URL params
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: searchParams.get("search") || "",
-    category: searchParams.get("category") || "Todos",
+    category: searchParams.get("category") || CATEGORIA_TODAS,
     location: "", // Deprecated, mantener para compatibilidad
     state_id: searchParams.get("state_id") ? parseInt(searchParams.get("state_id")!) : null,
     municipality_id: searchParams.get("municipality_id") ? parseInt(searchParams.get("municipality_id")!) : null,
@@ -77,7 +65,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
     const params = new URLSearchParams()
 
     if (newFilters.searchTerm) params.set("search", newFilters.searchTerm)
-    if (newFilters.category && newFilters.category !== "Todos") params.set("category", newFilters.category)
+    if (newFilters.category && newFilters.category !== CATEGORIA_TODAS) params.set("category", newFilters.category)
     if (newFilters.state_id) params.set("state_id", newFilters.state_id.toString())
     if (newFilters.municipality_id) params.set("municipality_id", newFilters.municipality_id.toString())
     if (newFilters.sortBy && newFilters.sortBy !== "recent") params.set("sortBy", newFilters.sortBy)
@@ -103,7 +91,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
   const clearFilters = () => {
     const resetFilters: FilterState = {
       searchTerm: "",
-      category: "Todos",
+      category: CATEGORIA_TODAS,
       location: "",
       state_id: null,
       municipality_id: null,
@@ -114,7 +102,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
     onFilterChange(resetFilters)
   }
 
-  const hasActiveFilters = filters.category !== "Todos" ||
+  const hasActiveFilters = filters.category !== CATEGORIA_TODAS ||
     filters.searchTerm !== "" ||
     filters.state_id !== null ||
     filters.municipality_id !== null
@@ -201,17 +189,19 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
           Categoría
         </label>
         <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
+          {/* La pastilla enseña la etiqueta pero filtra por el identificador,
+              que es lo que hay guardado en la base. */}
+          {[{ id: CATEGORIA_TODAS, label: "Todas", emoji: "" }, ...CATEGORIAS].map((cat) => (
             <button
-              key={cat}
-              onClick={() => updateFilter("category", cat)}
+              key={cat.id}
+              onClick={() => updateFilter("category", cat.id)}
               className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                filters.category === cat
+                filters.category === cat.id
                   ? "bg-blue-500 text-white"
                   : "bg-black/5 text-ink-2 hover:bg-black/10 border border-black/8"
               }`}
             >
-              {cat}
+              {cat.emoji ? `${cat.emoji} ` : ""}{cat.label}
             </button>
           ))}
         </div>

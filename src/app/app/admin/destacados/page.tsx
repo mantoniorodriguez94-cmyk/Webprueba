@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Link from "next/link"
 import Image from "next/image"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 
 // Forzar renderizado dinámico porque usa cookies para autenticación
 export const dynamic = 'force-dynamic'
@@ -104,7 +105,7 @@ export default async function AdminDestacadosPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="text-lg font-bold truncate text-ink">{b.name || "Sin nombre"}</h3>
                     {b.category && (
-                      <p className="text-sm text-ink-2 truncate">{b.category}</p>
+                      <p className="text-sm text-ink-2 truncate">{etiquetaDeCategoria(b.category)}</p>
                     )}
                   </div>
                 </div>

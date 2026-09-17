@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import LocationSelector from "@/components/LocationSelector"
+import { CATEGORIAS } from "@/lib/categorias"
 
 interface AdminCreateBusinessWithCodeProps {
   onSuccess?: (businessId: string, code: string) => void
@@ -311,14 +312,17 @@ export default function AdminCreateBusinessWithCode({ onSuccess }: AdminCreateBu
               <label className="block text-sm font-semibold text-ink-2 mb-2">
                 Categoría
               </label>
-              <input
-                type="text"
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
-                placeholder="Ej: Restaurante, Tienda..."
+                className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
                 disabled={loading}
-              />
+              >
+                <option value="">Sin categoría</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 

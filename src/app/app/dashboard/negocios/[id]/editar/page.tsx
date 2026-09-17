@@ -10,6 +10,7 @@ import { topeDeFotos } from "@/lib/memberships/perks"
 import Link from "next/link"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import { CATEGORIAS, normalizarCategoria } from "@/lib/categorias"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
 
@@ -80,7 +81,7 @@ export default function EditarNegocioPage() {
         setNegocio(data)
         setName(data.name)
         setDescription(data.description ?? "")
-        setCategory(data.category ?? "")
+        setCategory(normalizarCategoria(data.category) ?? "")
         setAddress(data.address ?? "")
         setPhone(data.phone ? String(data.phone) : "")
         setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
@@ -309,15 +310,20 @@ export default function EditarNegocioPage() {
               <label htmlFor="category" className="block text-sm font-semibold text-ink mb-2">
                 Categoría
               </label>
-              <input
+              <select
                 id="category"
-                type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="Ej: Panadería, Restaurante, Tienda..."
-                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
                 disabled={loading}
-              />
+              >
+                <option value="">Elige una categoría</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.emoji} {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Dirección escrita. El punto en el mapa se pone desde "Mi

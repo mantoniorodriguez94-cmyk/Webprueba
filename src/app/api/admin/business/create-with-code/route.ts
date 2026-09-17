@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/utils/admin-auth'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { normalizarCategoria } from '@/lib/categorias'
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,7 +61,12 @@ export async function POST(request: NextRequest) {
         owner_id: null, // Negocio sin dueño
         name: name.trim(),
         description: description?.trim() || null,
-        category: category?.trim() || null,
+        /* Se normaliza en el servidor en vez de confiar en lo que llegue.
+           El formulario ya ofrece una lista cerrada, pero a esta ruta se la
+           puede llamar directamente, y un valor fuera de la lista rompería el
+           filtro del directorio — y lo rechazaría el CHECK de la base, con un
+           error feo en vez de un valor razonable. */
+        category: normalizarCategoria(category),
         address: address?.trim() || null,
         phone: phone ? parseInt(phone.toString().replace(/\D/g, '')) : null,
         whatsapp: whatsapp ? parseInt(whatsapp.toString().replace(/\D/g, '')) : null,

@@ -14,6 +14,13 @@ import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import useUserLocation from "@/hooks/useUserLocation"
+import {
+  CATEGORIA_TODAS,
+  CATEGORIA_OTROS,
+  etiquetaDeCategoria,
+  emojiDeCategoria,
+  normalizarCategoria,
+} from "@/lib/categorias"
 import { calculateDistance } from "@/lib/utils/distance"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
@@ -183,7 +190,7 @@ export default function DashboardPage() {
   const pendingUndoBusinessRef = useRef<Business | null>(null)
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: searchParamsInitial.get("search") || "",
-    category: searchParamsInitial.get("category") || "Todos",
+    category: searchParamsInitial.get("category") || CATEGORIA_TODAS,
     location: "", // Deprecated, mantener para compatibilidad
     state_id: stateIdParam,
     municipality_id: municipalityIdParam,
@@ -683,10 +690,12 @@ export default function DashboardPage() {
       })
     }
 
-    if (filters.category && filters.category !== "Todos") {
-      filtered = filtered.filter(b =>
-        normalizeText(b.category || "") === normalizeText(filters.category)
-      )
+    /* Comparación de identificador contra identificador. Antes se comparaban
+       dos textos libres aplanados, y por eso un negocio de "Panadería" no caía
+       en ninguna de las once opciones del filtro. `normalizarCategoria` cubre
+       la fila que traiga un valor antiguo o llegado por el panel de admin. */
+    if (filters.category && filters.category !== CATEGORIA_TODAS) {
+      filtered = filtered.filter(b => normalizarCategoria(b.category) === filters.category)
     }
 
     // Nota: Los filtros de state_id y municipality_id ya se aplican en fetchAllBusinesses
@@ -957,7 +966,7 @@ export default function DashboardPage() {
     })
   
   const businessesByCategory = allBusinesses.reduce((acc, business) => {
-    const category = business.category || "Otros"
+    const category = normalizarCategoria(business.category) || CATEGORIA_OTROS
     if (!acc[category]) acc[category] = []
     acc[category].push(business)
     return acc
@@ -1242,19 +1251,10 @@ export default function DashboardPage() {
                     >
                       <div className="text-center">
                         <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
-                          {category === "Restaurantes" && "🍽️"}
-                          {category === "Tiendas" && "🛍️"}
-                          {category === "Servicios" && "🔧"}
-                          {category === "Salud" && "⚕️"}
-                          {category === "Educación" && "📚"}
-                          {category === "Tecnología" && "💻"}
-                          {category === "Entretenimiento" && "🎭"}
-                          {category === "Deportes" && "⚽"}
-                          {category === "Belleza" && "💄"}
-                          {!["Restaurantes", "Tiendas", "Servicios", "Salud", "Educación", "Tecnología", "Entretenimiento", "Deportes", "Belleza"].includes(category) && "📦"}
+                          {emojiDeCategoria(category)}
                         </div>
                         <p className="font-semibold text-sm text-ink truncate group-hover:text-blue-700 transition-colors">
-                          {category}
+                          {etiquetaDeCategoria(category)}
                         </p>
                         <p className="text-xs text-ink-2 mt-1.5 transition-colors">
                           {businesses.length} {businesses.length === 1 ? 'negocio' : 'negocios'}
@@ -1291,7 +1291,7 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <span className="text-ink font-semibold">Filtra tu búsqueda</span>
-                  {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
+                  {(filters.category !== CATEGORIA_TODAS || filters.location || filters.searchTerm) && (
                     <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></div>
                   )}
                 </div>

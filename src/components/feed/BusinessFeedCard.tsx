@@ -22,6 +22,7 @@ import { CORONA_POR_TIER } from "@/components/memberships/MembershipBadge"
 import { Crown } from "lucide-react"
 import { toast } from "sonner"
 import { Dialog } from "@/components/ui/Overlay"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSIjMTMxMzEzIiB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4="
@@ -310,7 +311,7 @@ export default function BusinessFeedCard({
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                  {business.category}
+                  {etiquetaDeCategoria(business.category)}
                 </span>
               )}
               {/* El paréntesis importa. Escrito como `total_reviews && ...`,

@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -49,7 +50,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const title = `${business.name}${business.category ? ` - ${business.category}` : ''} | App Encuentra`
+  const categoria = etiquetaDeCategoria(business.category)
+  const title = `${business.name}${categoria ? ` - ${categoria}` : ''} | App Encuentra`
   /* La calificación salía de business.average_rating, que nunca existió: la
      expresión era siempre falsa y no añadía nada. Si se quiere en el
      resumen, hay que traerla de business_review_stats. */
@@ -257,7 +259,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
               <div className="flex-1">
                 <h1 className="text-4xl font-bold text-ink mb-2">{business.name}</h1>
                 {business.category && (
-                  <p className="text-blue-600 text-lg mb-4">{business.category}</p>
+                  <p className="text-blue-600 text-lg mb-4">{etiquetaDeCategoria(business.category)}</p>
                 )}
                 {averageRating > 0 && (
                   <div className="flex items-center gap-3 mb-4">
