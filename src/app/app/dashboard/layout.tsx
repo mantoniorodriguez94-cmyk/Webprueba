@@ -21,6 +21,7 @@ import useUser from "@/hooks/useUser"
 import BottomNav from "@/components/ui/BottomNav"
 import { useChatNotificationSound } from "@/hooks/useChatNotificationSound"
 import CuentaSuspendida from "@/components/auth/CuentaSuspendida"
+import { alMarcarLeidos } from "@/lib/mensajesNoLeidos"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
@@ -178,8 +179,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
      corrige solo sin que nadie lo note. */
   useEffect(() => {
     contarNoLeidos()
+
+    /* Aviso directo desde la pantalla de chat, sin pasar por la base.
+       Es el camino que hace que el globo se apague EN EL ACTO al leer. Los
+       otros dos —Realtime y el sondeo de abajo— siguen ahí porque cubren lo
+       que éste no ve: un mensaje que llega mientras miras, o uno leído desde
+       otro dispositivo. */
+    const dejarDeEscuchar = alMarcarLeidos(contarNoLeidos)
+
     const intervalo = setInterval(contarNoLeidos, 120000)
-    return () => clearInterval(intervalo)
+
+    return () => {
+      clearInterval(intervalo)
+      // Sin esto se acumularía una escucha por cada vez que el efecto se
+      // rehace, y el conteo se dispararía varias veces por un solo aviso.
+      dejarDeEscuchar()
+    }
   }, [contarNoLeidos])
 
   useEffect(() => {

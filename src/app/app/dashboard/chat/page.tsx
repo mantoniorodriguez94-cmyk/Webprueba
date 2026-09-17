@@ -12,6 +12,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import { alertModal } from "@/lib/alertModal"
+import { avisarMensajesLeidos } from "@/lib/mensajesNoLeidos"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -329,13 +330,20 @@ function ChatInner() {
       setMessages(recientes)
       setHayAnteriores((data?.length ?? 0) === MENSAJES_POR_PAGINA)
 
-      // Mark as read
-      await supabase
+      /* Marcar como leído.
+         Se comprueba el error: con RLS de por medio, un update que no alcanza
+         ninguna fila devuelve éxito silencioso, y el globo se quedaría
+         encendido sin que nadie supiera por qué. */
+      const { error: errorLeido } = await supabase
         .from("messages")
         .update({ is_read: true })
         .eq("conversation_id", conv.conversation_id)
         .eq("is_read", false)
         .neq("sender_id", user?.id)
+
+      if (errorLeido) {
+        console.error("[chat] No se pudieron marcar los mensajes como leídos:", errorLeido)
+      }
 
       if (conv.mode === "client") {
         await supabase
@@ -365,6 +373,12 @@ function ChatInner() {
           )
         )
       }
+      /* Aviso directo a la barra inferior, que es quien pinta el globo rojo.
+         Sin esto sólo se entera por Realtime —que depende de que la tabla esté
+         publicada, algo que no controla este código— o por su sondeo de dos
+         minutos. Leer un mensaje y ver el globo encendido durante dos minutos
+         se ve como un fallo. */
+      avisarMensajesLeidos()
     } catch (err) {
       console.error("[chat] loadMessages:", err)
     }
