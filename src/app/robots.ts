@@ -13,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/app/admin", "/app/dashboard", "/app/auth", "/api/", "/auth/callback"],
     },
-    sitemap: "https://appencuentra.com/sitemap.xml",
+    sitemap: "https://www.appencuentra.com/sitemap.xml",
   }
 }

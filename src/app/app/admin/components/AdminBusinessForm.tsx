@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import { alertModal } from "@/lib/alertModal"
 import type { Business } from "@/types/business"
+import { CATEGORIAS, normalizarCategoria } from "@/lib/categorias"
 
 /**
  * Los datos editables del negocio, dentro de la ficha de admin.
@@ -27,7 +28,7 @@ export default function AdminBusinessForm({ business }: { business: Business }) 
 
   const [name, setName] = useState(business.name || "")
   const [description, setDescription] = useState(business.description || "")
-  const [category, setCategory] = useState(business.category || "")
+  const [category, setCategory] = useState(normalizarCategoria(business.category) || "")
   const [address, setAddress] = useState(business.address || "")
   const [phone, setPhone] = useState(business.phone?.toString() || "")
   const [whatsapp, setWhatsapp] = useState(business.whatsapp?.toString() || "")
@@ -101,13 +102,17 @@ export default function AdminBusinessForm({ business }: { business: Business }) 
 
       <div>
         <label className={etiqueta} htmlFor="negocio-categoria">Categoría</label>
-        <input
+        <select
           id="negocio-categoria"
-          type="text"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className={campo}
-        />
+        >
+          <option value="">Sin categoría</option>
+          {CATEGORIAS.map((c) => (
+            <option key={c.id} value={c.id}>{c.label}</option>
+          ))}
+        </select>
       </div>
 
       <div>

@@ -21,10 +21,23 @@
   --ink-2: 107 107 120; /* #6B6B78 */
   --ink-3: 58 58 70; /* #3A3A46 */
   --ink-4: 36 36 44; /* #24242C */
-  --paper: 241 240 246; /* #F1F0F6 */
+  /* ── Cuánta distancia hay entre el papel y la tarjeta ────────────────────
+     El fondo era #F1F0F6 y la superficie #FAF9FD: nueve pasos de diferencia.
+     Donde la malla pastel se desvanece —la mitad inferior de casi cualquier
+     pantalla— una tarjeta blanca sobre un fondo casi blanco no se leía como
+     tarjeta, sino como un rectángulo que flota sin bordes. La app entera se
+     veía lavada.
+
+     El arreglo NO es oscurecer las tarjetas, que es lo que pide el instinto:
+     #F0EDFA (240,237,250) contra un papel de (241,240,246) es prácticamente
+     el mismo color — la tarjeta desaparecería del todo en esa zona. Se baja
+     el FONDO, que es lo que estaba demasiado claro, y la tarjeta apenas se
+     mueve: la separación media pasa de 8,3 a 15,0 y la pantalla gana
+     profundidad en vez de perder contraste. */
+  --paper: 231 228 240; /* #E7E4F0 */
   --paper-2: 250 249 253; /* #FAF9FD */
-  --paper-dim: 233 231 240; /* #E9E7F0 */
-  --blanco: 250 249 253; /* #FAF9FD */
+  --paper-dim: 222 219 234; /* #DEDBEA */
+  --blanco: 247 245 252; /* #F7F5FC */
 
   /* ── Cuánto tapan el fondo las superficies ───────────────────────────────
      El blanco puro dejaba todo plano: los paneles y las barras tapaban por

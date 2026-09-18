@@ -2,7 +2,6 @@
 -- ENCUENTRA - CONFIGURACIÓN DE TABLA BUSINESSES
 -- ============================================
 -- Ejecuta este SQL PRIMERO en: Supabase Dashboard > SQL Editor > New Query
--- IMPORTANTE: Ejecuta este script ANTES de seed-businesses.sql
 
 -- 1. CREAR TABLA BUSINESSES
 -- ============================================
@@ -119,8 +118,10 @@ WHERE tablename = 'businesses';
 -- ============================================
 -- SIGUIENTE PASO
 -- ============================================
--- ✅ Si todo se ejecutó correctamente:
---    Ahora ejecuta: scripts/seed-businesses.sql
+-- ✅ Si todo se ejecutó correctamente, la tabla queda lista para que los
+--    negocios se creen desde la app. Ya no hay script de datos de ejemplo:
+--    insertaba diez negocios inventados con fotos de banco de imágenes, y
+--    eso no tiene sitio en un directorio real.
 --
 -- ❌ Si hay errores:
 --    - Verifica que la tabla 'profiles' existe (ejecuta supabase-setup.sql primero)
@@ -129,5 +130,4 @@ WHERE tablename = 'businesses';
 -- ============================================
 
 RAISE NOTICE '✅ Tabla businesses creada exitosamente con políticas RLS';
-RAISE NOTICE '📝 Siguiente paso: Ejecuta scripts/seed-businesses.sql para agregar los 10 negocios modelo';
 

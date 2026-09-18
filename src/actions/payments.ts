@@ -145,17 +145,50 @@ export async function submitManualPayment(
       }
     }
 
-    // 5️⃣ Subir imagen a Supabase Storage
+    /* 5️⃣ Una solicitud pendiente a la vez.
+       Nada impedía enviar el mismo comprobante cinco veces: cinco filas
+       `pending` idénticas. La aprobación es idempotente para UNA solicitud,
+       pero el administrador no está aprobando la misma dos veces — está
+       aprobando solicitudes distintas del mismo pago real, y ahí se conceden
+       los meses tantas veces como apruebe.
+
+       Se comprueba acá y no con un índice único en la base a propósito: quien
+       paga de verdad dos meses seguidos SÍ tiene que poder enviar dos
+       comprobantes. Lo que no tiene sentido es tener dos esperando revisión a
+       la vez, porque el segundo no aporta nada que el primero no diga.
+
+       Va antes de subir el archivo para no dejar imágenes huérfanas en el
+       almacenamiento por un envío que se va a rechazar igual. */
+    const adminSupabase = getAdminClient()
+    const { data: pendiente, error: errorPendiente } = await (adminSupabase as any)
+      .from('manual_payment_submissions')
+      .select('id, created_at')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .limit(1)
+      .maybeSingle()
+
+    if (errorPendiente) {
+      /* Si no se puede comprobar, no se bloquea: negarle el pago a alguien por
+         un fallo nuestro de lectura es peor que arriesgar un duplicado, que al
+         menos un humano ve antes de aprobarlo. Queda el rastro para saberlo. */
+      console.error('[pago manual] No se pudo comprobar si había una solicitud pendiente:', errorPendiente)
+    } else if (pendiente) {
+      return {
+        success: false,
+        error: 'Ya tienes un comprobante esperando revisión. Te avisamos por correo en cuanto lo revisemos; no hace falta enviarlo de nuevo.'
+      }
+    }
+
+    // 6️⃣ Subir imagen a Supabase Storage
     // Generar nombre único de archivo: userId/membership/timestamp-random.ext
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 15)
     const fileExt = screenshot.name.split('.').pop() || 'jpg'
     const fileName = `${user.id}/membership/${timestamp}-${randomStr}.${fileExt}`
 
-    // Usar Admin Client para subir archivo (bypassa políticas de Storage)
-    // Esto evita problemas de permisos con archivos grandes
-    const adminSupabase = getAdminClient()
-    
+    // El archivo se sube con el Admin Client (el mismo de arriba): bypassa las
+    // políticas de Storage y evita problemas de permisos con archivos grandes.
     let uploadResult: { data: any; error: any } | null = null
 
     try {
@@ -199,7 +232,7 @@ export async function submitManualPayment(
       }
     }
 
-    // 6️⃣ Obtener URL del archivo subido
+    // 7️⃣ Obtener URL del archivo subido
     // Usar admin client para obtener la URL (bucket puede ser privado)
     const { data: { publicUrl } } = adminSupabase.storage
       .from('payment_receipts')
@@ -208,7 +241,7 @@ export async function submitManualPayment(
     // Construir la URL completa del archivo subido
     const receipt_url = publicUrl || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payment_receipts/${fileName}`
 
-    // 7️⃣ Crear registro en manual_payment_submissions usando Admin Client
+    // 8️⃣ Crear registro en manual_payment_submissions usando Admin Client
     const { data: submission, error: submissionError } = await (adminSupabase as any)
       .from('manual_payment_submissions')
       .insert({

@@ -34,8 +34,15 @@ yarn-error.log*
 # supabase CLI local cache
 supabase/.temp
 
-# local dev tooling config
-.claude
+# local dev tooling config.
+# Se ignora el CONTENIDO de .claude y no la carpeta: git no reincorpora nada
+# que esté dentro de un directorio ya excluido, así que con `.claude` a secas
+# la excepción de abajo no tendría efecto.
+.claude/*
+
+# Las habilidades sí se versionan: no son configuración local sino
+# conocimiento del proyecto, y deben viajar con el código que auditan.
+!.claude/skills/
 
 # typescript
 *.tsbuildinfo

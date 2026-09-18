@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import LocationSelector from "@/components/LocationSelector"
+import useUserLocation from "@/hooks/useUserLocation"
+import { CATEGORIAS, CATEGORIA_TODAS } from "@/lib/categorias"
 
 interface FilterSidebarProps {
   onFilterChange: (filters: FilterState) => void
@@ -22,35 +24,26 @@ export interface FilterState {
   location: string // Mantener para compatibilidad, pero deprecated - usar state_id y municipality_id
   state_id: number | null
   municipality_id: number | null
-  sortBy: "recent" | "name" | "popular"
+  sortBy: "recent" | "name" | "popular" | "cercania" | "lejania"
 }
 
-const categories = [
-  "Todos",
-  "Restaurantes",
-  "Tiendas",
-  "Servicios",
-  "Salud",
-  "Educación",
-  "Tecnología",
-  "Entretenimiento",
-  "Deportes",
-  "Belleza",
-  "Otros"
-]
 
 export default function FilterSidebar({ onFilterChange, embebido = false }: FilterSidebarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  /* La ubicación de quien mira. No se pide sola: igual que en las tarjetas,
+     el permiso se pide cuando la persona pulsa, viendo qué gana a cambio. */
+  const { userLocation, motivo, isLoading: buscandoUbicacion, requestLocation } = useUserLocation()
+
   // Inicializar desde URL params
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: searchParams.get("search") || "",
-    category: searchParams.get("category") || "Todos",
+    category: searchParams.get("category") || CATEGORIA_TODAS,
     location: "", // Deprecated, mantener para compatibilidad
     state_id: searchParams.get("state_id") ? parseInt(searchParams.get("state_id")!) : null,
     municipality_id: searchParams.get("municipality_id") ? parseInt(searchParams.get("municipality_id")!) : null,
-    sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular") || "recent"
+    sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular" | "cercania" | "lejania") || "recent"
   })
 
   // Sincronizar con URL params cuando cambien
@@ -64,7 +57,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
       municipality_id: municipalityId,
       searchTerm: searchParams.get("search") || prev.searchTerm,
       category: searchParams.get("category") || prev.category,
-      sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular") || prev.sortBy
+        sortBy: (searchParams.get("sortBy") as "recent" | "name" | "popular" | "cercania" | "lejania") || prev.sortBy
     }))
   }, [searchParams])
 
@@ -72,7 +65,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
     const params = new URLSearchParams()
 
     if (newFilters.searchTerm) params.set("search", newFilters.searchTerm)
-    if (newFilters.category && newFilters.category !== "Todos") params.set("category", newFilters.category)
+    if (newFilters.category && newFilters.category !== CATEGORIA_TODAS) params.set("category", newFilters.category)
     if (newFilters.state_id) params.set("state_id", newFilters.state_id.toString())
     if (newFilters.municipality_id) params.set("municipality_id", newFilters.municipality_id.toString())
     if (newFilters.sortBy && newFilters.sortBy !== "recent") params.set("sortBy", newFilters.sortBy)
@@ -98,7 +91,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
   const clearFilters = () => {
     const resetFilters: FilterState = {
       searchTerm: "",
-      category: "Todos",
+      category: CATEGORIA_TODAS,
       location: "",
       state_id: null,
       municipality_id: null,
@@ -109,7 +102,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
     onFilterChange(resetFilters)
   }
 
-  const hasActiveFilters = filters.category !== "Todos" ||
+  const hasActiveFilters = filters.category !== CATEGORIA_TODAS ||
     filters.searchTerm !== "" ||
     filters.state_id !== null ||
     filters.municipality_id !== null
@@ -196,17 +189,19 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
           Categoría
         </label>
         <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
+          {/* La pastilla enseña la etiqueta pero filtra por el identificador,
+              que es lo que hay guardado en la base. */}
+          {[{ id: CATEGORIA_TODAS, label: "Todas", emoji: "" }, ...CATEGORIAS].map((cat) => (
             <button
-              key={cat}
-              onClick={() => updateFilter("category", cat)}
+              key={cat.id}
+              onClick={() => updateFilter("category", cat.id)}
               className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                filters.category === cat
+                filters.category === cat.id
                   ? "bg-blue-500 text-white"
                   : "bg-black/5 text-ink-2 hover:bg-black/10 border border-black/8"
               }`}
             >
-              {cat}
+              {cat.emoji ? `${cat.emoji} ` : ""}{cat.label}
             </button>
           ))}
         </div>
@@ -224,11 +219,23 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
           {[
             { value: "recent" as const, label: "Más recientes", icon: "🕐" },
             { value: "name" as const, label: "Nombre (A-Z)", icon: "🔤" },
-            { value: "popular" as const, label: "Más populares", icon: "⭐" }
+            { value: "popular" as const, label: "Más populares", icon: "⭐" },
+            /* Los dos sentidos de la distancia se listan SIEMPRE, también sin
+               ubicación. Esconderlos hasta tener el permiso dejaba a la gente
+               sin saber que existen —y no se pide un permiso para algo que no
+               sabes que puedes hacer—. Al pulsarlos sin ubicación se pide, y
+               en cuanto llega la lista se reordena sola. */
+            { value: "cercania" as const, label: "Más cercanos", icon: "📍" },
+            { value: "lejania" as const, label: "Más lejanos", icon: "🛣️" },
           ].map((option) => (
             <button
               key={option.value}
-              onClick={() => updateFilter("sortBy", option.value)}
+              onClick={() => {
+                const necesitaUbicacion =
+                  option.value === "cercania" || option.value === "lejania"
+                if (necesitaUbicacion && !userLocation) requestLocation()
+                updateFilter("sortBy", option.value)
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 filters.sortBy === option.value
                   ? "bg-blue-50 border-2 border-blue-500 text-ink"
@@ -245,6 +252,20 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
             </button>
           ))}
         </div>
+
+        {/* Sólo se avisa cuando el orden elegido depende de la ubicación y no
+            la hay. Un aviso permanente sería ruido para quien ordena por
+            nombre. */}
+        {(filters.sortBy === "cercania" || filters.sortBy === "lejania") &&
+          !userLocation && (
+            <p className="text-xs text-ink-2 bg-black/5 border border-black/8 rounded-2xl px-4 py-3">
+              {buscandoUbicacion
+                ? "Buscando tu ubicación…"
+                : motivo === "denegado"
+                  ? "Tu navegador tiene bloqueada la ubicación para este sitio. Actívala en sus ajustes para ordenar por distancia."
+                  : "Necesitamos tu ubicación para ordenar por distancia. Tu ubicación no sale de tu navegador."}
+            </p>
+          )}
       </div>
 
       {/* Info card */}

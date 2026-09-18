@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import Link from "next/link"
 import Image from "next/image"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 import {
   isTierActive,
   MIN_RESENAS,
@@ -245,7 +246,7 @@ export default function TopRatedBusinesses() {
                   {business.name}
                 </h4>
                 <p className="text-xs text-ink-2 truncate">
-                  {business.category}
+                  {etiquetaDeCategoria(business.category)}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
                   {/* Stars */}

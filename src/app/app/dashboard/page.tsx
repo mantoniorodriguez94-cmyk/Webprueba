@@ -13,6 +13,15 @@ import dynamic from "next/dynamic"
 import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
+import useUserLocation from "@/hooks/useUserLocation"
+import {
+  CATEGORIA_TODAS,
+  CATEGORIA_OTROS,
+  etiquetaDeCategoria,
+  emojiDeCategoria,
+  normalizarCategoria,
+} from "@/lib/categorias"
+import { calculateDistance } from "@/lib/utils/distance"
 import { containsText, normalizeText } from "@/lib/searchHelpers"
 import SectionHeader from "@/components/ui/SectionHeader"
 import LogoCabecera from "@/components/brand/LogoCabecera"
@@ -181,12 +190,17 @@ export default function DashboardPage() {
   const pendingUndoBusinessRef = useRef<Business | null>(null)
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: searchParamsInitial.get("search") || "",
-    category: searchParamsInitial.get("category") || "Todos",
+    category: searchParamsInitial.get("category") || CATEGORIA_TODAS,
     location: "", // Deprecated, mantener para compatibilidad
     state_id: stateIdParam,
     municipality_id: municipalityIdParam,
-    sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular") || "recent"
+    sortBy: (searchParamsInitial.get("sortBy") as "recent" | "name" | "popular" | "cercania" | "lejania") || "recent"
   })
+
+  /* Ubicación de quien mira, para el filtro y el orden por cercanía. Es la
+     misma instancia compartida que usan las tarjetas: si alguien concede el
+     permiso desde una tarjeta, el filtro se habilita solo, y al revés. */
+  const { userLocation } = useUserLocation()
   const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias">("feed")
 
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -676,10 +690,12 @@ export default function DashboardPage() {
       })
     }
 
-    if (filters.category && filters.category !== "Todos") {
-      filtered = filtered.filter(b =>
-        normalizeText(b.category || "") === normalizeText(filters.category)
-      )
+    /* Comparación de identificador contra identificador. Antes se comparaban
+       dos textos libres aplanados, y por eso un negocio de "Panadería" no caía
+       en ninguna de las once opciones del filtro. `normalizarCategoria` cubre
+       la fila que traiga un valor antiguo o llegado por el panel de admin. */
+    if (filters.category && filters.category !== CATEGORIA_TODAS) {
+      filtered = filtered.filter(b => normalizarCategoria(b.category) === filters.category)
     }
 
     // Nota: Los filtros de state_id y municipality_id ya se aplican en fetchAllBusinesses
@@ -698,6 +714,32 @@ export default function DashboardPage() {
 
       // Dentro del mismo grupo, aplicar el orden seleccionado
       switch (filters.sortBy) {
+        case "cercania":
+        case "lejania": {
+          /* Sin ubicación no hay nada que comparar; se deja el orden tal cual
+             y la barra lateral explica qué falta.
+
+             Los negocios sin coordenadas van AL FINAL en los dos sentidos, y
+             por eso no basta con invertir el signo: si se tratara la distancia
+             desconocida como "infinita", en "más lejanos" los que no se pueden
+             medir encabezarían la lista. Van fuera del orden, no en un extremo
+             de él. */
+          if (!userLocation) return 0
+
+          const medir = (n: typeof a) =>
+            n.latitude != null && n.longitude != null
+              ? calculateDistance(userLocation.lat, userLocation.lng, n.latitude, n.longitude)
+              : null
+
+          const distA = medir(a)
+          const distB = medir(b)
+
+          if (distA === null && distB === null) return 0
+          if (distA === null) return 1
+          if (distB === null) return -1
+
+          return filters.sortBy === "cercania" ? distA - distB : distB - distA
+        }
         case "name":
           return a.name.localeCompare(b.name)
         case "popular":
@@ -712,7 +754,9 @@ export default function DashboardPage() {
     setFilteredBusinesses(filtered)
     // Resetear contador cuando cambian los filtros
     setVisibleCount(ITEMS_PER_PAGE)
-  }, [filters, allBusinesses, ITEMS_PER_PAGE])
+    // userLocation entra en las dependencias: al conceder el permiso, la lista
+    // tiene que recalcularse sola sin tocar ningún filtro.
+  }, [filters, allBusinesses, ITEMS_PER_PAGE, userLocation])
 
   // Intersection Observer para scroll infinito (debe estar antes de los early returns)
   useEffect(() => {
@@ -922,7 +966,7 @@ export default function DashboardPage() {
     })
   
   const businessesByCategory = allBusinesses.reduce((acc, business) => {
-    const category = business.category || "Otros"
+    const category = normalizarCategoria(business.category) || CATEGORIA_OTROS
     if (!acc[category]) acc[category] = []
     acc[category].push(business)
     return acc
@@ -1207,19 +1251,10 @@ export default function DashboardPage() {
                     >
                       <div className="text-center">
                         <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
-                          {category === "Restaurantes" && "🍽️"}
-                          {category === "Tiendas" && "🛍️"}
-                          {category === "Servicios" && "🔧"}
-                          {category === "Salud" && "⚕️"}
-                          {category === "Educación" && "📚"}
-                          {category === "Tecnología" && "💻"}
-                          {category === "Entretenimiento" && "🎭"}
-                          {category === "Deportes" && "⚽"}
-                          {category === "Belleza" && "💄"}
-                          {!["Restaurantes", "Tiendas", "Servicios", "Salud", "Educación", "Tecnología", "Entretenimiento", "Deportes", "Belleza"].includes(category) && "📦"}
+                          {emojiDeCategoria(category)}
                         </div>
                         <p className="font-semibold text-sm text-ink truncate group-hover:text-blue-700 transition-colors">
-                          {category}
+                          {etiquetaDeCategoria(category)}
                         </p>
                         <p className="text-xs text-ink-2 mt-1.5 transition-colors">
                           {businesses.length} {businesses.length === 1 ? 'negocio' : 'negocios'}
@@ -1256,7 +1291,7 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <span className="text-ink font-semibold">Filtra tu búsqueda</span>
-                  {(filters.category !== "Todos" || filters.location || filters.searchTerm) && (
+                  {(filters.category !== CATEGORIA_TODAS || filters.location || filters.searchTerm) && (
                     <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></div>
                   )}
                 </div>

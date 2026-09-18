@@ -3,6 +3,7 @@
 import React from "react"
 import Image from "next/image"
 import type { Business } from "@/types/business"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 
 interface HighlightsSidebarProps {
   featuredBusinesses?: Business[]
@@ -130,7 +131,7 @@ export default function HighlightsSidebar({
                   </h4>
                   {business.category && (
                     <p className="text-xs text-gray-500 truncate">
-                      {business.category}
+                      {etiquetaDeCategoria(business.category)}
                     </p>
                   )}
                 </div>

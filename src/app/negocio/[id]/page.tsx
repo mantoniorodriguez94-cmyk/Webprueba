@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -14,9 +15,21 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidar cada hora
 
 /**
- * Generar metadata SEO para la página pública del negocio
+ * Generar metadata SEO para la página pública del negocio.
+ *
+ * OJO con el `export`: faltaba, y sin él Next ni se entera de que esta
+ * función existe. El efecto era invisible desde el código —la función está
+ * escrita entera, con su consulta y sus etiquetas— pero en producción TODAS
+ * las fichas heredaban los metadatos de la portada: el mismo título para
+ * cada negocio, la misma descripción, y ningún canonical propio. Compartir
+ * un negocio por WhatsApp mostraba la tarjeta genérica de la app en vez de
+ * la del negocio.
+ *
+ * Se descubrió comparando el HTML que sirve producción contra lo que decía
+ * el código. Leer el archivo no bastaba: el cuerpo de la función parecía
+ * correcto y lo que fallaba era una palabra en su primera línea.
  */
-async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const supabase = await createClient()
   
@@ -37,15 +50,24 @@ async function generateMetadata({ params }: { params: Promise<{ id: string }> })
     }
   }
 
-  const title = `${business.name}${business.category ? ` - ${business.category}` : ''} | App Encuentra`
+  const categoria = etiquetaDeCategoria(business.category)
+  const title = `${business.name}${categoria ? ` - ${categoria}` : ''} | App Encuentra`
   /* La calificación salía de business.average_rating, que nunca existió: la
      expresión era siempre falsa y no añadía nada. Si se quiere en el
      resumen, hay que traerla de business_review_stats. */
   const description = business.description || `Conoce más sobre ${business.name}${business.address ? ` ubicado en ${business.address}` : ''}.`
 
-  // URL canónica
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/negocio/${id}`
-  const imageUrl = business.logo_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://appencuentra.com'}/og-default.png`
+  /* URL canónica. El respaldo lleva www, igual que el host que Vercel sirve:
+     si NEXT_PUBLIC_APP_URL faltara, la ficha se anunciaba a sí misma bajo un
+     dominio que redirige, que es exactamente lo que un canonical no debe
+     hacer. */
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.appencuentra.com'
+  const url = `${baseUrl}/negocio/${id}`
+  /* La imagen de respaldo apuntaba a /og-default.png, que no existe en
+     `public/`. Un negocio sin logo se compartía por WhatsApp con una vista
+     previa rota — 404 en la imagen. Se usa la misma tarjeta de marca que ya
+     emplea la portada. */
+  const imageUrl = business.logo_url || `${baseUrl}/brand/og.png`
 
   return {
     title,
@@ -237,7 +259,7 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
               <div className="flex-1">
                 <h1 className="text-4xl font-bold text-ink mb-2">{business.name}</h1>
                 {business.category && (
-                  <p className="text-blue-600 text-lg mb-4">{business.category}</p>
+                  <p className="text-blue-600 text-lg mb-4">{etiquetaDeCategoria(business.category)}</p>
                 )}
                 {averageRating > 0 && (
                   <div className="flex items-center gap-3 mb-4">

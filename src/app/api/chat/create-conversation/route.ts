@@ -62,6 +62,27 @@ export async function POST(req: NextRequest) {
     // ── 2. Fetch business ────────────────────────────────────────────────────
     const supabase = createAdminClient()
 
+    /* Cuenta suspendida: no escribe.
+       Esta comprobación va a mano y no en una política de la base como el
+       resto, porque esta ruta inserta con la service role y la service role
+       SALTA RLS por completo. Las políticas restrictivas de
+       suspension_efectiva.sql cubren todo lo que escribe el navegador —
+       reseñas, mensajes sueltos, negocios, promociones— pero no esto. Sin
+       estas líneas, "mandó spam por chat" seguiría pudiendo mandar spam por
+       chat, que es justo el caso que la suspensión existe para frenar. */
+    const { data: perfilRemitente } = await supabase
+      .from("profiles")
+      .select("suspended_at")
+      .eq("id", sender.id)
+      .maybeSingle()
+
+    if ((perfilRemitente as any)?.suspended_at) {
+      return NextResponse.json(
+        { error: "Tu cuenta está suspendida y no puede enviar mensajes." },
+        { status: 403 }
+      )
+    }
+
     const { data: business, error: bizErr } = await supabase
       .from("businesses")
       .select("id, owner_id, name")

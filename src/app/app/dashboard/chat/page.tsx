@@ -12,6 +12,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useChatNotifications } from "@/hooks/useChatNotifications"
 import { alertModal } from "@/lib/alertModal"
+import { avisarMensajesLeidos } from "@/lib/mensajesNoLeidos"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,10 @@ function ChatInner() {
   const [clientConversations, setClientConversations] = useState<UnifiedConversation[]>([])
   const [businessConversations, setBusinessConversations] = useState<UnifiedConversation[]>([])
   const [userBusinesses, setUserBusinesses] = useState<UserBusiness[]>([])
+  /* Tener negocio, no "ser cuenta de empresa". Una cuenta de empresa recién
+     creada tampoco tiene bandeja de negocio que enseñar, y una persona nunca
+     la tendrá. La señal correcta es si existe el negocio. */
+  const tieneNegocio = userBusinesses.length > 0
   /** Which of the user's own businesses is currently active in the "Mi Negocio" tab */
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
   const [selectedConversation, setSelectedConversation] = useState<UnifiedConversation | null>(null)
@@ -189,6 +194,10 @@ function ChatInner() {
         name: b.name,
       }))
       setUserBusinesses(businesses)
+      /* Se puede llegar con ?tab=negocio en la URL —un enlace viejo, un
+         marcador— sin tener negocio. Sin esto quedaría en una pestaña que ya
+         no se dibuja: bandeja vacía y ninguna forma visible de volver. */
+      if (!businesses.length) setActiveTab("consultas")
       // Default to the first business; preserve any value already set by URL param
       setSelectedBusinessId((prev) => prev ?? businesses[0]?.id ?? null)
 
@@ -321,13 +330,20 @@ function ChatInner() {
       setMessages(recientes)
       setHayAnteriores((data?.length ?? 0) === MENSAJES_POR_PAGINA)
 
-      // Mark as read
-      await supabase
+      /* Marcar como leído.
+         Se comprueba el error: con RLS de por medio, un update que no alcanza
+         ninguna fila devuelve éxito silencioso, y el globo se quedaría
+         encendido sin que nadie supiera por qué. */
+      const { error: errorLeido } = await supabase
         .from("messages")
         .update({ is_read: true })
         .eq("conversation_id", conv.conversation_id)
         .eq("is_read", false)
         .neq("sender_id", user?.id)
+
+      if (errorLeido) {
+        console.error("[chat] No se pudieron marcar los mensajes como leídos:", errorLeido)
+      }
 
       if (conv.mode === "client") {
         await supabase
@@ -357,6 +373,12 @@ function ChatInner() {
           )
         )
       }
+      /* Aviso directo a la barra inferior, que es quien pinta el globo rojo.
+         Sin esto sólo se entera por Realtime —que depende de que la tabla esté
+         publicada, algo que no controla este código— o por su sondeo de dos
+         minutos. Leer un mensaje y ver el globo encendido durante dos minutos
+         se ve como un fallo. */
+      avisarMensajesLeidos()
     } catch (err) {
       console.error("[chat] loadMessages:", err)
     }
@@ -629,7 +651,12 @@ function ChatInner() {
             selectedConversation ? "hidden lg:flex" : "flex"
           } w-full lg:w-96 flex-col border-r border-black/8 bg-white/60 min-h-0`}
         >
-          {/* Tabs */}
+          {/* Tabs.
+              Sólo tienen sentido si hay dos. Sin negocio, la bandeja de
+              negocio no existe, y dejar "Mis Consultas" sola en una pestaña a
+              todo el ancho sugiere que hay otra vista escondida que no está.
+              Sin negocio no se dibuja la barra: se ve la bandeja y ya. */}
+          {tieneNegocio && (
           <div className="flex border-b border-black/10 flex-shrink-0">
             {/* Tab: Mis Consultas */}
             <button
@@ -679,6 +706,7 @@ function ChatInner() {
               )}
             </button>
           </div>
+          )}
 
           {/* ── Business context switcher (only when owning 2+ businesses) ── */}
           {activeTab === "negocio" && userBusinesses.length > 1 && (

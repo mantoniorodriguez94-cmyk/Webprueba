@@ -1,134 +1,172 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback, useEffect, useSyncExternalStore } from "react"
 
 export interface UserLocation {
   lat: number
   lng: number
 }
 
+/** Por qué no tenemos la ubicación. Importa distinguir "denegado" del resto:
+ *  una vez que alguien niega el permiso, el navegador NO vuelve a preguntar
+ *  por más veces que se le pida, así que reintentar no sirve de nada y hay que
+ *  decirle a la persona que lo desbloquee ella. */
+export type MotivoSinUbicacion =
+  | "denegado"
+  | "no-disponible"
+  | "tiempo-agotado"
+  | "sin-soporte"
+  | "desconocido"
+
 interface UseUserLocationReturn {
   userLocation: UserLocation | null
-  error: string | null
+  motivo: MotivoSinUbicacion | null
   isLoading: boolean
   requestLocation: () => void
 }
 
 const STORAGE_KEY = "user_location"
-const LOCATION_CACHE_DURATION = 1000 * 60 * 30 // 30 minutos
+const DURACION_CACHE = 1000 * 60 * 30 // 30 minutos
 
-interface StoredLocation {
+interface UbicacionGuardada {
   lat: number
   lng: number
   timestamp: number
 }
 
+/* ── Estado COMPARTIDO entre todas las tarjetas ──────────────────────────────
+ *
+ * Antes cada llamada al hook tenía su propio estado. Con veinte negocios en
+ * el feed eso eran veinte copias independientes: veinte peticiones de GPS al
+ * cargar, y —lo que rompe el botón de compartir— conceder el permiso desde
+ * una tarjeta no enteraba a las otras diecinueve, que seguían mostrando el
+ * botón como si nada.
+ *
+ * Con un único estado a nivel de módulo, se pide una vez y se enteran todas.
+ */
+interface Estado {
+  userLocation: UserLocation | null
+  motivo: MotivoSinUbicacion | null
+  isLoading: boolean
+}
+
+let estado: Estado = { userLocation: null, motivo: null, isLoading: false }
+const suscriptores = new Set<() => void>()
+
+function publicar(cambio: Partial<Estado>) {
+  estado = { ...estado, ...cambio }
+  suscriptores.forEach((avisar) => avisar())
+}
+
+function suscribir(avisar: () => void) {
+  suscriptores.add(avisar)
+  return () => {
+    suscriptores.delete(avisar)
+  }
+}
+
+const leer = () => estado
+
+/* En el servidor no hay navegador ni ubicación. Tiene que ser SIEMPRE el mismo
+   objeto: si devolviera uno nuevo en cada llamada, React entraría en un bucle
+   de renders. */
+const ESTADO_SERVIDOR: Estado = { userLocation: null, motivo: null, isLoading: false }
+const leerEnServidor = () => ESTADO_SERVIDOR
+
+/** La ubicación cacheada se lee una sola vez por carga de página. */
+let cacheLeida = false
+
+function rescatarDeLaSesion() {
+  if (cacheLeida) return
+  cacheLeida = true
+
+  try {
+    const guardado = sessionStorage.getItem(STORAGE_KEY)
+    if (!guardado) return
+
+    const parseado: UbicacionGuardada = JSON.parse(guardado)
+    if (Date.now() - parseado.timestamp < DURACION_CACHE) {
+      publicar({ userLocation: { lat: parseado.lat, lng: parseado.lng } })
+    } else {
+      sessionStorage.removeItem(STORAGE_KEY)
+    }
+  } catch {
+    /* En incógnito o con el almacenamiento bloqueado esto lanza. No es un
+       error que le importe a nadie: simplemente no hay nada cacheado. */
+  }
+}
+
+function pedirAlNavegador() {
+  if (estado.isLoading) return // ya hay una petición en vuelo
+
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    publicar({ motivo: "sin-soporte" })
+    return
+  }
+
+  publicar({ isLoading: true, motivo: null })
+
+  navigator.geolocation.getCurrentPosition(
+    (posicion) => {
+      const ubicacion: UserLocation = {
+        lat: posicion.coords.latitude,
+        lng: posicion.coords.longitude,
+      }
+      publicar({ userLocation: ubicacion, isLoading: false, motivo: null })
+
+      try {
+        const guardar: UbicacionGuardada = { ...ubicacion, timestamp: Date.now() }
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(guardar))
+      } catch {
+        /* Sin almacenamiento se vuelve a pedir en la próxima carga. */
+      }
+    },
+    (err) => {
+      const motivo: MotivoSinUbicacion =
+        err.code === err.PERMISSION_DENIED
+          ? "denegado"
+          : err.code === err.POSITION_UNAVAILABLE
+            ? "no-disponible"
+            : err.code === err.TIMEOUT
+              ? "tiempo-agotado"
+              : "desconocido"
+      publicar({ isLoading: false, motivo })
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000,
+    }
+  )
+}
+
 /**
- * Hook personalizado para obtener la ubicación del usuario
- * Usa sessionStorage para persistir la ubicación durante la sesión
+ * Ubicación de QUIEN MIRA la app — no la del negocio, que vive en la base.
+ * Sólo sirve para calcular distancias en el navegador; no se envía a ninguna
+ * parte ni se guarda más allá de la sesión.
+ *
+ * NO la pide sola. Antes sí: el hook lanzaba `getCurrentPosition` al montar,
+ * así que el cartel de permiso del navegador saltaba nada más entrar a la app,
+ * sin contexto y sin que nadie lo hubiera pedido. Esa es la peor forma de
+ * pedirlo —y la más cara, porque una vez que alguien lo niega el navegador no
+ * vuelve a preguntar nunca—. Ahora se pide cuando la persona pulsa el botón de
+ * la tarjeta, que es el momento en el que ve qué gana a cambio.
  */
 export default function useUserLocation(): UseUserLocationReturn {
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const { userLocation, motivo, isLoading } = useSyncExternalStore(
+    suscribir,
+    leer,
+    leerEnServidor
+  )
 
-  // Función para obtener la ubicación
-  const requestLocationInternal = useCallback(() => {
-    if (!navigator.geolocation) {
-      setError("La geolocalización no está disponible en este navegador")
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location: UserLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        }
-        
-        setUserLocation(location)
-        setIsLoading(false)
-
-        // Guardar en sessionStorage
-        try {
-          const stored: StoredLocation = {
-            ...location,
-            timestamp: Date.now(),
-          }
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
-        } catch (err) {
-          console.error("Error saving location to sessionStorage:", err)
-        }
-      },
-      (err) => {
-        setIsLoading(false)
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            setError("Permiso de ubicación denegado")
-            break
-          case err.POSITION_UNAVAILABLE:
-            setError("Ubicación no disponible")
-            break
-          case err.TIMEOUT:
-            setError("Tiempo de espera agotado")
-            break
-          default:
-            setError("Error desconocido al obtener la ubicación")
-            break
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000, // 10 segundos
-        maximumAge: 300000, // 5 minutos
-      }
-    )
+  // Recuperar lo cacheado sí es gratis y no pregunta nada.
+  useEffect(() => {
+    rescatarDeLaSesion()
   }, [])
 
-  // Función pública para obtener la ubicación (puede ser llamada manualmente)
   const requestLocation = useCallback(() => {
-    requestLocationInternal()
-  }, [requestLocationInternal])
+    pedirAlNavegador()
+  }, [])
 
-  // Cargar ubicación desde sessionStorage al montar y solicitar si no existe
-  useEffect(() => {
-    const loadStoredLocation = () => {
-      try {
-        const stored = sessionStorage.getItem(STORAGE_KEY)
-        if (stored) {
-          const parsed: StoredLocation = JSON.parse(stored)
-          const now = Date.now()
-          
-          // Validar que la ubicación almacenada no sea muy antigua
-          if (now - parsed.timestamp < LOCATION_CACHE_DURATION) {
-            setUserLocation({ lat: parsed.lat, lng: parsed.lng })
-            return true
-          } else {
-            // Limpiar ubicación expirada
-            sessionStorage.removeItem(STORAGE_KEY)
-          }
-        }
-      } catch (err) {
-        console.error("Error loading stored location:", err)
-      }
-      return false
-    }
-
-    const hasStoredLocation = loadStoredLocation()
-    
-    // Si no hay ubicación almacenada, solicitar ubicación
-    if (!hasStoredLocation && navigator.geolocation) {
-      requestLocationInternal()
-    }
-  }, [requestLocationInternal])
-
-  return {
-    userLocation,
-    error,
-    isLoading,
-    requestLocation,
-  }
+  return { userLocation, motivo, isLoading, requestLocation }
 }

@@ -15,6 +15,7 @@ import MembershipBadge from "@/components/memberships/MembershipBadge"
 import { getBadgeTypeForTier, type MembershipTier } from "@/lib/memberships/tiers"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { toast } from "sonner"
+import { etiquetaDeCategoria } from "@/lib/categorias"
 
 export default function MisNegociosPage() {
   const router = useRouter()
@@ -188,8 +189,12 @@ export default function MisNegociosPage() {
       <SectionHeader
         onVolver={() => router.back()}
         volverSoloEscritorio
-        titulo="Mis negocios"
-        subtitulo={`${negocios.length} negocio${negocios.length !== 1 ? "s" : ""} creado${negocios.length !== 1 ? "s" : ""}`}
+        titulo="Mi negocio"
+        /* Singular, y coincidiendo con lo que ya dice la barra inferior.
+           El plural venía de cuando una cuenta podía tener varios; ahora el
+           índice businesses_un_negocio_por_cuenta lo impide, así que "Mis
+           negocios · 0 negocios creados" prometía algo que la app rechaza. */
+        subtitulo={negocios.length === 0 ? "Aún no lo has creado" : "Tu negocio en el directorio"}
         icono={
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -205,7 +210,7 @@ export default function MisNegociosPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-ink-2">Cargando negocios...</p>
+            <p className="mt-4 text-ink-2">Cargando…</p>
           </div>
         ) : negocios.length === 0 ? (
           <div className="text-center py-16 px-4">
@@ -214,8 +219,8 @@ export default function MisNegociosPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-ink mb-2">No tienes negocios aún</h3>
-            <p className="text-ink-2 mb-6">Crea tu primer negocio y comienza a recibir clientes</p>
+            <h3 className="text-xl font-bold text-ink mb-2">Todavía no has creado tu negocio</h3>
+            <p className="text-ink-2 mb-6">Créalo y empieza a recibir clientes</p>
             <button 
               onClick={handleCreateBusiness}
               disabled={!canCreateMore}
@@ -225,7 +230,7 @@ export default function MisNegociosPage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Crear mi primer negocio
+              Crear mi negocio
             </button>
             {!canCreateMore && !tierLoading && limitMessage && (
               <p className="text-sm text-amber-600 mt-3 max-w-sm">{limitMessage}</p>
@@ -268,7 +273,7 @@ export default function MisNegociosPage() {
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                           </svg>
-                          {negocio.category}
+                          {etiquetaDeCategoria(negocio.category)}
                         </p>
                       )}
                     </div>
@@ -330,21 +335,6 @@ export default function MisNegociosPage() {
         confirmLabel="Eliminar definitivamente"
         cancelLabel="Cancelar"
       />
-
-      {/* FAB - Botón Flotante para Crear Negocio */}
-      <button 
-        onClick={handleCreateBusiness}
-        disabled={!canCreateMore}
-        title={limitMessage ?? undefined}
-        className="fixed bottom-24 lg:bottom-8 right-6 z-40 w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-blue-500/50"
-      >
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-        </svg>
-        <div className="absolute bottom-20 right-0 bg-ink-3 text-paper px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-xl pointer-events-none">
-          {canCreateMore ? "Crear negocio" : (limitMessage ?? "Límite alcanzado")}
-        </div>
-      </button>
 
     </div>
   )
