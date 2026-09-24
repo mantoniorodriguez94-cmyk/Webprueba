@@ -262,17 +262,27 @@ export default function Home() {
                       propio estilo. Pin + radar azul en vez de una flecha
                       genérica: es el mismo gesto de "poner tu negocio en el
                       mapa" que ya usa el ícono de Ubicación GPS más abajo
-                      (animate-pin-drop), así que no inventa un motivo nuevo. */}
-                  <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
-                    <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
-                      <span className="flex items-center justify-center gap-2.5">
-                        <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
-                          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+                      (animate-pin-drop), así que no inventa un motivo nuevo.
+
+                      Solo para quien no tiene sesión — es un CTA de
+                      conversión ("hazte dueño de negocio en la app"), no
+                      un destino de navegación. Quien ya inició sesión no
+                      necesita "registrarse", solo tiene sentido si además
+                      no tiene negocio, y esa pantalla ya vive en el
+                      dashboard (Mis negocios). Mostrarlo acá igual
+                      confundía: parecía llevar a crear otra cuenta. */}
+                  {!userLoading && !user && (
+                    <Link href="/app/auth/register" className="w-full sm:w-auto">
+                      <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
+                        <span className="flex items-center justify-center gap-2.5">
+                          <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
+                            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+                          </span>
+                          Registrar mi negocio
                         </span>
-                        Registrar mi negocio
-                      </span>
-                    </button>
-                  </Link>
+                      </button>
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -563,16 +573,20 @@ export default function Home() {
                   Buscar negocios
                 </button>
               </Link>
-              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
-                <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
-                  <span className="flex items-center justify-center gap-2.5">
-                    <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+              {/* Mismo criterio que el botón del hero: solo para quien no
+                  tiene sesión iniciada. */}
+              {!userLoading && !user && (
+                <Link href="/app/auth/register" className="w-full sm:w-auto">
+                  <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
+                    <span className="flex items-center justify-center gap-2.5">
+                      <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
+                        <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+                      </span>
+                      Registrar mi negocio
                     </span>
-                    Registrar mi negocio
-                  </span>
-                </button>
-              </Link>
+                  </button>
+                </Link>
+              )}
             </div>
           </div>
         </section>
