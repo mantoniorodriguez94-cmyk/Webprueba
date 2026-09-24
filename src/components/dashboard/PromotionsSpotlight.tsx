@@ -1,25 +1,12 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
-import { supabase } from "@/lib/supabaseClient"
+import React, { useRef, useState } from "react"
 import Link from "next/link"
 import { Crown, ChevronLeft, ChevronRight } from "lucide-react"
-import { SUBSCRIPTION_TIER_PATROCINA, isTierActive } from "@/lib/memberships/tiers"
-import { perkVigente } from "@/lib/memberships/perks"
-
-export interface SpotlightPromotion {
-  id: string
-  name: string
-  price: number | null
-  start_date: string
-  end_date: string
-  business_id: string
-  business_name: string
-}
+import usePromocionesPatrocinadas from "@/hooks/usePromocionesPatrocinadas"
 
 export default function PromotionsSpotlight() {
-  const [promotions, setPromotions] = useState<SpotlightPromotion[]>([])
-  const [loading, setLoading] = useState(true)
+  const { promociones, cargando } = usePromocionesPatrocinadas()
   const [indice, setIndice] = useState(0)
   const pistaRef = useRef<HTMLDivElement>(null)
 
@@ -34,7 +21,7 @@ export default function PromotionsSpotlight() {
   const irA = (destino: number) => {
     const pista = pistaRef.current
     if (!pista) return
-    const total = promotions.length
+    const total = promociones.length
     const objetivo = ((destino % total) + total) % total
     pista.scrollTo({ left: objetivo * pista.clientWidth, behavior: "smooth" })
   }
@@ -44,98 +31,6 @@ export default function PromotionsSpotlight() {
     if (!pista || pista.clientWidth === 0) return
     setIndice(Math.round(pista.scrollLeft / pista.clientWidth))
   }
-
-  useEffect(() => {
-    const loadFounderPromotions = async () => {
-      try {
-        const today = new Date().toISOString().split("T")[0]
-
-        const { data: promotionsData, error: promotionsError } = await supabase
-          .from("promotions")
-          .select("id, name, price, start_date, end_date, business_id")
-          .eq("is_active", true)
-          .lte("start_date", today)
-          .gte("end_date", today)
-          .order("created_at", { ascending: false })
-          .limit(20)
-
-        if (promotionsError || !promotionsData?.length) {
-          setPromotions([])
-          setLoading(false)
-          return
-        }
-
-        const businessIds = [...new Set(promotionsData.map((p) => p.business_id))]
-        const { data: businessesData, error: businessesError } = await supabase
-          .from("businesses")
-          .select("id, name, owner_id, perk_promociones_hasta")
-          .in("id", businessIds)
-
-        if (businessesError || !businessesData?.length) {
-          setPromotions([])
-          setLoading(false)
-          return
-        }
-
-        const ownerIds = [...new Set(businessesData.map((b) => b.owner_id))]
-        // El filtro por columna (.eq subscription_tier) no distingue un pago
-        // vigente de uno vencido hace meses — se trae también
-        // subscription_end_date y se filtra con isTierActive, la misma
-        // comprobación que usa el resto de la app.
-        const { data: profilesData, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, subscription_tier, subscription_end_date")
-          .in("id", ownerIds)
-          .eq("subscription_tier", SUBSCRIPTION_TIER_PATROCINA)
-
-        if (profilesError) {
-          setPromotions([])
-          setLoading(false)
-          return
-        }
-
-        const founderOwnerIds = new Set(
-          (profilesData || [])
-            .filter((p: any) => isTierActive(p.subscription_tier, p.subscription_end_date))
-            .map((p) => p.id)
-        )
-        const businessesMap = new Map(businessesData.map((b) => [b.id, b]))
-
-        // Entra en la vitrina quien tiene Patrocina vigente, o quien recibió
-        // el módulo suelto desde el panel mientras la concesión no caduque.
-        const founderPromos: SpotlightPromotion[] = promotionsData
-          .filter((p) => {
-            const biz = businessesMap.get(p.business_id)
-            if (!biz) return false
-            return (
-              founderOwnerIds.has(biz.owner_id) ||
-              perkVigente((biz as { perk_promociones_hasta?: string | null }).perk_promociones_hasta)
-            )
-          })
-          .map((p) => {
-            const biz = businessesMap.get(p.business_id)!
-            return {
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              start_date: p.start_date,
-              end_date: p.end_date,
-              business_id: p.business_id,
-              business_name: biz.name,
-            }
-          })
-
-        setPromotions(founderPromos)
-      } catch (err) {
-        console.error("[PromotionsSpotlight] Error:", err)
-        setPromotions([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadFounderPromotions()
-  }, [])
 
   /* El encabezado se reparte entre el estado vacío y el normal, para que no
      haya dos copias del mismo título que puedan divergir. */
@@ -157,13 +52,13 @@ export default function PromotionsSpotlight() {
 
   // Mientras carga no se pinta nada: la pestaña ya muestra su propio esqueleto
   // al traer el componente, y encadenar un segundo esqueleto parpadea.
-  if (loading) return null
+  if (cargando) return null
 
   /* Sin promociones hay que decirlo. Cuando esto vivía incrustado en medio del
      feed, devolver null era lo correcto: nadie había pedido ver promociones y
      un cartel de "no hay" sólo ocupaba sitio. Ahora es el destino de una
      pestaña, así que null deja una pantalla en blanco a quien sí las pidió. */
-  if (promotions.length === 0) {
+  if (promociones.length === 0) {
     return (
       <section className="rounded-3xl border border-amber-300 dark:border-amber-400/40 bg-white dark:bg-paper-2 p-5 shadow-sm">
         {encabezado}
@@ -191,7 +86,7 @@ export default function PromotionsSpotlight() {
         onScroll={alDesplazar}
         className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth scrollbar-none"
       >
-        {promotions.map((promo) => (
+        {promociones.map((promo) => (
           <Link
             key={promo.id}
             href={`/app/dashboard/negocios/${promo.business_id}`}
@@ -232,7 +127,7 @@ export default function PromotionsSpotlight() {
       </div>
 
       {/* Con una sola promoción los controles sobran y sugerirían que hay más. */}
-      {promotions.length > 1 && (
+      {promociones.length > 1 && (
         <div className="mt-3 flex items-center justify-between gap-3">
           <button
             type="button"
@@ -244,12 +139,12 @@ export default function PromotionsSpotlight() {
           </button>
 
           <div className="flex items-center gap-1.5">
-            {promotions.map((promo, i) => (
+            {promociones.map((promo, i) => (
               <button
                 key={promo.id}
                 type="button"
                 onClick={() => irA(i)}
-                aria-label={`Ir a la promoción ${i + 1} de ${promotions.length}`}
+                aria-label={`Ir a la promoción ${i + 1} de ${promociones.length}`}
                 aria-current={i === indice}
                 className={`h-2 rounded-full transition-all ${
                   i === indice ? "w-5 bg-amber-500" : "w-2 bg-amber-200 hover:bg-amber-300"

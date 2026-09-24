@@ -13,6 +13,7 @@ import type { Business } from "@/types/business"
 import BusinessFeedCard from "@/components/feed/BusinessFeedCard"
 import type { FilterState } from "@/components/feed/FilterSidebar"
 import useUserLocation from "@/hooks/useUserLocation"
+import usePromocionesPatrocinadas from "@/hooks/usePromocionesPatrocinadas"
 import {
   CATEGORIA_TODAS,
   CATEGORIA_OTROS,
@@ -170,12 +171,10 @@ const CommunityFeed = dynamic(
 /* La pestaña "Promociones" del móvil. El sidebar derecho no se ve ahí
    (hidden lg:block), así que las promociones necesitan su propio sitio.
 
-   Usa PromotionsSpotlight y no el ActivePromotions del sidebar, aunque los dos
-   lean lo mismo: ActivePromotions rota sola cada segundo. Como ticker de
-   fondo en una columna de 320px eso funciona, pero en una pestaña que se abre
-   a propósito para mirar promociones no da tiempo a leer ninguna antes de que
-   cambie. Spotlight se mueve con el dedo, al ritmo de quien mira, y además
-   enseña el precio. */
+   Es la MISMA vitrina que usa el rail en escritorio. Hubo un tiempo con dos
+   componentes para esto —éste y un ActivePromotions que vivía en el rail,
+   leyendo lo mismo y pintándolo distinto—; quedó uno. El sitio cambia según
+   el ancho, el componente no. */
 const PromotionsSpotlight = dynamic(
   () => import("@/components/dashboard/PromotionsSpotlight"),
   { ssr: false, loading: () => panelCargando }
@@ -187,6 +186,10 @@ export default function DashboardPage() {
   const searchParamsInitial = useSearchParams()
   const { user, loading: userLoading } = useUser()
   const { effectiveTier, loading: tierLoading } = useMembershipAccess()
+  /* Cuántas promociones vivas hay, para el contador del chip. Comparte la
+     misma cadena de consultas que la vitrina: el hook la cachea, así que
+     saberlo acá no cuesta un viaje extra. */
+  const { promociones: promocionesVivas } = usePromocionesPatrocinadas()
   const currentBadgeType = getBadgeTypeForTier(effectiveTier as MembershipTier)
   
   // Leer parámetros de URL para filtros de ubicación
@@ -1229,16 +1232,35 @@ export default function DashboardPage() {
             </button>
             {/* Solo tiene sentido donde el sidebar derecho no se ve — en
                 desktop (lg+) ya está ahí siempre visible, así que la
-                pestaña sería la misma "Promociones" dos veces en pantalla. */}
+                pestaña sería la misma "Promociones" dos veces en pantalla.
+
+                El punto ámbar con el número es la única señal de que hay algo
+                que mirar, y sólo aparece cuando LAS HAY. Es estático a
+                propósito: un elemento que parpadea permanentemente molesta a
+                quien es sensible al movimiento, y al resto lo entrena a
+                ignorarlo en dos días, que es justo lo contrario de lo que
+                busca el patrocinador que lo paga. */}
             <button
               onClick={() => setActiveTab("promociones")}
-              className={`lg:hidden px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`lg:hidden inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "promociones"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
                   : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
               }`}
             >
               Promociones
+              {promocionesVivas.length > 0 && (
+                <span
+                  aria-label={`${promocionesVivas.length} ${promocionesVivas.length === 1 ? "promoción activa" : "promociones activas"}`}
+                  className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-mono font-bold flex items-center justify-center ${
+                    activeTab === "promociones"
+                      ? "bg-white/25 text-white"
+                      : "bg-amber-400 text-amber-950"
+                  }`}
+                >
+                  {promocionesVivas.length > 9 ? "9+" : promocionesVivas.length}
+                </span>
+              )}
             </button>
         </div>
       </div>
