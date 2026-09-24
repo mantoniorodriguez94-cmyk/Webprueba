@@ -46,8 +46,26 @@ export default function BottomNav({
     miNegocioHref,
   })
 
+  /* Barra flotante, no pegada al filo.
+     Iba `bottom-0 left-0 right-0` con `border-t`: de lado a lado y contra el
+     borde de la pantalla. Ahora se separa unos milímetros de los tres lados,
+     se redondea y se levanta con una sombra, así se lee como algo que va POR
+     ENCIMA del contenido y no como el final de la página.
+
+     El hueco de abajo suma env(safe-area-inset-bottom), igual que hace
+     Overlay.tsx. Hoy ese valor es 0 porque el viewport no declara
+     viewport-fit: cover, pero si algún día se declara, la barra sube sola por
+     encima del indicador de inicio en vez de quedar debajo.
+
+     Se va también `safe-bottom`, que estaba en la lista de clases desde
+     siempre y no existe: no está definida ni en globals.css ni en la
+     configuración de Tailwind, así que no hacía absolutamente nada.
+
+     max-w-lg con mx-auto porque `lg:hidden` llega hasta 1023 px: sin tope, en
+     una tablet los cinco destinos quedaban desparramados a lo ancho de toda
+     la pantalla. */
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden transform-gpu bg-white/90 dark:bg-paper-2/95 backdrop-blur-md border-t border-black/10 dark:border-white/10 safe-bottom">
+    <nav className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 right-3 mx-auto max-w-lg z-50 lg:hidden transform-gpu rounded-[1.75rem] bg-white/90 dark:bg-paper-2/95 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-lg shadow-black/10 dark:shadow-black/50">
       <div className="flex items-stretch justify-around px-1 py-1.5">
         {destinos.map(({ href, label, Icono, activo, badge }) => (
           <Link
@@ -58,9 +76,12 @@ export default function BottomNav({
               activo ? "bg-blue-50 dark:bg-blue-500/15" : "hover:bg-black/5 dark:hover:bg-white/5"
             }`}
           >
-            {activo && (
-              <span className="absolute -top-1.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-blue-500" />
-            )}
+            {/* Acá había una pestañita azul en `-top-1.5`, o sea fuera de la
+                barra. Contra un borde recto y a ras del suelo se leía como el
+                indicador de pestaña activa; asomando por encima de una barra
+                redondeada y flotante queda como un trozo suelto. El destino
+                activo ya se distingue por el fondo teñido, el ícono y la
+                etiqueta en azul, que es señal de sobra. */}
 
             {Boolean(badge && badge > 0) && (
               <span className="absolute top-0.5 right-1/2 translate-x-4 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-mono font-bold flex items-center justify-center">
