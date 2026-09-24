@@ -1271,10 +1271,19 @@ export default function DashboardPage() {
                 plan Patrocina, que hasta ahora se cobraba sin entregarse: el
                 componente existía pero ningún archivo lo importaba.
 
-                Va acá, arriba del listado y visible en móvil, porque el
-                beneficio comprado es visibilidad frente a compradores. Si no
-                hay ninguna promoción de patrocinador, no renderiza nada. */}
-            <PromotionsSpotlight />
+                Va acá, arriba del listado, porque el beneficio comprado es
+                visibilidad frente a compradores. Si no hay ninguna promoción
+                de patrocinador, no renderiza nada.
+
+                Solo en móvil/tablet (`lg:hidden`): en desktop el sidebar
+                derecho ya tiene su propio widget de Promociones
+                (RightSidebar/ActivePromotions.tsx) — mostrar los dos a la vez
+                duplicaba la misma promoción en el centro Y a la derecha de
+                la misma pantalla. Sin sidebar en móvil, este sigue siendo el
+                único lugar donde el patrocinador consigue esa visibilidad. */}
+            <div className="lg:hidden">
+              <PromotionsSpotlight />
+            </div>
 
             {/* Botón de Filtros Colapsable (Solo Mobile).
                 Mejores y Comunidad no son listados filtrables, así que ahí el
