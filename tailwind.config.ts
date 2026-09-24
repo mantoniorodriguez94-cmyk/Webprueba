@@ -148,6 +148,14 @@ const config: Config = {
           '0%': { boxShadow: '0 0 0 0 rgba(69,185,141,0.55)' },
           '100%': { boxShadow: '0 0 0 22px rgba(69,185,141,0)' },
         },
+        // Mismo efecto que radar-pulse, en el azul de marca — para el pin
+        // de "Registrar mi negocio": ese botón no es un estado semántico
+        // (verificado/activo, lo que ya significa el verde), así que usa
+        // el acento único en vez de tomar prestado el verde.
+        'radar-pulse-blue': {
+          '0%': { boxShadow: '0 0 0 0 rgba(91,79,232,0.5)' },
+          '100%': { boxShadow: '0 0 0 18px rgba(91,79,232,0)' },
+        },
         marquee: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
@@ -225,6 +233,7 @@ const config: Config = {
         shimmer: 'shimmer 2s linear infinite',
         'pin-drop': 'pin-drop 0.6s cubic-bezier(.34,1.56,.64,1)',
         'radar-pulse': 'radar-pulse 1.1s ease-out infinite',
+        'radar-pulse-blue': 'radar-pulse-blue 1.1s ease-out infinite',
       },
     },
   },

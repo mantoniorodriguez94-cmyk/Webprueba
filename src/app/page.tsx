@@ -257,13 +257,20 @@ export default function Home() {
                     </button>
                   </Link>
 
+                  {/* Único botón "Registrar mi negocio" de la página junto con
+                      el del CTA final — antes había cuatro, cada uno con su
+                      propio estilo. Pin + radar azul en vez de una flecha
+                      genérica: es el mismo gesto de "poner tu negocio en el
+                      mapa" que ya usa el ícono de Ubicación GPS más abajo
+                      (animate-pin-drop), así que no inventa un motivo nuevo. */}
                   <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
-                    {/* bg-ink es la superficie oscura FIJA, no el texto —
-                        en modo oscuro el fondo de página ya es ese mismo
-                        ink, así que necesita su propio par claro en vez de
-                        invertirse con la variable. */}
-                    <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-ink hover:bg-ink/90 dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/15 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg">
-                      Registrar mi negocio
+                    <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
+                      <span className="flex items-center justify-center gap-2.5">
+                        <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
+                          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+                        </span>
+                        Registrar mi negocio
+                      </span>
                     </button>
                   </Link>
                 </div>
@@ -473,14 +480,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CTA Para Negocios */}
-            <div className="text-center mt-8">
-              <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="inline-block w-full sm:w-auto">
-                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/25">
-                  Registrar mi negocio
-                </button>
-              </Link>
-            </div>
+            {/* Sin CTA propio a propósito: la página ya tiene solo dos
+                botones "Registrar mi negocio" (hero + CTA final), un
+                tercero acá era el que sobraba de los cuatro originales. */}
           </div>
         </section>
 
@@ -562,8 +564,13 @@ export default function Home() {
                 </button>
               </Link>
               <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white hover:bg-black/5 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-black/10">
-                  Registrar mi negocio
+                <button className="group relative w-full sm:w-auto min-h-[48px] px-8 py-4 bg-white dark:bg-white/10 text-ink font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-blue-200 dark:border-white/20 hover:border-blue-400 dark:hover:border-blue-400/60 shadow-lg hover:shadow-xl hover:shadow-blue-500/15">
+                  <span className="flex items-center justify-center gap-2.5">
+                    <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-500/15 flex-shrink-0 group-hover:animate-radar-pulse-blue">
+                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:animate-pin-drop" strokeWidth={2.4} />
+                    </span>
+                    Registrar mi negocio
+                  </span>
                 </button>
               </Link>
             </div>
