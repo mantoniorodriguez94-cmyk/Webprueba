@@ -1,7 +1,6 @@
 // src/app/dashboard/page.tsx - REDISEÑO MOBILE-FIRST MODERNO
 "use client"
 import React, { useEffect, useState, useCallback, useRef } from "react"
-import PromotionsSpotlight from "@/components/dashboard/PromotionsSpotlight"
 import AuthGate from "@/components/auth/AuthGate"
 import Image from "next/image"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
@@ -168,11 +167,17 @@ const CommunityFeed = dynamic(
   { ssr: false, loading: () => panelCargando }
 )
 
-// Mismo componente que ya usa RightSidebar en desktop — en móvil el sidebar
-// no se muestra (hidden lg:block), así que "Promociones" no tenía dónde
-// verse ahí. Se reutiliza como pestaña, igual que Mejores/Comunidad.
-const ActivePromotions = dynamic(
-  () => import("@/components/dashboard/RightSidebar/ActivePromotions"),
+/* La pestaña "Promociones" del móvil. El sidebar derecho no se ve ahí
+   (hidden lg:block), así que las promociones necesitan su propio sitio.
+
+   Usa PromotionsSpotlight y no el ActivePromotions del sidebar, aunque los dos
+   lean lo mismo: ActivePromotions rota sola cada segundo. Como ticker de
+   fondo en una columna de 320px eso funciona, pero en una pestaña que se abre
+   a propósito para mirar promociones no da tiempo a leer ninguna antes de que
+   cambie. Spotlight se mueve con el dedo, al ritmo de quien mira, y además
+   enseña el precio. */
+const PromotionsSpotlight = dynamic(
+  () => import("@/components/dashboard/PromotionsSpotlight"),
   { ssr: false, loading: () => panelCargando }
 )
 
@@ -1287,24 +1292,12 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Promociones de patrocinadores.
-                Es la contraprestación del "Módulo de Promociones" que vende el
-                plan Patrocina, que hasta ahora se cobraba sin entregarse: el
-                componente existía pero ningún archivo lo importaba.
-
-                Va acá, arriba del listado, porque el beneficio comprado es
-                visibilidad frente a compradores. Si no hay ninguna promoción
-                de patrocinador, no renderiza nada.
-
-                Solo en móvil/tablet (`lg:hidden`): en desktop el sidebar
-                derecho ya tiene su propio widget de Promociones
-                (RightSidebar/ActivePromotions.tsx) — mostrar los dos a la vez
-                duplicaba la misma promoción en el centro Y a la derecha de
-                la misma pantalla. Sin sidebar en móvil, este sigue siendo el
-                único lugar donde el patrocinador consigue esa visibilidad. */}
-            <div className="lg:hidden">
-              <PromotionsSpotlight />
-            </div>
+            {/* Acá vivía el bloque de Promociones destacadas, incrustado entre
+                los filtros y el listado en todas las pestañas del móvil. Se
+                movió a su propia pestaña: estaba dos veces en la misma
+                pantalla —el bloque fijo y la pestaña "Promociones"— y encima
+                se metía en medio de "Todos", "Recientes" o cualquier otra,
+                empujando hacia abajo el listado que se había ido a ver. */}
 
             {/* Botón de Filtros Colapsable (Solo Mobile).
                 Mejores y Comunidad no son listados filtrables, así que ahí el
@@ -1353,7 +1346,7 @@ export default function DashboardPage() {
             ) : activeTab === "comunidad" ? (
               <CommunityFeed />
             ) : activeTab === "promociones" ? (
-              <ActivePromotions />
+              <PromotionsSpotlight />
             ) : loading ? (
               <div className="text-center py-16">
                 <div className="relative w-16 h-16 mx-auto mb-6">

@@ -137,26 +137,54 @@ export default function PromotionsSpotlight() {
     loadFounderPromotions()
   }, [])
 
-  // No se muestra nada mientras carga. El caso habitual es que no haya
-  // ninguna promoción de patrocinador, y un esqueleto grande que aparece para
-  // después desaparecer es peor que no mostrar nada.
-  if (loading || promotions.length === 0) return null
+  /* El encabezado se reparte entre el estado vacío y el normal, para que no
+     haya dos copias del mismo título que puedan divergir. */
+  const encabezado = (
+    <div className="mb-4 flex items-start gap-3">
+      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200">
+        <Crown className="h-5 w-5 text-amber-500" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="font-display text-lg font-bold text-ink leading-tight">
+          Promociones destacadas
+        </h2>
+        <p className="text-sm text-ink-2">
+          Ofertas de negocios que patrocinan la plataforma
+        </p>
+      </div>
+    </div>
+  )
+
+  // Mientras carga no se pinta nada: la pestaña ya muestra su propio esqueleto
+  // al traer el componente, y encadenar un segundo esqueleto parpadea.
+  if (loading) return null
+
+  /* Sin promociones hay que decirlo. Cuando esto vivía incrustado en medio del
+     feed, devolver null era lo correcto: nadie había pedido ver promociones y
+     un cartel de "no hay" sólo ocupaba sitio. Ahora es el destino de una
+     pestaña, así que null deja una pantalla en blanco a quien sí las pidió. */
+  if (promotions.length === 0) {
+    return (
+      <section className="rounded-3xl border border-amber-300 dark:border-amber-400/40 bg-white dark:bg-paper-2 p-5 shadow-sm">
+        {encabezado}
+        <div className="text-center py-8">
+          <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center mx-auto mb-3">
+            <Crown className="w-8 h-8 text-ink-2/50" />
+          </div>
+          <p className="text-sm font-medium text-ink">
+            No hay promociones activas
+          </p>
+          <p className="mt-1 text-sm text-ink-2">
+            Cuando un negocio patrocinador publique una oferta, aparecerá acá.
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="rounded-3xl border border-amber-300 dark:border-amber-400/40 bg-white dark:bg-paper-2 p-5 shadow-sm">
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200">
-          <Crown className="h-5 w-5 text-amber-500" />
-        </span>
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-bold text-ink leading-tight">
-            Promociones destacadas
-          </h2>
-          <p className="text-sm text-ink-2">
-            Ofertas de negocios que patrocinan la plataforma
-          </p>
-        </div>
-      </div>
+      {encabezado}
 
       <div
         ref={pistaRef}
