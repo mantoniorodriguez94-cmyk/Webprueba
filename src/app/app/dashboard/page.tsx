@@ -168,6 +168,14 @@ const CommunityFeed = dynamic(
   { ssr: false, loading: () => panelCargando }
 )
 
+// Mismo componente que ya usa RightSidebar en desktop — en móvil el sidebar
+// no se muestra (hidden lg:block), así que "Promociones" no tenía dónde
+// verse ahí. Se reutiliza como pestaña, igual que Mejores/Comunidad.
+const ActivePromotions = dynamic(
+  () => import("@/components/dashboard/RightSidebar/ActivePromotions"),
+  { ssr: false, loading: () => panelCargando }
+)
+
 export default function DashboardPage() {
   const router = useRouter()
   const pathname = usePathname()
@@ -201,7 +209,7 @@ export default function DashboardPage() {
      misma instancia compartida que usan las tarjetas: si alguien concede el
      permiso desde una tarjeta, el filtro se habilita solo, y al revés. */
   const { userLocation } = useUserLocation()
-  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias">("feed")
+  const [activeTab, setActiveTab] = useState<"feed" | "destacados" | "recientes" | "mejores" | "comunidad" | "categorias" | "promociones">("feed")
 
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
@@ -1214,6 +1222,19 @@ export default function DashboardPage() {
             >
               Comunidad
             </button>
+            {/* Solo tiene sentido donde el sidebar derecho no se ve — en
+                desktop (lg+) ya está ahí siempre visible, así que la
+                pestaña sería la misma "Promociones" dos veces en pantalla. */}
+            <button
+              onClick={() => setActiveTab("promociones")}
+              className={`lg:hidden px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                activeTab === "promociones"
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
+                  : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
+              }`}
+            >
+              Promociones
+            </button>
         </div>
       </div>
 
@@ -1288,7 +1309,7 @@ export default function DashboardPage() {
             {/* Botón de Filtros Colapsable (Solo Mobile).
                 Mejores y Comunidad no son listados filtrables, así que ahí el
                 botón prometería algo que no hace. */}
-            <div className={["mejores", "comunidad", "categorias"].includes(activeTab) ? "hidden" : "lg:hidden"}>
+            <div className={["mejores", "comunidad", "categorias", "promociones"].includes(activeTab) ? "hidden" : "lg:hidden"}>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-full surface hover:bg-blue-50 hover:border-blue-200 rounded-2xl px-4 py-3 flex items-center justify-between transition-all duration-300 shadow-sm"
@@ -1331,6 +1352,8 @@ export default function DashboardPage() {
               <TopRatedBusinesses />
             ) : activeTab === "comunidad" ? (
               <CommunityFeed />
+            ) : activeTab === "promociones" ? (
+              <ActivePromotions />
             ) : loading ? (
               <div className="text-center py-16">
                 <div className="relative w-16 h-16 mx-auto mb-6">
