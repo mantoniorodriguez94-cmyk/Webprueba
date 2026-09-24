@@ -168,7 +168,7 @@ function ReviewCard({
                     open={menuAbierto}
                     onClose={() => setMenuAbierto(false)}
                     align="right"
-                    panelClassName="w-48 rounded-2xl border border-black/10 bg-white p-1 shadow-lg"
+                    panelClassName="w-48 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 p-1 shadow-lg"
                   >
                     <button
                       type="button"

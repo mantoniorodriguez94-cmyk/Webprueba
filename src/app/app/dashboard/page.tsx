@@ -1409,7 +1409,7 @@ export default function DashboardPage() {
         open={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         aria-label="Filtros"
-        panelClassName="w-full max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl lg:hidden"
+        panelClassName="w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-paper-2 rounded-t-3xl lg:hidden"
       >
         <div className="pb-4 border-b border-black/10 flex items-center justify-between">
           <h3 className="text-lg font-bold text-ink">Filtros</h3>
@@ -1438,7 +1438,7 @@ export default function DashboardPage() {
         open={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         aria-label="Buscar"
-        panelClassName="max-w-2xl w-full bg-white border border-black/8 rounded-3xl p-4 shadow-2xl"
+        panelClassName="max-w-2xl w-full bg-white dark:bg-paper-2 border border-black/8 dark:border-white/10 rounded-3xl p-4 shadow-2xl"
       >
         <input
           type="text"

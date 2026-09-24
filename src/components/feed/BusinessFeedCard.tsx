@@ -232,15 +232,15 @@ export default function BusinessFeedCard({
   const getTierStyles = () => {
     if (ownerHasGoldenBorder) {
       // Tier 3 (Patrocina) — dorado, igual que la tarjeta del plan
-      return 'border-2 tier-patrocina-glow bg-white'
+      return 'border-2 tier-patrocina-glow bg-white dark:bg-paper-2'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
-      return 'border-2 tier-silver-glow bg-white'
+      return 'border-2 tier-silver-glow bg-white dark:bg-paper-2'
     } else if (isPremiumActive) {
       // Legacy is_premium flag on the business row (may lag the profile)
-      return 'border-2 border-amber-300 hover:border-amber-400 shadow-md shadow-amber-500/10 bg-white'
+      return 'border-2 border-amber-300 dark:border-amber-400/40 hover:border-amber-400 shadow-md shadow-amber-500/10 bg-white dark:bg-paper-2'
     } else {
-      return 'border border-black/8 hover:border-black/15 bg-white'
+      return 'border border-black/8 dark:border-white/10 hover:border-black/15 dark:hover:border-white/20 bg-white dark:bg-paper-2'
     }
   }
 

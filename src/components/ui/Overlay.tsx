@@ -84,8 +84,10 @@ interface BaseOverlayProps {
   "aria-label"?: string
 }
 
+// Panel por defecto de Dialog, Sheet, Drawer y Popover — un solo lugar,
+// así que el ajuste de modo oscuro cubre los cuatro overlays de golpe.
 const DEFAULT_PANEL =
-  "bg-white border border-black/10 shadow-2xl text-ink"
+  "bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 shadow-2xl text-ink"
 
 /* ────────────────────────── Dialog ────────────────────────── */
 

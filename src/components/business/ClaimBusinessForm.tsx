@@ -220,7 +220,7 @@ export default function ClaimBusinessForm() {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="ENC-XXXX"
-              className="w-full px-4 py-3 rounded-xl bg-white border-2 border-black/15 text-ink placeholder-ink-2/50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-lg tracking-wider text-center"
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-paper-2 border-2 border-black/15 dark:border-white/15 text-ink placeholder-ink-2/50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-lg tracking-wider text-center"
               disabled={loading}
               maxLength={10}
               autoComplete="off"

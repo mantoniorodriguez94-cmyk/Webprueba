@@ -47,7 +47,7 @@ export default function BottomNav({
   })
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden transform-gpu bg-white/90 backdrop-blur-md border-t border-black/10 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden transform-gpu bg-white/90 dark:bg-paper-2/95 backdrop-blur-md border-t border-black/10 dark:border-white/10 safe-bottom">
       <div className="flex items-stretch justify-around px-1 py-1.5">
         {destinos.map(({ href, label, Icono, activo, badge }) => (
           <Link
@@ -55,7 +55,7 @@ export default function BottomNav({
             href={href}
             aria-current={activo ? "page" : undefined}
             className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 transition-colors ${
-              activo ? "bg-blue-50" : "hover:bg-black/5"
+              activo ? "bg-blue-50 dark:bg-blue-500/15" : "hover:bg-black/5 dark:hover:bg-white/5"
             }`}
           >
             {activo && (
@@ -70,13 +70,13 @@ export default function BottomNav({
 
             <Icono
               className={`w-[22px] h-[22px] transition-colors ${
-                activo ? "text-blue-600" : "text-ink-2"
+                activo ? "text-blue-600 dark:text-blue-400" : "text-ink-2"
               }`}
               strokeWidth={activo ? 2.2 : 1.8}
             />
             <span
               className={`text-[10px] font-semibold leading-none text-center ${
-                activo ? "text-blue-600" : "text-ink-2"
+                activo ? "text-blue-600 dark:text-blue-400" : "text-ink-2"
               }`}
             >
               {label}

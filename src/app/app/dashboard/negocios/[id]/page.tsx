@@ -1086,7 +1086,7 @@ export default function BusinessDetailPage() {
         open={showChatDisabledModal}
         onClose={() => setShowChatDisabledModal(false)}
         aria-label="Chat no disponible"
-        panelClassName="max-w-md w-full bg-white border border-black/10 rounded-3xl p-6 shadow-xl"
+        panelClassName="max-w-md w-full bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 rounded-3xl p-6 shadow-xl"
       >
         <div className="flex items-start gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">

@@ -75,7 +75,7 @@ export default function AlertModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 16 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`max-w-md w-full bg-white border rounded-3xl shadow-2xl p-6 sm:p-7 ${style.ring}`}
+            className={`max-w-md w-full bg-white dark:bg-paper-2 border rounded-3xl shadow-2xl p-6 sm:p-7 ${style.ring}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-5">
