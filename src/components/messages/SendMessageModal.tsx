@@ -76,7 +76,7 @@ export default function SendMessageModal({
       open={open}
       onClose={closeWithAnimation}
       aria-label="Enviar mensaje"
-      panelClassName="bg-white rounded-3xl shadow-2xl border border-gray-200 w-full sm:max-w-lg flex flex-col max-h-[90vh] min-h-[320px]"
+      panelClassName="bg-white dark:bg-paper-2 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 w-full sm:max-w-lg flex flex-col max-h-[90vh] min-h-[320px]"
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 sm:p-6 text-white rounded-t-3xl flex-shrink-0">
@@ -141,7 +141,7 @@ export default function SendMessageModal({
               placeholder={`Escribe tu mensaje para ${business.name}...`}
               rows={6}
               disabled={sending}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-base text-gray-900 bg-white placeholder:text-gray-500"
+              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-white/15 rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed text-base text-gray-900 dark:text-ink bg-white dark:bg-paper-2 placeholder:text-gray-500 dark:placeholder:text-ink-2/60"
               maxLength={500}
             />
             <p className="text-xs text-gray-500 mt-2">

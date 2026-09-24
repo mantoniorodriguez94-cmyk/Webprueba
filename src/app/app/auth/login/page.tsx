@@ -195,7 +195,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-ink-2 font-medium">
+              <span className="px-4 bg-white dark:bg-paper-2 text-ink-2 font-medium">
                 O continúa con tu email
               </span>
             </div>
@@ -296,7 +296,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-ink-2 font-medium">
+              <span className="px-4 bg-white dark:bg-paper-2 text-ink-2 font-medium">
                 ¿Nuevo en App Encuentra?
               </span>
             </div>

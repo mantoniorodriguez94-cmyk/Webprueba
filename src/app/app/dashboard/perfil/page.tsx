@@ -428,7 +428,7 @@ export default function PerfilPage() {
       {showConvertModal && (
         <>
           <div
-            className="fixed inset-0 bg-ink/40 z-50"
+            className="fixed inset-0 bg-black/40 z-50"
             onClick={() => setShowConvertModal(false)}
           />
           <div className="fixed inset-0 flex items-center justify-center z-50 px-4">

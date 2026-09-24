@@ -232,15 +232,15 @@ export default function BusinessFeedCard({
   const getTierStyles = () => {
     if (ownerHasGoldenBorder) {
       // Tier 3 (Patrocina) — dorado, igual que la tarjeta del plan
-      return 'border-2 tier-patrocina-glow bg-white'
+      return 'border-2 tier-patrocina-glow bg-white dark:bg-paper-2'
     } else if (isTier2) {
       // Tier 2: Silver border + custom silver glow class
-      return 'border-2 tier-silver-glow bg-white'
+      return 'border-2 tier-silver-glow bg-white dark:bg-paper-2'
     } else if (isPremiumActive) {
       // Legacy is_premium flag on the business row (may lag the profile)
-      return 'border-2 border-amber-300 hover:border-amber-400 shadow-md shadow-amber-500/10 bg-white'
+      return 'border-2 border-amber-300 dark:border-amber-400/40 hover:border-amber-400 shadow-md shadow-amber-500/10 bg-white dark:bg-paper-2'
     } else {
-      return 'border border-black/8 hover:border-black/15 bg-white'
+      return 'border border-black/8 dark:border-white/10 hover:border-black/15 dark:hover:border-white/20 bg-white dark:bg-paper-2'
     }
   }
 
@@ -293,7 +293,12 @@ export default function BusinessFeedCard({
                 <h3 className="text-lg font-bold text-ink truncate hover:text-blue-600 transition-colors">
                   {business.name}
                 </h3>
-                {CORONA_POR_TIER[ownerTier] && (
+                {/* Solo la corona dorada (Patrocina, tier 3). Bronce
+                    (Conecta) y plata (Destaca) se ocultan a propósito: con
+                    los tres tiers marcados, la corona dejaba de leerse como
+                    un nivel especial y pasaba a ser ruido en casi cada
+                    tarjeta del feed. */}
+                {ownerTier === 3 && CORONA_POR_TIER[ownerTier] && (
                   <div
                     className={`flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full text-white ${CORONA_POR_TIER[ownerTier].solido}`}
                     title={CORONA_POR_TIER[ownerTier].etiqueta}

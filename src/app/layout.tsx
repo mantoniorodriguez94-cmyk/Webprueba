@@ -140,6 +140,16 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable}`}>
       <head>
+        {/* Aplica data-theme ANTES del primer paint — si esto viviera en
+            ThemeToggle (client component normal) habría un parpadeo claro→
+            oscuro en cada carga para quien ya eligió oscuro. Falla en
+            silencio (localStorage bloqueado, SSR, etc.): el default sigue
+            siendo claro. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('encuentra-theme');if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();`,
+          }}
+        />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

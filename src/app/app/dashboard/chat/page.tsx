@@ -649,7 +649,7 @@ function ChatInner() {
         <div
           className={`${
             selectedConversation ? "hidden lg:flex" : "flex"
-          } w-full lg:w-96 flex-col border-r border-black/8 bg-white/60 min-h-0`}
+          } w-full lg:w-96 flex-col border-r border-black/8 dark:border-white/10 bg-white/60 dark:bg-paper-2/70 min-h-0`}
         >
           {/* Tabs.
               Sólo tienen sentido si hay dos. Sin negocio, la bandeja de
@@ -722,10 +722,10 @@ function ChatInner() {
                     setSelectedConversation(null)
                     setMessages([])
                   }}
-                  className="w-full appearance-none bg-white border border-black/15 text-ink text-sm font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-400/40 cursor-pointer transition-colors hover:border-black/25"
+                  className="w-full appearance-none bg-white dark:bg-paper-2 border border-black/15 dark:border-white/15 text-ink text-sm font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-400/40 cursor-pointer transition-colors hover:border-black/25"
                 >
                   {userBusinesses.map((biz) => (
-                    <option key={biz.id} value={biz.id} className="bg-white text-ink font-normal">
+                    <option key={biz.id} value={biz.id} className="bg-white dark:bg-paper-2 text-ink font-normal">
                       {biz.name}
                     </option>
                   ))}
@@ -870,7 +870,7 @@ function ChatInner() {
                         </svg>
                       </button>
                       {openMenuId === conv.conversation_id && (
-                        <div className="absolute right-0 mt-1 bg-white border border-black/10 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
+                        <div className="absolute right-0 mt-1 bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 rounded-lg shadow-lg overflow-hidden min-w-[150px]">
                           <button
                             onClick={(e) => handleDeleteConversation(conv, e)}
                             className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
@@ -936,7 +936,7 @@ function ChatInner() {
                       type="button"
                       onClick={cargarAnteriores}
                       disabled={cargandoAnteriores}
-                      className="rounded-full border border-black/10 bg-white px-4 py-1.5 text-xs font-semibold text-ink-2 hover:bg-black/5 transition-colors disabled:opacity-50"
+                      className="rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 px-4 py-1.5 text-xs font-semibold text-ink-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                     >
                       {cargandoAnteriores ? "Cargando…" : "Ver mensajes anteriores"}
                     </button>
@@ -955,7 +955,7 @@ function ChatInner() {
                         } ${
                           isOwn
                             ? "bg-blue-500 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
-                            : "bg-white border border-black/10 text-ink rounded-bl-sm shadow-sm"
+                            : "bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 text-ink rounded-bl-sm shadow-sm"
                         }`}
                       >
                         <p className="text-sm sm:text-base break-words">{msg.content}</p>
@@ -995,7 +995,7 @@ function ChatInner() {
               </div>
 
               {/* Input */}
-              <div className="flex-shrink-0 bg-white/90 backdrop-blur-xl border-t border-black/8 p-3 pb-4 mb-16 lg:mb-0">
+              <div className="flex-shrink-0 bg-white/90 dark:bg-paper-2/95 backdrop-blur-xl border-t border-black/8 dark:border-white/10 p-3 pb-4 mb-16 lg:mb-0">
                 <form onSubmit={handleSendMessage}>
                   <div className="flex flex-row bg-black/[0.04] rounded-full p-1.5 items-center gap-2 shadow-sm">
                     <input

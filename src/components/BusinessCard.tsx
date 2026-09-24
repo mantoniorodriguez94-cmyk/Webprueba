@@ -18,7 +18,7 @@ export default function BusinessCard({ negocio, onDelete, deleting }: Props) {
   const hasReviews = negocio.total_reviews && negocio.total_reviews > 0
   
   return (
-    <div className="bg-white rounded-lg shadow p-4 flex flex-col">
+    <div className="bg-white dark:bg-paper-2 rounded-lg shadow p-4 flex flex-col">
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 rounded overflow-hidden bg-gray-100 flex-none flex items-center justify-center">
           {negocio.logo_url ? (

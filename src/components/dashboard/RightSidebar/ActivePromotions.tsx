@@ -184,7 +184,7 @@ export default function ActivePromotions() {
           className="block"
         >
           <div
-            className={`relative p-4 rounded-xl bg-purple-50/60 border border-purple-200 hover:border-purple-300 transition-all duration-300 group overflow-hidden ${
+            className={`relative p-4 rounded-xl bg-purple-50/60 dark:bg-purple-400/10 border border-purple-200 dark:border-purple-400/25 hover:border-purple-300 dark:hover:border-purple-400/40 transition-all duration-300 group overflow-hidden ${
               isTransitioning ? "opacity-0 transition-opacity duration-200" : "opacity-100 transition-opacity duration-300"
             }`}
           >

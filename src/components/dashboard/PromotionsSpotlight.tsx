@@ -143,7 +143,7 @@ export default function PromotionsSpotlight() {
   if (loading || promotions.length === 0) return null
 
   return (
-    <section className="rounded-3xl border border-amber-300 bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-amber-300 dark:border-amber-400/40 bg-white dark:bg-paper-2 p-5 shadow-sm">
       <div className="mb-4 flex items-start gap-3">
         <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200">
           <Crown className="h-5 w-5 text-amber-500" />
@@ -169,7 +169,7 @@ export default function PromotionsSpotlight() {
             href={`/app/dashboard/negocios/${promo.business_id}`}
             className="group w-full flex-shrink-0 snap-center px-0.5"
           >
-            <div className="flex h-full min-h-[11rem] flex-col rounded-2xl border border-amber-200 bg-amber-50/40 p-4 transition-colors hover:border-amber-400 hover:bg-amber-50">
+            <div className="flex h-full min-h-[11rem] flex-col rounded-2xl border border-amber-200 dark:border-amber-400/25 bg-amber-50/40 dark:bg-amber-400/10 p-4 transition-colors hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-400/15">
               <span
                 className="mb-2 flex h-5 w-5 flex-shrink-0 items-center justify-center self-start rounded-full bg-amber-500 text-white"
                 title="Patrocinador"
@@ -210,7 +210,7 @@ export default function PromotionsSpotlight() {
             type="button"
             onClick={() => irA(indice - 1)}
             aria-label="Promoción anterior"
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-600 transition-colors hover:bg-amber-50"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 dark:border-amber-400/30 bg-white dark:bg-paper-2 text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-400/10"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -234,7 +234,7 @@ export default function PromotionsSpotlight() {
             type="button"
             onClick={() => irA(indice + 1)}
             aria-label="Promoción siguiente"
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-600 transition-colors hover:bg-amber-50"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 dark:border-amber-400/30 bg-white dark:bg-paper-2 text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-400/10"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

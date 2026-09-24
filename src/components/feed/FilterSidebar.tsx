@@ -155,7 +155,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
           placeholder="Buscar negocios..."
           value={filters.searchTerm}
           onChange={(e) => updateFilter("searchTerm", e.target.value)}
-          className="w-full bg-white border-2 border-black/10 rounded-2xl px-4 py-3 text-ink placeholder-ink-2/60 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+          className="w-full bg-white dark:bg-paper-2 border-2 border-black/10 dark:border-white/10 rounded-2xl px-4 py-3 text-ink placeholder-ink-2/60 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
         />
       </div>
 
@@ -168,7 +168,7 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
           </svg>
           Ubicación
         </label>
-        <div className="[&_select]:!bg-white [&_select]:!border-black/10 [&_select]:!text-ink [&_select]:focus:!border-blue-500 [&_label]:!text-ink-2">
+        <div className="[&_select]:!bg-white dark:[&_select]:!bg-paper-2 [&_select]:!border-black/10 dark:[&_select]:!border-white/10 [&_select]:!text-ink [&_select]:focus:!border-blue-500 [&_label]:!text-ink-2">
           <LocationSelector
             selectedStateId={filters.state_id}
             selectedMunicipalityId={filters.municipality_id}
@@ -238,8 +238,8 @@ export default function FilterSidebar({ onFilterChange, embebido = false }: Filt
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 filters.sortBy === option.value
-                  ? "bg-blue-50 border-2 border-blue-500 text-ink"
-                  : "bg-white text-ink-2 hover:bg-black/5 border-2 border-black/8"
+                  ? "bg-blue-50 dark:bg-blue-500/15 border-2 border-blue-500 text-ink"
+                  : "bg-white dark:bg-paper-2 text-ink-2 hover:bg-black/5 dark:hover:bg-white/5 border-2 border-black/8 dark:border-white/10"
               }`}
             >
               <span className="text-lg">{option.icon}</span>

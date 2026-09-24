@@ -262,7 +262,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-ink font-medium">
+              <span className="px-4 bg-white dark:bg-paper-2 text-ink font-medium">
                 O regístrate con tu email
               </span>
             </div>
@@ -557,7 +557,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-black/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-ink font-medium">
+              <span className="px-4 bg-white dark:bg-paper-2 text-ink font-medium">
                 ¿Ya tienes cuenta?
               </span>
             </div>
@@ -582,7 +582,7 @@ export default function RegisterPage() {
         open={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         aria-label="Registro exitoso"
-        panelClassName="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 space-y-4 text-center"
+        panelClassName="max-w-md w-full bg-white dark:bg-paper-2 rounded-3xl shadow-2xl p-6 space-y-4 text-center"
       >
         <div className="flex items-center justify-center gap-2 text-green-600">
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">

@@ -101,7 +101,7 @@ export default function SoportePage() {
                     maxLength={80}
                     value={datos.name}
                     onChange={cambiar("name")}
-                    className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
+                    className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
                   />
                 </label>
                 <label className="block">
@@ -113,7 +113,7 @@ export default function SoportePage() {
                     value={datos.email}
                     onChange={cambiar("email")}
                     placeholder="tu@email.com"
-                    className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
+                    className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
                   />
                 </label>
               </div>
@@ -126,7 +126,7 @@ export default function SoportePage() {
                   value={datos.subject}
                   onChange={cambiar("subject")}
                   placeholder="Ej: No se activó mi plan después de pagar"
-                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
+                  className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
                 />
               </label>
 
@@ -138,7 +138,7 @@ export default function SoportePage() {
                   maxLength={4000}
                   value={datos.message}
                   onChange={cambiar("message")}
-                  className="w-full resize-y rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
+                  className="w-full resize-y rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-blue-400"
                 />
               </label>
 

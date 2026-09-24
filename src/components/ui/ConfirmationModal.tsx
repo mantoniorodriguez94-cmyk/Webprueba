@@ -28,7 +28,7 @@ export default function ConfirmationModal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-md px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -39,7 +39,7 @@ export default function ConfirmationModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 16 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="max-w-md w-full bg-white border border-red-200 rounded-3xl shadow-2xl p-6 sm:p-7"
+            className="max-w-md w-full bg-white dark:bg-paper-2 border border-red-200 dark:border-red-400/30 rounded-3xl shadow-2xl p-6 sm:p-7"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-4">

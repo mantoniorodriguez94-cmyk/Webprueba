@@ -115,11 +115,11 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
                 }}
                 className={[
                   "relative flex flex-col items-stretch rounded-3xl border p-5 text-left transition-all duration-300",
-                  "bg-white",
+                  "bg-white dark:bg-paper-2",
                   "hover:-translate-y-1 hover:shadow-lg",
                   isCurrent
-                    ? "border-green-300 shadow-md"
-                    : "border-black/8 shadow-sm"
+                    ? "border-green-300 dark:border-green-400/40 shadow-md"
+                    : "border-black/8 dark:border-white/10 shadow-sm"
                 ].join(" ")}
               >
                 <div className="mb-4 flex items-center justify-between gap-2">
@@ -195,7 +195,7 @@ export function MembershipTierGrid({ currentTier, onSelectTier }: MembershipTier
           <button
             type="button"
             onClick={() => onSelectTier(founderTier.tier)}
-            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-amber-400 bg-white shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            className="w-full text-left relative overflow-hidden rounded-3xl border-2 border-amber-400 dark:border-amber-400/40 bg-white dark:bg-paper-2 shadow-sm p-6 md:p-7 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
           >
             <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-3">

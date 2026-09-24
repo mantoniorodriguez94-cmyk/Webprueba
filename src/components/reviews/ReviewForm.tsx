@@ -106,7 +106,7 @@ export default function ReviewForm({
           onChange={(e) => setComment(e.target.value)}
           placeholder="Cuéntanos sobre tu experiencia con este negocio. ¿Qué te gustó? ¿Qué podría mejorar?"
           rows={4}
-          className="w-full px-4 py-3 bg-white text-ink border-2 border-black/15 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 resize-none placeholder:text-ink-2/50 disabled:bg-black/5 disabled:cursor-not-allowed pb-20 sm:pb-3"
+          className="w-full px-4 py-3 bg-white dark:bg-paper-2 text-ink border-2 border-black/15 dark:border-white/15 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 resize-none placeholder:text-ink-2/50 disabled:bg-black/5 disabled:cursor-not-allowed pb-20 sm:pb-3"
           disabled={isSubmitting}
         />
         <p className="mt-1 text-sm text-ink-2">
@@ -158,7 +158,7 @@ export default function ReviewForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-6 py-3 border-2 border-black/15 bg-white text-ink-2 font-semibold rounded-lg hover:bg-black/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 border-2 border-black/15 dark:border-white/15 bg-white dark:bg-paper-2 text-ink-2 font-semibold rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>

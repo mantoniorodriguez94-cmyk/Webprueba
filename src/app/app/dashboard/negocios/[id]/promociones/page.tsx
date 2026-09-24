@@ -426,7 +426,7 @@ function RenewPromotionModal({
       open={open}
       onClose={closeWithAnimation}
       aria-label="Reactivar o renovar promoción"
-      panelClassName="bg-white rounded-3xl shadow-2xl border-2 border-black/10 w-full max-w-md flex flex-col overflow-hidden"
+      panelClassName="bg-white dark:bg-paper-2 rounded-3xl shadow-2xl border-2 border-black/10 dark:border-white/10 w-full max-w-md flex flex-col overflow-hidden"
     >
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white rounded-t-3xl flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -450,7 +450,7 @@ function RenewPromotionModal({
               value={endDate}
               min={today}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-4 py-3 bg-white border-2 border-black/15 text-ink rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all"
+              className="w-full px-4 py-3 bg-white dark:bg-paper-2 border-2 border-black/15 dark:border-white/15 text-ink rounded-2xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all"
               required
             />
           </div>

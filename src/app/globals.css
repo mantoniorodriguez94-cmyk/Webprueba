@@ -52,6 +52,45 @@
   --barra-alpha: 0.70;
 }
 
+/* ── Modo oscuro — mismos hues de marca, superficie invertida ───────────
+   No es una paleta nueva: reutiliza exactamente lo que ya existe.
+   `--ink` deja de ser la tinta oscura del texto y pasa a ser el texto
+   CLARO; `--paper`/`--paper-2` dejan de ser el fondo claro y pasan a ser
+   el propio `ink` original (#0E0E16) como fondo — mismo token, nuevo rol.
+   Los acentos saturados (blue-500, green-500, el ámbar de las estrellas)
+   NO cambian: ya funcionan sobre fondo oscuro sin retocar.
+
+   Dos tokens quedan a propósito SIN redefinir acá — `--blanco` y, por
+   extensión, `bg-ink`/`text-white`:
+
+   - `--blanco` (el token `white`) tiene doble uso en la app: superficie
+     de tarjeta (`bg-white`, `.surface`) Y texto legible sobre color fijo
+     (`text-white` en botones bg-blue-500, íconos, el footer bg-ink). Ese
+     segundo uso es mayoría (~215 sitios) y NINGUNO de esos fondos cambia
+     entre temas, así que invertir `--blanco` los dejaría con texto
+     oscuro sobre su propio fondo — ilegible en todos a la vez. Se deja
+     fijo (claro) en los dos modos; las tarjetas que sí deben oscurecerse
+     lo hacen por clase compartida (`.surface`, `.glass`, etc. abajo), no
+     por este token.
+   - `bg-ink` como SUPERFICIE decorativa (footer, botón secundario, el
+     cuadrado "Conecta") comparte el mismo problema que `--blanco`: en
+     modo claro es texto Y superficie a la vez. Se resuelve con overrides
+     puntuales `dark:` en cada pantalla que lo usa como superficie fija,
+     no con la variable. */
+[data-theme="dark"] {
+  --ink: 247 246 250;      /* #F7F6FA — texto primario, claro */
+  --ink-2: 148 144 166;    /* #9490A6 — texto secundario */
+  --ink-3: 30 27 42;       /* #1E1B2A — superficie elevada puntual */
+  --ink-4: 22 20 30;       /* #16141E — superficie elevada, más profunda */
+
+  --paper: 14 14 22;       /* #0E0E16 — el ink original, ahora de fondo */
+  --paper-2: 22 20 30;     /* #16141E — tarjetas que usan paper-2 directo */
+  --paper-dim: 8 8 13;     /* #08080D — hundida / overlay */
+
+  --superficie-alpha: 0.6;
+  --barra-alpha: 0.75;
+}
+
 @layer base {
   body {
     @apply text-ink;
@@ -166,6 +205,41 @@
     @apply rounded-3xl transition-all duration-500 hover:-translate-y-1;
   }
 
+  /* Contraparte oscura de las seis superficies de arriba, en un solo
+     bloque para no repetir el mismo comentario seis veces: usan
+     `--paper-2` (la tarjeta oscura) en vez de `--blanco`, porque
+     `--blanco` se queda fijo (ver el porqué en el bloque [data-theme]
+     de arriba). Mismas proporciones de alpha que su par claro, solo
+     que sobre fondo oscuro en vez de la malla pastel. */
+  [data-theme="dark"] .surface {
+    background-color: rgb(var(--paper-2) / var(--superficie-alpha));
+    @apply border-white/[0.08];
+  }
+
+  [data-theme="dark"] .barra-vidrio {
+    background-color: rgb(var(--paper) / var(--barra-alpha));
+  }
+
+  [data-theme="dark"] .surface-elevated {
+    @apply bg-paper-2 border-white/10;
+  }
+
+  [data-theme="dark"] .hairline {
+    @apply border-white/10;
+  }
+
+  [data-theme="dark"] .glass {
+    @apply bg-paper-2/70 border-white/[0.08];
+  }
+
+  [data-theme="dark"] .glass-strong {
+    @apply bg-paper-2/85 border-white/10;
+  }
+
+  [data-theme="dark"] .card-elegant {
+    @apply bg-paper-2/90 border-white/[0.08];
+  }
+
   /* Brillo para Destaca (Tier 2) */
   .tier-silver-glow {
     @apply border-slate-300/80 ring-1 ring-slate-200/50;
@@ -224,6 +298,17 @@
       radial-gradient(54% 44% at 86% 14%, #C9D9F6 0%, transparent 72%),
       radial-gradient(62% 54% at 74% 88%, #C3CFE0 0%, transparent 60%),
       radial-gradient(48% 40% at 22% 84%, #D9EDE7 0%, transparent 70%),
+      rgb(var(--paper));
+  }
+
+  /* Modo oscuro: un solo glow violeta, no la malla de cuatro colores —
+     sobre fondo casi negro cuatro manchas pastel se ven sucias, no
+     "profundas". Mismo violeta de marca (#5B4FE8 / #8C7BF3) que ya usa
+     el acento en claro. */
+  [data-theme="dark"] .bg-mesh {
+    background:
+      radial-gradient(60% 50% at 50% 22%, rgba(91, 79, 232, 0.35) 0%, transparent 72%),
+      radial-gradient(50% 42% at 78% 68%, rgba(140, 123, 243, 0.16) 0%, transparent 70%),
       rgb(var(--paper));
   }
 

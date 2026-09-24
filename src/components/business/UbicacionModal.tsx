@@ -144,7 +144,7 @@ export default function UbicacionModal({
       open={open}
       onClose={onClose}
       aria-label="Ubicación del negocio en el mapa"
-      panelClassName="bg-white border border-black/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      panelClassName="bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-xl font-bold text-ink">

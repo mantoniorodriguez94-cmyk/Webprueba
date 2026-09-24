@@ -207,7 +207,7 @@ function Tarjeta({
   )
 
   const clases =
-    "block overflow-hidden rounded-2xl bg-white border border-black/5 shadow-sm transition-shadow hover:shadow-lg"
+    "block overflow-hidden rounded-2xl bg-white dark:bg-paper-2 border border-black/5 dark:border-white/10 shadow-sm transition-shadow hover:shadow-lg"
 
   // Los ejemplos no enlazan a ningún lado: no existe un negocio detrás.
   return esEjemplo ? (
@@ -289,7 +289,7 @@ export default function BusinessShowcase() {
              justo debajo. Los botones de "publica tu negocio" sí van a
              registro, porque ahí el alta es el objetivo. */
           href={user ? "/app/dashboard" : `/app/auth/login?next=${encodeURIComponent("/app/dashboard")}`}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-ink text-white font-semibold hover:bg-ink/90 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-ink hover:bg-ink/90 dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/15 text-white font-semibold transition-colors"
         >
           {hayCatalogo ? "Ver todos los negocios" : "Explorar el directorio"}
           <span aria-hidden="true">→</span>

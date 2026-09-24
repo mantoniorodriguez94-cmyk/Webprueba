@@ -53,7 +53,7 @@ export function PremiumBorder({ children, className = '' }: { children: React.Re
   return (
     <div className={`relative ${className}`}>
       <div className="absolute inset-0 bg-amber-400 rounded-lg opacity-50 blur-sm"></div>
-      <div className="relative bg-white rounded-lg border-2 border-amber-300">
+      <div className="relative bg-white dark:bg-paper-2 rounded-lg border-2 border-amber-300 dark:border-amber-400/40">
         {children}
       </div>
     </div>

@@ -34,8 +34,8 @@ export default function BloqueoPorPlan({
         {children}
       </div>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/40 p-4 text-center">
-        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/40 dark:bg-paper/60 p-4 text-center">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-paper-2 shadow-sm">
           <Lock className="h-5 w-5 text-ink-2" />
         </span>
         <p className="text-sm font-semibold text-ink">

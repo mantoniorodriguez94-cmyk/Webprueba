@@ -164,7 +164,7 @@ export function MembershipPaymentModal({
       open={isOpen}
       onClose={onClose}
       aria-label="Completar contribución"
-      panelClassName="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-black/10 bg-white p-6 shadow-2xl"
+      panelClassName="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-paper-2 p-6 shadow-2xl"
     >
         {/* Header */}
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -206,7 +206,7 @@ export function MembershipPaymentModal({
               onClick={() => setBillingPeriod("monthly")}
               className={`px-3 py-1.5 rounded-full font-medium ${
                 billingPeriod === "monthly"
-                  ? "bg-white text-ink shadow-sm"
+                  ? "bg-white dark:bg-paper-2 text-ink shadow-sm"
                   : "text-ink-2 hover:bg-black/5"
               }`}
             >
@@ -236,7 +236,7 @@ export function MembershipPaymentModal({
             onClick={() => setActiveTab("paypal")}
             className={`flex-1 rounded-full px-3 py-2 flex items-center justify-center gap-1 ${
               activeTab === "paypal"
-                ? "bg-white text-ink shadow-sm"
+                ? "bg-white dark:bg-paper-2 text-ink shadow-sm"
                 : "text-ink-2 hover:bg-black/5"
             }`}
           >
@@ -248,7 +248,7 @@ export function MembershipPaymentModal({
             onClick={() => setActiveTab("binance")}
             className={`flex-1 rounded-full px-3 py-2 flex items-center justify-center gap-1 ${
               activeTab === "binance"
-                ? "bg-white text-ink shadow-sm"
+                ? "bg-white dark:bg-paper-2 text-ink shadow-sm"
                 : "text-ink-2 hover:bg-black/5"
             }`}
           >
@@ -260,7 +260,7 @@ export function MembershipPaymentModal({
             onClick={() => setActiveTab("transfer")}
             className={`flex-1 rounded-full px-3 py-2 flex items-center justify-center gap-1 ${
               activeTab === "transfer"
-                ? "bg-white text-ink shadow-sm"
+                ? "bg-white dark:bg-paper-2 text-ink shadow-sm"
                 : "text-ink-2 hover:bg-black/5"
             }`}
           >
@@ -491,7 +491,7 @@ export function MembershipPaymentModal({
                   { label: "Cédula", shown: MANUAL_PAYMENT_DETAILS.idNumber, value: MANUAL_PAYMENT_DETAILS.idNumberRaw, field: "cedula" },
                   { label: "Banco", shown: `${MANUAL_PAYMENT_DETAILS.bankName} (${MANUAL_PAYMENT_DETAILS.bankCode})`, value: MANUAL_PAYMENT_DETAILS.bankCode, field: "banco" },
                 ].map((row) => (
-                  <div key={row.field} className="flex items-center justify-between gap-2 rounded-lg bg-white border border-black/8 px-3 py-2">
+                  <div key={row.field} className="flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-paper-2 border border-black/8 dark:border-white/10 px-3 py-2">
                     <div className="min-w-0">
                       <p className="text-[10px] text-ink-2">{row.label}</p>
                       <p className="truncate font-mono text-sm font-semibold text-ink">{row.shown}</p>
@@ -541,7 +541,7 @@ export function MembershipPaymentModal({
                 <select
                   value={manualMethod}
                   onChange={(e) => setManualMethod(e.target.value as ManualMethod)}
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-black/15 dark:border-white/15 bg-white dark:bg-paper-2 px-3 py-2 text-sm text-ink focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="pago_movil">Pago Móvil (Venezuela)</option>
                   <option value="zelle">Zelle</option>
@@ -558,7 +558,7 @@ export function MembershipPaymentModal({
                   value={manualReference}
                   onChange={(e) => setManualReference(e.target.value)}
                   placeholder="Ej: 123456789"
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-2/50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-black/15 dark:border-white/15 bg-white dark:bg-paper-2 px-3 py-2 text-sm text-ink placeholder:text-ink-2/50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
@@ -571,7 +571,7 @@ export function MembershipPaymentModal({
                   accept="image/*"
                   required
                   onChange={(e) => setManualScreenshot(e.target.files?.[0] || null)}
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500 file:px-3 file:py-1.5 file:text-xs file:text-white hover:file:bg-blue-600"
+                  className="w-full rounded-xl border border-black/15 dark:border-white/15 bg-white dark:bg-paper-2 px-3 py-2 text-sm text-ink file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500 file:px-3 file:py-1.5 file:text-xs file:text-white hover:file:bg-blue-600"
                 />
                 <p className="text-[11px] text-ink-2">
                   Sube una foto clara y completa del comprobante (máx. 10MB).

@@ -212,7 +212,15 @@ export default function PromotionsCarousel() {
         </div>
       </div>
 
-      <div className="relative h-52 sm:h-60 md:h-64">
+      {/* Alto por breakpoint: en flex-col (mobile/sm) la imagen y el texto se
+          apilan, así que el contenedor necesita espacio para los DOS, no
+          solo para el más alto de los dos como en flex-row (md+). Antes el
+          alto móvil (h-52) era incluso menor que el de sm, y la imagen sola
+          ya se comía más de la mitad — el badge, el precio y el botón
+          quedaban recortados por el overflow-hidden de abajo (necesario
+          para el slide horizontal entre promociones, así que no se puede
+          quitar sin más). */}
+      <div className="relative h-[22rem] sm:h-[26rem] md:h-64">
         <AnimatePresence mode="wait">
           <motion.article
             key={current.id}
@@ -220,13 +228,13 @@ export default function PromotionsCarousel() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -32 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
-            className={`absolute inset-0 flex flex-col md:flex-row gap-4 md:gap-6 rounded-2xl border p-4 md:p-5 bg-white overflow-hidden ${
+            className={`absolute inset-0 flex flex-col md:flex-row gap-4 md:gap-6 rounded-2xl border p-4 md:p-5 bg-white dark:bg-paper-2 overflow-hidden ${
               isPatrocina
-                ? "border-purple-300 shadow-[0_0_28px_rgba(226,79,214,0.18)]"
-                : "border-black/8"
+                ? "border-purple-300 dark:border-purple-400/40 shadow-[0_0_28px_rgba(226,79,214,0.18)]"
+                : "border-black/8 dark:border-white/10"
             }`}
           >
-            <div className="relative w-full md:w-2/5 h-32 sm:h-40 md:h-full flex-shrink-0">
+            <div className="relative w-full md:w-2/5 h-28 sm:h-36 md:h-full flex-shrink-0">
               {current.business_logo_url ? (
                 <Image
                   src={current.business_logo_url}
