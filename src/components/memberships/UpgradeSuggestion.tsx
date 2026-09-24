@@ -24,7 +24,7 @@ const TIER_INFO: Record<SubscriptionTier, { name: string; price: number; bgClass
     bgClass: "bg-black/5",
     textClass: "text-ink-2",
     borderClass: "border-black/10",
-    buttonClass: "bg-ink text-white hover:bg-ink/90"
+    buttonClass: "bg-ink hover:bg-ink/90 dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/15 text-white"
   },
   1: {
     name: "Conecta",

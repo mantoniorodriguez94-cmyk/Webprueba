@@ -109,7 +109,7 @@ export function Dialog({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-ink/40 backdrop-blur-md px-4 ${className}`}
+          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-md px-4 ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -156,7 +156,7 @@ export function Sheet({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex items-end justify-center bg-ink/35 backdrop-blur-sm ${className}`}
+          className={`fixed inset-0 z-[9999] flex items-end justify-center bg-black/35 backdrop-blur-sm ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -208,7 +208,7 @@ export function Drawer({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={`fixed inset-0 z-[9999] flex ${isLeft ? "justify-start" : "justify-end"} bg-ink/35 backdrop-blur-sm ${className}`}
+          className={`fixed inset-0 z-[9999] flex ${isLeft ? "justify-start" : "justify-end"} bg-black/35 backdrop-blur-sm ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

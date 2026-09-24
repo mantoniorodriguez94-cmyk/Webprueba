@@ -597,7 +597,13 @@ export default function Home() {
         {/* En oscuro el fondo de la página ya es este mismo ink, así que el
             footer se funde con lo de arriba — se le da un borde superior
             para que siga leyéndose como cierre, no como continuación. */}
-        <footer className="bg-ink text-gray-300 dark:border-t dark:border-white/10 mt-auto">
+        {/* bg-ink es el mismo problema que ya se resolvió en el botón
+            "Registrar mi negocio" y el ícono de "Conecta" más arriba, solo
+            que acá se nos había pasado: --ink pasa a ser el texto CLARO en
+            oscuro, así que este fondo "siempre oscuro" se volvía blanco
+            justo en el modo que se supone que ya es oscuro. dark:bg-paper-2
+            lo fija a la tinta original en vez de heredar la variable. */}
+        <footer className="bg-ink dark:bg-paper-2 text-gray-300 border-t border-transparent dark:border-white/10 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
               {/* Columna 1 — Marca */}
