@@ -90,7 +90,7 @@ export default function PhoneMockup() {
                 <input
                   type="text"
                   placeholder="Buscar en Caracas..."
-                  className="w-full bg-white border border-black/10 rounded-full px-10 py-2.5 text-sm text-ink placeholder-ink-2/70 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  className="w-full bg-white dark:bg-paper-2 border border-black/10 dark:border-white/10 rounded-full px-10 py-2.5 text-sm text-ink placeholder-ink-2/70 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   readOnly
                 />
               </div>
@@ -147,7 +147,7 @@ export default function PhoneMockup() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
+                className="bg-white dark:bg-paper-2 border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm"
               >
                 <div className="h-32 bg-gradient-to-br from-[#DAD3F5] via-[#C9D9F6] to-[#C3CFE0] relative">
                   <div className="absolute inset-0 bg-black/10" />
@@ -181,7 +181,7 @@ export default function PhoneMockup() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-white border border-black/5 rounded-2xl overflow-hidden shadow-sm"
+                className="bg-white dark:bg-paper-2 border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm"
               >
                 <div className="h-32 bg-gradient-to-br from-[#C9D9F6] via-[#C3CFE0] to-[#DAD3F5] relative">
                   <div className="absolute inset-0 bg-black/10" />
