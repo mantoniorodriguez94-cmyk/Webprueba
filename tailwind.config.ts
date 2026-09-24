@@ -1,6 +1,11 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Selector, no 'media': el toggle decide, no el SO — persistido en
+  // localStorage y aplicado como data-theme="dark" en <html> (ver
+  // ThemeToggle.tsx + el script inline en layout.tsx que lo aplica antes
+  // del primer paint para no parpadear).
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",

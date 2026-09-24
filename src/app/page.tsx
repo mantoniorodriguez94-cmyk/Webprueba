@@ -10,6 +10,7 @@ import PromotionsCarousel from "@/components/dashboard/PromotionsCarousel";
 import PublicPricingTable from "@/components/landing/PublicPricingTable";
 import FaqAccordion from "@/components/landing/FaqAccordion";
 import { Drawer } from "@/components/ui/Overlay";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import { Search, MapPin, MessageCircle, ShieldCheck } from "lucide-react";
 
 export default function Home() {
@@ -113,6 +114,7 @@ export default function Home() {
 
               {/* Desktop Auth Button - Entrar / Mi cuenta */}
               <div className="hidden sm:flex items-center space-x-2 sm:space-x-3">
+                <ThemeToggle />
                 {!userLoading && (
                   user ? (
                     <Link href={irANegocios}>
@@ -153,11 +155,14 @@ export default function Home() {
           open={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
           aria-label="Menú de navegación"
-          panelClassName="h-full w-[80vw] max-w-xs overflow-y-auto bg-white border-r border-black/5 shadow-2xl p-6 flex flex-col"
+          panelClassName="h-full w-[80vw] max-w-xs overflow-y-auto bg-white dark:bg-paper-2 border-r border-black/5 dark:border-white/10 shadow-2xl p-6 flex flex-col"
         >
-          <div className="flex items-center gap-2 mb-8">
-            <Image src="/brand/encuentra-mark.svg" alt="Logo App Encuentra" width={40} height={40} className="w-10 h-10" unoptimized />
-            <span className="text-lg font-bold text-ink">App Encuentra</span>
+          <div className="flex items-center justify-between gap-2 mb-8">
+            <div className="flex items-center gap-2">
+              <Image src="/brand/encuentra-mark.svg" alt="Logo App Encuentra" width={40} height={40} className="w-10 h-10" unoptimized />
+              <span className="text-lg font-bold text-ink">App Encuentra</span>
+            </div>
+            <ThemeToggle />
           </div>
           <nav className="flex flex-col space-y-1">
             <Link
@@ -219,7 +224,7 @@ export default function Home() {
               {/* Contenido Principal - Izquierda */}
               <div className="w-full lg:w-1/2 text-center lg:text-left space-y-8">
                 {/* Eyebrow */}
-                <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full opacity-0 animate-fade-in-up">
+                <span className="inline-flex items-center gap-2 font-mono text-xs font-medium tracking-widest uppercase text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-400/30 px-3 py-1.5 rounded-full opacity-0 animate-fade-in-up">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                   {/* Sólo el país. "Portal Encuentra LLC" es la razón social
                       —vive en Términos, Privacidad y el panel de admin—, no
@@ -253,7 +258,11 @@ export default function Home() {
                   </Link>
 
                   <Link href={user ? "/app/dashboard/negocios/nuevo" : "/app/auth/register"} className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-ink hover:bg-ink/90 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg">
+                    {/* bg-ink es la superficie oscura FIJA, no el texto —
+                        en modo oscuro el fondo de página ya es ese mismo
+                        ink, así que necesita su propio par claro en vez de
+                        invertirse con la variable. */}
+                    <button className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-ink hover:bg-ink/90 dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/15 text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg">
                       Registrar mi negocio
                     </button>
                   </Link>
@@ -300,7 +309,7 @@ export default function Home() {
 
               {/* Paso 2: Conecta — negro/tinta, sin sumar un segundo color saturado */}
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 flex-shrink-0 bg-ink rounded-3xl flex items-center justify-center shadow-lg shadow-ink/15">
+                <div className="w-20 h-20 flex-shrink-0 bg-ink dark:bg-white/10 dark:border dark:border-white/15 rounded-3xl flex items-center justify-center shadow-lg shadow-ink/15">
                   <MessageCircle className="w-9 h-9 text-white" strokeWidth={2} />
                 </div>
                 <h3 className="text-2xl font-bold text-ink">Conecta</h3>
@@ -564,7 +573,10 @@ export default function Home() {
         {/* BLOQUE 8 — FOOTER (4 columnas) — única franja oscura intencional de la
             landing: ancla visual de cierre, coherente con "ink" como
             superficie oscura puntual permitida por la paleta. */}
-        <footer className="bg-ink text-gray-300 mt-auto">
+        {/* En oscuro el fondo de la página ya es este mismo ink, así que el
+            footer se funde con lo de arriba — se le da un borde superior
+            para que siga leyéndose como cierre, no como continuación. */}
+        <footer className="bg-ink text-gray-300 dark:border-t dark:border-white/10 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
               {/* Columna 1 — Marca */}
