@@ -293,7 +293,12 @@ export default function BusinessFeedCard({
                 <h3 className="text-lg font-bold text-ink truncate hover:text-blue-600 transition-colors">
                   {business.name}
                 </h3>
-                {CORONA_POR_TIER[ownerTier] && (
+                {/* Solo la corona dorada (Patrocina, tier 3). Bronce
+                    (Conecta) y plata (Destaca) se ocultan a propósito: con
+                    los tres tiers marcados, la corona dejaba de leerse como
+                    un nivel especial y pasaba a ser ruido en casi cada
+                    tarjeta del feed. */}
+                {ownerTier === 3 && CORONA_POR_TIER[ownerTier] && (
                   <div
                     className={`flex items-center justify-center w-5 h-5 flex-shrink-0 rounded-full text-white ${CORONA_POR_TIER[ownerTier].solido}`}
                     title={CORONA_POR_TIER[ownerTier].etiqueta}
