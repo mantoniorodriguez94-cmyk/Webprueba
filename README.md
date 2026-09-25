@@ -59,25 +59,55 @@ programada). La lista completa está en `.env.example`.
 
 ## Base de datos
 
-El esquema se aplica con los scripts de `scripts/`, ejecutados a mano en el SQL
-Editor de Supabase. Están escritos para ser idempotentes: correrlos dos veces no
-rompe nada.
+El esquema vive en dos sitios, con reglas distintas:
 
-Los que tienen que estar sí o sí para que la app funcione completa:
+- **`supabase/migrations/`** — lo nuevo. Va numerado y en orden, así que se
+  sabe qué sigue a qué. Para que además quede *registrado* —en
+  `supabase_migrations.schema_migrations`, que es lo que permite saber qué
+  corrió sin adivinar— hay que aplicarlo con el CLI, y para eso falta enlazar
+  el proyecto:
+
+  ```bash
+  supabase init                        # crea supabase/config.toml
+  supabase link --project-ref <ref>    # el ref está en la URL del panel
+  supabase db push
+  ```
+
+  Mientras no se haga, pegar las migraciones a mano en el editor funciona
+  igual pero no deja registro, que es justo lo que se venía a resolver.
+- **`scripts/`** — lo anterior. Se pega a mano en el SQL Editor y no deja
+  registro de nada. Está escrito para ser idempotente: correrlo dos veces no
+  rompe nada.
+
+Todo cambio de esquema nuevo va como migración. `scripts/` no se amplía.
+
+De `scripts/`, los que tienen que estar sí o sí para que la app funcione
+completa:
 
 | Script | Para qué |
 |---|---|
 | `support-table.sql` | Formulario de soporte y su bandeja en el panel |
 | `panel-admin-control.sql` | Moderación de reseñas, suspensión, reversión de pagos y auditoría |
-| `referral-rewards-table.sql` | Evita otorgar el mes gratis de referidos más de una vez |
+| `ocultar-negocio.sql` | Ocultar un negocio del directorio sin eliminarlo |
 | `create-storage-bucket.sql` | Bucket `payment_receipts` — **debe quedar privado** |
 
-Para saber qué falta en una base concreta, el bloque de verificación está al
-final de `panel-admin-control.sql`.
+Para saber qué falta en una base concreta:
+`scripts/verificar-scripts-aplicados.sql`. Solo lee, y devuelve una fila por
+script con lo que falta cuando falta.
 
 > El bucket `payment_receipts` contiene comprobantes de pago: capturas de
 > transferencias con nombres y números de cuenta. Tiene que seguir siendo
 > privado; el panel genera URLs firmadas de una hora para mostrarlos.
+>
+> El script lo crea privado y, si lo encuentra abierto, lo cierra: pone
+> `public = false` también cuando el bucket ya existe, y borra la política de
+> lectura pública. Hasta el 25/09 hacía lo contrario —lo creaba con
+> `public = true`— pese a este mismo párrafo tres líneas más arriba. La base de
+> producción estaba privada, así que no llegó a hacer daño, pero quedaba
+> armado para quien rehiciera el bucket.
+>
+> Para comprobar el estado de una base concreta:
+> `scripts/verificar-scripts-aplicados.sql`.
 
 ## Permisos de administrador
 

@@ -7,7 +7,7 @@
  */
 
 import TopRatedBusinesses from "./TopRatedBusinesses"
-import ActivePromotions from "./ActivePromotions"
+import PromotionsSpotlight from "../PromotionsSpotlight"
 import CommunityFeed from "./CommunityFeed"
 
 export default function RightSidebar() {
@@ -16,8 +16,13 @@ export default function RightSidebar() {
       {/* Top Rated Businesses */}
       <TopRatedBusinesses />
 
-      {/* Active Promotions */}
-      <ActivePromotions />
+      {/* La vitrina dorada, la misma que usa la pestaña "Promociones" del
+          móvil. Antes acá había ActivePromotions, otro componente que leía lo
+          mismo y lo pintaba distinto — y que rotaba solo cada segundo, así que
+          no daba tiempo a leer una promoción antes de que cambiara. Una sola
+          vitrina, un solo sitio por tamaño de pantalla: el rail en escritorio,
+          el chip en móvil, nunca las dos a la vez. */}
+      <PromotionsSpotlight />
 
       {/* Community Feed */}
       <CommunityFeed />

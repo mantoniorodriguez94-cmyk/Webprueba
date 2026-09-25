@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { requireAdmin } from "@/utils/admin-auth"
 import Image from "next/image"
 import Link from "next/link"
-import AdminActionButton from "../../components/AdminActionButton"
+import FeaturedButton from "../../components/FeaturedButton"
 import { notFound } from "next/navigation"
 import StarRating from "@/components/reviews/StarRating"
 import ReviewStats from "@/components/reviews/ReviewStats"
@@ -340,15 +340,11 @@ export default async function AdminBusinessDetailPage({
         <div className="mt-6 pt-6 border-t border-black/10">
           <h3 className="text-lg font-bold mb-4">Acciones Administrativas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <AdminActionButton 
-              id={business.id} 
-              type="verificar" 
-              label={business.is_premium ? "✓ Premium Activo" : "Activar Premium"}
-              disabled={business.is_premium}
+            <FeaturedButton
+              businessId={business.id}
               businessName={business.name || "Negocio"}
+              label={business.is_featured ? "Quitar Destacado" : "Destacar"}
             />
-            <AdminActionButton id={business.id} type="suspender" label="Suspender Premium" />
-            <AdminActionButton id={business.id} type="destacar" label={business.is_featured ? "Quitar Destacado" : "Destacar"} />
           </div>
 
           {/* Pagos pendientes */}

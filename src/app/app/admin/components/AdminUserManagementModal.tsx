@@ -437,7 +437,7 @@ export default function AdminUserManagementModal({
                           onClick={() =>
                             onEnsureUnlocked(() => handleSetPhotos())
                           }
-                          className="px-4 py-1.5 rounded-lg bg-ink hover:bg-ink/90 text-white text-xs font-semibold disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                          className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors flex items-center gap-1.5"
                         >
                           {busy.photos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                           Actualizar
