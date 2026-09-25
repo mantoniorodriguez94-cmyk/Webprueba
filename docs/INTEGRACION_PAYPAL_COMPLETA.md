@@ -272,19 +272,32 @@ PAYPAL_MODE=live
 NEXT_PUBLIC_APP_URL=https://tudominio.com
 ```
 
-### 3. Configurar Webhooks (Opcional)
+### 3. Configurar el webhook (recomendado)
 
-Para recibir notificaciones de PayPal (renovaciones, cancelaciones, etc):
+No es decorativo. La membresía se aplica normalmente en `capture-order`, que
+corre en el navegador de quien paga. Si esa vuelta no ocurre —se cierra la
+pestaña, se corta la red, falla la escritura en la base justo después de que
+PayPal cobró— el dinero puede haberse movido y la membresía quedar sin
+aplicar, en silencio. El webhook llega desde PayPal a nuestro servidor sin
+pasar por el navegador de nadie, así que es el camino que sobrevive a eso.
 
-1. En tu app de PayPal Live
-2. Ve a "Webhooks"
-3. Agrega URL: `https://tudominio.com/api/payments/paypal/webhook`
-4. Selecciona eventos:
-   - `PAYMENT.CAPTURE.COMPLETED`
-   - `PAYMENT.CAPTURE.DENIED`
-   - etc.
+1. En tu app de PayPal Live, entra a **Webhooks** y añade uno nuevo.
+2. URL: `https://appencuentra.com/api/memberships/paypal/webhook`
+   (ojo: `memberships`, no `payments` — esta guía decía la ruta equivocada).
+3. Suscribe el evento **`PAYMENT.CAPTURE.COMPLETED`**. Es el único que la ruta
+   atiende, y es a propósito: `CHECKOUT.ORDER.APPROVED` sólo significa que la
+   persona dijo que sí, y con `intent: CAPTURE` eso todavía no cobra nada.
+   Acreditar ahí sería regalar la membresía.
+4. Copia el **Webhook ID** que PayPal te da al guardarlo y ponlo en las
+   variables de entorno como `PAYPAL_WEBHOOK_ID`.
 
-**Nota:** El endpoint de webhook aún no está implementado, pero puedes agregarlo después.
+**Sin `PAYPAL_WEBHOOK_ID` la ruta rechaza todos los eventos con 401**, y eso es
+deliberado: un endpoint que aplica membresías sin comprobar quién lo llama se
+las regala a cualquiera que descubra la URL. Cada evento se verifica contra la
+API de PayPal antes de tocar nada.
+
+No hace falta preocuparse por eventos repetidos: PayPal reintenta, y aplicar el
+mismo pago dos veces no suma los meses dos veces.
 
 ---
 

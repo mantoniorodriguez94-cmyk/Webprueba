@@ -36,8 +36,15 @@ export interface ApplyMembershipResult {
  * Inserta (o asegura) el registro en membership_payments.
  * - Si ya existe un registro completed con el mismo (gateway, transactionRef), se trata como idempotente.
  * - Si existe uno pending/failed, se actualiza a completed.
+ *
+ * DEVUELVE si el pago YA ESTABA cobrado antes de esta llamada. Quien llama lo
+ * necesita para no volver a extender la suscripción: esta función era
+ * idempotente para la FILA, pero el que la llamaba seguía adelante y sumaba
+ * los meses igual. Ver el comentario en applyMembershipFromPayment.
  */
-async function upsertMembershipPayment(input: ApplyMembershipFromPaymentInput): Promise<void> {
+async function upsertMembershipPayment(
+  input: ApplyMembershipFromPaymentInput
+): Promise<{ yaEstabaCobrado: boolean }> {
   const adminSupabase = getAdminClient()
 
   // Buscar registro existente con mismo gateway + transaction_ref
@@ -68,25 +75,34 @@ async function upsertMembershipPayment(input: ApplyMembershipFromPaymentInput): 
     if (insertError) {
       throw insertError
     }
-    return
+    return { yaEstabaCobrado: false }
   }
 
-  // Si ya existe y está completed, no hacemos nada (idempotente)
+  // Ya estaba cobrado: no se toca nada y se avisa a quien llama.
   if ((existing as any)?.status === "completed") {
-    return
+    return { yaEstabaCobrado: true }
   }
 
-  // Si existe pero está pending/failed, actualizar a completed
+  /* Estaba pending o failed: pasa a completed.
+     La condición `neq('status','completed')` no sobra aunque acabemos de leer
+     que no lo estaba: entre aquella lectura y esta escritura puede haberse
+     colado otra llamada por el mismo pago —el webhook de PayPal y la captura
+     del navegador llegan por caminos distintos y pueden solaparse—. Con la
+     condición dentro del UPDATE, gana una sola: la otra no actualiza ninguna
+     fila, `select` vuelve vacío, y se entera de que llegó segunda. */
   // @ts-ignore - membership_payments not in generated schema
-  const updateQuery = adminSupabase
+  const { data: actualizadas, error: updateError } = await adminSupabase
     .from("membership_payments")
     .update({ status: "completed" } as never)
     .eq("id", (existing as any).id)
-  const { error: updateError } = await updateQuery
+    .neq("status", "completed")
+    .select("id")
 
   if (updateError) {
     throw updateError
   }
+
+  return { yaEstabaCobrado: (actualizadas?.length ?? 0) === 0 }
 }
 
 /**
@@ -375,9 +391,24 @@ export async function applyMembershipFromPayment(
     }
 
     // 1) Registrar / actualizar el pago en membership_payments
-    await upsertMembershipPayment(input)
+    const { yaEstabaCobrado } = await upsertMembershipPayment(input)
 
-    // 2) Actualizar perfil del usuario con tier y expiración
+    /* 2) Extender la suscripción — SÓLO si este pago no estaba ya cobrado.
+       Antes se extendía siempre. La fila de membership_payments sí era
+       idempotente, pero los meses no: dos llamadas con el mismo
+       transaction_ref dejaban el pago registrado una vez y la suscripción
+       extendida dos. Hoy no se notaba porque sólo la captura del navegador
+       llamaba acá, y PayPal rechaza capturar dos veces la misma orden — o sea
+       que estaba protegido por accidente, no por diseño. En cuanto entra un
+       webhook, que llega por su cuenta para la misma orden, el accidente
+       deja de protegernos y se regalan meses. */
+    if (yaEstabaCobrado) {
+      // Éxito, no error: el pago está cobrado y la membresía aplicada, que es
+      // justo lo que pedía quien llamó. monthsAdded en 0 dice que esta llamada
+      // concreta no sumó nada, para que el que reintenta no lo cuente dos veces.
+      return { success: true, tier: targetTier, monthsAdded: 0 }
+    }
+
     const subscriptionResult = await updateUserProfileSubscription(
       input.userId,
       targetTier,
