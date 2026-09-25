@@ -98,19 +98,18 @@ order by orden;
 
 
 -- ── Nota sobre el bucket ────────────────────────────────────────────────────
--- create-storage-bucket.sql lo crea con public = true y le agrega una política
--- de lectura para el rol `public`. Eso contradice al README, que exige que sea
--- privado, y con razón: son capturas de transferencias con nombres y números
--- de cuenta. El panel ya las muestra con URLs firmadas de una hora
--- (createSignedUrl), así que NO necesita que el bucket sea público.
+-- La fila 4 distingue tres estados porque durante un tiempo el script
+-- create-storage-bucket.sql lo creaba con public = true y con una política de
+-- lectura para el rol `public`. Producción resultó estar privada —comprobado
+-- el 25/09— y el script quedó corregido, así que hoy esa fila debería salir
+-- "aplicado y privado".
 --
--- Si la fila 4 sale en ⚠️, esto lo cierra:
+-- Se deja la comprobación puesta igual: son capturas de transferencias con
+-- nombres y números de cuenta, y es barato volver a preguntarlo. Si alguna vez
+-- sale en ⚠️, esto lo cierra:
 --
 --   update storage.buckets set public = false where id = 'payment_receipts';
 --   drop policy if exists "Public receipts are viewable" on storage.objects;
---
--- Comprobar después que el panel sigue mostrando los comprobantes: la lectura
--- va por URL firmada y no debería verse afectada.
 
 
 -- ── Las migraciones que sí dejan registro ───────────────────────────────────
@@ -202,4 +201,30 @@ select * from (
                                 or (table_name='businesses' and column_name='max_photos')))
          then '✅' else '❌ FALTA' end,
     'Fuera tres columnas que devolvían valores falsos'
+
+  union all select 10, 'categorias_cerradas',
+    case when exists (select 1 from pg_constraint
+                        where conname = 'businesses_category_check')
+         then '✅' else '❌ FALTA' end,
+    'businesses.category restringida a la lista cerrada'
+
+  union all select 11, 'suspension_efectiva  [SEGURIDAD]',
+    case when exists (select 1 from pg_policies where schemaname='public'
+                        and policyname = 'suspendido_no_crea_negocios')
+         then '✅' else '❌ FALTA' end,
+    'Sin esto, suspender una cuenta no impide nada'
+
+  union all select 12, 'beneficios_no_autoconcedibles  [SEGURIDAD]',
+    case when exists (select 1 from pg_trigger
+                        where tgname = 'trigger_proteger_beneficios_negocio')
+         then '✅' else '❌ FALTA' end,
+    'Sin esto, los beneficios de pago se pueden autoconceder'
+
 ) m order by n;
+
+-- La treceava, prioridad_no_se_queda_pegada, no sale en esa lista: es un
+-- UPDATE de datos y no deja ningún objeto en el esquema, así que no hay nada
+-- que preguntarle. Para hacerse una idea, cuántos negocios conservan el
+-- empujón manual en el buscador:
+--
+--   select count(*) from public.businesses where search_priority_boost is true;

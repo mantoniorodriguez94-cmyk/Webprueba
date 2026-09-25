@@ -99,13 +99,15 @@ script con lo que falta cuando falta.
 > transferencias con nombres y números de cuenta. Tiene que seguir siendo
 > privado; el panel genera URLs firmadas de una hora para mostrarlos.
 >
-> **Ojo con el script: lo crea público.** `create-storage-bucket.sql` hace
-> `insert into storage.buckets (..., public) values (..., true)` y añade una
-> política de lectura para el rol `public`, que es exactamente lo contrario de
-> lo anterior. El código de lectura ya usa URLs firmadas y no necesita que el
-> bucket sea público. Antes de correrlo, poné `public` en `false` y quitá esa
-> política; si ya se corrió, `verificar-scripts-aplicados.sql` lo detecta y
-> trae las dos sentencias que lo cierran.
+> El script lo crea privado y, si lo encuentra abierto, lo cierra: pone
+> `public = false` también cuando el bucket ya existe, y borra la política de
+> lectura pública. Hasta el 25/09 hacía lo contrario —lo creaba con
+> `public = true`— pese a este mismo párrafo tres líneas más arriba. La base de
+> producción estaba privada, así que no llegó a hacer daño, pero quedaba
+> armado para quien rehiciera el bucket.
+>
+> Para comprobar el estado de una base concreta:
+> `scripts/verificar-scripts-aplicados.sql`.
 
 ## Permisos de administrador
 
