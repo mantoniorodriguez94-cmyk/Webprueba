@@ -1164,11 +1164,21 @@ export default function DashboardPage() {
       {/* Pestañas de categorías: salen de la barra y se alinean con el feed,
           con el mismo ancho y padding que las tarjetas de abajo. */}
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 pt-5">
-        {/* Envuelven en vez de desbordar: con seis pestañas, en un teléfono
-            se veían tres y no había forma clara de saber que faltaban otras.
-            Se probó difuminar el borde y un empujón inicial, y seguía sin
-            quedar claro. Dos filas eliminan el problema en vez de insinuarlo.
-            En pantallas anchas caben las seis en una sola fila igualmente. */}
+        {/* EN MÓVIL SÓLO TRES: Todos, Destacados y Promociones. Las otras
+            cuatro llevan `hidden lg:block` y siguen enteras en escritorio.
+
+            Eran siete y ocupaban tres filas de chips antes de que apareciera
+            el primer negocio — más alto de pantalla gastado en elegir vista
+            que en la vista misma. Y el reparto era desigual: "Todos" es donde
+            se está el 95% del tiempo, mientras "Comunidad" o "Mejores" se
+            visitan sueltas.
+
+            No se pierde nada en el camino: filtrar por categoría sigue estando
+            en "Filtra tu búsqueda", que incrusta el FilterSidebar completo,
+            categorías incluidas. El chip era un atajo, no la única puerta.
+
+            Tampoco hay forma de quedarse atrapado en una pestaña sin chip:
+            activeTab arranca siempre en "feed" y no se lee de la URL. */}
         <div className="flex flex-wrap gap-2 pb-1">
             <button
               onClick={() => setActiveTab("feed")}
@@ -1182,7 +1192,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("recientes")}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`hidden lg:block px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "recientes"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
                   : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
@@ -1202,7 +1212,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("categorias")}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`hidden lg:block px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "categorias"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
                   : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
@@ -1212,7 +1222,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("mejores")}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`hidden lg:block px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "mejores"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
                   : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
@@ -1222,7 +1232,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("comunidad")}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`hidden lg:block px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                 activeTab === "comunidad"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
                   : "bg-black/5 hover:bg-black/10 text-ink-2 hover:text-ink border border-black/8"
