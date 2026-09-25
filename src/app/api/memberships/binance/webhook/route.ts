@@ -37,8 +37,11 @@ export async function POST(request: NextRequest) {
   const timestamp = request.headers.get("BinancePay-Timestamp") || ""
   const nonce = request.headers.get("BinancePay-Nonce") || ""
   const signature = request.headers.get("BinancePay-Signature") || ""
+  // Dice con QUÉ clave pública de Binance hay que verificar. Antes no se leía,
+  // porque la verificación era un HMAC con nuestro secret y no hacía falta.
+  const certificateSn = request.headers.get("BinancePay-Certificate-SN") || ""
 
-  if (!verifyBinanceWebhookSignature(timestamp, nonce, rawBody, signature)) {
+  if (!(await verifyBinanceWebhookSignature(timestamp, nonce, rawBody, signature, certificateSn))) {
     console.error("[binance/webhook] Firma inválida — posible request falsificado")
     return NextResponse.json({ returnCode: "FAIL", returnMessage: "Invalid signature" }, { status: 401 })
   }

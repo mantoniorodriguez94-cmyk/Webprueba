@@ -9,7 +9,7 @@
 //   BINANCE_PAY_API_KEY     (Certificate SN del merchant)
 //   BINANCE_PAY_SECRET_KEY
 
-import { createHmac, randomBytes } from "crypto"
+import { createHmac, randomBytes, verify } from "crypto"
 
 const BINANCE_PAY_API_BASE = "https://bpay.binanceapi.com"
 
@@ -156,29 +156,105 @@ export async function createBinanceOrder(
   }
 }
 
-/**
- * Verifica la firma de un webhook entrante de Binance Pay.
- * Binance envía los mismos headers (Timestamp/Nonce/Signature) que en las
- * requests salientes, firmando timestamp+"\n"+nonce+"\n"+rawBody+"\n" con
- * nuestro Secret Key.
+/* ── Verificación de webhooks entrantes ──────────────────────────────────────
+ *
+ * LO QUE HABÍA ACÁ ESTABA MAL, y de la peor forma posible: rechazaba TODOS los
+ * webhooks reales. Calculaba un HMAC-SHA512 con NUESTRO secret y lo comparaba
+ * con la cabecera de firma, que es lo mismo que se hace en las peticiones que
+ * SALEN hacia Binance. Pero las que ENTRAN no van firmadas así: Binance las
+ * firma con SHA256withRSA usando SU clave privada, y el comercio verifica con
+ * la clave pública de Binance. Un HMAC y una firma RSA nunca van a coincidir.
+ *
+ * El efecto no era un agujero —fallaba cerrado— sino que el único camino por
+ * el que un pago en Binance se convierte en membresía estaba tapiado: se
+ * cobraba el cripto y no se acreditaba nada.
+ *
+ * Referencias:
+ *   https://developers.binance.com/docs/binance-pay/webhook-common
+ *   https://developers.binance.com/docs/binance-pay/webhook-query-certificate
  */
-export function verifyBinanceWebhookSignature(
+
+interface CertificadoBinance {
+  certSerial?: string
+  certPublic?: string
+}
+
+/* Las claves públicas de Binance cambian muy de vez en cuando, y pedirlas en
+   cada webhook sería un viaje de red extra —firmado— por notificación. Se
+   guardan por número de serie, que es lo que la cabecera Certificate-SN
+   permite distinguir: si Binance rota la clave, llega un serial que no está
+   en el mapa y se vuelve a pedir sola. */
+const certificadosPorSerial = new Map<string, string>()
+
+/** Envuelve la clave en PEM si Binance la devuelve pelada, en base64. */
+function aPem(clave: string): string {
+  const limpia = clave.trim()
+  if (limpia.includes("-----BEGIN")) return limpia
+  const cuerpo = limpia.replace(/\s+/g, "").match(/.{1,64}/g)?.join("\n") ?? limpia
+  return `-----BEGIN PUBLIC KEY-----\n${cuerpo}\n-----END PUBLIC KEY-----`
+}
+
+async function obtenerClavePublica(serial: string): Promise<string | null> {
+  const cacheada = certificadosPorSerial.get(serial)
+  if (cacheada) return cacheada
+
+  const { body } = await signedRequest<{ status?: string; data?: CertificadoBinance[] }>(
+    "/binancepay/openapi/certificates",
+    {}
+  )
+
+  if (body?.status !== "SUCCESS" || !body.data?.length) {
+    console.error("[binance-pay] No se pudo obtener el certificado de Binance")
+    return null
+  }
+
+  for (const cert of body.data) {
+    if (cert.certSerial && cert.certPublic) {
+      certificadosPorSerial.set(cert.certSerial, aPem(cert.certPublic))
+    }
+  }
+
+  return certificadosPorSerial.get(serial) ?? null
+}
+
+/**
+ * Verifica que un webhook entrante lo firmó Binance.
+ *
+ * `rawBody` tiene que ser el TEXTO tal como llegó, no un objeto re-serializado:
+ * volver a pasar por JSON.stringify reordena claves y cambia espacios, y
+ * cualquiera de las dos cosas rompe la firma.
+ *
+ * No se comprueba la frescura del timestamp a propósito. Binance reintenta las
+ * notificaciones, a veces mucho después, y una ventana estrecha rechazaría
+ * entregas legítimas. Reenviar un webhook válido ya no consigue nada: aplicar
+ * dos veces el mismo pago suma cero meses desde que applyMembershipFromPayment
+ * es idempotente de verdad.
+ */
+export async function verifyBinanceWebhookSignature(
   timestamp: string,
   nonce: string,
   rawBody: string,
-  signature: string
-): boolean {
-  const secretKey = process.env.BINANCE_PAY_SECRET_KEY
-  if (!secretKey) return false
+  signature: string,
+  certificateSn: string
+): Promise<boolean> {
+  if (!timestamp || !nonce || !signature || !certificateSn) return false
+  if (!isBinancePayConfigured()) return false
 
-  const payload = `${timestamp}\n${nonce}\n${rawBody}\n`
-  const expected = sign(payload, secretKey)
+  try {
+    const clavePublica = await obtenerClavePublica(certificateSn)
+    if (!clavePublica) return false
 
-  // Comparación en tiempo constante para evitar timing attacks
-  if (expected.length !== signature.length) return false
-  let diff = 0
-  for (let i = 0; i < expected.length; i++) {
-    diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i)
+    const payload = `${timestamp}\n${nonce}\n${rawBody}\n`
+
+    return verify(
+      "RSA-SHA256",
+      Buffer.from(payload, "utf8"),
+      clavePublica,
+      Buffer.from(signature, "base64")
+    )
+  } catch (error) {
+    // Si no se puede verificar, no se confía. Nunca al revés.
+    console.error("[binance-pay] Error verificando la firma del webhook:", error)
+    return false
   }
-  return diff === 0
 }
