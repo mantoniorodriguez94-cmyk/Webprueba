@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient"
 import useUser from "@/hooks/useUser"
 import useMembershipAccess from "@/hooks/useMembershipAccess"
 import { getMaxPhotosForTier } from "@/lib/memberships/tiers"
+import { normalizarWeb, normalizarRed } from "@/lib/negocios/enlaces"
 import { topeDeFotos } from "@/lib/memberships/perks"
 import Link from "next/link"
 import Image from "next/image"
@@ -33,6 +34,12 @@ export default function EditarNegocioPage() {
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
+  // La web propia y las redes. En todos los planes, como el teléfono.
+  const [website, setWebsite] = useState("")
+  const [facebook, setFacebook] = useState("")
+  const [instagram, setInstagram] = useState("")
+  const [tiktok, setTiktok] = useState("")
+  const [errorEnlaces, setErrorEnlaces] = useState<string | null>(null)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null)
   const [loading, setLoading] = useState(true)
@@ -85,6 +92,10 @@ export default function EditarNegocioPage() {
         setAddress(data.address ?? "")
         setPhone(data.phone ? String(data.phone) : "")
         setWhatsapp(data.whatsapp ? String(data.whatsapp) : "")
+        setWebsite(data.website ?? "")
+        setFacebook(data.facebook ?? "")
+        setInstagram(data.instagram ?? "")
+        setTiktok(data.tiktok ?? "")
       } catch (err: any) {
         console.error("Error cargando negocio:", err)
         toast.error("No se pudo cargar el negocio. Intenta de nuevo.")
@@ -159,6 +170,36 @@ export default function EditarNegocioPage() {
     setSaving(true)
     
     try {
+      /* Se normaliza ANTES de subir nada: si un enlace está mal escrito, es
+         mejor decirlo antes de que el usuario espere a que suban las fotos.
+         Un campo con texto que no se puede normalizar es un ERROR, no un null
+         silencioso: borrarle el enlace sin avisar es peor que rechazarlo. */
+      const enlaces = {
+        website: normalizarWeb(website),
+        facebook: normalizarRed("facebook", facebook),
+        instagram: normalizarRed("instagram", instagram),
+        tiktok: normalizarRed("tiktok", tiktok),
+      }
+      const malEscritos = (
+        [
+          ["Sitio web", website, enlaces.website],
+          ["Facebook", facebook, enlaces.facebook],
+          ["Instagram", instagram, enlaces.instagram],
+          ["TikTok", tiktok, enlaces.tiktok],
+        ] as const
+      )
+        .filter(([, escrito, normalizado]) => escrito.trim() && !normalizado)
+        .map(([etiqueta]) => etiqueta)
+
+      if (malEscritos.length > 0) {
+        setErrorEnlaces(
+          `Revisá ${malEscritos.join(", ")}: poné la dirección completa del perfil, o sólo el usuario.`
+        )
+        setLoading(false)
+        return
+      }
+      setErrorEnlaces(null)
+
       let logoUrl = negocio.logo_url ?? null
       const gallery = [...galleryUrls]
 
@@ -183,6 +224,7 @@ export default function EditarNegocioPage() {
           address: address || null,
           phone: phone ? Number(phone) : null,
           whatsapp: whatsapp ? Number(whatsapp) : null,
+          ...enlaces,
           logo_url: logoUrl,
           gallery_urls: gallery.length > 0 ? gallery : null,
           /* Sin latitude/longitude a propósito. Esta pantalla ya no las edita,
@@ -398,6 +440,84 @@ export default function EditarNegocioPage() {
                 disabled={loading}
               />
             </div>
+
+            {/* ── La web propia y las redes ──────────────────────────────
+                En todos los planes, como el teléfono. App Encuentra no viene
+                a reemplazar el sitio de nadie: a quien ya tiene presencia le
+                deja enlazarla para no perder la audiencia que ya se ganó. */}
+            <div className="sm:col-span-2 pt-2 border-t border-black/8">
+              <h3 className="text-sm font-semibold text-ink">Tu web y tus redes</h3>
+              <p className="mt-1 text-xs text-ink-2">
+                Opcional. Si ya tenés sitio o perfiles, enlazalos acá y
+                aparecerán como botones en tu ficha. Podés escribir sólo tu
+                usuario — por ejemplo <span className="font-mono">@minegocio</span>.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="website" className="block text-sm font-semibold text-ink mb-2">
+                Sitio web
+              </label>
+              <input
+                id="website"
+                type="url"
+                inputMode="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="minegocio.com"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="facebook" className="block text-sm font-semibold text-ink mb-2">
+                Facebook
+              </label>
+              <input
+                id="facebook"
+                type="text"
+                value={facebook}
+                onChange={(e) => setFacebook(e.target.value)}
+                placeholder="@minegocio"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="instagram" className="block text-sm font-semibold text-ink mb-2">
+                Instagram
+              </label>
+              <input
+                id="instagram"
+                type="text"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="@minegocio"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="tiktok" className="block text-sm font-semibold text-ink mb-2">
+                TikTok
+              </label>
+              <input
+                id="tiktok"
+                type="text"
+                value={tiktok}
+                onChange={(e) => setTiktok(e.target.value)}
+                placeholder="@minegocio"
+                className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            {errorEnlaces && (
+              <p className="sm:col-span-2 text-sm text-red-600">{errorEnlaces}</p>
+            )}
 
             {/* Logo actual */}
             <div>

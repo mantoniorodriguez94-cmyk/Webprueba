@@ -140,11 +140,20 @@ export async function checkBusinessSaved(
 
 /**
  * Registra una interacción con el negocio
- * Tipos: 'whatsapp', 'phone', 'message', 'share', 'gallery_view', 'like'
+ * Tipos: 'whatsapp', 'phone', 'message', 'share', 'gallery_view', 'like',
+ *        'website', 'facebook', 'instagram', 'tiktok'
+ *
+ * Los cuatro últimos son los enlaces propios del negocio. Se cuentan igual que
+ * el resto, pero OJO: no entran en la lista que decide quién es "cliente
+ * verificado" —esa vive en la migración resenas_cliente_verificado y nombra
+ * sólo whatsapp, phone y message—. Pulsar el Instagram de alguien no prueba
+ * haberle comprado nada, y esa lista es explícita a propósito.
  */
 export async function trackBusinessInteraction(
   businessId: string,
-  interactionType: 'whatsapp' | 'phone' | 'message' | 'share' | 'gallery_view' | 'like',
+  interactionType:
+    | 'whatsapp' | 'phone' | 'message' | 'share' | 'gallery_view' | 'like'
+    | 'website' | 'facebook' | 'instagram' | 'tiktok',
   userId?: string | null
 ): Promise<boolean> {
   try {

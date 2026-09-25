@@ -10,6 +10,7 @@ import EnlaceContacto from "@/components/analytics/EnlaceContacto"
 import { notFound } from "next/navigation"
 import { viasDeContacto } from "@/lib/memberships/perks"
 import { claseBoton } from "@/lib/ui/botones"
+import EnlacesDelNegocio from "@/components/business/EnlacesDelNegocio"
 // Forzar renderizado dinámico para SEO
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidar cada hora
@@ -122,7 +123,11 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
       gallery_urls,
       latitude,
       longitude,
-      owner_id
+      owner_id,
+      website,
+      facebook,
+      instagram,
+      tiktok
     `)
     .eq("id", id)
     .single()
@@ -352,8 +357,23 @@ export default async function PublicBusinessPage({ params }: { params: Promise<{
               </div>
             )}
 
+            {/* La web propia y las redes del negocio.
+                Van ANTES de los botones de acción y visualmente por debajo de
+                ellos —neutros, sin color de marca—: son para quien ya conoce
+                al negocio y lo busca donde siempre, no la acción que esta
+                ficha quiere provocar. En todos los planes, como el teléfono. */}
+            <div className="pt-6 border-t border-black/8">
+              <EnlacesDelNegocio
+                businessId={business.id}
+                website={business.website}
+                facebook={business.facebook}
+                instagram={business.instagram}
+                tiktok={business.tiktok}
+              />
+            </div>
+
             {/* Botones de Acción */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-black/8">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               {/* Primary CTA — shows chat icon when in-app chat is available */}
               <Link
                 href={`/app/dashboard/negocios/${business.id}`}
