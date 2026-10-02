@@ -115,3 +115,38 @@ además la cookie `admin_master_ok`.
 Los cinco buckets tienen lista blanca de 7 formatos de imagen, 5 MB (10 en
 comprobantes) y `payment_receipts` es privado. `image/svg+xml` queda fuera a
 propósito porque ejecuta scripts. No volver a levantarlo desde aquí.
+
+**2026-10-02 · Guardia por `isAdmin` en `business-data` y `profile-data` — ARREGLADO.**
+Las dos rutas comprobaban sólo `authError` y no `isAdmin`. No era explotable
+—`checkAdminAuth` pone `error` para los no-admin— pero la protección dependía
+del valor de retorno de otra función en vez de estar en la ruta. Ahora usan
+`!user || !user.isAdmin` como las otras 31. Typecheck y lint limpios.
+**La lección general queda abierta:** cuando una guardia dependa de un detalle
+de implementación de otra función, es un hallazgo aunque hoy no se pueda
+explotar.
+
+**2026-10-02 · El esquema de la base no está en el repo — ABIERTO, es el hallazgo principal.**
+De las 24 tablas y vistas que consulta el código, sólo `profiles` tiene RLS
+definido en `supabase-setup.sql`. Las demás se crearon en el panel, así que
+**RLS no se puede auditar desde el repositorio**. Además hay deriva demostrable:
+la política de `profiles` es `USING (auth.uid() = id)` (sólo el propio perfil)
+mientras 12 consultas de cliente leen `profiles` para un directorio público —
+el archivo del repo ya no describe lo que corre. Pendiente: que el usuario
+ejecute las dos consultas de diagnóstico (RLS por tabla, y `security_invoker`
+en las vistas) para poder escribir la migración sobre el estado real.
+**No escribir políticas a ciegas: romperían la app.**
+
+**2026-10-02 · El chat consulta por `conversation_id` sin comprobar propiedad — DEPENDE DE RLS.**
+`dashboard/chat/page.tsx:295` lee mensajes filtrando sólo por
+`conversation_id`; `:338` y `:350` escriben igual, y `:483` inserta con un
+`sender_id` que viene del cliente. Es el patrón normal de Supabase **si** RLS
+cubre `messages` y `conversations`. Si no, es lectura de cualquier conversación
+privada cambiando un UUID. No reevaluar hasta tener el resultado de las
+consultas de diagnóstico.
+
+**2026-10-02 · `rroute.ts` — NO TOCAR sin revisar.**
+`api/admin/deactivate/rroute.ts` tiene un typo histórico documentado: Next no
+registra la ruta y nadie la invoca. Está muerta, que es el estado seguro.
+**Renombrarla a `route.ts` activaría un endpoint que lleva meses sin ejecutarse
+ni revisarse.** Si alguien lo "arregla" como limpieza, eso es un cambio de
+seguridad, no cosmético.
