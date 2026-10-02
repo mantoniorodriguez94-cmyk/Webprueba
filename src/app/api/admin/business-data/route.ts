@@ -9,8 +9,11 @@ import { checkAdminAuth } from "@/utils/admin-auth"
 
 export async function GET(request: NextRequest) {
   try {
-    const { error: authError } = await checkAdminAuth()
-    if (authError) {
+    // Se comprueba isAdmin, y no sólo authError: que checkAdminAuth ponga error
+    // para los no-admin es un detalle de su implementación, y un refactor que
+    // devolviera error: null con isAdmin: false abriría esta ruta en silencio.
+    const { user, error: authError } = await checkAdminAuth()
+    if (authError || !user || !user.isAdmin) {
       return NextResponse.json(
         { success: false, error: "No autorizado." },
         { status: 403 }
