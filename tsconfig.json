@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,6 +13,10 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    /* Los tipos del service worker. Sin "webworker" en lib y sin estos
+       typings, src/app/sw.ts no compila: self, ServiceWorkerGlobalScope y
+       __SW_MANIFEST no existen en el entorno del navegador. */
+    "types": ["@serwist/next/typings"],
     "plugins": [
       {
         "name": "next"

@@ -1,6 +1,7 @@
 // src/app/dashboard/negocios/[id]/gestionar/page.tsx
 "use client"
 import React, { useEffect, useState } from "react"
+import GestionEnlaces from "@/components/business/GestionEnlaces"
 import SectionHeader from "@/components/ui/SectionHeader"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
@@ -385,6 +386,34 @@ export default function GestionarNegocioPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           
           {/* Galería de Fotos */}
+          {/* Tu web y tus redes.
+              Ocupa las dos columnas porque no es una tarjeta que lleve a otra
+              pantalla como las de abajo: se configura acá mismo, botón por
+              botón. Los cuatro se ven siempre —los vacíos, apagados y con
+              "Añadir"— para que se sepa que existen. En la ficha pública sólo
+              salen los que estén puestos. */}
+          <div className="surface rounded-3xl shadow-sm p-6 md:col-span-2">
+            <h3 className="text-lg font-bold text-ink">Tu web y tus redes</h3>
+            <p className="text-sm text-ink-2 mt-1 mb-4">
+              Si ya tenés sitio o perfiles, enlazalos y aparecerán como botones
+              en tu ficha. Tocá cualquiera para configurarlo.
+            </p>
+            <GestionEnlaces
+              businessId={business.id}
+              valores={{
+                website: (business as any).website ?? null,
+                facebook: (business as any).facebook ?? null,
+                instagram: (business as any).instagram ?? null,
+                tiktok: (business as any).tiktok ?? null,
+              }}
+              alGuardar={(clave, url) =>
+                setBusiness((anterior) =>
+                  anterior ? ({ ...anterior, [clave]: url } as Business) : anterior
+                )
+              }
+            />
+          </div>
+
           <div className="surface rounded-3xl shadow-sm p-6 hover:shadow-md hover:border-black/15 transition-all">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
