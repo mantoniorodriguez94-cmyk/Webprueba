@@ -1,58 +1,35 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/.*\.supabase\.co\/.*$/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'supabase-cache',
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 24 * 60 * 60 // 24 horas
-        },
-        networkTimeoutSeconds: 10,
-      }
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'image-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 7 * 24 * 60 * 60 // 7 días
-        }
-      }
-    },
-    {
-      urlPattern: /\.(?:js|css|woff|woff2|ttf|otf|eot)$/,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-resources',
-        expiration: {
-          maxEntries: 60,
-          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 días
-        }
-      }
-    },
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'others',
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 24 * 60 * 60 // 24 horas
-        },
-        networkTimeoutSeconds: 10,
-      }
-    }
-  ]
-});
+
+/* ── PWA: Serwist ──────────────────────────────────────────────────────────
+ *
+ * Reemplaza a next-pwa, abandonado desde 2022 y responsable de diez de las
+ * once vulnerabilidades altas que arrastraba el proyecto —todas en su cadena
+ * de build, no en código que corre en producción, pero imposibles de parchear
+ * sin cambiar de herramienta—.
+ *
+ * Las reglas de caché ya no viven acá: ahora son código con tipos en
+ * src/app/sw.ts, que es lo que Serwist compila a public/sw.js.
+ *
+ * El archivo pasó de .js a .mjs porque @serwist/next sólo se publica como
+ * ESM y no se puede `require`. Lo único que cambia por eso es la forma de
+ * importar Sentry y de exportar; la configuración es la misma.
+ *
+ * Se deja SIN cacheOnNavigation a propósito. next-pwa guardaba las páginas 24
+ * horas con una regla atrapatodo y caía al caché si la red tardaba más de 10
+ * segundos, que es exactamente cómo la app instalada en el teléfono siguió
+ * mostrando una versión vieja durante días después de desplegar un arreglo.
+ * Para un directorio que se consulta en vivo, una página siempre fresca vale
+ * más que una página disponible sin conexión.
+ */
+import withSerwistInit from "@serwist/next"
+import { withSentryConfig } from "@sentry/nextjs/config"
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  // En desarrollo estorba: cachea mientras uno edita.
+  disable: process.env.NODE_ENV === "development",
+})
 
 /* Cabeceras de seguridad.
  *
@@ -138,9 +115,7 @@ const nextConfig = {
  * Sin SENTRY_AUTH_TOKEN el plugin se salta esa subida y el build sigue
  * adelante: el proyecto se puede compilar sin cuenta de Sentry.
  */
-const { withSentryConfig } = require("@sentry/nextjs/config");
-
-module.exports = withSentryConfig(withPWA(nextConfig), {
+export default withSentryConfig(withSerwist(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
